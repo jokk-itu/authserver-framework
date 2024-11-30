@@ -61,7 +61,24 @@ public abstract class BaseUnitTest
         {
             discoveryDocument.Issuer = "https://localhost:5000";
             discoveryDocument.ClaimsSupported = ClaimNameConstants.SupportedEndUserClaims;
-            discoveryDocument.AcrValuesSupported = [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
+            discoveryDocument.AcrValuesSupported =
+                [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
+
+            var supportedSigningAlgorithms = new[] { SigningAlg.RsaSha256.GetDescription() };
+            var supportedEncryptionAlgorithms = new[] { EncryptionAlg.EcdhEsA128KW.GetDescription() };
+            var supportedEncryptionEncoding = new[] { EncryptionEnc.Aes128CbcHmacSha256.GetDescription() };
+
+            discoveryDocument.RequestObjectSigningAlgValuesSupported = supportedSigningAlgorithms;
+            discoveryDocument.RequestObjectEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            discoveryDocument.RequestObjectEncryptionEncValuesSupported = supportedEncryptionEncoding;
+
+            discoveryDocument.UserinfoSigningAlgValuesSupported = supportedSigningAlgorithms;
+            discoveryDocument.UserinfoEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            discoveryDocument.UserinfoEncryptionEncValuesSupported = supportedEncryptionEncoding;
+
+            discoveryDocument.IdTokenSigningAlgValuesSupported = supportedSigningAlgorithms;
+            discoveryDocument.IdTokenEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            discoveryDocument.IdTokenEncryptionEncValuesSupported = supportedEncryptionEncoding;
         });
         services.AddOptions<JwksDocument>().Configure(jwksDocument =>
         {
