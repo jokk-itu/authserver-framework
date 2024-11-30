@@ -1,4 +1,8 @@
 [Bb]in
 [Oo]bj
+.idea
 .vs
 .vscode
+coverage.xml
+node_modules
+package-lock.json
