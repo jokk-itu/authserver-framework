@@ -871,7 +871,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (MaxAgeHelper.IsMaxAgeValid(request.DefaultMaxAge))
+        if (!MaxAgeHelper.IsMaxAgeValid(request.DefaultMaxAge))
         {
             return RegisterError.InvalidDefaultMaxAge;
         }
