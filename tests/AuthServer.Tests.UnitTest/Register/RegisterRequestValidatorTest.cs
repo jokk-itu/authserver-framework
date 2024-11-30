@@ -487,4 +487,282 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         // Assert
         Assert.Equal(RegisterError.InvalidSectorDocument, processResult);
     }
+
+    [Fact]
+    public async Task Validate_InvalidBackchannelLogoutUri_ExpectInvalidBackchannelLogoutUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            BackchannelLogoutUri = "invalid_backchannel_logout_uri"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidBackchannelLogoutUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidClientUri_ExpectInvalidClientUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            ClientUri = "invalid_client_uri"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidClientUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidPolicyUri_ExpectInvalidPolicyUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            PolicyUri = "invalid_policy_uri"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidPolicyUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidTosUri_ExpectInvalidTosUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            TosUri = "invalid_tos_uri"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidTosUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidInitiateLoginUri_ExpectInvalidInitiateLoginUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            InitiateLoginUri = "invalid_initiate_login_uri"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidInitiateLoginUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidLogoUri_ExpectInvalidLogoUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            LogoUri = "invalid_logo_uri"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidLogoUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_GiveJwksAndJwksUri_ExpectInvalidJwksAndJwksUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            Jwks = "jwks",
+            JwksUri = "jwks_uri"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidJwksAndJwksUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_NoJwksOrJwksUriAndPrivateKeyJwtAuthMethod_ExpectInvalidJwksOrJwksUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            TokenEndpointAuthMethod = TokenEndpointAuthMethod.PrivateKeyJwt.GetDescription()
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidJwksOrJwksUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidJwks_ExpectInvalidJwks()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            Jwks = "invalid_jwks"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidJwks, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidJwksUri_ExpectInvalidJwksUri()
+    {
+        // Arrange
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(clientJwkService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            SubjectType = SubjectType.Pairwise.GetDescription(),
+            JwksUri = "https://webapp.authserver.dk/jwks"
+        };
+
+        clientJwkService
+            .Setup(x => x.GetJwks(request.JwksUri, CancellationToken.None))
+            .ReturnsAsync((string?)null)
+            .Verifiable();
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidJwksUri, processResult);
+        clientJwkService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_InvalidJwksFromJwksUri_ExpectInvalidJwksUri()
+    {
+        // Arrange
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(clientJwkService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            SubjectType = SubjectType.Pairwise.GetDescription(),
+            JwksUri = "https://webapp.authserver.dk/jwks"
+        };
+
+        clientJwkService
+            .Setup(x => x.GetJwks(request.JwksUri, CancellationToken.None))
+            .ReturnsAsync("invalid_jwks")
+            .Verifiable();
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidJwksUri, processResult);
+        clientJwkService.Verify();
+    }
+
+
 }
