@@ -978,4 +978,27 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         // Assert
         Assert.Equal(RegisterError.InvalidRequestUriExpiration, processResult);
     }
+
+    [Fact]
+    public async Task Validate_InvalidTokenEndpointAuthSigningAlg_ExpectInvalidTokenEndpointAuthSigningAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            TokenEndpointAuthSigningAlg = "invalid_token_endpoint_auth_signing_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidTokenEndpointAuthSigningAlg, processResult);
+    }
 }
