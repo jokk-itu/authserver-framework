@@ -1001,4 +1001,292 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         // Assert
         Assert.Equal(RegisterError.InvalidTokenEndpointAuthSigningAlg, processResult);
     }
+
+    [Fact]
+    public async Task Validate_InvalidRequestObjectSigningAlg_ExpectInvalidRequestObjectSigningAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            RequestObjectSigningAlg = "invalid_request_object_signing_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidRequestObjectSigningAlg, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_EmptyRequestObjectEncryptionAlgAndGivenRequestObjectEncryptionEnc_ExpectInvalidRequestObjectEncryptionEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            RequestObjectSigningAlg = SigningAlg.RsaSha256.GetDescription(),
+            RequestObjectEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256.GetDescription()
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidRequestObjectEncryptionEnc, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidRequestObjectEncryptionAlg_ExpectRequestObjectEncryptionAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            RequestObjectSigningAlg = SigningAlg.RsaSha256.GetDescription(),
+            RequestObjectEncryptionAlg = "invalid_request_object_encryption_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidRequestObjectEncryptionAlg, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidRequestObjectEncryptionEnc_ExpectInvalidRequestObjectEncryptionEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            RequestObjectSigningAlg = SigningAlg.RsaSha256.GetDescription(),
+            RequestObjectEncryptionAlg = EncryptionAlg.EcdhEsA128KW.GetDescription(),
+            RequestObjectEncryptionEnc = "invalid_request_object_encryption_enc"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidRequestObjectEncryptionEnc, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidUserinfoSignedResponseAlg_ExpectInvalidUserinfoSignedResponseAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            UserinfoSignedResponseAlg = "invalid_userinfo_signed_response_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidUserinfoSignedResponseAlg, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_EmptyUserinfoEncryptedResponseAlgAndGivenUserinfoEncryptedResponseEnc_ExpectInvalidUserinfoEncryptedResponseEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            UserinfoSignedResponseAlg = SigningAlg.RsaSha256.GetDescription(),
+            UserinfoEncryptedResponseEnc = EncryptionEnc.Aes128CbcHmacSha256.GetDescription()
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidUserinfoEncryptedResponseEnc, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidUserinfoEncryptedResponseAlg_ExpectUserinfoEncryptedResponseAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            UserinfoSignedResponseAlg = SigningAlg.RsaSha256.GetDescription(),
+            UserinfoEncryptedResponseAlg = "invalid_userinfo_encrypted_response_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidUserinfoEncryptedResponseAlg, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidUserinfoEncryptedResponseEnc_ExpectInvalidUserinfoEncryptedResponseEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            UserinfoSignedResponseAlg = SigningAlg.RsaSha256.GetDescription(),
+            UserinfoEncryptedResponseAlg = EncryptionAlg.EcdhEsA128KW.GetDescription(),
+            UserinfoEncryptedResponseEnc = "invalid_userinfo_encrypted_response_enc"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidUserinfoEncryptedResponseEnc, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidIdTokenSignedResponseAlg_ExpectInvalidIdTokenSignedResponseAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            IdTokenSignedResponseAlg = "invalid_id_token_signed_response_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidIdTokenSignedResponseAlg, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_EmptyIdTokenEncryptedResponseAlgAndGivenIdTokenEncryptedResponseEnc_ExpectInvalidIdTokenEncryptedResponseEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            IdTokenSignedResponseAlg = SigningAlg.RsaSha256.GetDescription(),
+            IdTokenEncryptedResponseEnc = EncryptionEnc.Aes128CbcHmacSha256.GetDescription()
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidIdTokenEncryptedResponseEnc, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidIdTokenEncryptedResponseAlg_ExpectIdTokenEncryptedResponseAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            IdTokenSignedResponseAlg = SigningAlg.RsaSha256.GetDescription(),
+            IdTokenEncryptedResponseAlg = "invalid_userinfo_encrypted_response_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidIdTokenEncryptedResponseAlg, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidIdTokenEncryptedResponseEnc_ExpectInvalidIdTokenEncryptedResponseEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            IdTokenSignedResponseAlg = SigningAlg.RsaSha256.GetDescription(),
+            IdTokenEncryptedResponseAlg = EncryptionAlg.EcdhEsA128KW.GetDescription(),
+            IdTokenEncryptedResponseEnc = "invalid_userinfo_encrypted_response_enc"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidIdTokenEncryptedResponseEnc, processResult);
+    }
 }
