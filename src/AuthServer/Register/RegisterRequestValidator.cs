@@ -1203,7 +1203,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
 
         if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
         {
-            return RegisterError.InvalidRequestObjectEncryptionEnc;
+            return RegisterError.InvalidUserinfoEncryptedResponseEnc;
         }
 
         if (!DiscoveryDocument.UserinfoEncryptionAlgValuesSupported.Contains(request.UserinfoEncryptedResponseAlg!))
