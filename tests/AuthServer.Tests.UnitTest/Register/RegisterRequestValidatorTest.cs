@@ -764,5 +764,218 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         clientJwkService.Verify();
     }
 
+    [Fact]
+    public async Task Validate_InvalidDefaultMaxAge_ExpectInvalidDefaultMaxAge()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
 
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            DefaultMaxAge = "invalid_number"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidDefaultMaxAge, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidDefaultAcrValues_ExpectInvalidDefaultAcrValues()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            DefaultAcrValues = ["invalid_acr"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidDefaultAcrValues, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidContacts_ExpectInvalidContacts()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            Contacts = ["invalid_contact"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidContacts, processResult);
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(601)]
+    public async Task Validate_InvalidAuthorizationCodeExpiration_ExpectInvalidAuthorizationCodeExpiration(int expiration)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            AuthorizationCodeExpiration = expiration
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidAuthorizationCodeExpiration, processResult);
+    }
+
+    [Theory]
+    [InlineData(59)]
+    [InlineData(3601)]
+    public async Task Validate_InvalidAccessTokenExpiration_ExpectInvalidAccessTokenExpiration(int expiration)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            AccessTokenExpiration = expiration
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidAccessTokenExpiration, processResult);
+    }
+
+    [Theory]
+    [InlineData(59)]
+    [InlineData(5184001)]
+    public async Task Validate_InvalidRefreshTokenExpiration_ExpectInvalidRefreshTokenExpiration(int expiration)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            RefreshTokenExpiration = expiration
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidRefreshTokenExpiration, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidClientSecretExpiration_ExpectInvalidClientSecretExpiration()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+             ClientSecretExpiration = 86399
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidClientSecretExpiration, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidJwksExpiration_ExpectInvalidJwksExpiration()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            JwksExpiration = -1
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidJwksExpiration, processResult);
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(601)]
+    public async Task Validate_InvalidRequestUriExpiration_ExpectInvalidRequestUriExpiration(int expiration)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            RequestUriExpiration = expiration
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidRequestUriExpiration, processResult);
+    }
 }
