@@ -3,7 +3,7 @@
 namespace AuthServer.Entities;
 public class RefreshToken : GrantToken
 {
-    public RefreshToken(AuthorizationGrant authorizationGrant, string audience, string issuer, string? scope, DateTime? expiresAt)
+    public RefreshToken(AuthorizationGrant authorizationGrant, string audience, string issuer, string? scope, int? expiresAt)
         : base(authorizationGrant, TokenType.RefreshToken, audience, issuer, scope, expiresAt)
     {}
 
