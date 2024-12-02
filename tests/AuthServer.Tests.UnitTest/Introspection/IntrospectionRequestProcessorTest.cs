@@ -60,7 +60,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         };
         var openIdScope = await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, DateTime.UtcNow.AddHours(-1));
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
         
         await AddEntity(token);
 
@@ -91,7 +91,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         };
         var openIdScope = await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, DateTime.UtcNow.AddHours(1));
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
         token.Revoke();
         await AddEntity(token);
 
@@ -120,7 +120,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             ClientUri = "https://webapp.authserver.dk"
         };
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, DateTime.UtcNow.AddHours(1));
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
@@ -167,7 +167,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         
-        var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, DateTime.UtcNow.AddHours(1));
+        var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest

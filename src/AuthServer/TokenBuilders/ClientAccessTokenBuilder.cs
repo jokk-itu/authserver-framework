@@ -86,7 +86,7 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             string.Join(' ', arguments.Resource),
             _discoveryDocumentOptions.Value.Issuer,
             string.Join(' ', arguments.Scope),
-            DateTime.UtcNow.AddSeconds(client.AccessTokenExpiration));
+            client.AccessTokenExpiration);
 
         await _identityContext.Set<ClientAccessToken>().AddAsync(accessToken);
         return accessToken.Reference;

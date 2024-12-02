@@ -215,21 +215,21 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            DateTime.UtcNow.AddSeconds(3600));
+            3600);
 
         var inactiveGrantAccessToken = new GrantAccessToken(
             authorizationGrant,
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            DateTime.UtcNow.AddSeconds(-3600));
+            -3600);
 
         var revokedGrantAccessToken = new GrantAccessToken(
             authorizationGrant,
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            DateTime.UtcNow.AddSeconds(3600));
+            3600);
         
         revokedGrantAccessToken.Revoke();
 
