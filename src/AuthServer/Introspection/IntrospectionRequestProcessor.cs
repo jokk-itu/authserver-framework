@@ -62,7 +62,7 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
         string? username = null;
         if (query.SubjectIdentifier is not null)
         {
-            username = await _userClaimService.GetUsername(query.SubjectIdentifier, cancellationToken);
+            username = await _userClaimService.GetUserName(query.SubjectIdentifier, cancellationToken);
         }
 
         var subject = query.SubjectFromGrantToken ?? query.SubjectFromClientToken;

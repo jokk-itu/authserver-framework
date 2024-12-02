@@ -15,7 +15,7 @@ public interface IUserClaimService
     /// 
     /// </summary>
     /// <param name="subjectIdentifier"></param>
-    /// <param name="cancellation"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<string> GetUsername(string subjectIdentifier, CancellationToken cancellation);
+    Task<string> GetUserName(string subjectIdentifier, CancellationToken cancellationToken);
 }

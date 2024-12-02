@@ -13,8 +13,8 @@
 		<Company>AuthServer</Company>
 		<Product>AuthServer</Product>
 		<PackageDescription></PackageDescription>
-		<PackageProjectUrl>https://github.com/jokk-itu/BookVacation</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/jokk-itu/authserver</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/jokk-itu/authserver-framework</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/jokk-itu/authserver-framework</RepositoryUrl>
 		<VersionSuffix>alpha</VersionSuffix>
 		<VersionPrefix>0.0.15</VersionPrefix>
 		<IncludeSymbols>true</IncludeSymbols>

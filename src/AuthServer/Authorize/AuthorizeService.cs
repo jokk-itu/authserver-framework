@@ -50,7 +50,7 @@ internal class AuthorizeService : IAuthorizeService
     {
         var consentGrant = await _consentGrantRepository.GetConsentGrant(subjectIdentifier, clientId, cancellationToken);
         var cachedClient = await _cachedClientStore.Get(clientId, cancellationToken);
-        var username = await _userClaimService.GetUsername(subjectIdentifier, cancellationToken);
+        var username = await _userClaimService.GetUserName(subjectIdentifier, cancellationToken);
 
         return new ConsentGrantDto
         {
