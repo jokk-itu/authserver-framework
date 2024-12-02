@@ -66,7 +66,7 @@ internal class RefreshTokenBuilder : ITokenBuilder<RefreshTokenArguments>
     {
         var refreshToken = new RefreshToken(
             grantQuery.AuthorizationGrant, grantQuery.Client.Id, _discoveryDocumentOptions.Value.Issuer,
-            string.Join(' ', arguments.Scope), DateTime.UtcNow.AddSeconds(grantQuery.Client.RefreshTokenExpiration!.Value));
+            string.Join(' ', arguments.Scope), grantQuery.Client.RefreshTokenExpiration!.Value);
 
         await _identityContext
             .Set<RefreshToken>()
@@ -80,7 +80,7 @@ internal class RefreshTokenBuilder : ITokenBuilder<RefreshTokenArguments>
         var now = DateTime.UtcNow;
         var refreshToken = new RefreshToken(
             grantQuery.AuthorizationGrant, grantQuery.Client.Id, _discoveryDocumentOptions.Value.Issuer,
-            string.Join(' ', arguments.Scope), now.AddSeconds(grantQuery.Client.RefreshTokenExpiration!.Value));
+            string.Join(' ', arguments.Scope), grantQuery.Client.RefreshTokenExpiration!.Value);
 
         await _identityContext.Set<RefreshToken>().AddAsync(refreshToken);
 

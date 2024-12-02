@@ -6,7 +6,7 @@ using AuthServer.Helpers;
 namespace AuthServer.Entities;
 public abstract class Token : Entity<Guid>
 {
-    protected Token(TokenType tokenType, string audience, string issuer, string? scope, DateTime? expiresAt)
+    protected Token(TokenType tokenType, string audience, string issuer, string? scope, int? expiresAt)
     {
         var now = DateTime.UtcNow;
         Id = Guid.NewGuid();
@@ -17,7 +17,7 @@ public abstract class Token : Entity<Guid>
         Audience = string.IsNullOrWhiteSpace(audience) ? throw new ArgumentNullException(nameof(audience)) : audience;
         Issuer = string.IsNullOrWhiteSpace(issuer) ? throw new ArgumentNullException(nameof(issuer)) : issuer;
         Scope = scope;
-        ExpiresAt = expiresAt;
+        ExpiresAt = expiresAt.HasValue ? now.AddSeconds(expiresAt.Value) : null;
     }
 
 #pragma warning disable CS8618

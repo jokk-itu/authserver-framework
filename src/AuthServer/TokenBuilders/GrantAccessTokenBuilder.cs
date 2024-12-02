@@ -98,7 +98,7 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
     {
         var accessToken = new GrantAccessToken(grantQuery.AuthorizationGrant,
             string.Join(' ', arguments.Resource), _discoveryDocumentOptions.Value.Issuer,
-            string.Join(' ', arguments.Scope), DateTime.UtcNow.AddSeconds(grantQuery.Client.AccessTokenExpiration));
+            string.Join(' ', arguments.Scope), grantQuery.Client.AccessTokenExpiration);
 
         await _identityContext.Set<GrantAccessToken>().AddAsync(accessToken);
         return accessToken.Reference;
