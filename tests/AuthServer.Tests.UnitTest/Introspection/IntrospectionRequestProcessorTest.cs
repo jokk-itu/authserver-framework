@@ -167,7 +167,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         
-        var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
+        var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, 3600);
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
