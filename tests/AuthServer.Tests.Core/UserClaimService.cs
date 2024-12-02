@@ -33,7 +33,7 @@ public class UserClaimService : IUserClaimService
         ]);
     }
 
-    public Task<string> GetUsername(string subjectIdentifier, CancellationToken cancellation)
+    public Task<string> GetUserName(string subjectIdentifier, CancellationToken cancellationToken)
     {
         return Task.FromResult(UserConstants.Username);
     }

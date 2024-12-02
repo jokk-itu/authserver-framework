@@ -151,7 +151,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         const string username = "JohnDoe";
         userClaimServiceMock
-            .Setup(x => x.GetUsername(subjectIdentifier.Id, CancellationToken.None))
+            .Setup(x => x.GetUserName(subjectIdentifier.Id, CancellationToken.None))
             .ReturnsAsync(username)
             .Verifiable();
 
