@@ -1,25 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" href="./favicon.png" />
-		<meta name="viewport" content="width=device-width" />
-		
-		<link href="./_app/immutable/assets/0.lI52XmL1.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.09gGlmqB.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/entry.08MgKGCR.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/runtime.uC1fJEN2.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/paths.WD_oQhnf.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.CkAdo88I.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/store.BdKjYV70.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/disclose-version.BwLK-lOD.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/0.BixlH0tV.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/legacy.BXnUuTFI.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/lifecycle.B7QjZIDB.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/5.lZA_E0LU.js">
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents"><!--[--><!--[--><!----><nav class="bg-gray-100"><div class="max-w-6xl mx-auto px-4"><div class="flex justify-between"><div class="flex space-x-4"><a href="./" class="flex items-center py-5 px-2 text-gray-700 hover:text-gray-900"><svg class="h-6 w-6 mr-1 fill-openid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.54 .887L10.91 2.66V20.83C6.76 20.31 3.64 18.05 3.64 15.33C3.64 12.75 6.44 10.58 10.27 9.92V7.61C4.42 8.32 0 11.5 0 15.33C0 19.29 4.74 22.57 10.91 23.11L14.54 21.4V.886M15.18 7.61V9.92C16.61 10.17 17.89 10.62 18.94 11.23L16.97 12.34L24 13.87L23.5 8.66L21.63 9.72C19.89 8.66 17.67 7.91 15.18 7.61Z"></path></svg> <span class="font-bold hidden md:block">AuthServer</span></a></div> <div class="flex items-center space-x-1"><a href="./intro" class="py-5 px-3 text-gray-700 hover:text-gray-900">Intro</a> <a href="./demo" class="py-5 px-3 text-gray-700 hover:text-gray-900">Demo</a> <a href="./developer" class="py-5 px-3 text-gray-700 hover:text-gray-900">Developer</a></div> <div class="flex items-center space-x-1"><a href="https://github.com/jokk-itu/authserver" target="_blank" class="py-5 px-3"><img src="./github.svg" alt="Github" height="20px" width="20px"></a></div></div></div></nav><!----> <main class="container mx-auto mt-8"><!----><!----><h1 class="text-4xl mb-2">What is Authserver?</h1> <p class="mb-4">An IdentityProvider implementing the core OAuth 2.1 specification, with the
+import{a as s,t as o}from"../chunks/disclose-version.BwLK-lOD.js";import"../chunks/legacy.BXnUuTFI.js";import{n as i}from"../chunks/runtime.uC1fJEN2.js";var n=o(`<h1 class="text-4xl mb-2">What is Authserver?</h1> <p class="mb-4">An IdentityProvider implementing the core OAuth 2.1 specification, with the
     OpenId Connect specification on top. <br> The only thing AuthServer does not have is UI and user persistance, it is recommended
     to use AspNetCore.Identity for that. <br> Everything else has already been made to make auth(orization) and auth(entication)
     easy. <br><br> Authserver has been designed to be distributed with caching, configurable without
@@ -34,32 +13,4 @@
             endpoint, and identify signature and encryption keys through the
             Jwks endpoint.</p></div> <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"></path></svg> <div class="font-bold text-xl mb-2">Open Telemetry</div> <p class="text-gray-800 text-base">Observe usage of your application through metrics, traces and logs.</p></div> <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4"><svg xmlns="http://www.w3.org/2000/svg" fill="#000000" viewBox="0 0 1034 1034" stroke-width="1.5" stroke="currentColor" class="size-6 mb-2"><path d="M504 228q-16 0 -33 1q-33 2 -70 11q-35 9 -60 20q-38 17 -77 44q-44 31 -78 75t-55 96l-5 12q-9 22 -12 33q-13 45 -13 98q0 49 9 93q22 100 82 171q52 62 139 108q48 25 109.5 33.5t124.5 -1t115 -35.5q90 -46 152 -139q31 -46 48 -100q19 -60 19 -124q0 -57 -21 -119
              q-17 -52 -46 -97q-51 -81 -128 -127q-88 -53 -200 -53zM470 418h54q16 0 29 9.5t18 24.5l106 320q7 20 -2.5 38.5t-28.5 24.5q-8 2 -16 2q-16 0 -29 -9t-18 -25l-23 -73h-120l-23 73q-5 15 -18 24.5t-29 9.5q-8 0 -15 -2q-20 -6 -29.5 -24t-3.5 -38l101 -320q5 -16 18 -25.5
-             t29 -9.5z"></path></svg> <div class="font-bold text-xl mb-2">OAuth 2.1</div> <p class="text-gray-800 text-base">Implements OAuth 2.1 and OpenId Connect.</p></div></div><!----><!----></main> <footer><svg viewBox="0 0 1440 320" class="fill-openid" xmlns="http://www.w3.org/2000/svg"><path fill-opacity="1" d="M0,128L34.3,112C68.6,96,137,64,206,74.7C274.3,85,343,139,411,149.3C480,160,549,128,617,106.7C685.7,85,754,75,823,96C891.4,117,960,171,1029,181.3C1097.1,192,1166,160,1234,165.3C1302.9,171,1371,213,1406,234.7L1440,256L1440,320L1405.7,320C1371.4,320,1303,320,1234,320C1165.7,320,1097,320,1029,320C960,320,891,320,823,320C754.3,320,686,320,617,320C548.6,320,480,320,411,320C342.9,320,274,320,206,320C137.1,320,69,320,34,320L0,320Z"></path></svg> <div class="bg-gray-800 text-white py-4"><div class="container mx-auto text-center"><p>2024 Authserver. All rights reserved.</p></div></div></footer><!----><!----><!--]--> <!--[!--><!--]--><!--]-->
-			
-			<script>
-				{
-					__sveltekit_1vmz8xo = {
-						base: new URL(".", location).pathname.slice(0, -1),
-						assets: "/authserver"
-					};
-
-					const element = document.currentScript.parentElement;
-
-					const data = [null,null];
-
-					Promise.all([
-						import("./_app/immutable/entry/start.09gGlmqB.js"),
-						import("./_app/immutable/entry/app.CkAdo88I.js")
-					]).then(([kit, app]) => {
-						kit.start(app, element, {
-							node_ids: [0, 5],
-							data,
-							form: null,
-							error: null
-						});
-					});
-				}
-			</script>
-		</div>
-	</body>
-</html>
+             t29 -9.5z"></path></svg> <div class="font-bold text-xl mb-2">OAuth 2.1</div> <p class="text-gray-800 text-base">Implements OAuth 2.1 and OpenId Connect.</p></div></div>`,1);function l(e){var t=n();i(6),s(e,t)}export{l as component};
