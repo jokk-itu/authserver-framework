@@ -3,13 +3,19 @@
 namespace AuthServer.Authorize;
 internal class InteractionResult
 {
-    public static readonly InteractionResult LoginResult = new(){ Error = AuthorizeError.LoginRequired};
-    public static readonly InteractionResult ConsentResult = new(){ Error = AuthorizeError.ConsentRequired};
-    public static readonly InteractionResult SelectAccountResult = new(){ Error = AuthorizeError.AccountSelectionRequired};
-    public static readonly InteractionResult UnmetAuthenticationRequirementResult = new(){ Error = AuthorizeError.UnmetAuthenticationRequirement};
+    public static readonly InteractionResult LoginResult = new(AuthorizeError.LoginRequired);
+    public static readonly InteractionResult ConsentResult = new(AuthorizeError.ConsentRequired);
+    public static readonly InteractionResult SelectAccountResult = new(AuthorizeError.AccountSelectionRequired);
+    public static readonly InteractionResult UnmetAuthenticationRequirementResult = new(AuthorizeError.UnmetAuthenticationRequirement);
 
-    private InteractionResult()
+    private InteractionResult(ProcessError error)
     {
+        Error = error;
+    }
+
+    private InteractionResult(string subjectIdentifier)
+    {
+        SubjectIdentifier = subjectIdentifier;
     }
 
     public ProcessError? Error { get; private init; }
@@ -19,9 +25,6 @@ internal class InteractionResult
 
     public static InteractionResult Success(string subjectIdentifier)
     {
-        return new InteractionResult
-        {
-            SubjectIdentifier = subjectIdentifier,
-        };
+        return new InteractionResult(subjectIdentifier);
     }
 }
