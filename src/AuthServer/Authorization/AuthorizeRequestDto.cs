@@ -1,6 +1,29 @@
 ﻿namespace AuthServer.Authorization;
 internal class AuthorizeRequestDto
 {
+    public AuthorizeRequestDto()
+    {
+    }
+
+    public AuthorizeRequestDto(AuthorizeRequest authorizeRequest)
+    {
+        IdTokenHint = authorizeRequest.IdTokenHint;
+        LoginHint = authorizeRequest.LoginHint;
+        Prompt = authorizeRequest.Prompt;
+        Display = authorizeRequest.Display;
+        ClientId = authorizeRequest.ClientId;
+        RedirectUri = authorizeRequest.RedirectUri;
+        CodeChallenge = authorizeRequest.CodeChallenge;
+        CodeChallengeMethod = authorizeRequest.CodeChallengeMethod;
+        ResponseType = authorizeRequest.ResponseType;
+        Nonce = authorizeRequest.Nonce;
+        MaxAge = authorizeRequest.MaxAge;
+        State = authorizeRequest.State;
+        ResponseMode = authorizeRequest.ResponseMode;
+        Scope = authorizeRequest.Scope;
+        AcrValues = authorizeRequest.AcrValues;
+    }
+
     public string? IdTokenHint { get; init; }
     public string? LoginHint { get; init; }
     public string? Prompt { get; init; }
