@@ -1,4 +1,6 @@
-﻿namespace AuthServer.Authorization;
+﻿using AuthServer.RequestAccessors.Authorize;
+
+namespace AuthServer.Authorization;
 internal class AuthorizeRequestDto
 {
     public AuthorizeRequestDto()

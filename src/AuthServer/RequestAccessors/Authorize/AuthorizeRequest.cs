@@ -1,6 +1,8 @@
-﻿namespace AuthServer.RequestAccessors.Authorize;
+﻿using AuthServer.Authorization;
 
-public class AuthorizeRequest
+namespace AuthServer.RequestAccessors.Authorize;
+
+internal class AuthorizeRequest
 {
     public AuthorizeRequest()
     {
