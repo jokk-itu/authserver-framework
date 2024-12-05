@@ -1,7 +1,6 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
-using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.Authorize;
@@ -11,7 +10,6 @@ internal class AuthorizeService : IAuthorizeService
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IUserClaimService _userClaimService;
-    private readonly IMetricService _metricService;
     private readonly IAuthenticationContextReferenceResolver _authenticationContextResolver;
 
     public AuthorizeService(
@@ -19,14 +17,12 @@ internal class AuthorizeService : IAuthorizeService
         IAuthorizationGrantRepository authorizationGrantRepository,
         ICachedClientStore cachedClientStore,
         IUserClaimService userClaimService,
-        IMetricService metricService,
         IAuthenticationContextReferenceResolver authenticationContextResolver)
     {
         _consentGrantRepository = consentGrantRepository;
         _authorizationGrantRepository = authorizationGrantRepository;
         _cachedClientStore = cachedClientStore;
         _userClaimService = userClaimService;
-        _metricService = metricService;
         _authenticationContextResolver = authenticationContextResolver;
     }
 
