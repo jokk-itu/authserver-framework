@@ -1,7 +1,6 @@
 ﻿using AuthServer.Authentication.Models;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
