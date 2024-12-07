@@ -2,7 +2,7 @@
 
 namespace AuthServer.RequestAccessors.Token;
 
-public class TokenRequest
+internal class TokenRequest
 {
     public string? GrantType { get; init; }
     public string? Code { get; init; }

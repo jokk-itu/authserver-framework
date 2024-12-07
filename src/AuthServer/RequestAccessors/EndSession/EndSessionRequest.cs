@@ -1,6 +1,6 @@
 ﻿namespace AuthServer.RequestAccessors.EndSession;
 
-public class EndSessionRequest
+internal class EndSessionRequest
 {
     public string? IdTokenHint { get; init; }
     public string? ClientId { get; init; }

@@ -1,8 +1,14 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorization;
+using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
-using AuthServer.Metrics.Abstractions;
+using AuthServer.Core;
+using AuthServer.Endpoints.Responses;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.RequestAccessors.Authorize;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AuthServer.Authorize;
 internal class AuthorizeService : IAuthorizeService
@@ -11,23 +17,26 @@ internal class AuthorizeService : IAuthorizeService
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IUserClaimService _userClaimService;
-    private readonly IMetricService _metricService;
     private readonly IAuthenticationContextReferenceResolver _authenticationContextResolver;
+    private readonly ISecureRequestService _secureRequestService;
+    private readonly IAuthorizeResponseBuilder _authorizeResponseBuilder;
 
     public AuthorizeService(
         IConsentGrantRepository consentGrantRepository,
         IAuthorizationGrantRepository authorizationGrantRepository,
         ICachedClientStore cachedClientStore,
         IUserClaimService userClaimService,
-        IMetricService metricService,
-        IAuthenticationContextReferenceResolver authenticationContextResolver)
+        IAuthenticationContextReferenceResolver authenticationContextResolver,
+        ISecureRequestService secureRequestService,
+        IAuthorizeResponseBuilder authorizeResponseBuilder)
     {
         _consentGrantRepository = consentGrantRepository;
         _authorizationGrantRepository = authorizationGrantRepository;
         _cachedClientStore = cachedClientStore;
         _userClaimService = userClaimService;
-        _metricService = metricService;
         _authenticationContextResolver = authenticationContextResolver;
+        _secureRequestService = secureRequestService;
+        _authorizeResponseBuilder = authorizeResponseBuilder;
     }
 
     /// <inheritdoc/>
@@ -61,5 +70,29 @@ internal class AuthorizeService : IAuthorizeService
             ConsentedScope = consentGrant?.ConsentedScopes.Select(x => x.Name) ?? [],
             ConsentedClaims = consentGrant?.ConsentedClaims.Select(x => x.Name) ?? []
         };
+    }
+
+    /// <inheritdoc/>
+    public async Task<AuthorizeRequestDto?> GetRequest(string requestUri, string clientId, CancellationToken cancellationToken)
+    {
+        return await _secureRequestService.GetRequestByPushedRequest(requestUri, clientId, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IActionResult> GetErrorResult(string requestUri, string clientId, OAuthError oauthError, HttpContext httpContext, CancellationToken cancellationToken)
+    {
+        var requestDto = await _secureRequestService.GetRequestByPushedRequest(requestUri, clientId, cancellationToken);
+        if (requestDto is null)
+        {
+            return new BadRequestObjectResult(oauthError);
+        }
+
+        var request = new AuthorizeRequest(requestDto);
+        var errorParameters = new Dictionary<string, string>
+        {
+            { Parameter.Error, oauthError.Error },
+            { Parameter.ErrorDescription, oauthError.ErrorDescription }
+        };
+        return await _authorizeResponseBuilder.BuildResponse(request, errorParameters, cancellationToken);
     }
 }

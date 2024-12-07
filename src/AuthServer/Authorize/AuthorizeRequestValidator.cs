@@ -20,6 +20,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IAuthorizeInteractionService _authorizeInteractionService;
     private readonly ISecureRequestService _secureRequestService;
+    private readonly IClientRepository _clientRepository;
 
     public AuthorizeRequestValidator(
         ICachedClientStore cachedClientStore,
@@ -27,11 +28,13 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         IAuthorizeInteractionService authorizeInteractionService,
         ISecureRequestService secureRequestService,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
-        INonceRepository nonceRepository) : base(nonceRepository, tokenDecoder, discoveryDocumentOptions)
+        INonceRepository nonceRepository,
+        IClientRepository clientRepository) : base(nonceRepository, tokenDecoder, discoveryDocumentOptions)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;
         _secureRequestService = secureRequestService;
+        _clientRepository = clientRepository;
     }
 
     public async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> Validate(AuthorizeRequest request,
@@ -108,24 +111,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidRequest;
         }
 
-        return new AuthorizeRequest
-        {
-            IdTokenHint = newRequest.IdTokenHint,
-            LoginHint = newRequest.LoginHint,
-            Prompt = newRequest.Prompt,
-            Display = newRequest.Display,
-            ClientId = newRequest.ClientId,
-            RedirectUri = newRequest.RedirectUri,
-            CodeChallenge = newRequest.CodeChallenge,
-            CodeChallengeMethod = newRequest.CodeChallengeMethod,
-            ResponseType = newRequest.ResponseType,
-            Nonce = newRequest.Nonce,
-            MaxAge = newRequest.MaxAge,
-            State = newRequest.State,
-            ResponseMode = newRequest.ResponseMode,
-            Scope = newRequest.Scope,
-            AcrValues = newRequest.AcrValues
-        };
+        return new AuthorizeRequest(newRequest);
     }
 
     private async Task<ProcessResult<AuthorizeRequest, ProcessError>> SubstituteRequestUri(AuthorizeRequest request, CachedClient cachedClient, CancellationToken cancellationToken)
@@ -146,24 +132,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidRequestObjectFromRequestUri;
         }
 
-        return new AuthorizeRequest
-        {
-            IdTokenHint = newRequest.IdTokenHint,
-            LoginHint = newRequest.LoginHint,
-            Prompt = newRequest.Prompt,
-            Display = newRequest.Display,
-            ClientId = newRequest.ClientId,
-            RedirectUri = newRequest.RedirectUri,
-            CodeChallenge = newRequest.CodeChallenge,
-            CodeChallengeMethod = newRequest.CodeChallengeMethod,
-            ResponseType = newRequest.ResponseType,
-            Nonce = newRequest.Nonce,
-            MaxAge = newRequest.MaxAge,
-            State = newRequest.State,
-            ResponseMode = newRequest.ResponseMode,
-            Scope = newRequest.Scope,
-            AcrValues = newRequest.AcrValues
-        };
+        return new AuthorizeRequest(newRequest);
     }
 
     private async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> ValidateFromPushedAuthorization(AuthorizeRequest request, CancellationToken cancellationToken)
@@ -174,25 +143,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidOrExpiredRequestUri;
         }
 
-        request = new AuthorizeRequest
-        {
-            IdTokenHint = authorizeDto.IdTokenHint,
-            LoginHint = authorizeDto.LoginHint,
-            Prompt = authorizeDto.Prompt,
-            Display = authorizeDto.Display,
-            ClientId = authorizeDto.ClientId,
-            RedirectUri = authorizeDto.RedirectUri,
-            CodeChallenge = authorizeDto.CodeChallenge,
-            CodeChallengeMethod = authorizeDto.CodeChallengeMethod,
-            ResponseType = authorizeDto.ResponseType,
-            Nonce = authorizeDto.Nonce,
-            MaxAge = authorizeDto.MaxAge,
-            State = authorizeDto.State,
-            ResponseMode = authorizeDto.ResponseMode,
-            RequestUri = request.RequestUri,
-            Scope = authorizeDto.Scope,
-            AcrValues = authorizeDto.AcrValues
-        };
+        request = new AuthorizeRequest(authorizeDto, request.RequestUri);
         return await ValidateForInteraction(request, cancellationToken);
     }
 
@@ -292,7 +243,37 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         var interactionResult = await _authorizeInteractionService.GetInteractionResult(request, cancellationToken);
         if (!interactionResult.IsSuccessful)
         {
-            return interactionResult.Error!;
+            var interactionError = interactionResult.Error!;
+            if (!interactionResult.RedirectToInteraction)
+            {
+                return interactionError;
+            }
+            
+            var requestUri = request.RequestUri;
+
+            // do not persist the request, if it has already been persisted
+            if (requestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true)
+            {
+                return new AuthorizeInteractionError(
+                    interactionError.Error,
+                    interactionError.ErrorDescription,
+                    interactionError.ResultCode,
+                    requestUri,
+                    request.ClientId!,
+                    interactionResult.RedirectToInteraction);
+            }
+
+            var authorizeRequestDto = new AuthorizeRequestDto(request);
+            var authorizeMessage = await _clientRepository.AddAuthorizeMessage(authorizeRequestDto, cancellationToken);
+            requestUri = $"{RequestUriConstants.RequestUriPrefix}{authorizeMessage.Reference}";
+
+            return new AuthorizeInteractionError(
+                interactionError.Error,
+                interactionError.ErrorDescription,
+                interactionError.ResultCode,
+                requestUri,
+                request.ClientId!,
+                interactionResult.RedirectToInteraction);
         }
 
         return new AuthorizeValidatedRequest

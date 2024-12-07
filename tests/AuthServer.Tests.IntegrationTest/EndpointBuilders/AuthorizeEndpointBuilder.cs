@@ -104,7 +104,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
     public AuthorizeEndpointBuilder WithAuthorizeUser()
     {
         var dataProtector = _dataProtectionProvider.CreateProtector(AuthorizeUserAccessor.DataProtectorPurpose);
-        var authorizeUser = new AuthorizeUser(UserConstants.SubjectIdentifier);
+        var authorizeUser = new AuthorizeUser(UserConstants.SubjectIdentifier, true);
         var authorizeUserBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(authorizeUser));
         var encryptedAuthorizeUser = dataProtector.Protect(authorizeUserBytes);
         var cookieValue = Convert.ToBase64String(encryptedAuthorizeUser);
@@ -116,6 +116,12 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
     {
         _isProtectedWithRequestParameter = true;
         _privateJwks = privateJwks;
+        return this;
+    }
+
+    public AuthorizeEndpointBuilder WithIdTokenHint(string idToken)
+    {
+        _parameters.Add(new(Parameter.IdTokenHint, idToken));
         return this;
     }
 
@@ -257,7 +263,6 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         // Uri from the Location header
         public string? LocationUri { get; init; }
 
-        // 
         public string? RequestUri { get; init; }
     }
 }

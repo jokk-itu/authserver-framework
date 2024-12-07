@@ -44,18 +44,32 @@ internal class AuthorizeEndpointHandler : IEndpointHandler
                 return await _authorizeResponseBuilder.BuildResponse(request,
                     new Dictionary<string, string> { { Parameter.Code, code } }, httpContext.Response, cancellationToken);
             },
-            async error => string.IsNullOrEmpty(request.Prompt) && error.Error is ErrorCode.LoginRequired or ErrorCode.ConsentRequired or ErrorCode.AccountSelectionRequired
-                ? error switch
+            async error =>
+            {
+                if (error is AuthorizeInteractionError { RedirectToInteraction: true } authorizeInteractionError)
                 {
-                    { Error: ErrorCode.LoginRequired } => Results.Extensions.LocalRedirect(_userInteractionOptions.Value.LoginUri, httpContext),
-                    { Error: ErrorCode.ConsentRequired } => Results.Extensions.LocalRedirect(_userInteractionOptions.Value.ConsentUri, httpContext),
-                    _ => Results.Extensions.LocalRedirect(_userInteractionOptions.Value.AccountSelectionUri, httpContext)
+                    var substituteRequest = new Dictionary<string, string>
+                    {
+                        { Parameter.ClientId, authorizeInteractionError.ClientId },
+                        { Parameter.RequestUri, authorizeInteractionError.RequestUri }
+                    };
+
+                    return error switch
+                    {
+                        { Error: ErrorCode.LoginRequired } => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.LoginUri, httpContext, substituteRequest),
+                        { Error: ErrorCode.ConsentRequired } => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.ConsentUri, httpContext, substituteRequest),
+                        _ => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.AccountSelectionUri, httpContext, substituteRequest)
+                    };
                 }
-                // TODO invoke ClearUser
-                : error switch
+
+                // remove the authorized user to reset the interaction flow
+                _authorizeUserAccessor.ClearUser();
+                return error switch
                 {
-                    { ResultCode: ResultCode.Redirect } => await _authorizeResponseBuilder.BuildResponse(request, error.ToDictionary(), httpContext.Response, cancellationToken),
+                    { ResultCode: ResultCode.Redirect } =>
+                        await _authorizeResponseBuilder.BuildResponse(request, error.ToDictionary(), httpContext.Response, cancellationToken),
                     _ => Results.Extensions.OAuthBadRequest(error)
-                });
+                };
+            });
     }
 }

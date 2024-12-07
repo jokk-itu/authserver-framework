@@ -1,10 +1,12 @@
-﻿using AuthServer.Authentication.Abstractions;
+﻿using System.Reflection;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Register;
+using AuthServer.Repositories.Abstractions;
 using AuthServer.RequestAccessors.Register;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -99,7 +101,11 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     public async Task Validate_ClientIdDoesNotMatchToken_ExpectMismatchingClientId(string httpMethod)
     {
         // Arrange
-        var serviceProvider = BuildServiceProvider();
+        var tokenRepository = new Mock<ITokenRepository>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(tokenRepository);
+        });
         var validator =
             serviceProvider.GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
 
@@ -114,10 +120,16 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             RegistrationAccessToken = registrationToken.Reference
         };
 
+        tokenRepository
+            .Setup(x => x.GetActiveRegistrationToken(request.RegistrationAccessToken, CancellationToken.None))
+            .ReturnsAsync(registrationToken)
+            .Verifiable();
+
         // Act
         var processError = await validator.Validate(request, CancellationToken.None);
 
         // Assert
+        tokenRepository.Verify();
         Assert.Equal(RegisterError.MismatchingClientId, processError);
     }
 
@@ -127,7 +139,11 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     public async Task Validate_ValidRequestForDeleteAndGet_ExpectRegisterValidatedRequest(string httpMethod)
     {
         // Arrange
-        var serviceProvider = BuildServiceProvider();
+        var tokenRepository = new Mock<ITokenRepository>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(tokenRepository);
+        });
         var validator =
             serviceProvider.GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
 
@@ -142,10 +158,16 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             RegistrationAccessToken = registrationToken.Reference
         };
 
+        tokenRepository
+            .Setup(x => x.GetActiveRegistrationToken(request.RegistrationAccessToken, CancellationToken.None))
+            .ReturnsAsync(registrationToken)
+            .Verifiable();
+
         // Act
         var processError = await validator.Validate(request, CancellationToken.None);
 
         // Assert
+        tokenRepository.Verify();
         Assert.Equal(request.Method, processError.Value!.Method);
         Assert.Equal(request.ClientId, processError.Value!.ClientId);
         Assert.Equal(request.RegistrationAccessToken, processError.Value!.RegistrationAccessToken);

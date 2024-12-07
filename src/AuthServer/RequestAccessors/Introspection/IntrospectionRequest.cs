@@ -2,7 +2,7 @@
 
 namespace AuthServer.RequestAccessors.Introspection;
 
-public class IntrospectionRequest
+internal class IntrospectionRequest
 {
     public string? Token { get; init; }
     public string? TokenTypeHint { get; init; }

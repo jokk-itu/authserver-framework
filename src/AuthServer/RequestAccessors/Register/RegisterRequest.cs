@@ -1,6 +1,6 @@
 ﻿namespace AuthServer.RequestAccessors.Register;
 
-public class RegisterRequest
+internal class RegisterRequest
 {
     public required HttpMethod Method { get; set; }
     public string? ClientId { get; init; }
