@@ -11,6 +11,7 @@ using AuthServer.Repositories.Abstractions;
 using AuthServer.RequestAccessors.Authorize;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
@@ -146,6 +147,61 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(AuthorizeError.InvalidOrExpiredRequestUri, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_RequestFromPushedAuthorizationAndRequiresInteractionWithRedirectToInteraction_ExpectInteractionWithReusedRequestUri()
+    {
+        // Arrange
+        var secureRequestService = new Mock<ISecureRequestService>();
+        var authorizeInteractionService = new Mock<IAuthorizeInteractionService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(secureRequestService);
+            services.AddScopedMock(authorizeInteractionService);
+        });
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+        const string requestUri = $"{RequestUriConstants.RequestUriPrefix}reference";
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            RequestUri = requestUri
+        };
+
+        var authorizeRequestDto = new AuthorizeRequestDto
+        {
+            ClientId = client.Id
+        };
+
+        secureRequestService
+            .Setup(x => x.GetRequestByPushedRequest(requestUri, client.Id, CancellationToken.None))
+            .ReturnsAsync(authorizeRequestDto)
+            .Verifiable();
+
+        authorizeInteractionService
+            .Setup(x => x.GetInteractionResult(It.IsAny<AuthorizeRequest>(), CancellationToken.None))
+            .ReturnsAsync(InteractionResult.LoginRedirectResult)
+            .Verifiable();
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+        await IdentityContext.SaveChangesAsync();
+
+        // Assert
+        authorizeInteractionService.Verify();
+        Assert.Equal(AuthorizeError.LoginRequired.Error, processResult.Error!.Error);
+        Assert.Equal(AuthorizeError.LoginRequired.ErrorDescription, processResult.Error!.ErrorDescription);
+        Assert.Equal(AuthorizeError.LoginRequired.ResultCode, processResult.Error!.ResultCode);
+
+        Assert.IsType<AuthorizeInteractionError>(processResult.Error);
+        var authorizeInteractionError = (processResult.Error as AuthorizeInteractionError)!;
+        Assert.Equal(request.ClientId, authorizeInteractionError.ClientId);
+
+        Assert.Equal(request.RequestUri, authorizeInteractionError.RequestUri);
     }
 
     [Fact]
@@ -827,7 +883,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_RequiresInteraction_ExpectInteraction()
+    public async Task Validate_RequiresInteractionWithoutRedirectToInteraction_ExpectInteraction()
     {
         // Arrange
         var authorizeInteractionService = new Mock<IAuthorizeInteractionService>();
@@ -853,15 +909,67 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         authorizeInteractionService
             .Setup(x => x.GetInteractionResult(request, CancellationToken.None))
-            .ReturnsAsync(InteractionResult.LoginResult)
+            .ReturnsAsync(InteractionResult.LoginErrorResult)
             .Verifiable();
 
         // Act
         var processResult = await validator.Validate(request, CancellationToken.None);
+        await IdentityContext.SaveChangesAsync();
 
         // Assert
         authorizeInteractionService.Verify();
-        Assert.Equal(AuthorizeError.LoginRequired, processResult);
+        Assert.Equal(AuthorizeError.LoginRequired.Error, processResult.Error!.Error);
+        Assert.Equal(AuthorizeError.LoginRequired.ErrorDescription, processResult.Error!.ErrorDescription);
+        Assert.Equal(AuthorizeError.LoginRequired.ResultCode, processResult.Error!.ResultCode);
+        Assert.IsNotType<AuthorizeInteractionError>(processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_RequiresInteractionWithRedirectToInteraction_ExpectInteractionWithNewRequestUri()
+    {
+        // Arrange
+        var authorizeInteractionService = new Mock<IAuthorizeInteractionService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(authorizeInteractionService);
+        });
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId]
+        };
+
+        authorizeInteractionService
+            .Setup(x => x.GetInteractionResult(request, CancellationToken.None))
+            .ReturnsAsync(InteractionResult.LoginRedirectResult)
+            .Verifiable();
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+        await IdentityContext.SaveChangesAsync();
+
+        // Assert
+        authorizeInteractionService.Verify();
+        Assert.Equal(AuthorizeError.LoginRequired.Error, processResult.Error!.Error);
+        Assert.Equal(AuthorizeError.LoginRequired.ErrorDescription, processResult.Error!.ErrorDescription);
+        Assert.Equal(AuthorizeError.LoginRequired.ResultCode, processResult.Error!.ResultCode);
+
+        Assert.IsType<AuthorizeInteractionError>(processResult.Error);
+        var authorizeInteractionError = (processResult.Error as AuthorizeInteractionError)!;
+        Assert.Equal(request.ClientId, authorizeInteractionError.ClientId);
+
+        var reference = authorizeInteractionError.RequestUri[RequestUriConstants.RequestUriPrefix.Length..];
+        Assert.Single(await IdentityContext.Set<AuthorizeMessage>().Where(x => x.Reference == reference).ToListAsync());
     }
 
     [Fact]
@@ -1136,7 +1244,10 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetClient()
     {
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequestUriExpiration = 60
+        };
         var redirectUri = new RedirectUri("https://webapp.authserver.dk/callback", client);
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
