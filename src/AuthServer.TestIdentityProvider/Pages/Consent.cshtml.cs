@@ -51,16 +51,12 @@ public class ConsentModel : PageModel
 
         var user = _authorizeUserAccessor.GetUser();
         var query = HttpUtility.ParseQueryString(new Uri(ReturnUrl).Query);
+        var requestUri = query.Get(Parameter.RequestUri)!;
         var clientId = query.Get(Parameter.ClientId)!;
-        var consentGrantDto =
-            await _authorizeService.GetConsentGrantDto(user.SubjectIdentifier, clientId, cancellationToken);
+        var consentGrantDto = await _authorizeService.GetConsentGrantDto(user.SubjectIdentifier, clientId, cancellationToken);
 
-        // Display requested scope, unless it is already consented. This makes sure the end-user only sees new scope.
-        var requestedScope = query.Get(Parameter.Scope)!.Split(' ').ToList();
-        if (consentGrantDto.ConsentedScope.Any())
-        {
-            requestedScope = requestedScope.Except(consentGrantDto.ConsentedScope).ToList();
-        }
+        var request = (await _authorizeService.GetRequest(requestUri, clientId, cancellationToken))!;
+        var requestedScope = request.Scope.ToList();
 
         // Display requested claims, also if they are already consented. This makes sure the end-user can change their full consent.
         var requestedClaims = ClaimsHelper.MapToClaims(requestedScope)

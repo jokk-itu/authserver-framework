@@ -54,8 +54,10 @@ public class SignInModel : PageModel
         if (Input is { Username: UserConstants.Username, Password: UserConstants.Password })
         {
             var query = HttpUtility.ParseQueryString(new Uri(ReturnUrl).Query);
-            await _authorizeService.CreateAuthorizationGrant(UserConstants.SubjectIdentifier, query.Get(Parameter.ClientId)!, [AuthenticationMethodReferenceConstants.Password], cancellationToken);
-            _authorizeUserAccessor.SetUser(new AuthorizeUser(UserConstants.SubjectIdentifier));
+            var requestUri = query.Get(Parameter.RequestUri)!;
+            var clientId = query.Get(Parameter.ClientId)!;
+            await _authorizeService.CreateAuthorizationGrant(UserConstants.SubjectIdentifier, clientId, [AuthenticationMethodReferenceConstants.Password], cancellationToken);
+            _authorizeUserAccessor.SetUser(new AuthorizeUser(UserConstants.SubjectIdentifier, true));
 
             var claimsIdentity = new ClaimsIdentity(
                 [new Claim(ClaimNameConstants.Sub, UserConstants.SubjectIdentifier)],
@@ -64,8 +66,8 @@ public class SignInModel : PageModel
             var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
 
-            var prompt = query.Get(Parameter.Prompt);
-            if (prompt?.Contains(PromptConstants.Consent) == true)
+            var request = (await _authorizeService.GetRequest(requestUri, clientId, cancellationToken))!;
+            if (request.Prompt?.Contains(PromptConstants.Consent) == true)
             {
                 return Redirect($"/Consent?returnUrl={HttpUtility.UrlEncode(returnUrl)}");
             }
