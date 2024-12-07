@@ -31,7 +31,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             var isPushedRequest = request.RequestUri.StartsWith(RequestUriConstants.RequestUriPrefix);
             if (isPushedRequest)
             {
-                var reference = request.RequestUri[(RequestUriConstants.RequestUriPrefix.Length)..];
+                var reference = request.RequestUri[RequestUriConstants.RequestUriPrefix.Length..];
                 await _clientRepository.RedeemAuthorizeMessage(reference, cancellationToken);
             }
         }
