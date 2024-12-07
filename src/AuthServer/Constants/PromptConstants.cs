@@ -8,5 +8,8 @@ public static class PromptConstants
     public const string SelectAccount = "select_account";
 
     public static readonly string[] Prompts =
-        [Login, None, SelectAccount, Consent];
+    [
+        None, Login, Consent, SelectAccount, $"{Login} {Consent}", $"{Consent} {Login}", $"{SelectAccount} {Consent}",
+        $"{Consent} {SelectAccount}"
+    ];
 }
