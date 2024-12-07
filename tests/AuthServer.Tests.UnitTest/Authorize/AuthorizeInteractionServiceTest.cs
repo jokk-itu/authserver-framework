@@ -1,5 +1,4 @@
-﻿using AuthServer.Authentication;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authentication.Models;
 using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
@@ -22,8 +21,10 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
     {
     }
 
-    [Fact]
-    public async Task GetInteractionResult_CallbackMaxAgeExceeded_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_CallbackMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
         var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
@@ -41,7 +42,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
 
         await AddEntity(authorizationGrant);
 
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id);
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, false);
         authorizeUserAccessorMock
             .Setup(x => x.TryGetUser())
             .Returns(authorizeUser)
@@ -53,17 +54,20 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             {
                 ClientId = client.Id,
                 Scope = [ScopeConstants.OpenId],
-                MaxAge = "30"
+                MaxAge = "30",
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_CallbackDefaultMaxAgeExceeded_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_CallbackDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
         var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
@@ -84,7 +88,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
 
         await AddEntity(authorizationGrant);
 
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id);
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, false);
         authorizeUserAccessorMock
             .Setup(x => x.TryGetUser())
             .Returns(authorizeUser)
@@ -96,10 +100,11 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             {
                 ClientId = client.Id,
                 Scope = [ScopeConstants.OpenId],
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -123,7 +128,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         };
         await AddEntity(authorizationGrant);
 
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id);
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true);
         authorizeUserAccessorMock
             .Setup(x => x.TryGetUser())
             .Returns(authorizeUser)
@@ -166,7 +171,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         await AddEntity(authorizationGrant);
         await AddEntity(clientAuthenticationContextReference);
 
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id);
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true);
         authorizeUserAccessorMock
             .Setup(x => x.TryGetUser())
             .Returns(authorizeUser)
@@ -204,7 +209,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id);
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true);
         authorizeUserAccessorMock
             .Setup(x => x.TryGetUser())
             .Returns(authorizeUser)
@@ -224,8 +229,10 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         authorizeUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_CallbackConsentRequired_ExpectConsent()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_CallbackConsentRequired_ExpectConsent(string? prompt)
     {
         // Arrange
         var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
@@ -239,7 +246,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id);
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true);
         authorizeUserAccessorMock
             .Setup(x => x.TryGetUser())
             .Returns(authorizeUser)
@@ -250,11 +257,12 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
-                Scope = [ScopeConstants.OpenId]
+                Scope = [ScopeConstants.OpenId],
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.ConsentResult, interactionResult);
+        Assert.Equal(InteractionResult.ConsentResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -278,7 +286,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         consentGrant.ConsentedScopes.Add(IdentityContext.Set<Scope>().Single(x => x.Name == ScopeConstants.OpenId));
         await AddEntity(consentGrant);
 
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id);
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true);
         authorizeUserAccessorMock
             .Setup(x => x.TryGetUser())
             .Returns(authorizeUser)
@@ -323,8 +331,10 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         Assert.Equal(errorCode, interactionResult.Error!.Error);
     }
 
-    [Fact]
-    public async Task GetInteractionResult_IdTokenHintExpiredGrant_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_IdTokenHintExpiredGrant_ExpectLogin(string? prompt)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
@@ -349,16 +359,19 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         var interactionResult = await authorizeInteractionService.GetInteractionResult(
             new AuthorizeRequest
             {
-                IdTokenHint = idToken
+                IdTokenHint = idToken,
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
-    [Fact]
-    public async Task GetInteractionResult_IdTokenMaxAgeExceeded_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_IdTokenMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
         var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
@@ -389,16 +402,19 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             {
                 ClientId = client.Id,
                 IdTokenHint = idToken,
-                MaxAge = "30"
+                MaxAge = "30",
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
-    [Fact]
-    public async Task GetInteractionResult_IdTokenDefaultMaxAgeExceeded_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_IdTokenDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
         var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
@@ -428,11 +444,12 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
-                IdTokenHint = idToken
+                IdTokenHint = idToken,
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
@@ -553,8 +570,10 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         Assert.True(interactionResult.IsSuccessful);
     }
 
-    [Fact]
-    public async Task GetInteractionResult_IdTokenHintConsentRequired_ExpectConsent()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_IdTokenHintConsentRequired_ExpectConsent(string? prompt)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
@@ -580,11 +599,12 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             {
                 ClientId = client.Id,
                 IdTokenHint = idToken,
-                Scope = [ScopeConstants.OpenId]
+                Scope = [ScopeConstants.OpenId],
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.ConsentResult, interactionResult);
+        Assert.Equal(InteractionResult.ConsentResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
@@ -627,8 +647,10 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         Assert.True(interactionResult.IsSuccessful);
     }
 
-    [Fact]
-    public async Task GetInteractionResult_ZeroAuthenticatedUsers_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_ZeroAuthenticatedUsers_ExpectLogin(string? prompt)
     {
         // Arrange
         var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
@@ -646,16 +668,21 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
 
         // Act
         var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest(), CancellationToken.None);
+            new AuthorizeRequest
+            {
+                Prompt = prompt
+            }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_MultipleAuthenticatedUsers_ExpectSelectAccount()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_MultipleAuthenticatedUsers_ExpectSelectAccount(string? prompt)
     {
         // Arrange
         var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
@@ -673,16 +700,21 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
 
         // Act
         var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest(), CancellationToken.None);
+            new AuthorizeRequest
+            {
+                Prompt = prompt
+            }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.SelectAccountResult, interactionResult);
+        Assert.Equal(InteractionResult.SelectAccountResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_OneAuthenticationUserWithExpiredGrant_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_OneAuthenticationUserWithExpiredGrant_ExpectLogin(string? prompt)
     {
         // Arrange
         var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
@@ -715,17 +747,20 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         var interactionResult = await authorizeInteractionService.GetInteractionResult(
             new AuthorizeRequest
             {
-                ClientId = client.Id
+                ClientId = client.Id,
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserMaxAgeExceeded_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_OneAuthenticatedUserMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
         var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
@@ -762,17 +797,20 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
-                MaxAge = "30"
+                MaxAge = "30",
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserDefaultMaxAgeExceeded_ExpectLogin()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_OneAuthenticatedUserDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
         var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
@@ -811,11 +849,12 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         var interactionResult = await authorizeInteractionService.GetInteractionResult(
             new AuthorizeRequest
             {
-                ClientId = client.Id
+                ClientId = client.Id,
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult, interactionResult);
+        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
@@ -961,8 +1000,10 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         authenticateUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserConsentRequired_ExpectConsent()
+    [Theory]
+    [InlineData("none")]
+    [InlineData(null)]
+    public async Task GetInteractionResult_OneAuthenticatedUserConsentRequired_ExpectConsent(string? prompt)
     {
         // Arrange
         var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
@@ -995,11 +1036,12 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
-                Scope = [ScopeConstants.OpenId]
+                Scope = [ScopeConstants.OpenId],
+                Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.ConsentResult, interactionResult);
+        Assert.Equal(InteractionResult.ConsentResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }

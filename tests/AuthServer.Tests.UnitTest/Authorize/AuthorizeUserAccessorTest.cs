@@ -29,7 +29,7 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
         var authorizeUserAccessor = serviceProvider.GetRequiredService<IAuthorizeUserAccessor>();
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
 
-        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString());
+        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true);
         var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
         httpContextAccessor.HttpContext = new DefaultHttpContext();
         httpContextAccessor.HttpContext.Request.Cookies = HttpContextHelper.GetRequestCookies(
@@ -54,7 +54,7 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
         httpContextAccessor.HttpContext = new DefaultHttpContext();
 
         var authorizeUserAccessor = serviceProvider.GetRequiredService<IAuthorizeUserAccessor>();
-        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString());
+        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true);
 
         // Act
         authorizeUserAccessor.SetUser(authorizeUser);
@@ -76,7 +76,7 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
         var authorizeUserAccessor = serviceProvider.GetRequiredService<IAuthorizeUserAccessor>();
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
 
-        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString());
+        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true);
         var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
         httpContextAccessor.HttpContext = new DefaultHttpContext();
         httpContextAccessor.HttpContext.Request.Cookies = HttpContextHelper.GetRequestCookies(
