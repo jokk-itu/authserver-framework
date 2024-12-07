@@ -77,4 +77,22 @@ internal class AuthorizeService : IAuthorizeService
     {
         return await _secureRequestService.GetRequestByPushedRequest(requestUri, clientId, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<IActionResult> GetErrorResult(string requestUri, string clientId, OAuthError oauthError, HttpContext httpContext, CancellationToken cancellationToken)
+    {
+        var requestDto = await _secureRequestService.GetRequestByPushedRequest(requestUri, clientId, cancellationToken);
+        if (requestDto is null)
+        {
+            return new BadRequestObjectResult(oauthError);
+        }
+
+        var request = new AuthorizeRequest(requestDto);
+        var errorParameters = new Dictionary<string, string>
+        {
+            { Parameter.Error, oauthError.Error },
+            { Parameter.ErrorDescription, oauthError.ErrorDescription }
+        };
+        return await _authorizeResponseBuilder.BuildResponse(request, errorParameters, cancellationToken);
+    }
 }

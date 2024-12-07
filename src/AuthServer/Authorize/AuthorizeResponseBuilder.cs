@@ -8,6 +8,7 @@ using AuthServer.Extensions;
 using AuthServer.Options;
 using AuthServer.RequestAccessors.Authorize;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Parameter = AuthServer.Core.Parameter;
 
@@ -29,14 +30,39 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
         _authorizeRequestParameterService = authorizeRequestParameterService;
     }
 
+    /// <inheritdoc/>
+    public async Task<IActionResult> BuildResponse(AuthorizeRequest request, IDictionary<string, string> additionalParameters, CancellationToken cancellationToken)
+    {
+        var responseResult = await GetResponseResult(request, additionalParameters, cancellationToken);
+        return responseResult.ResponseMode switch
+        {
+            ResponseModeConstants.Query => RedirectSeeOther(BuildRedirectUriWithQuery(responseResult)),
+            ResponseModeConstants.Fragment => RedirectSeeOther(BuildRedirectUriWithFragment(responseResult)),
+            ResponseModeConstants.FormPost => OkHtml(BuildFormPost(responseResult)),
+            _ => throw new ArgumentException("Unexpected response_mode value", nameof(request))
+        };
+    }
+
     /// <inheritdoc />
     public async Task<IResult> BuildResponse(AuthorizeRequest request, IDictionary<string, string> additionalParameters, HttpResponse httpResponse, CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(request.RequestUri)
-            || !string.IsNullOrEmpty(request.RequestObject))
+        var responseResult = await GetResponseResult(request, additionalParameters, cancellationToken);
+        return responseResult.ResponseMode switch
+        {
+            ResponseModeConstants.Query => Results.Extensions.OAuthSeeOtherRedirect(BuildRedirectUriWithQuery(responseResult), httpResponse),
+            ResponseModeConstants.Fragment => Results.Extensions.OAuthSeeOtherRedirect(BuildRedirectUriWithFragment(responseResult), httpResponse),
+            ResponseModeConstants.FormPost => Results.Extensions.OAuthOkWithHtml(BuildFormPost(responseResult)),
+            _ => throw new ArgumentException("Unexpected response_mode value", nameof(request))
+        };
+    }
+
+    private async Task<ResponseResult> GetResponseResult(AuthorizeRequest authorizeRequest, IDictionary<string, string> additionalParameters, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrEmpty(authorizeRequest.RequestUri)
+            || !string.IsNullOrEmpty(authorizeRequest.RequestObject))
         {
             var newRequest = _authorizeRequestParameterService.GetCachedRequest();
-            request = new AuthorizeRequest
+            authorizeRequest = new AuthorizeRequest
             {
                 IdTokenHint = newRequest.IdTokenHint,
                 LoginHint = newRequest.LoginHint,
@@ -56,51 +82,45 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
             };
         }
 
-        var responseMode = request.ResponseMode;
+        var responseMode = authorizeRequest.ResponseMode;
         if (string.IsNullOrEmpty(responseMode))
         {
-            responseMode = DeduceResponseMode(request.ResponseType!);
+            responseMode = DeduceResponseMode(authorizeRequest.ResponseType!);
         }
 
-        additionalParameters.Add(Parameter.State, request.State!);
+        additionalParameters.Add(Parameter.State, authorizeRequest.State!);
 
         if (responseMode is ResponseModeConstants.FormPost)
         {
             additionalParameters.Add(Parameter.Issuer, _discoveryDocumentOptions.Value.Issuer);
         }
 
-        var redirectUri = request.RedirectUri;
+        var redirectUri = authorizeRequest.RedirectUri;
         if (string.IsNullOrEmpty(redirectUri))
         {
-            var cachedClient = await _cachedClientStore.Get(request.ClientId!, cancellationToken);
+            var cachedClient = await _cachedClientStore.Get(authorizeRequest.ClientId!, cancellationToken);
             redirectUri = cachedClient.RedirectUris.Single();
         }
 
-        return responseMode switch
-        {
-            ResponseModeConstants.Query => BuildQuery(redirectUri, additionalParameters, httpResponse),
-            ResponseModeConstants.Fragment => BuildFragment(redirectUri, additionalParameters, httpResponse),
-            ResponseModeConstants.FormPost => BuildFormPost(redirectUri, additionalParameters),
-            _ => throw new ArgumentException("Unexpected response_mode value", nameof(request))
-        };
-    }
+        return new ResponseResult(responseMode, redirectUri, additionalParameters);
+    } 
 
-    private static IResult BuildQuery(string redirectUri, IDictionary<string, string> additionalParameters, HttpResponse httpResponse)
+    private static string BuildRedirectUriWithQuery(ResponseResult responseResult)
     {
         var builder = new StringBuilder();
         builder.Append('?');
-        AddParameters(builder, additionalParameters);
+        AddParameters(builder, responseResult.Parameters);
         var query = builder.ToString();
-        return Results.Extensions.OAuthSeeOtherRedirect(redirectUri + query, httpResponse);
+        return responseResult.RedirectUri + query;
     }
 
-    private static IResult BuildFragment(string redirectUri, IDictionary<string, string> additionalParameters, HttpResponse httpResponse)
+    private static string BuildRedirectUriWithFragment(ResponseResult responseResult)
     {
         var builder = new StringBuilder();
         builder.Append('#');
-        AddParameters(builder, additionalParameters);
+        AddParameters(builder, responseResult.Parameters);
         var fragment = builder.ToString();
-        return Results.Extensions.OAuthSeeOtherRedirect(redirectUri + fragment, httpResponse);
+        return responseResult.RedirectUri + fragment;
     }
 
     private static void AddParameters(StringBuilder builder, IDictionary<string, string> parameters)
@@ -108,20 +128,20 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
         builder.AppendJoin('&', parameters.Select(x => x.Key + '=' + HttpUtility.UrlEncode(x.Value)));
     }
 
-    private static IResult BuildFormPost(string redirectUri, IDictionary<string, string> additionalParameters)
+    private static string BuildFormPost(ResponseResult responseResult)
     {
-        var formPrefix = $"""<html><head><title>Submit Form</title></head><body onload="javascript:document.forms[0].submit()"><form method="post" action="{redirectUri}">""";
+        var formPrefix = $"""<html><head><title>Submit Form</title></head><body onload="javascript:document.forms[0].submit()"><form method="post" action="{responseResult.RedirectUri}">""";
         const string formSuffix = "</form></body></html>";
         var formBuilder = new StringBuilder();
 
         formBuilder.Append(formPrefix);
-        foreach (var parameter in additionalParameters)
+        foreach (var parameter in responseResult.Parameters)
         {
             formBuilder.Append($"""<input type="hidden" name="{parameter.Key}" value="{parameter.Value}" />""");
         }
         formBuilder.Append(formSuffix);
 
-        return Results.Extensions.OAuthOkWithHtml(formBuilder.ToString());
+        return formBuilder.ToString();
     }
 
     private static string DeduceResponseMode(string responseType)
@@ -132,4 +152,14 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
             _ => throw new ArgumentException("Unexpected value", nameof(responseType))
         };
     }
+
+    private static RedirectResult RedirectSeeOther(string redirectUri) => new(redirectUri, false, true);
+    private static ContentResult OkHtml(string html) => new()
+    {
+        Content = html,
+        ContentType = MimeTypeConstants.Html,
+        StatusCode = StatusCodes.Status200OK
+    };
+
+    private sealed record ResponseResult(string ResponseMode, string RedirectUri, IDictionary<string, string> Parameters);
 }
