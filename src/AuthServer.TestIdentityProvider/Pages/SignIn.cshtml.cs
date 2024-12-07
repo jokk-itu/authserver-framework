@@ -67,7 +67,7 @@ public class SignInModel : PageModel
             var prompt = query.Get(Parameter.Prompt);
             if (prompt?.Contains(PromptConstants.Consent) == true)
             {
-                return Redirect($"/Consent?returnUrl={returnUrl}");
+                return Redirect($"/Consent?returnUrl={HttpUtility.UrlEncode(returnUrl)}");
             }
             
             return Redirect(ReturnUrl);
