@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Web;
 using AuthServer.Core;
+using AuthServer.Endpoints.Responses;
 using AuthServer.Helpers;
 
 namespace AuthServer.TestIdentityProvider.Pages;
@@ -98,7 +99,15 @@ public class ConsentModel : PageModel
     {
         ReturnUrl = returnUrl ?? Url.Content("~/");
 
-        // TODO redirect to the Client with "consent_required" error
-        throw new NotImplementedException();
+        var query = HttpUtility.ParseQueryString(new Uri(ReturnUrl).Query);
+        var requestUri = query.Get(Parameter.RequestUri)!;
+        var clientId = query.Get(Parameter.ClientId)!;
+
+        return await _authorizeService.GetErrorResult(
+            requestUri,
+            clientId,
+            new OAuthError(ErrorCode.ConsentRequired, "end-user has declined consent"),
+            HttpContext,
+            cancellationToken);
     }
 }
