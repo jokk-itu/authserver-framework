@@ -149,7 +149,7 @@ public class AuthorizeResponseBuilderTest : BaseUnitTest
 
         var contentHttpResult = response as ContentHttpResult;
         Assert.Equal(200, contentHttpResult!.StatusCode);
-        Assert.Equal("text/html; charset=utf-8", contentHttpResult.ContentType);
+        Assert.Equal(MimeTypeConstants.Html, contentHttpResult.ContentType);
 
         Assert.StartsWith($"""<html><head><title>Submit Form</title></head><body onload="javascript:document.forms[0].submit()"><form method="post" action="{request.RedirectUri}">""", contentHttpResult.ResponseContent);
         Assert.Contains($"""<input type="hidden" name="code" value="{code}" />""", contentHttpResult.ResponseContent);

@@ -18,7 +18,7 @@ public static class ResultExtensions
 
     public static IResult OAuthOkWithHtml(this IResultExtensions _, string html)
     {
-        return Results.Text(html, MimeTypeConstants.Html, Encoding.UTF8, StatusCodes.Status200OK);
+        return Results.Text(content: html, contentType: MimeTypeConstants.Html, statusCode: StatusCodes.Status200OK);
     }
 
     public static IResult OAuthSeeOtherRedirect(this IResultExtensions _, string location, HttpResponse response)
