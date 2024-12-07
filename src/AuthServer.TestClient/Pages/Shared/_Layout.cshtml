@@ -38,7 +38,19 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" href="/api/login">Login</a>
+                                <a class="nav-link text-dark" href="/api/login">No Prompt Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/api/login?prompt=none">Silent Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/api/login?prompt=login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/api/login?prompt=login%20consent">Consent Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/api/login?maxAge=0">MaxAge Zero Login</a>
                             </li>
                         }
                     </ul>
