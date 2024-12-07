@@ -27,7 +27,7 @@ public static class ResultExtensions
         return Results.StatusCode(StatusCodes.Status303SeeOther);
     }
 
-    public static IResult LocalRedirect(this IResultExtensions _, string url, HttpContext httpContext)
+    public static IResult LocalRedirectWithForwardOriginalRequest(this IResultExtensions _, string url, HttpContext httpContext)
     {
         var rawUrl = string.Empty;
         if (httpContext.Request.Method == "GET")
@@ -43,6 +43,20 @@ public static class ResultExtensions
         }
 
         var returnUrl = HttpUtility.UrlEncode(rawUrl);
+        return GetLocalRedirect(url, returnUrl, httpContext);
+    }
+
+    public static IResult LocalRedirectWithForwardSubstitutedRequest(this IResultExtensions _, string url,
+        HttpContext httpContext, IDictionary<string, string> substituteRequest)
+    {
+        var originalRequestTrimmed = new Uri(httpContext.Request.GetDisplayUrl()).GetLeftPart(UriPartial.Path);
+        var query = new QueryBuilder(substituteRequest).ToQueryString();
+        var returnUrl = HttpUtility.UrlEncode($"{originalRequestTrimmed}{query}");
+        return GetLocalRedirect(url, returnUrl, httpContext);
+    }
+
+    private static IResult GetLocalRedirect(string url, string returnUrl, HttpContext httpContext)
+    {
         var location = $"{url}?returnUrl={returnUrl}";
         return Results.Extensions.OAuthSeeOtherRedirect(location, httpContext.Response);
     }

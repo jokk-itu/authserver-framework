@@ -33,10 +33,10 @@ internal class EndSessionEndpointHandler : IEndpointHandler
     {
         var request = await _requestAccessor.GetRequest(httpContext.Request);
         var response = await _requestHandler.Handle(request, cancellationToken);
-        _endSessionUserAccessor.ClearUser();
         return response.Match(
             _ =>
             {
+                _endSessionUserAccessor.ClearUser();
                 if (string.IsNullOrEmpty(request.PostLogoutRedirectUri))
                 {
                     return Results.Ok();
@@ -45,10 +45,15 @@ internal class EndSessionEndpointHandler : IEndpointHandler
                 var encodedState = HttpUtility.UrlEncode(request.State);
                 return Results.Extensions.OAuthSeeOtherRedirect($"{request.PostLogoutRedirectUri}?state={encodedState}", httpContext.Response);
             },
-            error => error switch
+            error =>
             {
-                { Error: ErrorCode.InteractionRequired } => Results.Extensions.LocalRedirect(_userInteractionOptions.Value.EndSessionUri, httpContext),
-                _ => Results.Extensions.OAuthBadRequest(error)
+                if (error.Error == ErrorCode.InteractionRequired)
+                {
+                    return Results.Extensions.LocalRedirectWithForwardOriginalRequest(_userInteractionOptions.Value.EndSessionUri, httpContext);
+                }
+
+                _endSessionUserAccessor.ClearUser();
+                return Results.Extensions.OAuthBadRequest(error);
             });
     }
 }
