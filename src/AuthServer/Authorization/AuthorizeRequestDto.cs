@@ -1,13 +1,13 @@
 ﻿using AuthServer.RequestAccessors.Authorize;
 
 namespace AuthServer.Authorization;
-internal class AuthorizeRequestDto
+public class AuthorizeRequestDto
 {
     public AuthorizeRequestDto()
     {
     }
 
-    public AuthorizeRequestDto(AuthorizeRequest authorizeRequest)
+    internal AuthorizeRequestDto(AuthorizeRequest authorizeRequest)
     {
         IdTokenHint = authorizeRequest.IdTokenHint;
         LoginHint = authorizeRequest.LoginHint;

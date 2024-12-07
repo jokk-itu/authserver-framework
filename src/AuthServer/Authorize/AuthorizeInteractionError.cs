@@ -2,4 +2,15 @@
 
 namespace AuthServer.Authorize;
 
-public record AuthorizeInteractionError(string Error, string ErrorDescription, ResultCode ResultCode, string RequestUri, string ClientId) : ProcessError(Error, ErrorDescription, ResultCode);
+public class AuthorizeInteractionError(
+    string Error,
+    string ErrorDescription,
+    ResultCode ResultCode,
+    string RequestUri,
+    string ClientId,
+    bool RedirectToInteraction) : ProcessError(Error, ErrorDescription, ResultCode)
+{
+    public string RequestUri = RequestUri;
+    public string ClientId = ClientId;
+    public bool RedirectToInteraction = RedirectToInteraction;
+}

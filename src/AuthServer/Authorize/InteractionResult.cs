@@ -1,16 +1,23 @@
-﻿using AuthServer.Core.Request;
+﻿using AuthServer.Constants;
+using AuthServer.Core.Request;
 
 namespace AuthServer.Authorize;
 internal class InteractionResult
 {
-    public static readonly InteractionResult LoginResult = new(AuthorizeError.LoginRequired);
-    public static readonly InteractionResult ConsentResult = new(AuthorizeError.ConsentRequired);
-    public static readonly InteractionResult SelectAccountResult = new(AuthorizeError.AccountSelectionRequired);
-    public static readonly InteractionResult UnmetAuthenticationRequirementResult = new(AuthorizeError.UnmetAuthenticationRequirement);
+    public static readonly InteractionResult LoginErrorResult = new(AuthorizeError.LoginRequired, false);
+    public static readonly InteractionResult ConsentErrorResult = new(AuthorizeError.ConsentRequired, false);
+    public static readonly InteractionResult SelectAccountErrorResult = new(AuthorizeError.AccountSelectionRequired, false);
 
-    private InteractionResult(ProcessError error)
+    public static readonly InteractionResult LoginRedirectResult = new(AuthorizeError.LoginRequired, true);
+    public static readonly InteractionResult ConsentRedirectResult = new(AuthorizeError.ConsentRequired, true);
+    public static readonly InteractionResult SelectAccountRedirectResult = new(AuthorizeError.AccountSelectionRequired, true);
+
+    public static readonly InteractionResult UnmetAuthenticationRequirementResult = new(AuthorizeError.UnmetAuthenticationRequirement, false);
+
+    private InteractionResult(ProcessError error, bool redirectToInteraction)
     {
         Error = error;
+        RedirectToInteraction = redirectToInteraction;
     }
 
     private InteractionResult(string subjectIdentifier)
@@ -19,6 +26,7 @@ internal class InteractionResult
     }
 
     public ProcessError? Error { get; private init; }
+    public bool RedirectToInteraction { get; private init; }
     public string? SubjectIdentifier { get; private init; }
 
     public bool IsSuccessful => Error is null && !string.IsNullOrEmpty(SubjectIdentifier);
@@ -27,4 +35,8 @@ internal class InteractionResult
     {
         return new InteractionResult(subjectIdentifier);
     }
+
+    public static InteractionResult LoginResult(string? prompt) => prompt == PromptConstants.None ? LoginErrorResult : LoginRedirectResult;
+    public static InteractionResult ConsentResult(string? prompt) => prompt == PromptConstants.None ? ConsentErrorResult : ConsentRedirectResult;
+    public static InteractionResult SelectAccountResult(string? prompt) => prompt == PromptConstants.None ? SelectAccountErrorResult : SelectAccountRedirectResult;
 }
