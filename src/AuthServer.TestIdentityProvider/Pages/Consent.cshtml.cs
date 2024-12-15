@@ -11,14 +11,10 @@ namespace AuthServer.TestIdentityProvider.Pages;
 [ValidateAntiForgeryToken]
 public class ConsentModel : PageModel
 {
-    private readonly IAuthorizeUserAccessor _authorizeUserAccessor;
     private readonly IAuthorizeService _authorizeService;
 
-    public ConsentModel(
-        IAuthorizeUserAccessor authorizeUserAccessor,
-        IAuthorizeService authorizeService)
+    public ConsentModel(IAuthorizeService authorizeService)
     {
-        _authorizeUserAccessor = authorizeUserAccessor;
         _authorizeService = authorizeService;
     }
 
@@ -29,10 +25,10 @@ public class ConsentModel : PageModel
 
     public class InputModel
     {
-        public required string ClientName { get; set; }
+        public string? ClientName { get; set; }
         public string? ClientUri { get; set; }
         public string? ClientLogoUri { get; set; }
-        public required string Username { get; set; }
+        public string? Username { get; set; }
         public List<string> RequestedScope { get; set; } = [];
         public List<ClaimDto> RequestedClaims { get; set; } = [];
         public List<string> ConsentedScope { get; set; } = [];
@@ -49,13 +45,15 @@ public class ConsentModel : PageModel
     {
         ReturnUrl = returnUrl ?? Url.Content("~/");
 
-        var user = _authorizeUserAccessor.GetUser();
         var query = HttpUtility.ParseQueryString(new Uri(ReturnUrl).Query);
         var requestUri = query.Get(Parameter.RequestUri)!;
         var clientId = query.Get(Parameter.ClientId)!;
-        var consentGrantDto = await _authorizeService.GetConsentGrantDto(user.SubjectIdentifier, clientId, cancellationToken);
 
         var request = (await _authorizeService.GetRequest(requestUri, clientId, cancellationToken))!;
+
+        var subject = await _authorizeService.GetSubject(request);
+        var consentGrantDto = await _authorizeService.GetConsentGrantDto(subject, clientId, cancellationToken);
+        
         var requestedScope = request.Scope.ToList();
 
         // Display requested claims, also if they are already consented. This makes sure the end-user can change their full consent.
@@ -82,11 +80,12 @@ public class ConsentModel : PageModel
     {
         ReturnUrl = returnUrl ?? Url.Content("~/");
 
-        var user = _authorizeUserAccessor.GetUser();
         var query = HttpUtility.ParseQueryString(new Uri(ReturnUrl).Query);
         var clientId = query.Get(Parameter.ClientId)!;
-
-        await _authorizeService.CreateOrUpdateConsentGrant(user.SubjectIdentifier, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
+        var requestUri = query.Get(Parameter.RequestUri)!;
+        var request = (await _authorizeService.GetRequest(requestUri, clientId, cancellationToken))!;
+        var subject = await _authorizeService.GetSubject(request);
+        await _authorizeService.CreateOrUpdateConsentGrant(subject, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
 
         return Redirect(ReturnUrl);
     }
