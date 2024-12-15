@@ -61,4 +61,10 @@ public interface IAuthorizeService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IActionResult> GetErrorResult(string requestUri, string clientId, OAuthError oauthError, HttpContext httpContext, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get the subject from AuthorizeUser, IdTokenHint or AuthenticatedUser.
+    /// </summary>
+    /// <returns></returns>
+    Task<string> GetSubject(AuthorizeRequestDto authorizeRequestDto);
 }

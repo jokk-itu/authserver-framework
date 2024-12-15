@@ -7,6 +7,8 @@ using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.RequestAccessors.Authorize;
+using AuthServer.TokenDecoders;
+using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +22,9 @@ internal class AuthorizeService : IAuthorizeService
     private readonly IAuthenticationContextReferenceResolver _authenticationContextResolver;
     private readonly ISecureRequestService _secureRequestService;
     private readonly IAuthorizeResponseBuilder _authorizeResponseBuilder;
+    private readonly IAuthenticatedUserAccessor _authenticatedUserAccessor;
+    private readonly IAuthorizeUserAccessor _authorizeUserAccessor;
+    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
 
     public AuthorizeService(
         IConsentGrantRepository consentGrantRepository,
@@ -28,7 +33,10 @@ internal class AuthorizeService : IAuthorizeService
         IUserClaimService userClaimService,
         IAuthenticationContextReferenceResolver authenticationContextResolver,
         ISecureRequestService secureRequestService,
-        IAuthorizeResponseBuilder authorizeResponseBuilder)
+        IAuthorizeResponseBuilder authorizeResponseBuilder,
+        IAuthenticatedUserAccessor authenticatedUserAccessor,
+        IAuthorizeUserAccessor authorizeUserAccessor,
+        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder)
     {
         _consentGrantRepository = consentGrantRepository;
         _authorizationGrantRepository = authorizationGrantRepository;
@@ -37,6 +45,9 @@ internal class AuthorizeService : IAuthorizeService
         _authenticationContextResolver = authenticationContextResolver;
         _secureRequestService = secureRequestService;
         _authorizeResponseBuilder = authorizeResponseBuilder;
+        _authenticatedUserAccessor = authenticatedUserAccessor;
+        _authorizeUserAccessor = authorizeUserAccessor;
+        _tokenDecoder = tokenDecoder;
     }
 
     /// <inheritdoc/>
@@ -94,5 +105,24 @@ internal class AuthorizeService : IAuthorizeService
             { Parameter.ErrorDescription, oauthError.ErrorDescription }
         };
         return await _authorizeResponseBuilder.BuildResponse(request, errorParameters, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<string> GetSubject(AuthorizeRequestDto authorizeRequestDto)
+    {
+        var authorizeUser = _authorizeUserAccessor.TryGetUser();
+        if (authorizeUser is not null)
+        {
+            return authorizeUser.SubjectIdentifier;
+        }
+
+        if (authorizeRequestDto.IdTokenHint is not null)
+        {
+            var idToken = await _tokenDecoder.Read(authorizeRequestDto.IdTokenHint);
+            return idToken.Subject;
+        }
+
+        var authenticatedUser = await _authenticatedUserAccessor.GetAuthenticatedUser();
+        return authenticatedUser?.SubjectIdentifier ?? throw new InvalidOperationException("subject cannot be deduced");
     }
 }
