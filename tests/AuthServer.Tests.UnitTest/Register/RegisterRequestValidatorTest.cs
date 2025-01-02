@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
@@ -1310,5 +1309,190 @@ public class RegisterRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(RegisterError.InvalidIdTokenEncryptedResponseEnc, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_MinimumRequest_ExpectRegisterValidatedRequest()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            GrantTypes = [GrantTypeConstants.ClientCredentials]
+        };
+        
+        // Act
+        var validatedRequest = await validator.Validate(request, CancellationToken.None);
+        
+        // Assert
+        Assert.True(validatedRequest.IsSuccess);
+        Assert.Equal(request.Method, validatedRequest.Value!.Method);
+        Assert.Equal(request.ClientName, validatedRequest.Value!.ClientName);
+        Assert.Equal(request.GrantTypes, validatedRequest.Value!.GrantTypes);
+    }
+
+    [Fact]
+    public async Task Validate_MinimumRequestWithReferenceUris_ExpectRegisterValidatedRequest()
+    {
+        // Arrange
+        var clientSectorService = new Mock<IClientSectorService>();
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(clientSectorService);
+            services.AddScopedMock(clientJwkService);
+        });
+        
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            JwksUri = "https://webapp.authserver.dk/jwks",
+            JwksExpiration = 86400,
+            SubjectType = SubjectTypeConstants.Pairwise,
+            SectorIdentifierUri = "https://webapp.authserver.dk/sector"
+        };
+        
+        var jwks = ClientJwkBuilder.GetClientJwks();
+
+        clientJwkService
+            .Setup(x => x.GetJwks(request.JwksUri, CancellationToken.None))
+            .ReturnsAsync(jwks.PublicJwks)
+            .Verifiable();
+        
+        clientSectorService
+            .Setup(x => x.ContainsSectorDocument(
+                new Uri(request.SectorIdentifierUri),
+                request.RedirectUris,
+                CancellationToken.None))
+            .ReturnsAsync(true)
+            .Verifiable();
+        
+        // Act
+        var validatedRequest = await validator.Validate(request, CancellationToken.None);
+        
+        // Assert
+        clientJwkService.Verify();
+        clientSectorService.Verify();
+        
+        Assert.True(validatedRequest.IsSuccess);
+        Assert.Equal(request.Method, validatedRequest.Value!.Method);
+        Assert.Equal(request.ClientName, validatedRequest.Value!.ClientName);
+        Assert.Equal(request.RedirectUris, validatedRequest.Value!.RedirectUris);
+        Assert.Equal(request.JwksUri, validatedRequest.Value!.JwksUri);
+        Assert.Equal(jwks.PublicJwks, validatedRequest.Value!.Jwks);
+        Assert.Equal(request.JwksExpiration, validatedRequest.Value!.JwksExpiration);
+        Assert.Equal(request.SubjectType, validatedRequest.Value!.SubjectType!.GetDescription());
+        Assert.Equal(request.SectorIdentifierUri, validatedRequest.Value!.SectorIdentifierUri);
+    }
+
+    [Fact]
+    public async Task Validate_FullRequest_ExpectRegisterValidatedRequest()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var jwks = ClientJwkBuilder.GetClientJwks();
+        
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            GrantTypes = [GrantTypeConstants.AuthorizationCode],
+            ApplicationType = ApplicationTypeConstants.Web,
+            TokenEndpointAuthMethod = TokenEndpointAuthMethodConstants.PrivateKeyJwt,
+            SubjectType = SubjectTypeConstants.Public,
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            Contacts = ["info@authserver.dk"],
+            RequestUris = ["https://webapp.authserver.dk/request"],
+            ResponseTypes = [ResponseTypeConstants.Code],
+            PostLogoutRedirectUris = ["https://webapp.authserver.dk/post-logout-callback"],
+            Scope = [ScopeConstants.OpenId, ScopeConstants.UserInfo],
+            ClientUri = "https://webapp.authserver.dk",
+            PolicyUri = "https://webapp.authserver.dk/policy",
+            LogoUri = "https://webapp.authserver.dk/logo",
+            TosUri = "https://webapp.authserver.dk/tos",
+            AccessTokenExpiration = 500,
+            AuthorizationCodeExpiration = 60,
+            BackchannelLogoutUri = "https://webapp.authserver.dk/remote-logout",
+            ClientSecretExpiration = 86400,
+            DefaultAcrValues = [LevelOfAssuranceStrict],
+            DefaultMaxAge = "500",
+            InitiateLoginUri = "https://webapp.authserver.dk/remote-login",
+            RefreshTokenExpiration = 86400,
+            RequireReferenceToken = false,
+            RequireSignedRequestObject = true,
+            RequirePushedAuthorizationRequests = true,
+            RequestUriExpiration = 500,
+            RequestObjectEncryptionAlg = JweAlgConstants.RsaPKCS1,
+            RequestObjectEncryptionEnc = JweEncConstants.Aes128CbcHmacSha256,
+            RequestObjectSigningAlg = JwsAlgConstants.RsaSha256,
+            UserinfoEncryptedResponseAlg = JweAlgConstants.RsaPKCS1,
+            UserinfoEncryptedResponseEnc = JweEncConstants.Aes128CbcHmacSha256,
+            UserinfoSignedResponseAlg = JwsAlgConstants.RsaSha256,
+            IdTokenEncryptedResponseAlg = JweAlgConstants.RsaPKCS1,
+            IdTokenEncryptedResponseEnc = JweEncConstants.Aes128CbcHmacSha256,
+            IdTokenSignedResponseAlg = JwsAlgConstants.RsaSha256,
+            TokenEndpointAuthSigningAlg = JwsAlgConstants.RsaSha256,
+            Jwks = jwks.PublicJwks,
+            JwksExpiration = 86400 * 30
+        };
+        
+        // Act
+        var validatedRequest = await validator.Validate(request, CancellationToken.None);
+        
+        // Assert
+        Assert.True(validatedRequest.IsSuccess);
+        Assert.Equal(request.Method, validatedRequest.Value!.Method);
+        Assert.Equal(request.ClientName, validatedRequest.Value!.ClientName);
+        Assert.Equal(request.GrantTypes, validatedRequest.Value!.GrantTypes);
+        Assert.Equal(request.ApplicationType, validatedRequest.Value!.ApplicationType.GetDescription());
+        Assert.Equal(request.TokenEndpointAuthMethod, validatedRequest.Value!.TokenEndpointAuthMethod.GetDescription());
+        Assert.Equal(request.SubjectType, validatedRequest.Value!.SubjectType!.GetDescription());
+        Assert.Equal(request.RedirectUris, validatedRequest.Value!.RedirectUris);
+        Assert.Equal(request.Contacts, validatedRequest.Value!.Contacts);
+        Assert.Equal(request.RequestUris, validatedRequest.Value!.RequestUris);
+        Assert.Equal(request.ResponseTypes, validatedRequest.Value!.ResponseTypes);
+        Assert.Equal(request.PostLogoutRedirectUris, validatedRequest.Value!.PostLogoutRedirectUris);
+        Assert.Equal(request.Scope, validatedRequest.Value!.Scope);
+        Assert.Equal(request.ClientUri, validatedRequest.Value!.ClientUri);
+        Assert.Equal(request.PolicyUri, validatedRequest.Value!.PolicyUri);
+        Assert.Equal(request.LogoUri, validatedRequest.Value!.LogoUri);
+        Assert.Equal(request.TosUri, validatedRequest.Value!.TosUri);
+        Assert.Equal(request.AccessTokenExpiration, validatedRequest.Value!.AccessTokenExpiration);
+        Assert.Equal(request.AuthorizationCodeExpiration, validatedRequest.Value!.AuthorizationCodeExpiration);
+        Assert.Equal(request.BackchannelLogoutUri, validatedRequest.Value!.BackchannelLogoutUri);
+        Assert.Equal(request.ClientSecretExpiration, validatedRequest.Value!.ClientSecretExpiration);
+        Assert.Equal(request.DefaultAcrValues, validatedRequest.Value!.DefaultAcrValues);
+        Assert.Equal(request.DefaultMaxAge, validatedRequest.Value!.DefaultMaxAge.ToString());
+        Assert.Equal(request.InitiateLoginUri, validatedRequest.Value!.InitiateLoginUri);
+        Assert.Equal(request.RefreshTokenExpiration, validatedRequest.Value!.RefreshTokenExpiration);
+        Assert.Equal(request.RequireReferenceToken, validatedRequest.Value!.RequireReferenceToken);
+        Assert.Equal(request.RequireSignedRequestObject, validatedRequest.Value!.RequireSignedRequestObject);
+        Assert.Equal(request.RequirePushedAuthorizationRequests, validatedRequest.Value!.RequirePushedAuthorizationRequests);
+        Assert.Equal(request.RequestUriExpiration, validatedRequest.Value!.RequestUriExpiration);
+        Assert.Equal(request.RequestObjectEncryptionAlg, validatedRequest.Value!.RequestObjectEncryptionAlg!.GetDescription());
+        Assert.Equal(request.RequestObjectEncryptionEnc, validatedRequest.Value!.RequestObjectEncryptionEnc!.GetDescription());
+        Assert.Equal(request.RequestObjectSigningAlg, validatedRequest.Value!.RequestObjectSigningAlg!.GetDescription());
+        Assert.Equal(request.UserinfoEncryptedResponseAlg, validatedRequest.Value!.UserinfoEncryptedResponseAlg!.GetDescription());
+        Assert.Equal(request.UserinfoEncryptedResponseEnc, validatedRequest.Value!.UserinfoEncryptedResponseEnc!.GetDescription());
+        Assert.Equal(request.UserinfoSignedResponseAlg, validatedRequest.Value!.UserinfoSignedResponseAlg!.GetDescription());
+        Assert.Equal(request.IdTokenEncryptedResponseAlg, validatedRequest.Value!.IdTokenEncryptedResponseAlg!.GetDescription());
+        Assert.Equal(request.IdTokenEncryptedResponseEnc, validatedRequest.Value!.IdTokenEncryptedResponseEnc!.GetDescription());
+        Assert.Equal(request.IdTokenSignedResponseAlg, validatedRequest.Value!.IdTokenSignedResponseAlg!.GetDescription());
+        Assert.Equal(request.TokenEndpointAuthSigningAlg, validatedRequest.Value!.TokenEndpointAuthSigningAlg.GetDescription());
+        Assert.Equal(request.Jwks, validatedRequest.Value!.Jwks);
+        Assert.Equal(request.JwksExpiration, validatedRequest.Value!.JwksExpiration);
     }
 }
