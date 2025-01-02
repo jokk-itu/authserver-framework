@@ -771,6 +771,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         {
             JsonWebKeySet.Create(jwksFromClient);
             validatedRequest.Jwks = jwksFromClient;
+            validatedRequest.JwksUri = request.JwksUri;
             return null;
         }
         catch (ArgumentException e)
