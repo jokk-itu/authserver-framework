@@ -64,9 +64,9 @@ public abstract class BaseUnitTest
             discoveryDocument.AcrValuesSupported =
                 [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
 
-            var supportedSigningAlgorithms = new[] { SigningAlg.RsaSha256.GetDescription() };
-            var supportedEncryptionAlgorithms = new[] { EncryptionAlg.EcdhEsA128KW.GetDescription() };
-            var supportedEncryptionEncoding = new[] { EncryptionEnc.Aes128CbcHmacSha256.GetDescription() };
+            var supportedSigningAlgorithms = new[] { JwsAlgConstants.RsaSha256, JwsAlgConstants.EcdsaSha256 };
+            var supportedEncryptionAlgorithms = new[] { JweAlgConstants.RsaPKCS1, JweAlgConstants.EcdhEsA128KW };
+            var supportedEncryptionEncoding = new[] { JweEncConstants.Aes128CbcHmacSha256 };
 
             discoveryDocument.RequestObjectSigningAlgValuesSupported = supportedSigningAlgorithms;
             discoveryDocument.RequestObjectEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
