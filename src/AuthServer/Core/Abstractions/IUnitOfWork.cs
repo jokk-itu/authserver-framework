@@ -2,7 +2,7 @@
 
 internal interface IUnitOfWork
 {
-    Task Begin();
+    Task Begin(CancellationToken cancellationToken);
     Task SaveChanges(CancellationToken cancellationToken);
     Task Commit(CancellationToken cancellationToken);
 }

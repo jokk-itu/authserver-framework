@@ -18,14 +18,14 @@ internal class UnitOfWork : IUnitOfWork
         _cachedClientStore = cachedClientStore;
     }
 
-    public async Task Begin()
+    public async Task Begin(CancellationToken cancellationToken)
     {
         if (_authorizationDbContext.Database.CurrentTransaction is not null)
         {
             throw new InvalidOperationException();
         }
 
-        await _authorizationDbContext.Database.BeginTransactionAsync();
+        await _authorizationDbContext.Database.BeginTransactionAsync(cancellationToken);
     }
 
     public async Task SaveChanges(CancellationToken cancellationToken)
