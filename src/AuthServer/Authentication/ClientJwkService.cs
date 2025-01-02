@@ -52,6 +52,7 @@ internal class ClientJwkService : IClientJwkService
         
         if (cachedClient.JwksUri is null)
         {
+            _logger.LogWarning("Jwks has expired for client {ClientId}", clientId);
             return [];
         }
 
