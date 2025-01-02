@@ -48,7 +48,8 @@ public abstract class BaseUnitTest
     protected Task<ResponseType> GetResponseType(string name) => IdentityContext.Set<ResponseType>().SingleAsync(x => x.Name == name);
     protected Task<AuthenticationMethodReference> GetAuthenticationMethodReference(string name) => IdentityContext.Set<AuthenticationMethodReference>().SingleAsync(x => x.Name == name);
     protected Task<AuthenticationContextReference> GetAuthenticationContextReference(string name) => IdentityContext.Set<AuthenticationContextReference>().SingleAsync(x => x.Name == name);
-
+    protected Task<Claim> GetClaim(string name) => IdentityContext.Set<Claim>().SingleAsync(x => x.Name == name);
+    
     protected async Task AddEntity<T>(T entity) where T : class
     {
         await IdentityContext.Set<T>().AddAsync(entity);
