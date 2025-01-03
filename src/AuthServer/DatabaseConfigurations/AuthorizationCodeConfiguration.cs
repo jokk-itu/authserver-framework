@@ -16,6 +16,6 @@ internal sealed class AuthorizationCodeConfiguration : IEntityTypeConfiguration<
             .HasOne(x => x.AuthorizationGrant)
             .WithMany(x => x.AuthorizationCodes)
             .IsRequired()
-            .OnDelete(DeleteBehavior.ClientCascade);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

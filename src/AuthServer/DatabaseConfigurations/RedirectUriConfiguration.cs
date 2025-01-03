@@ -17,6 +17,6 @@ internal sealed class RedirectUriConfiguration : IEntityTypeConfiguration<Redire
 			.HasOne(x => x.Client)
 			.WithMany(x => x.RedirectUris)
 			.IsRequired()
-			.OnDelete(DeleteBehavior.ClientCascade);
+			.OnDelete(DeleteBehavior.Cascade);
 	}
 }
