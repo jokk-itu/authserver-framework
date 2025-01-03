@@ -24,7 +24,7 @@ internal class EndSessionRequestHandler : RequestHandler<EndSessionRequest, EndS
 
     protected override async Task<ProcessResult<Unit, ProcessError>> ProcessRequest(EndSessionValidatedRequest request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.Begin();
+        await _unitOfWork.Begin(cancellationToken);
         var result = await _requestProcessor.Process(request, cancellationToken);
         await _unitOfWork.Commit(cancellationToken);
         return result;

@@ -299,20 +299,15 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             .ExecuteDeleteAsync(cancellationToken);
 
         await _authorizationDbContext
-            .Set<Nonce>()
-            .Where(x => x.AuthorizationGrant.Client.Id == clientId)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        await _authorizationDbContext
-            .Set<AuthorizationCode>()
-            .Where(x => x.AuthorizationGrant.Client.Id == clientId)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        await _authorizationDbContext
             .Set<AuthorizationGrant>()
             .Where(x => x.Client.Id == clientId)
             .ExecuteDeleteAsync(cancellationToken);
 
+        await _authorizationDbContext
+            .Set<ClientAuthenticationContextReference>()
+            .Where(x => x.Client.Id == clientId)
+            .ExecuteDeleteAsync(cancellationToken);
+        
         await _authorizationDbContext
             .Set<Client>()
             .Where(x => x.Id == clientId)

@@ -25,6 +25,6 @@ internal sealed class AuthorizeMessageConfiguration : IEntityTypeConfiguration<A
             .HasOne(x => x.Client)
             .WithMany(x => x.AuthorizeMessages)
             .IsRequired()
-            .OnDelete(DeleteBehavior.ClientCascade);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

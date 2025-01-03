@@ -31,7 +31,7 @@ internal class PushedAuthorizationRequestHandler : RequestHandler<PushedAuthoriz
     protected override async Task<ProcessResult<PushedAuthorizationResponse, ProcessError>> ProcessRequest(
         PushedAuthorizationValidatedRequest request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.Begin();
+        await _unitOfWork.Begin(cancellationToken);
         var result = await _requestProcessor.Process(request, cancellationToken);
         await _unitOfWork.Commit(cancellationToken);
         return result;

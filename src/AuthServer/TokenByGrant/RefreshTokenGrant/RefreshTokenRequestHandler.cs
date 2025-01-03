@@ -24,7 +24,7 @@ internal class RefreshTokenRequestHandler : RequestHandler<TokenRequest, Refresh
 
     protected override async Task<ProcessResult<TokenResponse, ProcessError>> ProcessRequest(RefreshTokenValidatedRequest request, CancellationToken cancellationToken)
     {
-	    await _unitOfWork.Begin();
+	    await _unitOfWork.Begin(cancellationToken);
         var result = await _refreshTokenProcessor.Process(request, cancellationToken);
         await _unitOfWork.Commit(cancellationToken);
         return result;

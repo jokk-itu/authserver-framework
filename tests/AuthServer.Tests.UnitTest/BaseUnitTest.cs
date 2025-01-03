@@ -48,7 +48,8 @@ public abstract class BaseUnitTest
     protected Task<ResponseType> GetResponseType(string name) => IdentityContext.Set<ResponseType>().SingleAsync(x => x.Name == name);
     protected Task<AuthenticationMethodReference> GetAuthenticationMethodReference(string name) => IdentityContext.Set<AuthenticationMethodReference>().SingleAsync(x => x.Name == name);
     protected Task<AuthenticationContextReference> GetAuthenticationContextReference(string name) => IdentityContext.Set<AuthenticationContextReference>().SingleAsync(x => x.Name == name);
-
+    protected Task<Claim> GetClaim(string name) => IdentityContext.Set<Claim>().SingleAsync(x => x.Name == name);
+    
     protected async Task AddEntity<T>(T entity) where T : class
     {
         await IdentityContext.Set<T>().AddAsync(entity);
@@ -64,9 +65,9 @@ public abstract class BaseUnitTest
             discoveryDocument.AcrValuesSupported =
                 [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
 
-            var supportedSigningAlgorithms = new[] { SigningAlg.RsaSha256.GetDescription() };
-            var supportedEncryptionAlgorithms = new[] { EncryptionAlg.EcdhEsA128KW.GetDescription() };
-            var supportedEncryptionEncoding = new[] { EncryptionEnc.Aes128CbcHmacSha256.GetDescription() };
+            var supportedSigningAlgorithms = new[] { JwsAlgConstants.RsaSha256, JwsAlgConstants.EcdsaSha256 };
+            var supportedEncryptionAlgorithms = new[] { JweAlgConstants.RsaPKCS1, JweAlgConstants.EcdhEsA128KW };
+            var supportedEncryptionEncoding = new[] { JweEncConstants.Aes128CbcHmacSha256 };
 
             discoveryDocument.RequestObjectSigningAlgValuesSupported = supportedSigningAlgorithms;
             discoveryDocument.RequestObjectEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;

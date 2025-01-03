@@ -16,6 +16,6 @@ internal sealed class ContactConfiguration : IEntityTypeConfiguration<Contact>
             .HasOne(x => x.Client)
             .WithMany(x => x.Contacts)
             .IsRequired()
-            .OnDelete(DeleteBehavior.ClientCascade);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
