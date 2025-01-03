@@ -33,7 +33,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
     [Theory]
     [InlineData(JsonWebKeyUseNames.Sig)]
     [InlineData(JsonWebKeyUseNames.Enc)]
-    public async Task GetKeys_NoJwksUri_CachedKeys(string use)
+    public async Task GetKeys_JwksWithNoExpiration_CachedKeys(string use)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -52,7 +52,54 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var key = Assert.Single(keys);
         Assert.Equal(use, key.Use);
     }
+    
+    [Theory]
+    [InlineData(JsonWebKeyUseNames.Sig)]
+    [InlineData(JsonWebKeyUseNames.Enc)]
+    public async Task GetKeys_JwksWithinExpiration_CachedKeys(string use)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        {
+            Jwks = clientJwks.PublicJwks,
+            JwksExpiresAt = DateTime.Now.AddSeconds(60)
+        };
+        await AddEntity(client);
 
+        // Act
+        var keys = await clientJwkService.GetKeys(client.Id, use, CancellationToken.None);
+
+        // Assert
+        var key = Assert.Single(keys);
+        Assert.Equal(use, key.Use);
+    }
+
+    [Theory]
+    [InlineData(JsonWebKeyUseNames.Sig)]
+    [InlineData(JsonWebKeyUseNames.Enc)]
+    public async Task GetKeys_JwksNotWithinExpiration_NoKeys(string use)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        {
+            Jwks = clientJwks.PublicJwks,
+            JwksExpiresAt = DateTime.UtcNow.AddSeconds(-60)
+        };
+        await AddEntity(client);
+
+        // Act
+        var keys = await clientJwkService.GetKeys(client.Id, use, CancellationToken.None);
+
+        // Assert
+        Assert.Empty(keys);
+    }
+    
     [Theory]
     [InlineData(JsonWebKeyUseNames.Sig)]
     [InlineData(JsonWebKeyUseNames.Enc)]
