@@ -56,6 +56,12 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         return this;
     }
 
+    public PushedAuthorizationEndpointBuilder WithClientSecret(string clientSecret)
+    {
+        _parameters.Add(new(Parameter.ClientSecret, clientSecret));
+        return this;
+    }
+
     public PushedAuthorizationEndpointBuilder WithPrompt(string prompt)
     {
         _parameters.Add(new(Parameter.Prompt, prompt));
@@ -115,10 +121,20 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         {
             var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
             var clientSecret = _parameters.Single(x => x.Key == Parameter.ClientSecret).Value;
-
-            OverwriteForRequestObject();
-
             _parameters.RemoveAll(x => x.Key is Parameter.ClientId or Parameter.ClientSecret);
+
+            if (_isProtectedWithRequestParameter)
+            {
+                var claims = _parameters
+                    .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
+                    .ToDictionary();
+
+                var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+
+                _parameters.Clear();
+                _parameters.Add(new(Parameter.Request, requestObject));
+                _parameters.Add(new(Parameter.ClientId, clientId));
+            }
 
             var encodedClientId = HttpUtility.UrlEncode(clientId);
             var encodedClientSecret = HttpUtility.UrlEncode(clientSecret);
@@ -126,9 +142,41 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
             var convertedHeaderValue = Convert.ToBase64String(Encoding.UTF8.GetBytes(headerValue));
             httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", convertedHeaderValue);
         }
-        else
+        else if (_tokenEndpointAuthMethod == TokenEndpointAuthMethod.ClientSecretPost && _isProtectedWithRequestParameter)
         {
-            OverwriteForRequestObject();
+            var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
+            var clientSecret = _parameters.Single(x => x.Key == Parameter.ClientSecret).Value;
+            _parameters.RemoveAll(x => x.Key is Parameter.ClientId or Parameter.ClientSecret);
+
+            var claims = _parameters
+                .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
+                .ToDictionary();
+
+            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+
+            _parameters.Clear();
+            _parameters.Add(new(Parameter.Request, requestObject));
+            _parameters.Add(new(Parameter.ClientId, clientId));
+            _parameters.Add(new(Parameter.ClientSecret, clientSecret));
+        }
+        else if (_tokenEndpointAuthMethod == TokenEndpointAuthMethod.PrivateKeyJwt && _isProtectedWithRequestParameter)
+        {
+            var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
+            var clientAssertion = _parameters.Single(x => x.Key == Parameter.ClientAssertion).Value;
+            var clientAssertionType = _parameters.Single(x => x.Key == Parameter.ClientAssertionType).Value;
+            _parameters.RemoveAll(x => x.Key is Parameter.ClientId or Parameter.ClientAssertion or Parameter.ClientAssertionType);
+
+            var claims = _parameters
+                .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
+                .ToDictionary();
+
+            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+
+            _parameters.Clear();
+            _parameters.Add(new(Parameter.Request, requestObject));
+            _parameters.Add(new(Parameter.ClientId, clientId));
+            _parameters.Add(new(Parameter.ClientAssertion, clientAssertion));
+            _parameters.Add(new(Parameter.ClientAssertionType, clientAssertionType));
         }
 
         httpRequestMessage.Content = new FormUrlEncodedContent(_parameters);
@@ -174,24 +222,5 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         {
             _parameters.Add(new(Parameter.Scope, ScopeConstants.OpenId));
         }
-    }
-
-    private void OverwriteForRequestObject()
-    {
-        if (!_isProtectedWithRequestParameter)
-        {
-            return;
-        }
-
-        var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
-        var claims = _parameters
-            .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
-            .ToDictionary();
-
-        var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
-
-        _parameters.Clear();
-        _parameters.Add(new(Parameter.Request, requestObject));
-        _parameters.Add(new(Parameter.ClientId, clientId));
     }
 }
