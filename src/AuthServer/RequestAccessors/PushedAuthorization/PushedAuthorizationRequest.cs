@@ -16,7 +16,7 @@ internal class PushedAuthorizationRequest
     public string? State { get; init; }
     public string? ResponseMode { get; init; }
     public string? RequestObject { get; init; }
-    public required IReadOnlyCollection<string> Scope { get; init; } = [];
-    public required IReadOnlyCollection<string> AcrValues { get; init; } = [];
-    public required IReadOnlyCollection<ClientAuthentication> ClientAuthentications { get; init; } = [];
+    public IReadOnlyCollection<string> Scope { get; init; } = [];
+    public IReadOnlyCollection<string> AcrValues { get; init; } = [];
+    public IReadOnlyCollection<ClientAuthentication> ClientAuthentications { get; init; } = [];
 }
