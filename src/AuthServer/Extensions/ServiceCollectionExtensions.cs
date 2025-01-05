@@ -72,6 +72,24 @@ public static class ServiceCollectionExtensions
             {
                 policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
                 policy.RequireClaim(ClaimNameConstants.Scope, ScopeConstants.Register);
+            })
+            .AddPolicy(AuthorizationConstants.GrantManagementQuery, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion(context =>
+                {
+                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
+                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementQuery);
+                });
+            })
+            .AddPolicy(AuthorizationConstants.GrantManagementRevoke, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion(context =>
+                {
+                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
+                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementRevoke);
+                });
             });
 
         services.AddDataProtection();
