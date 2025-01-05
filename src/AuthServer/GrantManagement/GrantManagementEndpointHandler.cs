@@ -27,7 +27,7 @@ internal class GrantManagementEndpointHandler : IEndpointHandler
         var request = await _requestAccessor.GetRequest(httpContext.Request);
         var result = await _requestHandler.Handle(request, cancellationToken);
         return result.Match(
-            _ => Results.NotFound(),
+            _ => Results.NoContent(),
             error =>
                 error.ResultCode switch
                 {
@@ -35,6 +35,5 @@ internal class GrantManagementEndpointHandler : IEndpointHandler
                     _ => Results.Extensions.OAuthBadRequest(
                         new OAuthError(ErrorCode.ServerError, "unexpected error occurred"))
                 });
-        throw new NotImplementedException();
     }
 }
