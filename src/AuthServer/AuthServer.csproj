@@ -32,6 +32,7 @@
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -40,10 +41,6 @@
 		<InternalsVisibleTo Include="$(AssemblyName).Tests.ArchitectureTest" />
 		<InternalsVisibleTo Include="$(AssemblyName).Tests.Core" />
 		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>
