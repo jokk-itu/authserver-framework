@@ -15,6 +15,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.EndSession;
 using AuthServer.EndSession.Abstractions;
+using AuthServer.GrantManagement;
 using AuthServer.Introspection;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
@@ -25,6 +26,7 @@ using AuthServer.Repositories;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.RequestAccessors.Authorize;
 using AuthServer.RequestAccessors.EndSession;
+using AuthServer.RequestAccessors.GrantManagement;
 using AuthServer.RequestAccessors.Introspection;
 using AuthServer.RequestAccessors.PushedAuthorization;
 using AuthServer.RequestAccessors.Register;
@@ -146,11 +148,12 @@ public static class ServiceCollectionExtensions
         AddRevocation(services);
         AddPushedAuthorization(services);
         AddRegister(services);
+        AddGrantManagement(services);
 
         return services;
     }
 
-    internal static IServiceCollection AddPushedAuthorization(this IServiceCollection services)
+    private static IServiceCollection AddPushedAuthorization(IServiceCollection services)
     {
         return services
             .AddKeyedScoped<IEndpointHandler, PushedAuthorizationEndpointHandler>("PushedAuthorization")
@@ -161,7 +164,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>, PushedAuthorizationRequestValidator>();
     }
 
-    internal static IServiceCollection AddRegister(this IServiceCollection services)
+    private static IServiceCollection AddRegister(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<RegisterRequest>, RegisterRequestAccessor>()
@@ -172,7 +175,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<RegisterValidatedRequest, ProcessResult<RegisterResponse, Unit>>, RegisterRequestProcessor>();
     }
 
-    internal static IServiceCollection AddEndSession(this IServiceCollection services)
+    private static IServiceCollection AddEndSession(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<EndSessionRequest>, EndSessionRequestAccessor>()
@@ -184,7 +187,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<EndSessionValidatedRequest, Unit>, EndSessionRequestProcessor>();
     }
 
-    internal static IServiceCollection AddAuthorize(this IServiceCollection services)
+    private static IServiceCollection AddAuthorize(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<AuthorizeRequest>, AuthorizeRequestAccessor>()
@@ -200,7 +203,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>, AuthorizeRequestValidator>();
     }
 
-    internal static IServiceCollection AddUserinfo(this IServiceCollection services)
+    private static IServiceCollection AddUserinfo(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<UserinfoRequest>, UserinfoRequestAccessor>()
@@ -211,7 +214,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<UserinfoValidatedRequest, string>, UserinfoRequestProcessor>();
     }
 
-    internal static IServiceCollection AddIntrospection(this IServiceCollection services)
+    private static IServiceCollection AddIntrospection(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<IntrospectionRequest>, IntrospectionRequestAccessor>()
@@ -222,7 +225,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>, IntrospectionRequestProcessor>();
     }
 
-    internal static IServiceCollection AddRevocation(this IServiceCollection services)
+    private static IServiceCollection AddRevocation(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<RevocationRequest>, RevocationRequestAccessor>()
@@ -233,7 +236,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<RevocationValidatedRequest, Unit>, RevocationRequestProcessor>();
     }
 
-    internal static IServiceCollection AddToken(this IServiceCollection services)
+    private static IServiceCollection AddToken(IServiceCollection services)
     {
         services
             .AddScoped<IRequestAccessor<TokenRequest>, TokenRequestAccessor>()
@@ -256,5 +259,16 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>, ClientCredentialsRequestValidator>();
 
         return services;
+    }
+
+    private static IServiceCollection AddGrantManagement(IServiceCollection services)
+    {
+        return services
+            .AddScoped<IRequestAccessor<GrantManagementRequest>, GrantManagementRequestAccessor>()
+            .AddKeyedScoped<IEndpointHandler, GrantManagementEndpointHandler>("GrantManagement")
+            .AddSingleton<IEndpointModule, GrantManagementEndpointModule>()
+            .AddScoped<IRequestHandler<GrantManagementRequest, Unit>, GrantManagementRequestHandler>()
+            .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
+            .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRequestProcessor>();
     }
 }
