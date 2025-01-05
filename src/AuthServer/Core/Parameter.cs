@@ -85,6 +85,7 @@ public static class Parameter
     public const string DPoP = "dpop";
     public const string DPoPNonce = "dpop-nonce";
     public const string DPoPJkt = "dpop_jkt";
+    public const string GrantId = "grant_id";
 
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";
