@@ -45,8 +45,9 @@ internal class RefreshTokenRequestProcessor : IRequestProcessor<RefreshTokenVali
         {
             AccessToken = accessToken,
             IdToken = idToken,
+            ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
-            ExpiresIn = cachedClient.AccessTokenExpiration
+            GrantId = request.AuthorizationGrantId
         };
     }
 }

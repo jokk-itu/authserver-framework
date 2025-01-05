@@ -78,6 +78,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             RefreshToken = refreshToken,
             ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
+            GrantId = query.AuthorizationCodeGrant.Id
         };
     }
 }
