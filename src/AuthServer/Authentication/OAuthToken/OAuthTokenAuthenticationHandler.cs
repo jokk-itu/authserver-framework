@@ -99,7 +99,7 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
         }
         else
         {
-            throw new InvalidOperationException("Challenge must happened from failure or none");
+            throw new InvalidOperationException("Challenge must happen from failure or none");
         }
 
         Response.StatusCode = 401;
