@@ -1,6 +1,5 @@
 ﻿using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
-using AuthServer.DatabaseConfigurations;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.PushedAuthorization;
