@@ -64,6 +64,7 @@ internal class RegisterEndpointHandler : IEndpointHandler
                             RefreshTokenExpiration = client.RefreshTokenExpiration,
                             ClientSecretExpiration = client.ClientSecretExpiration,
                             JwksExpiration = client.JwksExpiration,
+                            RequestUriExpiration = client.RequestUriExpiration,
                             TokenEndpointAuthSigningAlg = client.TokenEndpointAuthSigningAlg.GetDescription(),
                             RequestObjectSigningAlg = client.RequestObjectSigningAlg?.GetDescription(),
                             RequestObjectEncryptionAlg = client.RequestObjectEncryptionAlg?.GetDescription(),
