@@ -135,6 +135,11 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
             return (null, AuthenticateResult.NoResult());
         }
 
+        if (!query.Token.Audience.Split(' ').Contains(_discoveryDocumentOptions.CurrentValue.Issuer))
+        {
+            return (null, AuthenticateResult.Fail("Token does not have AuthServer has audience"));
+        }
+
         if (query.Token.RevokedAt != null)
         {
             return (null, AuthenticateResult.Fail("Token is revoked"));
