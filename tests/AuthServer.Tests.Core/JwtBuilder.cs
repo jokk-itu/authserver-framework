@@ -128,7 +128,7 @@ public class JwtBuilder
             Expires = now.AddSeconds(3600),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = clientId,
+            Audience = _discoveryDocument.Issuer,
             TokenType = TokenTypeHeaderConstants.AccessToken,
             Claims = claims
         });
