@@ -24,6 +24,16 @@ public abstract class BaseUnitTest
     private readonly SqliteConnection _connection;
     internal AuthorizationDbContext IdentityContext;
 
+    private RsaSecurityKey RsaSecurityKey = new RsaSecurityKey(RSA.Create(3072))
+    {
+        KeyId = Guid.NewGuid().ToString()
+    };
+
+    private ECDsaSecurityKey ECDsaSecurityKey = new ECDsaSecurityKey(ECDsa.Create())
+    {
+        KeyId = Guid.NewGuid().ToString()
+    };
+
     protected ITestOutputHelper OutputHelper;
     protected JwtBuilder JwtBuilder;
     protected DiscoveryDocument DiscoveryDocument;
@@ -83,38 +93,26 @@ public abstract class BaseUnitTest
         });
         services.AddOptions<JwksDocument>().Configure(jwksDocument =>
         {
-            var rsa = RSA.Create(3072);
-            var rsaSecurityKey = new RsaSecurityKey(rsa)
-            {
-                KeyId = Guid.NewGuid().ToString()
-            };
-
-            var ecdsa = ECDsa.Create();
-            var ecdsaSecurityKey = new ECDsaSecurityKey(ecdsa)
-            {
-                KeyId = Guid.NewGuid().ToString()
-            };
-
             jwksDocument.SigningKeys =
             [
-                new(rsaSecurityKey, SigningAlg.RsaSha256),
-                new(rsaSecurityKey, SigningAlg.RsaSha384),
-                new(rsaSecurityKey, SigningAlg.RsaSha512),
-                new(rsaSecurityKey, SigningAlg.RsaSsaPssSha256),
-                new(rsaSecurityKey, SigningAlg.RsaSsaPssSha384),
-                new(rsaSecurityKey, SigningAlg.RsaSsaPssSha512),
-                new(ecdsaSecurityKey, SigningAlg.EcdsaSha256),
-                new(ecdsaSecurityKey, SigningAlg.EcdsaSha384),
-                new(ecdsaSecurityKey, SigningAlg.EcdsaSha512),
+                new(RsaSecurityKey, SigningAlg.RsaSha256),
+                new(RsaSecurityKey, SigningAlg.RsaSha384),
+                new(RsaSecurityKey, SigningAlg.RsaSha512),
+                new(RsaSecurityKey, SigningAlg.RsaSsaPssSha256),
+                new(RsaSecurityKey, SigningAlg.RsaSsaPssSha384),
+                new(RsaSecurityKey, SigningAlg.RsaSsaPssSha512),
+                new(ECDsaSecurityKey, SigningAlg.EcdsaSha256),
+                new(ECDsaSecurityKey, SigningAlg.EcdsaSha384),
+                new(ECDsaSecurityKey, SigningAlg.EcdsaSha512),
             ];
 
             jwksDocument.EncryptionKeys =
             [
-                new(rsaSecurityKey, EncryptionAlg.RsaOAEP),
-                new(rsaSecurityKey, EncryptionAlg.RsaPKCS1),
-                new(ecdsaSecurityKey, EncryptionAlg.EcdhEsA128KW),
-                new(ecdsaSecurityKey, EncryptionAlg.EcdhEsA192KW),
-                new(ecdsaSecurityKey, EncryptionAlg.EcdhEsA256KW)
+                new(RsaSecurityKey, EncryptionAlg.RsaOAEP),
+                new(RsaSecurityKey, EncryptionAlg.RsaPKCS1),
+                new(ECDsaSecurityKey, EncryptionAlg.EcdhEsA128KW),
+                new(ECDsaSecurityKey, EncryptionAlg.EcdhEsA192KW),
+                new(ECDsaSecurityKey, EncryptionAlg.EcdhEsA256KW)
             ];
 
             jwksDocument.GetTokenSigningKey =
