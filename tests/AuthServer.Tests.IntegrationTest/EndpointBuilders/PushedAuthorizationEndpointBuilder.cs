@@ -1,4 +1,5 @@
-﻿using AuthServer.Constants;
+﻿using System.Net;
+using AuthServer.Constants;
 using AuthServer.Options;
 using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
@@ -9,6 +10,7 @@ using AuthServer.Enums;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Web;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
@@ -111,7 +113,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    internal async Task<PostPushedAuthorizationResponse> Post()
+    internal async Task<PushedAuthorizationResponse> Post()
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/par");
 
@@ -183,12 +185,26 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         var httpResponseMessage = await HttpClient.SendAsync(httpRequestMessage);
 
         TestOutputHelper.WriteLine(
-            "Received Token response {0}, Content: {1}",
+            "Received PushedAuthorization response {0}, Content: {1}",
             httpResponseMessage.StatusCode,
             await httpResponseMessage.Content.ReadAsStringAsync());
+        
+        var content = await httpResponseMessage.Content.ReadAsStringAsync();
+        if (httpResponseMessage.StatusCode == HttpStatusCode.Created)
+        {
+            return new PushedAuthorizationResponse
+            {
+                StatusCode = HttpStatusCode.Created,
+                Response = JsonSerializer.Deserialize<PostPushedAuthorizationResponse>(content),
+                Location = httpResponseMessage.Headers.Location
+            };
+        }
 
-        httpResponseMessage.EnsureSuccessStatusCode();
-        return (await httpResponseMessage.Content.ReadFromJsonAsync<PostPushedAuthorizationResponse>())!;
+        return new PushedAuthorizationResponse
+        {
+            StatusCode = httpResponseMessage.StatusCode,
+            Error = JsonSerializer.Deserialize<OAuthError>(content)
+        };
     }
 
     private void SetDefaultValues()
@@ -222,5 +238,13 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         {
             _parameters.Add(new(Parameter.Scope, ScopeConstants.OpenId));
         }
+    }
+
+    internal class PushedAuthorizationResponse
+    {
+        public HttpStatusCode StatusCode { get; set; }
+        public OAuthError? Error { get; set; }
+        public PostPushedAuthorizationResponse? Response { get; set; }
+        public Uri? Location { get; set; }
     }
 }
