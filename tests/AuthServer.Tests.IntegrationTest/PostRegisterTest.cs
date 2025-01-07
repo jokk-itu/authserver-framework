@@ -44,7 +44,8 @@ public class PostRegisterTest : BaseIntegrationTest
             x => Assert.Equal(GrantTypeConstants.AuthorizationCode, x),
             x => Assert.Equal(GrantTypeConstants.RefreshToken, x));
         Assert.NotNull(registerResponse.RedirectUris);
-        Assert.Collection(registerResponse.RedirectUris, x => Assert.Equal("https://webapp.authserver.dk/callback", x));
+        Assert.Single(registerResponse.RedirectUris);
+        Assert.Single(registerResponse.RedirectUris, x => x == "https://webapp.authserver.dk/callback");
     }
 
     [Fact]
@@ -70,7 +71,8 @@ public class PostRegisterTest : BaseIntegrationTest
         // Assert
         Assert.NotNull(registerResponse);
         Assert.Equal("worker-app", registerResponse.ClientName);
-        Assert.Collection(registerResponse.GrantTypes, x => Assert.Equal(GrantTypeConstants.ClientCredentials, x));
+        Assert.Single(registerResponse.GrantTypes);
+        Assert.Single(registerResponse.GrantTypes, x => x == GrantTypeConstants.ClientCredentials);
     }
 
     [Fact]
@@ -96,11 +98,16 @@ public class PostRegisterTest : BaseIntegrationTest
         // Assert
         Assert.NotNull(registerResponse);
         Assert.Equal("webapp", registerResponse.ClientName);
+
         Assert.NotNull(registerResponse.RedirectUris);
-        Assert.Collection(registerResponse.RedirectUris, x => Assert.Equal("https://webapp.authserver.dk/callback", x));
+        Assert.Single(registerResponse.RedirectUris);
+        Assert.Single(registerResponse.RedirectUris, x => x == "https://webapp.authserver.dk/callback");
+
+        Assert.Single(registerResponse.GrantTypes);
+        Assert.Single(registerResponse.GrantTypes, x => x == GrantTypeConstants.AuthorizationCode);
+
         Assert.Equal(ApplicationTypeConstants.Web, registerResponse.ApplicationType);
         Assert.Equal(TokenEndpointAuthMethodConstants.ClientSecretBasic, registerResponse.TokenEndpointAuthMethod);
-        Assert.Collection(registerResponse.GrantTypes, x => Assert.Equal(GrantTypeConstants.AuthorizationCode, x));
         Assert.Equal(SubjectTypeConstants.Public, registerResponse.SubjectType);
         Assert.Equal(JwsAlgConstants.RsaSha256, registerResponse.IdTokenSignedResponseAlg);
     }
