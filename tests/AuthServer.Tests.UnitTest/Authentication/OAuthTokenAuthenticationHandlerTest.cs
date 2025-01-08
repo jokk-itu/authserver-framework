@@ -1,10 +1,14 @@
-﻿using System.Reflection;
+﻿using System.Security.Cryptography;
 using AuthServer.Authentication.OAuthToken;
+using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.Authentication;
@@ -72,6 +76,283 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
                 Headers =
                 {
                     Authorization = $"Bearer {encodedJson}.{encodedJson}.{encodedJson}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.NotNull(result.Failure);
+    }
+
+    // invalid algorithm
+    // invalid typ header
+
+    [Fact]
+    public async Task HandleAuthenticateAsync_ExpiredJwt_ExpectFailure()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var key = JwksDocument.GetTokenSigningKey();
+        var signingCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription());
+        var now = DateTime.UtcNow;
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = DiscoveryDocument.Issuer,
+            NotBefore = now,
+            Expires = now.AddSeconds(-3600),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = DiscoveryDocument.Issuer,
+            TokenType = TokenTypeHeaderConstants.AccessToken
+        });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.NotNull(result.Failure);
+    }
+
+    [Fact]
+    public async Task HandleAuthenticateAsync_InvalidIssuerJwt_ExpectFailure()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var key = JwksDocument.GetTokenSigningKey();
+        var signingCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription());
+        var now = DateTime.UtcNow;
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = "invalid_issuer",
+            NotBefore = now,
+            Expires = now.AddSeconds(3600),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = DiscoveryDocument.Issuer,
+            TokenType = TokenTypeHeaderConstants.AccessToken
+        });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.NotNull(result.Failure);
+    }
+
+    [Fact]
+    public async Task HandleAuthenticateAsync_InvalidAudienceJwt_ExpectFailure()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var key = JwksDocument.GetTokenSigningKey();
+        var signingCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription());
+        var now = DateTime.UtcNow;
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = DiscoveryDocument.Issuer,
+            NotBefore = now,
+            Expires = now.AddSeconds(3600),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = "invalid_audience",
+            TokenType = TokenTypeHeaderConstants.AccessToken
+        });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.NotNull(result.Failure);
+    }
+
+    [Fact]
+    public async Task HandleAuthenticateAsync_InvalidSignatureKeyJwt_ExpectFailure()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var invalidKey = new RsaSecurityKey(RSA.Create(3072));
+        var signingCredentials = new SigningCredentials(invalidKey, JwsAlgConstants.RsaSha256);
+        var now = DateTime.UtcNow;
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = DiscoveryDocument.Issuer,
+            NotBefore = now,
+            Expires = now.AddSeconds(3600),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = DiscoveryDocument.Issuer,
+            TokenType = TokenTypeHeaderConstants.AccessToken
+        });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.NotNull(result.Failure);
+    }
+
+    [Fact]
+    public async Task HandleAuthenticateAsync_InvalidSignatureAlgorithmJwt_ExpectFailure()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var key = JwksDocument.GetTokenSigningKey();
+        var invalidAlg = JwsAlgConstants.RsaSha512;
+        var signingCredentials = new SigningCredentials(key.Key, invalidAlg);
+        var now = DateTime.UtcNow;
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = DiscoveryDocument.Issuer,
+            NotBefore = now,
+            Expires = now.AddSeconds(3600),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = DiscoveryDocument.Issuer,
+            TokenType = TokenTypeHeaderConstants.AccessToken
+        });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.NotNull(result.Failure);
+    }
+
+    [Fact]
+    public async Task HandleAuthenticateAsync_InvalidTypHeaderJwt_ExpectFailure()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var key = JwksDocument.GetTokenSigningKey();
+        var signingCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription());
+        var now = DateTime.UtcNow;
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = DiscoveryDocument.Issuer,
+            NotBefore = now,
+            Expires = now.AddSeconds(3600),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = DiscoveryDocument.Issuer,
+            TokenType = "invalid_typ"
+        });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.NotNull(result.Failure);
+    }
+
+    [Fact]
+    public async Task HandleAuthenticateAsync_InvalidNotBeforeJwt_ExpectFailure()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var key = JwksDocument.GetTokenSigningKey();
+        var signingCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription());
+        var now = DateTime.UtcNow;
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = DiscoveryDocument.Issuer,
+            NotBefore = now.AddSeconds(3600),
+            Expires = now.AddSeconds(3600),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = DiscoveryDocument.Issuer,
+            TokenType = TokenTypeHeaderConstants.AccessToken
+        });
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
                 }
             },
             RequestServices = serviceProvider
