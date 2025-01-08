@@ -88,9 +88,6 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         Assert.NotNull(result.Failure);
     }
 
-    // invalid algorithm
-    // invalid typ header
-
     [Fact]
     public async Task HandleAuthenticateAsync_ExpiredJwt_ExpectFailure()
     {
@@ -568,5 +565,76 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
 
         var accessToken = await httpContext.GetTokenAsync(Parameter.AccessToken);
         Assert.Equal(token.Reference, accessToken);
+    }
+
+    [Fact]
+    public async Task HandleChallengeAsync_NoBearerToken_ExpectInvalidRequest()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        await httpContext.ChallengeAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        Assert.Equal("Bearer error=\"invalid_request\"", httpContext.Response.Headers.WWWAuthenticate);
+    }
+
+    [Fact]
+    public async Task HandleChallengeAsync_InvalidBearerToken_ExpectInvalidToken()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var encodedJson = Convert.ToBase64String("{}"u8.ToArray());
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {encodedJson}.{encodedJson}.{encodedJson}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        await httpContext.ChallengeAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        Assert.Equal("Bearer error=\"invalid_token\"", httpContext.Response.Headers.WWWAuthenticate);
+    }
+
+    [Fact]
+    public async Task HandleForbidAsync_Unauthorized_ExpectInsufficientScope()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var token = JwtBuilder.GetAccessToken("client_id");
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"Bearer {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+        await httpContext.ForbidAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status403Forbidden, httpContext.Response.StatusCode);
+        Assert.Equal("Bearer error=\"insufficient_scope\"", httpContext.Response.Headers.WWWAuthenticate);
     }
 }
