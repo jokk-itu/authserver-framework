@@ -63,7 +63,7 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             ValidAlgorithms = arguments.Algorithms,
             IssuerSigningKeys = await _clientJwkService.GetSigningKeys(arguments.ClientId, cancellationToken),
             TokenDecryptionKeys = _jwkDocumentOptions.Value.EncryptionKeys.Select(x => x.Key),
-            TokenReplayCache = _tokenReplayCache, 
+            TokenReplayCache = _tokenReplayCache,
             ValidateTokenReplay = true,
             ValidateLifetime = arguments.ValidateLifetime,
             ValidateAudience = true,
