@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using AuthServer.Constants;
+using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Options;
 using AuthServer.TokenDecoders;
@@ -33,6 +34,27 @@ public class JwtBuilder
             Expires = now.AddSeconds(30),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
+            Audience = MapToAudience(audience),
+            TokenType = TokenTypeHeaderConstants.PrivateKeyToken
+        });
+    }
+
+    public string GetEncryptedPrivateKeyJwt(string clientId, string privateJwks, ClientTokenAudience audience)
+    {
+        var jwks = JsonWebKeySet.Create(privateJwks);
+        var signKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+        var encryptionKey = _jwksDocument.GetEncryptionKey(EncryptionAlg.RsaPKCS1);
+        var signingCredentials = new SigningCredentials(signKey, signKey.Alg);
+        var encryptingCredentials = new EncryptingCredentials(encryptionKey, JweAlgConstants.RsaPKCS1, JweEncConstants.Aes128CbcHmacSha256);
+        var now = DateTime.UtcNow;
+        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = clientId,
+            NotBefore = now,
+            Expires = now.AddSeconds(30),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            EncryptingCredentials = encryptingCredentials,
             Audience = MapToAudience(audience),
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
