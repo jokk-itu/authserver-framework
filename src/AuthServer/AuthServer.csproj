@@ -12,7 +12,6 @@
 		<Authors>Joachim Køcher Kelsen</Authors>
 		<Company>AuthServer</Company>
 		<Product>AuthServer</Product>
-		<PackageDescription></PackageDescription>
 		<PackageProjectUrl>https://github.com/jokk-itu/authserver-framework</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/jokk-itu/authserver-framework</RepositoryUrl>
 		<VersionSuffix>alpha</VersionSuffix>
@@ -28,6 +27,7 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.11" />
 		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.3.0" />
 		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
+		<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
