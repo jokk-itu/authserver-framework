@@ -22,6 +22,8 @@ public class AuthorizeRequestDto
         MaxAge = authorizeRequest.MaxAge;
         State = authorizeRequest.State;
         ResponseMode = authorizeRequest.ResponseMode;
+        GrantId = authorizeRequest.GrantId;
+        GrantManagementAction = authorizeRequest.GrantManagementAction;
         Scope = authorizeRequest.Scope;
         AcrValues = authorizeRequest.AcrValues;
     }
@@ -39,6 +41,8 @@ public class AuthorizeRequestDto
     public string? MaxAge { get; init; }
     public string? State { get; init; }
     public string? ResponseMode { get; init; }
+    public string? GrantId { get; init; }
+    public string? GrantManagementAction { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
 }

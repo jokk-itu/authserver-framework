@@ -40,7 +40,9 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                     { Parameter.Nonce, value },
                     { Parameter.State, value },
                     { Parameter.RequestUri, value},
-                    { Parameter.Request, value }
+                    { Parameter.Request, value },
+                    { Parameter.GrantId, value },
+                    { Parameter.GrantManagementAction, value }
                 })
             }
         };
@@ -64,6 +66,8 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(expectedValue, request.State);
         Assert.Equal(expectedValue, request.RequestObject);
         Assert.Equal(expectedValue, request.RequestUri);
+        Assert.Equal(expectedValue, request.GrantId);
+        Assert.Equal(expectedValue, request.GrantManagementAction);
     }
 
     [Theory]
@@ -96,7 +100,9 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                     { Parameter.Nonce, value },
                     { Parameter.State, value },
                     { Parameter.RequestUri, value},
-                    { Parameter.Request, value }
+                    { Parameter.Request, value },
+                    { Parameter.GrantId, value },
+                    { Parameter.GrantManagementAction, value }
                 })
             }
         };
@@ -120,6 +126,8 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(expectedValue, request.State);
         Assert.Equal(expectedValue, request.RequestObject);
         Assert.Equal(expectedValue, request.RequestUri);
+        Assert.Equal(expectedValue, request.GrantId);
+        Assert.Equal(expectedValue, request.GrantManagementAction);
     }
 
     [Fact]
