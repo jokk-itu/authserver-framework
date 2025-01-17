@@ -45,6 +45,7 @@ using AuthServer.TokenDecoders.Abstractions;
 using AuthServer.Userinfo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthServer.Extensions;
@@ -54,46 +55,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAuthServer(this IServiceCollection services,
         Action<IServiceProvider, DbContextOptionsBuilder> databaseConfigurator)
     {
-        services
-            .AddAuthentication()
-            .AddScheme<OAuthTokenAuthenticationOptions, OAuthTokenAuthenticationHandler>(
-                OAuthTokenAuthenticationDefaults.AuthenticationScheme, null);
-
-        services
-            .AddAuthorizationBuilder()
-            .AddPolicy(AuthorizationConstants.Userinfo, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireAssertion(context =>
-                {
-                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
-                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.UserInfo);
-                });
-            })
-            .AddPolicy(AuthorizationConstants.Register, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireClaim(ClaimNameConstants.Scope, ScopeConstants.Register);
-            })
-            .AddPolicy(AuthorizationConstants.GrantManagementQuery, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireAssertion(context =>
-                {
-                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
-                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementQuery);
-                });
-            })
-            .AddPolicy(AuthorizationConstants.GrantManagementRevoke, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireAssertion(context =>
-                {
-                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
-                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementRevoke);
-                });
-            });
-
+        services.AddScopedFeatureManagement();
         services.AddDataProtection();
         services.AddSingleton<IMetricService, MetricService>();
         services.AddHttpContextAccessor();
