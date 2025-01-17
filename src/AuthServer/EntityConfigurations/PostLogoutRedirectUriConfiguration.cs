@@ -2,19 +2,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
-internal sealed class ContactConfiguration : IEntityTypeConfiguration<Contact>
+namespace AuthServer.EntityConfigurations;
+internal sealed class PostLogoutRedirectUriConfiguration : IEntityTypeConfiguration<PostLogoutRedirectUri>
 {
-    public void Configure(EntityTypeBuilder<Contact> builder)
+    public void Configure(EntityTypeBuilder<PostLogoutRedirectUri> builder)
     {
         builder
-            .Property(x => x.Email)
+            .Property(x => x.Uri)
             .HasMaxLength(255)
             .IsRequired();
 
         builder
             .HasOne(x => x.Client)
-            .WithMany(x => x.Contacts)
+            .WithMany(x => x.PostLogoutRedirectUris)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }

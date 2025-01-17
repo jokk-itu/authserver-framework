@@ -3,7 +3,7 @@ using AuthServer.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
+namespace AuthServer.EntityConfigurations;
 
 internal sealed class TokenConfiguration : IEntityTypeConfiguration<Token>
 {

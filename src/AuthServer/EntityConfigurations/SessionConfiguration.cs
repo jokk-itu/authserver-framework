@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
+namespace AuthServer.EntityConfigurations;
 internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 {
   public void Configure(EntityTypeBuilder<Session> builder)

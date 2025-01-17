@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
+namespace AuthServer.EntityConfigurations;
 internal sealed class AuthorizationCodeConfiguration : IEntityTypeConfiguration<AuthorizationCode>
 {
     public void Configure(EntityTypeBuilder<AuthorizationCode> builder)

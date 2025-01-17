@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
+namespace AuthServer.EntityConfigurations;
 internal sealed class GrantTokenConfiguration : IEntityTypeConfiguration<GrantToken>
 {
     public void Configure(EntityTypeBuilder<GrantToken> builder)

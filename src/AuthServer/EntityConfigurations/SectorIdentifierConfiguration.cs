@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
+namespace AuthServer.EntityConfigurations;
 internal sealed class SectorIdentifierConfiguration : IEntityTypeConfiguration<SectorIdentifier>
 {
     public void Configure(EntityTypeBuilder<SectorIdentifier> builder)

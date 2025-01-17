@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
+namespace AuthServer.EntityConfigurations;
 internal sealed class ClientAuthenticationContextReferenceConfiguration : IEntityTypeConfiguration<ClientAuthenticationContextReference>
 {
     public void Configure(EntityTypeBuilder<ClientAuthenticationContextReference> builder)
