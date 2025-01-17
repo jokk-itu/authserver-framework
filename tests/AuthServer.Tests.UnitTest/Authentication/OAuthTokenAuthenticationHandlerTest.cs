@@ -64,6 +64,31 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task HandleAuthenticateAsync_NoBearerValue_ExpectNoResult()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = "Bearer"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.True(result.None);
+        Assert.Null(result.Failure);
+    }
+
+    [Fact]
     public async Task HandleAuthenticateAsync_InvalidJwt_ExpectFailure()
     {
         // Arrange

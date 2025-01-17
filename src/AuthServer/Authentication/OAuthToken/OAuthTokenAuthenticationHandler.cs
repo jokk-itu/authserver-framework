@@ -48,9 +48,13 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
             return AuthenticateResult.NoResult();
         }
 
-        var token = parsedHeader!.Parameter!;
-
-        if (parsedHeader.Scheme != "Bearer")
+        if (parsedHeader!.Scheme != "Bearer")
+        {
+            return AuthenticateResult.NoResult();
+        }
+        
+        var token = parsedHeader.Parameter;
+        if (string.IsNullOrEmpty(token))
         {
             return AuthenticateResult.NoResult();
         }
