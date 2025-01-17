@@ -15,6 +15,8 @@ internal class PushedAuthorizationRequest
     public string? MaxAge { get; init; }
     public string? State { get; init; }
     public string? ResponseMode { get; init; }
+    public string? GrantId { get; init; }
+    public string? GrantManagementAction { get; init; }
     public string? RequestObject { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];

@@ -23,7 +23,7 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
     [Theory]
     [InlineData("", "")]
     [InlineData(null, null)]
-    public async Task GetRequest_EmptyStringParametersBody_ExpectValues(string? value, string expectedValue)
+    public async Task GetRequest_EmptyStringParametersBody_ExpectValues(string? value, string? expectedValue)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -47,6 +47,8 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.ResponseType, value },
                     { Parameter.Nonce, value },
                     { Parameter.State, value },
+                    { Parameter.GrantId, value },
+                    { Parameter.GrantManagementAction, value },
                     { Parameter.Request, value },
                     { Parameter.ClientId, value },
                     { Parameter.ClientSecret, value },
@@ -76,6 +78,8 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.ResponseType);
         Assert.Equal(expectedValue, request.Nonce);
         Assert.Equal(expectedValue, request.State);
+        Assert.Equal(expectedValue, request.GrantId);
+        Assert.Equal(expectedValue, request.GrantManagementAction);
         Assert.Equal(expectedValue, request.RequestObject);
         Assert.Empty(request.ClientAuthentications);
     }
@@ -106,7 +110,9 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.ResponseType, value },
                     { Parameter.Nonce, value },
                     { Parameter.State, value },
-                    { Parameter.Request, value },
+                    { Parameter.GrantId, value },
+                    { Parameter.GrantManagementAction, value },
+                    { Parameter.Request, value }
                 })
             }
         };
@@ -127,6 +133,8 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(value, request.ResponseType);
         Assert.Equal(value, request.Nonce);
         Assert.Equal(value, request.State);
+        Assert.Equal(value, request.GrantId);
+        Assert.Equal(value, request.GrantManagementAction);
         Assert.Equal(value, request.RequestObject);
         Assert.Empty(request.ClientAuthentications);
     }
