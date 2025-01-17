@@ -62,26 +62,10 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient(HttpClientNameConstants.Client);
 
         services
-            .ConfigureOptions<PostConfigureDiscoveryDocumentOptions>()
-            .ConfigureOptions<ValidateDiscoveryDocumentOptions>()
-            .ConfigureOptions<ValidateJwksDocument>()
-            .ConfigureOptions<ValidateUserInteractionOptions>();
-
-        services
             .AddDbContext<AuthorizationDbContext>(databaseConfigurator)
             .AddScoped<IUnitOfWork, UnitOfWork>()
             .AddScoped<ICachedClientStore, CachedClientStore>()
             .AddScoped<ITokenReplayCache, TokenReplayCache>();
-
-        services
-            .AddScoped<ITokenBuilder<LogoutTokenArguments>, LogoutTokenBuilder>()
-            .AddScoped<ITokenBuilder<IdTokenArguments>, IdTokenBuilder>()
-            .AddScoped<ITokenBuilder<ClientAccessTokenArguments>, ClientAccessTokenBuilder>()
-            .AddScoped<ITokenBuilder<GrantAccessTokenArguments>, GrantAccessTokenBuilder>()
-            .AddScoped<ITokenBuilder<RefreshTokenArguments>, RefreshTokenBuilder>()
-            .AddScoped<ITokenBuilder<RegistrationTokenArguments>, RegistrationTokenBuilder>()
-            .AddScoped<ITokenBuilder<UserinfoTokenArguments>, UserinfoTokenBuilder>()
-            .AddScoped<ITokenSecurityService, TokenSecurityService>();
 
         services
             .AddScoped<ITokenDecoder<ServerIssuedTokenDecodeArguments>, ServerIssuedTokenDecoder>()
@@ -94,14 +78,11 @@ public static class ServiceCollectionExtensions
             .AddScoped<IClientSectorService, ClientSectorService>()
             .AddScoped<IClientLogoutService, ClientLogoutService>();
 
-        services
-            .AddScoped<IClientRepository, ClientRepository>()
-            .AddScoped<IConsentGrantRepository, ConsentGrantRepository>()
-            .AddScoped<IAuthorizationGrantRepository, AuthorizationGrantRepository>()
-            .AddScoped<ITokenRepository, TokenRepository>()
-            .AddScoped<INonceRepository, NonceRepository>()
-            .AddScoped<ISessionRepository, SessionRepository>();
-
+        AddAuthServerAuthentication(services);
+        AddAuthServerAuthorization(services);
+        AddAuthServerOptions(services);
+        AddTokenBuilders(services);
+        AddRepositories(services);
         AddAuthorize(services);
         AddToken(services);
         AddUserinfo(services);
@@ -112,6 +93,89 @@ public static class ServiceCollectionExtensions
         AddRegister(services);
         AddGrantManagement(services);
 
+        return services;
+    }
+
+    private static IServiceCollection AddRepositories(IServiceCollection services)
+    {
+        return services
+            .AddScoped<IClientRepository, ClientRepository>()
+            .AddScoped<IConsentRepository, ConsentRepository>()
+            .AddScoped<IAuthorizationGrantRepository, AuthorizationGrantRepository>()
+            .AddScoped<ITokenRepository, TokenRepository>()
+            .AddScoped<INonceRepository, NonceRepository>()
+            .AddScoped<ISessionRepository, SessionRepository>();
+    }
+
+    private static IServiceCollection AddAuthServerOptions(IServiceCollection services)
+    {
+        return services
+            .ConfigureOptions<PostConfigureDiscoveryDocumentOptions>()
+            .ConfigureOptions<ValidateDiscoveryDocumentOptions>()
+            .ConfigureOptions<ValidateJwksDocument>()
+            .ConfigureOptions<ValidateUserInteractionOptions>();
+    }
+    
+    private static IServiceCollection AddTokenBuilders(IServiceCollection services)
+    {
+        return services
+            .AddScoped<ITokenBuilder<LogoutTokenArguments>, LogoutTokenBuilder>()
+            .AddScoped<ITokenBuilder<IdTokenArguments>, IdTokenBuilder>()
+            .AddScoped<ITokenBuilder<ClientAccessTokenArguments>, ClientAccessTokenBuilder>()
+            .AddScoped<ITokenBuilder<GrantAccessTokenArguments>, GrantAccessTokenBuilder>()
+            .AddScoped<ITokenBuilder<RefreshTokenArguments>, RefreshTokenBuilder>()
+            .AddScoped<ITokenBuilder<RegistrationTokenArguments>, RegistrationTokenBuilder>()
+            .AddScoped<ITokenBuilder<UserinfoTokenArguments>, UserinfoTokenBuilder>()
+            .AddScoped<ITokenSecurityService, TokenSecurityService>();
+    }
+
+    private static IServiceCollection AddAuthServerAuthentication(IServiceCollection services)
+    {
+        services
+            .AddAuthentication()
+            .AddScheme<OAuthTokenAuthenticationOptions, OAuthTokenAuthenticationHandler>(
+                OAuthTokenAuthenticationDefaults.AuthenticationScheme, null);
+        
+        return services;
+    }
+
+    private static IServiceCollection AddAuthServerAuthorization(IServiceCollection services)
+    {
+        services
+            .AddAuthorizationBuilder()
+            .AddPolicy(AuthorizationConstants.Userinfo, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion(context =>
+                {
+                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
+                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.UserInfo);
+                });
+            })
+            .AddPolicy(AuthorizationConstants.Register, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireClaim(ClaimNameConstants.Scope, ScopeConstants.Register);
+            })
+            .AddPolicy(AuthorizationConstants.GrantManagementQuery, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion(context =>
+                {
+                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
+                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementQuery);
+                });
+            })
+            .AddPolicy(AuthorizationConstants.GrantManagementRevoke, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion(context =>
+                {
+                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
+                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementRevoke);
+                });
+            });
+        
         return services;
     }
 
