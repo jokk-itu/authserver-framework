@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthServer.DatabaseConfigurations;
+namespace AuthServer.EntityConfigurations;
 internal sealed class RequestUriConfiguration : IEntityTypeConfiguration<RequestUri>
 {
     public void Configure(EntityTypeBuilder<RequestUri> builder)
