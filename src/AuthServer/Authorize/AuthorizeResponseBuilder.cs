@@ -77,6 +77,8 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
                 MaxAge = newRequest.MaxAge,
                 State = newRequest.State,
                 ResponseMode = newRequest.ResponseMode,
+                GrantId = newRequest.GrantId,
+                GrantManagementAction = newRequest.GrantManagementAction,
                 Scope = newRequest.Scope,
                 AcrValues = newRequest.AcrValues
             };

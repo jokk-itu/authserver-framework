@@ -76,6 +76,8 @@ internal class SecureRequestService : ISecureRequestService
         jsonWebToken.TryGetClaim(Parameter.ResponseMode, out var responseModeClaim);
         jsonWebToken.TryGetClaim(Parameter.ResponseType, out var responseTypeClaim);
         jsonWebToken.TryGetClaim(Parameter.State, out var stateClaim);
+        jsonWebToken.TryGetClaim(Parameter.GrantId, out var grantIdClaim);
+        jsonWebToken.TryGetClaim(Parameter.GrantManagementAction, out var grantManagementAction);
         jsonWebToken.TryGetClaim(Parameter.Scope, out var scopeClaim);
         jsonWebToken.TryGetClaim(Parameter.AcrValues, out var acrValuesClaim);
 
@@ -94,6 +96,8 @@ internal class SecureRequestService : ISecureRequestService
             ResponseMode = responseModeClaim?.Value,
             ResponseType = responseTypeClaim?.Value,
             State = stateClaim?.Value,
+            GrantId = grantIdClaim?.Value,
+            GrantManagementAction = grantManagementAction?.Value,
             Scope = scopeClaim?.Value.Split(' ') ?? [],
             AcrValues = acrValuesClaim?.Value.Split(' ') ?? [],
         };

@@ -53,7 +53,8 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         {
             return PushedAuthorizationError.RequestRequiredAsRequestObject;
         }
-        else if (!isRequestObjectEmpty)
+
+        if (!isRequestObjectEmpty)
         {
             var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, clientAuthenticationResult.ClientId, ClientTokenAudience.PushedAuthorizeEndpoint, cancellationToken);
             if (newRequest is null)
@@ -75,6 +76,8 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
                 MaxAge = newRequest.MaxAge,
                 State = newRequest.State,
                 ResponseMode = newRequest.ResponseMode,
+                GrantId = newRequest.GrantId,
+                GrantManagementAction = newRequest.GrantManagementAction,
                 RequestObject = string.Empty,
                 Scope = newRequest.Scope,
                 AcrValues = newRequest.AcrValues,
@@ -183,7 +186,9 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             MaxAge = request.MaxAge,
             Nonce = request.Nonce!,
             State = request.State!,
-            RedirectUri = request.RedirectUri
+            RedirectUri = request.RedirectUri,
+            GrantId = request.GrantId,
+            GrantManagementAction = request.GrantManagementAction
         };
     }
 }

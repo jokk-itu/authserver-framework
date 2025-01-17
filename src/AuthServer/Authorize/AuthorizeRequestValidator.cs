@@ -57,19 +57,23 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         {
             return AuthorizeError.InvalidRequestAndRequestUri;
         }
-        else if (isRequestUriEmpty && isRequestObjectEmpty && cachedClient.RequireSignedRequestObject)
+
+        if (isRequestUriEmpty && isRequestObjectEmpty && cachedClient.RequireSignedRequestObject)
         {
             return AuthorizeError.RequestOrRequestUriRequiredAsRequestObject;
         }
-        else if (isRequestUriEmpty && cachedClient.RequirePushedAuthorizationRequests)
+
+        if (isRequestUriEmpty && cachedClient.RequirePushedAuthorizationRequests)
         {
             return AuthorizeError.RequestUriRequiredAsPushedAuthorizationRequest;
         }
-        else if (request.RequestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true)
+
+        if (request.RequestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true)
         {
             return await ValidateFromPushedAuthorization(request, cancellationToken);
         }
-        else if (!isRequestUriEmpty)
+
+        if (!isRequestUriEmpty)
         {
             var substitutedRequestUri = await SubstituteRequestUri(request, cachedClient, cancellationToken);
             if (substitutedRequestUri.IsSuccess)

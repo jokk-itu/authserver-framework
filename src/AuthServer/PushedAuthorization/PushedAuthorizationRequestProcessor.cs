@@ -31,7 +31,9 @@ internal class PushedAuthorizationRequestProcessor : IRequestProcessor<PushedAut
             MaxAge = request.MaxAge,
             Nonce = request.Nonce,
             State = request.State,
-            RedirectUri = request.RedirectUri
+            RedirectUri = request.RedirectUri,
+            GrantId = request.GrantId,
+            GrantManagementAction = request.GrantManagementAction
         };
         var authorizeMessage = await _clientRepository.AddAuthorizeMessage(authorizeDto, cancellationToken);
 
