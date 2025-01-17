@@ -1,4 +1,5 @@
-﻿using AuthServer.Core.Abstractions;
+﻿using AuthServer.Core;
+using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -23,10 +24,9 @@ internal class PushedAuthorizationEndpointModule : IEndpointModule
             .WithDescription("OpenId Connect Pushed Authorization")
             .WithGroupName("Authorize");
 
-        routeBuilder.WithRequestTimeout(TimeSpan.FromSeconds(1));
-
         routeBuilder
             .AddEndpointFilter<NoCacheFilter>()
-            .AddEndpointFilter<NoReferrerFilter>();
+            .AddEndpointFilter<NoReferrerFilter>()
+            .AddEndpointFilter(new FeatureFilter(FeatureFlags.PushedAuthorization));
     }
 }

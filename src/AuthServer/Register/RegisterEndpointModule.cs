@@ -1,4 +1,5 @@
 ﻿using AuthServer.Constants;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
@@ -26,8 +27,8 @@ internal class RegisterEndpointModule : IEndpointModule
 
         postRegisterBuilder
             .AddEndpointFilter<NoCacheFilter>()
-            .AddEndpointFilter<NoReferrerFilter>();
-
+            .AddEndpointFilter<NoReferrerFilter>()
+            .AddEndpointFilter(new FeatureFilter(FeatureFlags.RegisterPost));
 
         var manageRegisterBuilder = endpointRouteBuilder
             .MapMethods(
@@ -47,6 +48,16 @@ internal class RegisterEndpointModule : IEndpointModule
 
         manageRegisterBuilder
             .AddEndpointFilter<NoCacheFilter>()
-            .AddEndpointFilter<NoReferrerFilter>();
+            .AddEndpointFilter<NoReferrerFilter>()
+            .AddEndpointFilter(new FeatureFilter(ctx =>
+            {
+                return ctx.HttpContext.Request.Method switch
+                {
+                    "GET" => FeatureFlags.RegisterGet,
+                    "PUT" => FeatureFlags.RegisterPut,
+                    "DELETE" => FeatureFlags.RegisterDelete,
+                    _ => throw new NotSupportedException()
+                };
+            }));
     }
 }

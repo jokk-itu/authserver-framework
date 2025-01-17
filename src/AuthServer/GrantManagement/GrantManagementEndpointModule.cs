@@ -1,4 +1,5 @@
 using AuthServer.Constants;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
@@ -24,6 +25,7 @@ internal class GrantManagementEndpointModule : IEndpointModule
             .WithGroupName("GrantManagement")
             .RequireAuthorization(AuthorizationConstants.GrantManagementRevoke)
             .AddEndpointFilter<NoCacheFilter>()
-            .AddEndpointFilter<NoReferrerFilter>();
+            .AddEndpointFilter<NoReferrerFilter>()
+            .AddEndpointFilter(new FeatureFilter(FeatureFlags.GrantManagementRevoke));
     }
 }
