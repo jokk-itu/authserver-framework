@@ -1,4 +1,4 @@
-using AuthServer.Core;
+﻿using AuthServer.Core;
 
 namespace AuthServer.Entities;
 
@@ -11,5 +11,7 @@ public class SubjectIdentifier : Entity<string>
 
     public ICollection<Session> Sessions { get; private init; } = [];
     public ICollection<Consent> Consents { get; private init; } = [];
+    
+    [Obsolete]
     public ICollection<ConsentGrant> ConsentGrants { get; private init; } = [];
 }

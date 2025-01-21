@@ -1,6 +1,8 @@
 ﻿using AuthServer.Core;
 
 namespace AuthServer.Entities;
+
+[Obsolete]
 public class ConsentGrant : Entity<int>
 {
     public ConsentGrant(SubjectIdentifier subjectIdentifier, Client client)

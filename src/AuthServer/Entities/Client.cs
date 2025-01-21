@@ -188,8 +188,10 @@ public class Client : Entity<string>
     public ICollection<AuthorizationGrant> AuthorizationGrants { get; set; } = [];
     public ICollection<ClientToken> ClientTokens { get; set; } = [];
     public ICollection<AuthorizeMessage> AuthorizeMessages { get; set; } = [];
-    public ICollection<ConsentGrant> ConsentGrants { get; set; } = [];
     public ICollection<ClientAuthenticationContextReference> ClientAuthenticationContextReferences { get; set; } = [];
+
+    [Obsolete]
+    public ICollection<ConsentGrant> ConsentGrants { get; set; } = [];
 
     public void SetSecret(string secretHash)
     {
