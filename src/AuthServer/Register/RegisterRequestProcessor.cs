@@ -294,7 +294,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             .ExecuteDeleteAsync(cancellationToken);
 
         await _authorizationDbContext
-            .Set<ConsentGrant>()
+            .Set<Consent>()
             .Where(x => x.Client.Id == clientId)
             .ExecuteDeleteAsync(cancellationToken);
 
