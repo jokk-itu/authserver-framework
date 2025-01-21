@@ -1,4 +1,4 @@
-﻿using AuthServer.Core;
+using AuthServer.Core;
 
 namespace AuthServer.Entities;
 public class Claim : Entity<int>
@@ -14,5 +14,6 @@ public class Claim : Entity<int>
 #pragma warning restore
 
     public string Name { get; private init; }
+    public ICollection<ClaimConsent> ClaimConsents { get; private init; } = [];
     public ICollection<ConsentGrant> ConsentGrants { get; private init; } = [];
 }

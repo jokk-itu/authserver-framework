@@ -29,6 +29,7 @@ public class AuthorizationGrant : Entity<string>
     public ICollection<Nonce> Nonces { get; init; } = [];
     public ICollection<GrantToken> GrantTokens { get; init; } = [];
     public ICollection<AuthenticationMethodReference> AuthenticationMethodReferences { get; init; } = [];
+    public ICollection<AuthorizationGrantConsent> AuthorizationGrantConsents { get; init; } = [];
 
     public void Revoke()
     {

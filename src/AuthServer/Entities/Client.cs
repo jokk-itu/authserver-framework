@@ -184,6 +184,7 @@ public class Client : Entity<string>
     public ICollection<ResponseType> ResponseTypes { get; set; } = [];
 
 
+    public ICollection<Consent> Consents { get; set; } = [];
     public ICollection<AuthorizationGrant> AuthorizationGrants { get; set; } = [];
     public ICollection<ClientToken> ClientTokens { get; set; } = [];
     public ICollection<AuthorizeMessage> AuthorizeMessages { get; set; } = [];
