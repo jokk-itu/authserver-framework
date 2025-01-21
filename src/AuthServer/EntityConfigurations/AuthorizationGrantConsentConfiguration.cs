@@ -11,8 +11,8 @@ public class AuthorizationGrantConsentConfiguration : IEntityTypeConfiguration<A
     {
         builder
             .HasDiscriminator(x => x.ConsentType)
-            .HasValue<ScopeConsent>(ConsentType.Scope)
-            .HasValue<ClaimConsent>(ConsentType.Claim);
+            .HasValue<AuthorizationGrantScopeConsent>(ConsentType.Scope)
+            .HasValue<AuthorizationGrantClaimConsent>(ConsentType.Claim);
 
         builder
             .HasOne(x => x.Consent)
