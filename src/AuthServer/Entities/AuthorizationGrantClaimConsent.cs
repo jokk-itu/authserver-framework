@@ -8,4 +8,9 @@ public class AuthorizationGrantClaimConsent : AuthorizationGrantConsent
         : base(consent, authorizationGrant, ConsentType.Claim)
     {
     }
+    
+#pragma warning disable CS8618
+    // Used to hydrate EF Core model
+    private AuthorizationGrantClaimConsent() { }
+#pragma warning restore
 }

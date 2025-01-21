@@ -10,5 +10,10 @@ public class ClaimConsent : Consent
         Claim = claim ?? throw new ArgumentNullException(nameof(claim));
     }
     
+#pragma warning disable CS8618
+    // Used to hydrate EF Core model
+    private ClaimConsent() { }
+#pragma warning restore
+    
     public Claim Claim { get; private init; }
 }

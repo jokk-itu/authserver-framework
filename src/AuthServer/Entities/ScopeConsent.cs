@@ -10,5 +10,10 @@ public class ScopeConsent : Consent
         Scope = scope ?? throw new ArgumentNullException(nameof(scope));
     }
     
+#pragma warning disable CS8618
+    // Used to hydrate EF Core model
+    private ScopeConsent() { }
+#pragma warning restore
+    
     public Scope Scope { get; private init; }
 }

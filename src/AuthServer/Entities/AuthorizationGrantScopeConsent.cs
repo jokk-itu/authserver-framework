@@ -14,5 +14,10 @@ public class AuthorizationGrantScopeConsent : AuthorizationGrantConsent
         : base(consent, authorizationGrant, ConsentType.Scope)
     {}
     
+#pragma warning disable CS8618
+    // Used to hydrate EF Core model
+    private AuthorizationGrantScopeConsent() { }
+#pragma warning restore
+    
     public string? Resource { get; private init; }
 }

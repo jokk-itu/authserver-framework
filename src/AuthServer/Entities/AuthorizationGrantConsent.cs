@@ -14,7 +14,7 @@ public abstract class AuthorizationGrantConsent : Entity<int>
     
 #pragma warning disable CS8618
     // Used to hydrate EF Core model
-    private AuthorizationGrantConsent() { }
+    protected AuthorizationGrantConsent() { }
 #pragma warning restore
         
     public Consent Consent { get; private init; }
