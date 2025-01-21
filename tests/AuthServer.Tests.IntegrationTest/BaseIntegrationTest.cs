@@ -119,7 +119,16 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     });
 
     protected string GetUserinfoScope() =>
-        ServiceProvider.GetRequiredService<AuthorizationDbContext>().Set<Scope>().Single(x => x.Name == ScopeConstants.UserInfo).Name;
+        ServiceProvider.GetRequiredService<AuthorizationDbContext>().
+            Set<Scope>().Single(x => x.Name == ScopeConstants.UserInfo).Name;
+    
+    protected string GetGrantManagementRevokeScopeScope() =>
+        ServiceProvider.GetRequiredService<AuthorizationDbContext>().
+            Set<Scope>().Single(x => x.Name == ScopeConstants.GrantManagementRevoke).Name;
+    
+    protected string GetGrantManagementQueryScope() =>
+        ServiceProvider.GetRequiredService<AuthorizationDbContext>().
+            Set<Scope>().Single(x => x.Name == ScopeConstants.GrantManagementQuery).Name;
 
     protected async Task<string> AddWeatherReadScope()
     {
@@ -156,9 +165,11 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
 
         var userinfoScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.UserInfo);
+        var grantManagementRevokeScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.GrantManagementRevoke);
+        var grantManagementQueryScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.GrantManagementQuery);
         var client = new Client("identity-provider", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
-            Scopes = [userinfoScope],
+            Scopes = [userinfoScope, grantManagementRevokeScope, grantManagementQueryScope],
             ClientUri = "https://localhost:7254"
         };
 
