@@ -19,6 +19,11 @@ public static class ErrorCode
     public const string InvalidGrant = "invalid_grant";
 
     /// <summary>
+    /// The provided grant_id is unknown or invalid or unauthorized.
+    /// </summary>
+    public const string InvalidGrantId = "invalid_grant_id";
+
+    /// <summary>
     /// The authenticated client is not authorized.
     /// </summary>
     public const string UnauthorizedClient = "unauthorized_client";

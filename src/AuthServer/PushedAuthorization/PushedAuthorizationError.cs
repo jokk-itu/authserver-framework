@@ -1,4 +1,4 @@
-﻿using AuthServer.Core.Request;
+using AuthServer.Core.Request;
 using AuthServer.Core;
 
 namespace AuthServer.PushedAuthorization;
@@ -61,6 +61,12 @@ internal static class PushedAuthorizationError
 
     public static readonly ProcessError InvalidAcrValues =
         new(ErrorCode.InvalidRequest, "acr_values is invalid", ResultCode.Redirect);
+    
+    public static readonly ProcessError InvalidGrantManagement =
+        new(ErrorCode.InvalidRequest, "grant_management_action or grant_id is invalid", ResultCode.BadRequest);
+    
+    public static readonly ProcessError InvalidGrantId =
+        new(ErrorCode.InvalidGrantId, "grant_id is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidRequest =
         new(ErrorCode.InvalidRequestObject, "request is invalid", ResultCode.BadRequest);
