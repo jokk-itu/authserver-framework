@@ -1,4 +1,4 @@
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
@@ -169,6 +169,16 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         if (!HasValidAcrValues(request.AcrValues))
         {
             return PushedAuthorizationError.InvalidAcrValues;
+        }
+        
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        {
+            return PushedAuthorizationError.InvalidGrantManagement;
+        }
+
+        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
+        {
+            return PushedAuthorizationError.InvalidGrantId;
         }
 
         return new PushedAuthorizationValidatedRequest

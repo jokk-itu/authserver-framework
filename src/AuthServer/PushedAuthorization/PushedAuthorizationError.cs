@@ -1,4 +1,4 @@
-using AuthServer.Core.Request;
+﻿using AuthServer.Core.Request;
 using AuthServer.Core;
 
 namespace AuthServer.PushedAuthorization;
@@ -21,46 +21,46 @@ internal static class PushedAuthorizationError
         new(ErrorCode.UnauthorizedClient, "client is unauthorized for redirect_uri", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidResponseMode =
-        new(ErrorCode.InvalidRequest, "response_mode is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "response_mode is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidResponseType =
-        new(ErrorCode.InvalidRequest, "response_type is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "response_type is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError UnauthorizedResponseType =
-        new(ErrorCode.UnauthorizedClient, "client is unauthorized for authorization_code", ResultCode.Redirect);
+        new(ErrorCode.UnauthorizedClient, "client is unauthorized for authorization_code", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidDisplay =
-        new(ErrorCode.InvalidRequest, "display is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "display is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidNonce =
-        new(ErrorCode.InvalidRequest, "nonce must not be null or empty", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "nonce must not be null or empty", ResultCode.BadRequest);
 
     public static readonly ProcessError ReplayNonce =
-        new(ErrorCode.InvalidRequest, "nonce replay attack detected", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "nonce replay attack detected", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidCodeChallengeMethod =
-        new(ErrorCode.InvalidRequest, "code_challenge_method is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "code_challenge_method is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidCodeChallenge =
-        new(ErrorCode.InvalidRequest, "code_challenge is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "code_challenge is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidOpenIdScope =
-        new(ErrorCode.InvalidScope, "openid is required", ResultCode.Redirect);
+        new(ErrorCode.InvalidScope, "openid is required", ResultCode.BadRequest);
 
     public static readonly ProcessError UnauthorizedScope =
-        new(ErrorCode.UnauthorizedClient, "client is unauthorized for scope", ResultCode.Redirect);
+        new(ErrorCode.UnauthorizedClient, "client is unauthorized for scope", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidMaxAge =
-        new(ErrorCode.InvalidRequest, "max_age is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "max_age is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidIdTokenHint =
-        new(ErrorCode.InvalidRequest, "id_token_hint is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "id_token_hint is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidPrompt =
-        new(ErrorCode.InvalidRequest, "prompt is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "prompt is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidAcrValues =
-        new(ErrorCode.InvalidRequest, "acr_values is invalid", ResultCode.Redirect);
+        new(ErrorCode.InvalidRequest, "acr_values is invalid", ResultCode.BadRequest);
     
     public static readonly ProcessError InvalidGrantManagement =
         new(ErrorCode.InvalidRequest, "grant_management_action or grant_id is invalid", ResultCode.BadRequest);
