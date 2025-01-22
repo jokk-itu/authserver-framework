@@ -22,6 +22,17 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
     }
 
     /// <inheritdoc/>
+    public async Task<bool> IsActiveAuthorizationGrant(string authorizationGrantId, string clientId, CancellationToken cancellationToken)
+    {
+        return await _identityContext
+            .Set<AuthorizationGrant>()
+            .Where(x => x.Id == authorizationGrantId)
+            .Where(x => x.Client.Id == clientId)
+            .Where(AuthorizationGrant.IsActive)
+            .AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<AuthorizationGrant> CreateAuthorizationGrant(
         string subjectIdentifier,
         string clientId,

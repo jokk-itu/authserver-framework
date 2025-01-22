@@ -5,6 +5,15 @@ namespace AuthServer.Repositories.Abstractions;
 internal interface IAuthorizationGrantRepository
 {
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="authorizationGrantId"></param>
+    /// <param name="clientId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> IsActiveAuthorizationGrant(string authorizationGrantId, string clientId, CancellationToken cancellationToken);
+    
+    /// <summary>
     /// Creates a new grant and revoked the previous grant, if it exists.
     /// </summary>
     /// <param name="subjectIdentifier"></param>
