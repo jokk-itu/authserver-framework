@@ -1,4 +1,4 @@
-﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
@@ -24,8 +24,9 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         INonceRepository nonceRepository,
         ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
-        ISecureRequestService secureRequestService)
-        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions)
+        ISecureRequestService secureRequestService,
+        IAuthorizationGrantRepository authorizationGrantRepository)
+        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository)
     {
         _cachedClientStore = cachedClientStore;
         _clientAuthenticationService = clientAuthenticationService;

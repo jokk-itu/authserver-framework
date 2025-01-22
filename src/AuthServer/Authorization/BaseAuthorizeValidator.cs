@@ -14,15 +14,18 @@ internal class BaseAuthorizeValidator
     private readonly INonceRepository _nonceRepository;
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
+    private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
 
     public BaseAuthorizeValidator(
         INonceRepository nonceRepository,
         ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
-        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions)
+        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
+        IAuthorizationGrantRepository authorizationGrantRepository)
     {
         _nonceRepository = nonceRepository;
         _tokenDecoder = tokenDecoder;
         _discoveryDocumentOptions = discoveryDocumentOptions;
+        _authorizationGrantRepository = authorizationGrantRepository;
     }
 
     protected static bool HasValidState(string? state) => !string.IsNullOrEmpty(state);
@@ -89,5 +92,59 @@ internal class BaseAuthorizeValidator
             }, cancellationToken);
 
         return validatedToken is not null;
+    }
+
+    protected bool HasValidGrantManagementAction(string? grantId, string? grantManagementAction)
+    {
+        if (string.IsNullOrEmpty(grantManagementAction)
+            && _discoveryDocumentOptions.Value.GrantManagementActionRequired)
+        {
+            return false;
+        }
+
+        var allowedValues = new List<string>
+            {
+                GrantManagementActionConstants.Create,
+                GrantManagementActionConstants.Merge,
+                GrantManagementActionConstants.Replace
+            }
+            .Intersect(_discoveryDocumentOptions.Value.GrantManagementActionsSupported)
+            .ToList();
+        
+        if (!string.IsNullOrEmpty(grantManagementAction)
+            && !allowedValues.Contains(grantManagementAction))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(grantManagementAction)
+            && !string.IsNullOrEmpty(grantId))
+        {
+            return false;
+        }
+
+        if (grantManagementAction == GrantManagementActionConstants.Create
+            && !string.IsNullOrEmpty(grantId))
+        {
+            return false;
+        }
+
+        if (grantManagementAction != GrantManagementActionConstants.Create
+            && string.IsNullOrEmpty(grantId))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected async Task<bool> HasValidGrantId(string? grantId, string clientId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(grantId))
+        {
+            return true;
+        }
+
+        return await _authorizationGrantRepository.IsActiveAuthorizationGrant(grantId, clientId, cancellationToken);
     }
 }

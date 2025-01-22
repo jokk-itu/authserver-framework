@@ -1,4 +1,4 @@
-﻿using AuthServer.Authorization;
+using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
@@ -29,7 +29,9 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         ISecureRequestService secureRequestService,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         INonceRepository nonceRepository,
-        IClientRepository clientRepository) : base(nonceRepository, tokenDecoder, discoveryDocumentOptions)
+        IClientRepository clientRepository,
+        IAuthorizationGrantRepository authorizationGrantRepository)
+        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;
