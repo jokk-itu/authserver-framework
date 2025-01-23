@@ -54,6 +54,9 @@ internal class AuthorizeService : IAuthorizeService
     public async Task CreateAuthorizationGrant(string subjectIdentifier, string clientId, IReadOnlyCollection<string> amr,
         CancellationToken cancellationToken)
     {
+        // It is guaranteed that the user is not set
+        _authorizeUserAccessor.SetUser(new AuthorizeUser(subjectIdentifier, true, Guid.NewGuid().ToString()));
+
         var acr = await _authenticationContextResolver.ResolveAuthenticationContextReference(amr, cancellationToken);
         await _authorizationGrantRepository.CreateAuthorizationGrant(subjectIdentifier, clientId, acr, amr, cancellationToken);
     }
@@ -62,6 +65,10 @@ internal class AuthorizeService : IAuthorizeService
     public async Task CreateOrUpdateConsentGrant(string subjectIdentifier, string clientId, IEnumerable<string> consentedScope, IEnumerable<string> consentedClaims,
         CancellationToken cancellationToken)
     {
+        // TODO Either get AuthorizationGrantId from request, or from AuthorizeUser or from the active session in IdTokenHint or AuthenticatedUser
+        // The user might have been set previously, so the try logic is used to accommodate that
+        _authorizeUserAccessor.TrySetUser(new AuthorizeUser(subjectIdentifier, true, Guid.NewGuid().ToString()));
+
         await _consentGrantRepository.CreateOrUpdateConsentGrant(subjectIdentifier, clientId, consentedScope, consentedClaims, cancellationToken);
     }
 
@@ -92,6 +99,8 @@ internal class AuthorizeService : IAuthorizeService
     /// <inheritdoc/>
     public async Task<IActionResult> GetErrorResult(string requestUri, string clientId, OAuthError oauthError, HttpContext httpContext, CancellationToken cancellationToken)
     {
+        _authorizeUserAccessor.ClearUser();
+
         var requestDto = await _secureRequestService.GetRequestByPushedRequest(requestUri, clientId, cancellationToken);
         if (requestDto is null)
         {
