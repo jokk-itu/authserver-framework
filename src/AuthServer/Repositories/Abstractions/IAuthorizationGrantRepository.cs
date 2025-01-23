@@ -27,15 +27,6 @@ internal interface IAuthorizationGrantRepository
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="subjectIdentifier"></param>
-    /// <param name="clientId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<AuthorizationGrant?> GetActiveAuthorizationGrant(string subjectIdentifier, string clientId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="authorizationGrantId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>

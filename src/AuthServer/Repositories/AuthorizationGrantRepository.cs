@@ -56,27 +56,14 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
     }
 
     /// <inheritdoc/>
-    public async Task<AuthorizationGrant?> GetActiveAuthorizationGrant(string subjectIdentifier, string clientId,
-        CancellationToken cancellationToken)
+    public async Task<AuthorizationGrant?> GetActiveAuthorizationGrant(string authorizationGrantId, CancellationToken cancellationToken)
     {
         return await _identityContext
             .Set<AuthorizationGrant>()
             .Include(x => x.AuthenticationContextReference)
             .Include(x => x.Client)
-            .Where(AuthorizationGrant.IsActive)
-            .Where(x => x.Client.Id == clientId)
-            .Where(x => x.Session.RevokedAt == null)
-            .Where(x => x.Session.SubjectIdentifier.Id == subjectIdentifier)
-            .SingleOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<AuthorizationGrant?> GetActiveAuthorizationGrant(string authorizationGrantId,
-        CancellationToken cancellationToken)
-    {
-        return await _identityContext
-            .Set<AuthorizationGrant>()
-            .Include(x => x.AuthenticationContextReference)
+            .Include(x => x.Session)
+            .ThenInclude(x => x.SubjectIdentifier)
             .Where(AuthorizationGrant.IsActive)
             .Where(x => x.Session.RevokedAt == null)
             .Where(x => x.Id == authorizationGrantId)

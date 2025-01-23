@@ -108,51 +108,6 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task GetActiveAuthorizationGrant_SubjectAndClientIdWithRevokedGrant_ExpectNull()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
-        authorizationGrant.Revoke();
-        await AddEntity(authorizationGrant);
-
-        // Act
-        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationGrant(subjectIdentifier.Id, client.Id, CancellationToken.None);
-
-        // Assert
-        Assert.Null(activeGrant);
-    }
-
-    [Fact]
-    public async Task GetActiveAuthorizationGrant_SubjectAndClientIdWithRevokedSession_ExpectNull()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        session.Revoke();
-
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
-        await AddEntity(authorizationGrant);
-
-        // Act
-        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationGrant(subjectIdentifier.Id, client.Id, CancellationToken.None);
-
-        // Assert
-        Assert.Null(activeGrant);
-    }
-
-    [Fact]
     public async Task GetActiveAuthorizationGrant_GrantIdWithRevokedGrant_ExpectNull()
     {
         // Arrange
@@ -195,6 +150,27 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
 
         // Assert
         Assert.Null(activeGrant);
+    }
+
+    [Fact]
+    public async Task GetActiveAuthorizationGrant_ActiveAuthorizationGrant_ExpectAuthorizationGrant()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        await AddEntity(authorizationGrant);
+
+        // Act
+        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationGrant(authorizationGrant.Id, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(authorizationGrant, activeGrant);
     }
 
     [Fact]
