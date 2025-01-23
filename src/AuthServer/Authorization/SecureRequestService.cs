@@ -1,13 +1,13 @@
 ﻿using System.Net.Http.Headers;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
-using AuthServer.Options;
+using AuthServer.Extensions;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace AuthServer.Authorization;
 
@@ -17,7 +17,7 @@ internal class SecureRequestService : ISecureRequestService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<SecureRequestService> _logger;
     private readonly IClientRepository _clientRepository;
-    private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
+    private readonly ICachedClientStore _cachedClientStore;
 
     private AuthorizeRequestDto? _cachedAuthorizeRequestObjectDto;
 
@@ -26,13 +26,13 @@ internal class SecureRequestService : ISecureRequestService
         IHttpClientFactory httpClientFactory,
         ILogger<SecureRequestService> logger,
         IClientRepository clientRepository,
-        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions)
+        ICachedClientStore cachedClientStore)
     {
         _tokenDecoder = tokenDecoder;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _clientRepository = clientRepository;
-        _discoveryDocumentOptions = discoveryDocumentOptions;
+        _cachedClientStore = cachedClientStore;
     }
 
     /// <inheritdoc/>
@@ -46,12 +46,25 @@ internal class SecureRequestService : ISecureRequestService
     public async Task<AuthorizeRequestDto?> GetRequestByObject(string requestObject, string clientId,
         ClientTokenAudience audience, CancellationToken cancellationToken)
     {
+        var client = await _cachedClientStore.Get(clientId, cancellationToken);
+        var algorithms = new List<string>();
+
+        if (client.RequestObjectSigningAlg is not null)
+        {
+            algorithms.Add(client.RequestObjectSigningAlg.GetDescription());
+        }
+
+        if (client.RequestObjectEncryptionEnc is not null)
+        {
+            algorithms.Add(client.RequestObjectEncryptionEnc.GetDescription());
+        }
+
         var jsonWebToken = await _tokenDecoder.Validate(
             requestObject,
             new ClientIssuedTokenDecodeArguments
             {
                 ValidateLifetime = true,
-                Algorithms = [.. _discoveryDocumentOptions.Value.RequestObjectSigningAlgValuesSupported],
+                Algorithms = algorithms.AsReadOnly(),
                 Audience = audience,
                 ClientId = clientId,
                 TokenType = TokenTypeHeaderConstants.RequestObjectToken
