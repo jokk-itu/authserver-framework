@@ -1,6 +1,6 @@
 ﻿namespace AuthServer.Authorize.Abstractions;
 
-public interface IAuthorizeUserAccessor
+internal interface IAuthorizeUserAccessor
 {
     /// <summary>
     /// Gets the <see cref="AuthorizeUser"/>.
