@@ -15,14 +15,10 @@ namespace AuthServer.TestIdentityProvider.Pages;
 [ValidateAntiForgeryToken]
 public class SignInModel : PageModel
 {
-    private readonly IAuthorizeUserAccessor _authorizeUserAccessor;
     private readonly IAuthorizeService _authorizeService;
 
-    public SignInModel(
-        IAuthorizeUserAccessor authorizeUserAccessor,
-        IAuthorizeService authorizeService)
+    public SignInModel(IAuthorizeService authorizeService)
     {
-        _authorizeUserAccessor = authorizeUserAccessor;
         _authorizeService = authorizeService;
     }
 
@@ -57,7 +53,6 @@ public class SignInModel : PageModel
             var requestUri = query.Get(Parameter.RequestUri)!;
             var clientId = query.Get(Parameter.ClientId)!;
             await _authorizeService.CreateAuthorizationGrant(UserConstants.SubjectIdentifier, clientId, [AuthenticationMethodReferenceConstants.Password], cancellationToken);
-            _authorizeUserAccessor.SetUser(new AuthorizeUser(UserConstants.SubjectIdentifier, true));
 
             var claimsIdentity = new ClaimsIdentity(
                 [new Claim(ClaimNameConstants.Sub, UserConstants.SubjectIdentifier)],
