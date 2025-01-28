@@ -19,12 +19,12 @@ public class AuthorizationGrant : Entity<string>
     private AuthorizationGrant(){}
 #pragma warning restore
 
-    public DateTime AuthTime { get; private init; }
+    public DateTime AuthTime { get; private set; }
     public DateTime? RevokedAt { get; private set; }
     public string Subject { get; private init; }
     public Session Session { get; private init; }
     public Client Client { get; private init; }
-    public AuthenticationContextReference AuthenticationContextReference { get; private init; }
+    public AuthenticationContextReference AuthenticationContextReference { get; set; }
     public ICollection<AuthorizationCode> AuthorizationCodes { get; init; } = [];
     public ICollection<Nonce> Nonces { get; init; } = [];
     public ICollection<GrantToken> GrantTokens { get; init; } = [];
@@ -34,6 +34,11 @@ public class AuthorizationGrant : Entity<string>
     public void Revoke()
     {
         RevokedAt ??= DateTime.UtcNow;
+    }
+
+    public void SetAuthTime()
+    {
+        AuthTime = DateTime.UtcNow;
     }
 
     public static readonly Expression<Func<AuthorizationGrant, bool>> IsActive = a => a.RevokedAt == null;
