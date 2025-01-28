@@ -223,6 +223,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         const string requestUri = $"{RequestUriConstants.RequestUriPrefix}valid_value";
         const string subjectIdentifier = "subjectIdentifier";
+        const string authorizationGrantId = "authorizationGrantId";
 
         var authorizeRequestDto = new AuthorizeRequestDto
         {
@@ -251,7 +252,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.Nonce == authorizeRequestDto.Nonce &&
                     y.RedirectUri == authorizeRequestDto.RedirectUri &&
                     y.RequestUri == requestUri), CancellationToken.None))
-            .ReturnsAsync(InteractionResult.Success(subjectIdentifier))
+            .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
 
         var request = new AuthorizeRequest
@@ -267,7 +268,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         secureRequestService.Verify();
         authorizeInteractionService.Verify();
 
-        Assert.Equal(subjectIdentifier, processResult.Value!.SubjectIdentifier);
+        Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(authorizeRequestDto.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
         Assert.Equal(authorizeRequestDto.Scope, processResult.Value!.Scope);
@@ -998,16 +999,17 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         };
 
         const string subjectIdentifier = "subjectIdentifier";
+        const string authorizationGrantId = "authorizationGrantId";
         authorizeInteractionService
             .Setup(x => x.GetInteractionResult(request, CancellationToken.None))
-            .ReturnsAsync(InteractionResult.Success(subjectIdentifier))
+            .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
 
         // Act
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(subjectIdentifier, processResult.Value!.SubjectIdentifier);
+        Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
@@ -1050,16 +1052,17 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         };
 
         const string subjectIdentifier = "subjectIdentifier";
+        const string authorizationGrantId = "authorizationGrantId";
         authorizeInteractionService
             .Setup(x => x.GetInteractionResult(request, CancellationToken.None))
-            .ReturnsAsync(InteractionResult.Success(subjectIdentifier))
+            .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
 
         // Act
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(subjectIdentifier, processResult.Value!.SubjectIdentifier);
+        Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
@@ -1088,8 +1091,9 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var requestUri = new RequestUri("https://webapp.authserver.dk/request", client);
         await AddEntity(requestUri);
 
-        const string subjectIdentifier = "subjectIdentifier";
         var givenRequestUri = $"{requestUri.Uri}#1234";
+        const string subjectIdentifier = "subjectIdentifier";
+        const string authorizationGrantId = "authorizationGrantId";
 
         var authorizeRequestDto = new AuthorizeRequestDto
         {
@@ -1130,7 +1134,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.State == authorizeRequestDto.State &&
                     y.ResponseType == authorizeRequestDto.ResponseType &&
                     y.RequestUri == null), CancellationToken.None))
-            .ReturnsAsync(InteractionResult.Success(subjectIdentifier))
+            .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
 
         var request = new AuthorizeRequest
@@ -1146,7 +1150,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         secureRequestService.Verify();
         authorizeInteractionService.Verify();
 
-        Assert.Equal(subjectIdentifier, processResult.Value!.SubjectIdentifier);
+        Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(authorizeRequestDto.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
         Assert.Equal(authorizeRequestDto.Scope, processResult.Value!.Scope);
@@ -1173,8 +1177,9 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         var client = await GetClient();
 
-        const string subjectIdentifier = "subjectIdentifier";
         const string givenRequestObject = "request_object";
+        const string subjectIdentifier = "subjectIdentifier";
+        const string authorizationGrantId = "authorizationGrantId";
 
         var authorizeRequestDto = new AuthorizeRequestDto
         {
@@ -1215,7 +1220,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.State == authorizeRequestDto.State &&
                     y.ResponseType == authorizeRequestDto.ResponseType &&
                     y.RequestUri == null), CancellationToken.None))
-            .ReturnsAsync(InteractionResult.Success(subjectIdentifier))
+            .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
 
         var request = new AuthorizeRequest
@@ -1231,7 +1236,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         secureRequestService.Verify();
         authorizeInteractionService.Verify();
 
-        Assert.Equal(subjectIdentifier, processResult.Value!.SubjectIdentifier);
+        Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(authorizeRequestDto.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
         Assert.Equal(authorizeRequestDto.Scope, processResult.Value!.Scope);

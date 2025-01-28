@@ -101,10 +101,10 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    public AuthorizeEndpointBuilder WithAuthorizeUser()
+    public AuthorizeEndpointBuilder WithAuthorizeUser(string authorizationGrantId)
     {
         var dataProtector = _dataProtectionProvider.CreateProtector(AuthorizeUserAccessor.DataProtectorPurpose);
-        var authorizeUser = new AuthorizeUser(UserConstants.SubjectIdentifier, true);
+        var authorizeUser = new AuthorizeUser(UserConstants.SubjectIdentifier, true, authorizationGrantId);
         var authorizeUserBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(authorizeUser));
         var encryptedAuthorizeUser = dataProtector.Protect(authorizeUserBytes);
         var cookieValue = Convert.ToBase64String(encryptedAuthorizeUser);

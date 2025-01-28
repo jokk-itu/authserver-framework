@@ -42,7 +42,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             ClientId = client.Id,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
             Nonce = CryptographyHelper.GetRandomString(16),
-            SubjectIdentifier = subjectIdentifier.Id,
+            AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId]
         };
 
@@ -76,7 +76,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             ClientId = client.Id,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
             Nonce = CryptographyHelper.GetRandomString(16),
-            SubjectIdentifier = subjectIdentifier.Id,
+            AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId]
         };
 

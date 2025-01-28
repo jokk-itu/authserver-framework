@@ -68,7 +68,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
             .WithScope([grantManagementQueryScope, ScopeConstants.OpenId])
             .Get();
@@ -129,7 +129,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
             .WithScope([userinfoScope, ScopeConstants.OpenId])
             .Get();
@@ -193,7 +193,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
             .WithScope([userinfoScope, ScopeConstants.OpenId])
             .Get();

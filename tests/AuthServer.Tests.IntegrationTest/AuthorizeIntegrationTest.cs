@@ -52,7 +52,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithRequest(jwks.PrivateJwks)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .Get();
 
         // Assert
@@ -90,7 +90,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .Get();
 
         // Assert
@@ -180,7 +180,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .Get();
 
         // Assert

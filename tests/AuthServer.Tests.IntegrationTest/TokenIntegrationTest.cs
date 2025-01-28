@@ -51,7 +51,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
             .WithScope([weatherReadScope, userinfoScope, ScopeConstants.OpenId])
             .Get();
@@ -110,7 +110,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(Guid.NewGuid().ToString())
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
             .WithScope([scope, ScopeConstants.OpenId])
             .Get();
