@@ -33,6 +33,35 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
     }
 
     /// <inheritdoc/>
+    public async Task UpdateAuthorizationGrant(
+        string authorizationGrantId,
+        string authenticationContextReference,
+        IReadOnlyCollection<string> authenticationMethodReferences,
+        CancellationToken cancellationToken)
+    {
+        var authorizationGrant = await _identityContext
+            .Set<AuthorizationGrant>()
+            .Where(x => x.Id == authorizationGrantId)
+            .Include(x => x.AuthenticationMethodReferences)
+            .SingleAsync(cancellationToken);
+
+        var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
+        var amr = await GetAuthenticationMethodReferences(authenticationMethodReferences, cancellationToken);
+
+        authorizationGrant.SetAuthTime();
+        authorizationGrant.AuthenticationContextReference = acr;
+
+        foreach (var reference in amr)
+        {
+            authorizationGrant.AuthenticationMethodReferences.Add(reference);
+        }
+
+        await RevokeTokens(authorizationGrantId, cancellationToken);
+
+        await _identityContext.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<AuthorizationGrant> CreateAuthorizationGrant(
         string subjectIdentifier,
         string clientId,
@@ -73,14 +102,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
     /// <inheritdoc/>
     public async Task RevokeGrant(string authorizationGrantId, CancellationToken cancellationToken)
     {
-        var affectedTokens = await _identityContext
-            .Set<AuthorizationGrant>()
-            .Where(ag => ag.Id == authorizationGrantId)
-            .SelectMany(g => g.GrantTokens)
-            .Where(Token.IsActive)
-            .ExecuteUpdateAsync(
-                propertyCall => propertyCall.SetProperty(gt => gt.RevokedAt, DateTime.UtcNow),
-                cancellationToken);
+        var affectedTokens = await RevokeTokens(authorizationGrantId, cancellationToken);
 
         var authorizationGrant = (await _identityContext.Set<AuthorizationGrant>().FindAsync([authorizationGrantId], cancellationToken))!;
         authorizationGrant.Revoke();
@@ -89,6 +111,18 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             "Revoked AuthorizationGrant {AuthorizationGrantId} and Tokens {AffectedTokens}",
             authorizationGrantId,
             affectedTokens);
+    }
+
+    private async Task<int> RevokeTokens(string authorizationGrantId, CancellationToken cancellationToken)
+    {
+        return await _identityContext
+            .Set<AuthorizationGrant>()
+            .Where(ag => ag.Id == authorizationGrantId)
+            .SelectMany(g => g.GrantTokens)
+            .Where(Token.IsActive)
+            .ExecuteUpdateAsync(
+                propertyCall => propertyCall.SetProperty(gt => gt.RevokedAt, DateTime.UtcNow),
+                cancellationToken);
     }
 
     private async Task<List<AuthenticationMethodReference>> GetAuthenticationMethodReferences(IReadOnlyCollection<string> authenticationMethodReferences, CancellationToken cancellationToken)
@@ -117,32 +151,12 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             .Where(Session.IsActive)
             .SingleOrDefaultAsync(cancellationToken);
 
-        if (session is not null)
-        {
-            await RevokePreviousAuthorizationGrant(subjectIdentifier, clientId, cancellationToken);
-        }
-
         var publicSubjectIdentifier = (session?.SubjectIdentifier ??
                                        await _identityContext.FindAsync<SubjectIdentifier>([subjectIdentifier],
                                            cancellationToken))!;
 
         session ??= new Session(publicSubjectIdentifier);
         return session;
-    }
-
-    private async Task RevokePreviousAuthorizationGrant(string subjectIdentifier, string clientId,
-        CancellationToken cancellationToken)
-    {
-        var authorizationGrant = await _identityContext
-            .Set<AuthorizationGrant>()
-            .Where(AuthorizationGrant.IsActive)
-            .Include(x => x.Client)
-            .Where(x => x.Client.Id == clientId)
-            .Where(x => x.Session.RevokedAt == null)
-            .Where(x => x.Session.SubjectIdentifier.Id == subjectIdentifier)
-            .SingleOrDefaultAsync(cancellationToken);
-
-        authorizationGrant?.Revoke();
     }
 
     private async Task<string> GetSubject(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
