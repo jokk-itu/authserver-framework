@@ -1,4 +1,4 @@
-﻿namespace AuthServer.Authorize;
+﻿namespace AuthServer.Authorize.UserInterface;
 
 public class ConsentGrantDto
 {

@@ -1,10 +1,10 @@
-using AuthServer.Authorize.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Web;
 using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Helpers;
+using AuthServer.Authorize.UserInterface.Abstractions;
 
 namespace AuthServer.TestIdentityProvider.Pages;
 
@@ -49,10 +49,10 @@ public class ConsentModel : PageModel
         var requestUri = query.Get(Parameter.RequestUri)!;
         var clientId = query.Get(Parameter.ClientId)!;
 
-        var request = (await _authorizeService.GetRequest(requestUri, clientId, cancellationToken))!;
+        var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
 
         var subject = await _authorizeService.GetSubject(request);
-        var consentGrantDto = await _authorizeService.GetConsentGrantDto(subject, clientId, cancellationToken);
+        var consentGrantDto = await _authorizeService.GetConsentGrantDto(subject.Subject, clientId, cancellationToken);
         
         var requestedScope = request.Scope.ToList();
 
@@ -83,9 +83,9 @@ public class ConsentModel : PageModel
         var query = HttpUtility.ParseQueryString(new Uri(ReturnUrl).Query);
         var clientId = query.Get(Parameter.ClientId)!;
         var requestUri = query.Get(Parameter.RequestUri)!;
-        var request = (await _authorizeService.GetRequest(requestUri, clientId, cancellationToken))!;
+        var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
         var subject = await _authorizeService.GetSubject(request);
-        await _authorizeService.CreateOrUpdateConsentGrant(subject, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
+        await _authorizeService.HandleConsent(subject.Subject, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
 
         return Redirect(ReturnUrl);
     }

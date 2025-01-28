@@ -3,34 +3,30 @@ using AuthServer.Endpoints.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuthServer.Authorize.Abstractions;
+namespace AuthServer.Authorize.UserInterface.Abstractions;
 
 public interface IAuthorizeService
 {
     /// <summary>
-    /// Creates an AuthorizationGrant entity,
-    /// as a proof of authenticating the end-user.
-    ///
+    /// 
     /// </summary>
     /// <param name="subjectIdentifier"></param>
     /// <param name="clientId"></param>
+    /// <param name="consentedScopes"></param>
+    /// <param name="consentedClaims"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task HandleConsent(string subjectIdentifier, string clientId, IEnumerable<string> consentedScopes, IEnumerable<string> consentedClaims, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="subjectIdentifier"></param>
+    /// <param name="request"></param>
     /// <param name="amr"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateAuthorizationGrant(string subjectIdentifier, string clientId, IReadOnlyCollection<string> amr, CancellationToken cancellationToken);
-     
-    /// <summary>
-    /// Creates a ConsentGrant entity or updates an existing one.
-    ///
-    /// It contains the requested scope and the claims that are consented by the end-user.
-    /// </summary>
-    /// <param name="subjectIdentifier"></param>
-    /// <param name="clientId"></param>
-    /// <param name="consentedClaims"></param>
-    /// <param name="cancellationToken"></param>
-    /// <param name="consentedScope"></param>
-    /// <returns></returns>
-    Task CreateOrUpdateConsentGrant(string subjectIdentifier, string clientId, IEnumerable<string> consentedScope, IEnumerable<string> consentedClaims, CancellationToken cancellationToken);
+    Task HandleAuthorizationGrant(string subjectIdentifier, AuthorizeRequestDto request, IReadOnlyCollection<string> amr, CancellationToken cancellationToken);
 
     /// <summary>
     /// Get the grant that is consented by the end-user, requested by the client.
@@ -49,7 +45,7 @@ public interface IAuthorizeService
     /// <param name="clientId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<AuthorizeRequestDto?> GetRequest(string requestUri, string clientId, CancellationToken cancellationToken);
+    Task<AuthorizeRequestDto?> GetValidatedRequest(string requestUri, string clientId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Get error result.
@@ -66,5 +62,5 @@ public interface IAuthorizeService
     /// Get the subject from AuthorizeUser, IdTokenHint or AuthenticatedUser.
     /// </summary>
     /// <returns></returns>
-    Task<string> GetSubject(AuthorizeRequestDto authorizeRequestDto);
+    Task<SubjectDto> GetSubject(AuthorizeRequestDto authorizeRequestDto);
 }

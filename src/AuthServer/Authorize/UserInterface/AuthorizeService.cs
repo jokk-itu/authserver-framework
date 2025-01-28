@@ -2,7 +2,9 @@
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize.Abstractions;
+using AuthServer.Authorize.UserInterface.Abstractions;
 using AuthServer.Cache.Abstractions;
+using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Repositories.Abstractions;
@@ -12,7 +14,7 @@ using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuthServer.Authorize;
+namespace AuthServer.Authorize.UserInterface;
 internal class AuthorizeService : IAuthorizeService
 {
     private readonly IConsentGrantRepository _consentGrantRepository;
@@ -51,31 +53,53 @@ internal class AuthorizeService : IAuthorizeService
     }
 
     /// <inheritdoc/>
-    public async Task CreateAuthorizationGrant(string subjectIdentifier, string clientId, IReadOnlyCollection<string> amr,
-        CancellationToken cancellationToken)
+    public async Task HandleAuthorizationGrant(string subjectIdentifier, AuthorizeRequestDto request, IReadOnlyCollection<string> amr, CancellationToken cancellationToken)
     {
-        // It is guaranteed that the user is not set
-        _authorizeUserAccessor.SetUser(new AuthorizeUser(subjectIdentifier, true, Guid.NewGuid().ToString()));
+        var isCreateAction = string.IsNullOrEmpty(request.GrantManagementAction)
+                       || request.GrantManagementAction == GrantManagementActionConstants.Create;
 
         var acr = await _authenticationContextResolver.ResolveAuthenticationContextReference(amr, cancellationToken);
-        await _authorizationGrantRepository.CreateAuthorizationGrant(subjectIdentifier, clientId, acr, amr, cancellationToken);
+
+        if (isCreateAction)
+        {
+            var grant = await _authorizationGrantRepository.CreateAuthorizationGrant(
+                subjectIdentifier,
+                request.ClientId!,
+                acr,
+                amr,
+                cancellationToken);
+
+            var authorizeUser = new AuthorizeUser(
+                subjectIdentifier,
+                true,
+                grant.Id);
+
+            _authorizeUserAccessor.SetUser(authorizeUser);
+        }
+        else
+        {
+            var grantId = request.GrantId!;
+
+            await _authorizationGrantRepository.UpdateAuthorizationGrant(
+                grantId,
+                acr,
+                amr,
+                cancellationToken);
+
+            _authorizeUserAccessor.SetUser(new AuthorizeUser(subjectIdentifier, true, grantId));
+        }
     }
 
     /// <inheritdoc/>
-    public async Task CreateOrUpdateConsentGrant(string subjectIdentifier, string clientId, IEnumerable<string> consentedScope, IEnumerable<string> consentedClaims,
-        CancellationToken cancellationToken)
+    public async Task HandleConsent(string subjectIdentifier, string clientId, IEnumerable<string> consentedScopes, IEnumerable<string> consentedClaims, CancellationToken cancellationToken)
     {
-        // TODO Either get AuthorizationGrantId from request, or from AuthorizeUser or from the active session in IdTokenHint or AuthenticatedUser
-        // The user might have been set previously, so the try logic is used to accommodate that
-        _authorizeUserAccessor.TrySetUser(new AuthorizeUser(subjectIdentifier, true, Guid.NewGuid().ToString()));
-
-        await _consentGrantRepository.CreateOrUpdateConsentGrant(subjectIdentifier, clientId, consentedScope, consentedClaims, cancellationToken);
+        await _consentGrantRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, consentedScopes, consentedClaims, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<ConsentGrantDto> GetConsentGrantDto(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
     {
-        var consentGrant = await _consentGrantRepository.GetConsentGrant(subjectIdentifier, clientId, cancellationToken);
+        // TODO get all client consents
         var cachedClient = await _cachedClientStore.Get(clientId, cancellationToken);
         var username = await _userClaimService.GetUsername(subjectIdentifier, cancellationToken);
 
@@ -85,13 +109,13 @@ internal class AuthorizeService : IAuthorizeService
             ClientLogoUri = cachedClient.LogoUri,
             ClientUri = cachedClient.ClientUri,
             Username = username,
-            ConsentedScope = consentGrant?.ConsentedScopes.Select(x => x.Name) ?? [],
-            ConsentedClaims = consentGrant?.ConsentedClaims.Select(x => x.Name) ?? []
+            ConsentedScope = [],
+            ConsentedClaims = []
         };
     }
 
     /// <inheritdoc/>
-    public async Task<AuthorizeRequestDto?> GetRequest(string requestUri, string clientId, CancellationToken cancellationToken)
+    public async Task<AuthorizeRequestDto?> GetValidatedRequest(string requestUri, string clientId, CancellationToken cancellationToken)
     {
         return await _secureRequestService.GetRequestByPushedRequest(requestUri, clientId, cancellationToken);
     }
@@ -117,21 +141,39 @@ internal class AuthorizeService : IAuthorizeService
     }
 
     /// <inheritdoc/>
-    public async Task<string> GetSubject(AuthorizeRequestDto authorizeRequestDto)
+    public async Task<SubjectDto> GetSubject(AuthorizeRequestDto authorizeRequestDto)
     {
         var authorizeUser = _authorizeUserAccessor.TryGetUser();
         if (authorizeUser is not null)
         {
-            return authorizeUser.SubjectIdentifier;
+            return new SubjectDto
+            {
+                Subject = authorizeUser.SubjectIdentifier,
+                GrantId = authorizeUser.AuthorizationGrantId
+            };
         }
 
         if (authorizeRequestDto.IdTokenHint is not null)
         {
+            // only read the token, as it has already been validated previously
             var idToken = await _tokenDecoder.Read(authorizeRequestDto.IdTokenHint);
-            return idToken.Subject;
+            return new SubjectDto
+            {
+                Subject = idToken.Subject,
+                GrantId = idToken.GetClaim(Parameter.GrantId).Value
+            };
         }
 
         var authenticatedUser = await _authenticatedUserAccessor.GetAuthenticatedUser();
-        return authenticatedUser?.SubjectIdentifier ?? throw new InvalidOperationException("subject cannot be deduced");
+        if (authenticatedUser is not null)
+        {
+            return new SubjectDto
+            {
+                Subject = authenticatedUser.SubjectIdentifier,
+                GrantId = authenticatedUser.AuthorizationGrantId
+            };
+        }
+
+        throw new InvalidOperationException("subject cannot be deduced");
     }
 }
