@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using AuthServer.Authorization;
+using Microsoft.AspNetCore.Mvc.Testing;
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
 using Xunit.Abstractions;
-using AuthServer.Authorize.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using AuthServer.Authorize.UserInterface.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
 public class TokenIntegrationTest : BaseIntegrationTest
@@ -35,13 +36,16 @@ public class TokenIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
+        await authorizeService.HandleAuthorizationGrant(
             UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
+            new AuthorizeRequestDto
+            {
+                ClientId = registerResponse.ClientId
+            },
             [AuthenticationMethodReferenceConstants.Password],
             CancellationToken.None);
 
-        await authorizeService.CreateOrUpdateConsentGrant(
+        await authorizeService.HandleConsent(
             UserConstants.SubjectIdentifier,
             registerResponse.ClientId,
             [weatherReadScope, userinfoScope, ScopeConstants.OpenId],
@@ -94,13 +98,16 @@ public class TokenIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
+        await authorizeService.HandleAuthorizationGrant(
             UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
+            new AuthorizeRequestDto
+            {
+                ClientId = registerResponse.ClientId
+            },
             [AuthenticationMethodReferenceConstants.Password],
             CancellationToken.None);
 
-        await authorizeService.CreateOrUpdateConsentGrant(
+        await authorizeService.HandleConsent(
             UserConstants.SubjectIdentifier,
             registerResponse.ClientId,
             [scope, ScopeConstants.OpenId],

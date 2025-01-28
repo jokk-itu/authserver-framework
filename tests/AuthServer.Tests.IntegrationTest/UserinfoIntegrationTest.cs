@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
-using AuthServer.Authorize.Abstractions;
+using AuthServer.Authorization;
+using AuthServer.Authorize.UserInterface.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Extensions;
@@ -52,13 +53,16 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
+        await authorizeService.HandleAuthorizationGrant(
             UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
+            new AuthorizeRequestDto
+            {
+                ClientId = registerResponse.ClientId
+            },
             [AuthenticationMethodReferenceConstants.Password],
             CancellationToken.None);
 
-        await authorizeService.CreateOrUpdateConsentGrant(
+        await authorizeService.HandleConsent(
             UserConstants.SubjectIdentifier,
             registerResponse.ClientId,
             [grantManagementQueryScope, ScopeConstants.OpenId],
@@ -113,13 +117,16 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
+        await authorizeService.HandleAuthorizationGrant(
             UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
+            new AuthorizeRequestDto
+            {
+                ClientId = registerResponse.ClientId
+            },
             [AuthenticationMethodReferenceConstants.Password],
             CancellationToken.None);
 
-        await authorizeService.CreateOrUpdateConsentGrant(
+        await authorizeService.HandleConsent(
             UserConstants.SubjectIdentifier,
             registerResponse.ClientId,
             [userinfoScope, ScopeConstants.OpenId],
@@ -177,13 +184,16 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
+        await authorizeService.HandleAuthorizationGrant(
             UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
+            new AuthorizeRequestDto
+            {
+                ClientId = registerResponse.ClientId
+            },
             [AuthenticationMethodReferenceConstants.Password],
             CancellationToken.None);
 
-        await authorizeService.CreateOrUpdateConsentGrant(
+        await authorizeService.HandleConsent(
             UserConstants.SubjectIdentifier,
             registerResponse.ClientId,
             [userinfoScope, ScopeConstants.OpenId],
