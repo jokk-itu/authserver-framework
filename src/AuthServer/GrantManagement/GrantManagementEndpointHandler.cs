@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.JavaScript;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;

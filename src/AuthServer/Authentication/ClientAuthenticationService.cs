@@ -142,7 +142,8 @@ internal class ClientAuthenticationService : IClientAuthenticationService
                 ClientId = clientId,
                 Audience = clientAssertionAuthentication.Audience,
                 ValidateLifetime = true
-            }, cancellationToken);
+            },
+            cancellationToken);
 
         if (validatedToken is null)
         {
