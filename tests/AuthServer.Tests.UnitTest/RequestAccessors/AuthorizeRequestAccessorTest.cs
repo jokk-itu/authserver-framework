@@ -147,6 +147,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 {
                     { Parameter.Scope, value },
                     { Parameter.AcrValues, value },
+                    { Parameter.Resource, value }
                 })
             }
         };
@@ -157,6 +158,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedValue, request.Scope);
         Assert.Equal(expectedValue, request.AcrValues);
+        Assert.Equal(expectedValue, request.Resource);
     }
 
     [Fact]
@@ -176,6 +178,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 {
                     { Parameter.Scope, value },
                     { Parameter.AcrValues, value },
+                    { Parameter.Resource, value },
                 })
             }
         };
@@ -186,6 +189,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedValue, request.Scope);
         Assert.Equal(expectedValue, request.AcrValues);
+        Assert.Equal(expectedValue, request.Resource);
     }
 
     [Theory]
@@ -205,6 +209,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 {
                     { Parameter.Scope, value },
                     { Parameter.AcrValues, value },
+                    { Parameter.Resource, value },
                 })
             }
         };
@@ -215,6 +220,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedCount, request.Scope.Count);
         Assert.Equal(expectedCount, request.AcrValues.Count);
+        Assert.Equal(expectedCount, request.Resource.Count);
     }
 
     [Theory]
@@ -234,6 +240,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 {
                     { Parameter.Scope, value },
                     { Parameter.AcrValues, value },
+                    { Parameter.Resource, value },
                 })
             }
         };
@@ -244,5 +251,6 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedCount, request.Scope.Count);
         Assert.Equal(expectedCount, request.AcrValues.Count);
+        Assert.Equal(expectedCount, request.Resource.Count);
     }
 }

@@ -28,6 +28,7 @@ internal class AuthorizeRequest
         RequestUri = requestUri;
         Scope = authorizeRequestDto.Scope;
         AcrValues = authorizeRequestDto.AcrValues;
+        Resource = authorizeRequestDto.Resource;
     }
 
     public string? IdTokenHint { get; init; }
@@ -49,4 +50,5 @@ internal class AuthorizeRequest
     public string? GrantManagementAction { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
+    public IReadOnlyCollection<string> Resource { get; init; } = [];
 }

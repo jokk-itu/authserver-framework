@@ -41,6 +41,7 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
 
         var scope = query.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = query.GetSpaceDelimitedValue(Parameter.AcrValues);
+        var resource = query.GetSpaceDelimitedValue(Parameter.Resource);
 
         return new AuthorizeRequest
         {
