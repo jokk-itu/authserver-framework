@@ -30,6 +30,7 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
+        var resource = body.GetSpaceDelimitedValue(Parameter.Resource);
 
         var clientSecretBasic = httpRequest.GetClientSecretBasic();
         var clientSecretPost = body.GetClientSecretPost();
@@ -59,6 +60,7 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
             RequestObject = requestObject,
             Scope = scope,
             AcrValues = acrValues,
+            Resource = resource,
             ClientAuthentications = clientAuthentications.AsReadOnly()
         };
     }

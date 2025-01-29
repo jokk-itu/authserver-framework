@@ -215,6 +215,7 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
                 {
                     { Parameter.Scope, value },
                     { Parameter.AcrValues, value },
+                    { Parameter.Resource, value },
                 })
             }
         };
@@ -225,6 +226,7 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
         // Assert
         Assert.Equal(expectedValue, request.Scope);
         Assert.Equal(expectedValue, request.AcrValues);
+        Assert.Equal(expectedValue, request.Resource);
     }
 
     [Theory]
@@ -244,6 +246,7 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
                 {
                     { Parameter.Scope, value },
                     { Parameter.AcrValues, value },
+                    { Parameter.Resource, value },
                 })
             }
         };
@@ -254,5 +257,6 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
         // Assert
         Assert.Equal(expectedCount, request.Scope.Count);
         Assert.Equal(expectedCount, request.AcrValues.Count);
+        Assert.Equal(expectedCount, request.Resource.Count);
     }
 }
