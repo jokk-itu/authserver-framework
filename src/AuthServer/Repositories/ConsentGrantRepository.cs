@@ -1,6 +1,7 @@
 ﻿using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.Repositories;
@@ -48,7 +49,27 @@ internal class ConsentGrantRepository : IConsentGrantRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<string>> GetClientConsentedScope(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<ScopeDto>> GetGrantConsentedScopes(string authorizationGrantId, CancellationToken cancellationToken)
+    {
+        return await _identityContext
+            .Set<AuthorizationGrantScopeConsent>()
+            .Where(x => x.AuthorizationGrant.Id == authorizationGrantId)
+            .Select(x => new ScopeDto(((ScopeConsent)x.Consent).Scope.Name, x.Resource))
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetGrantConsentedClaims(string authorizationGrantId, CancellationToken cancellationToken)
+    {
+        return await _identityContext
+            .Set<AuthorizationGrantClaimConsent>()
+            .Where(x => x.AuthorizationGrant.Id == authorizationGrantId)
+            .Select(x => ((ClaimConsent)x.Consent).Claim.Name)
+            .ToListAsync(cancellationToken);
+    }
+    
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetClientConsentedScopes(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
     {
         return await _identityContext
             .Set<ScopeConsent>()

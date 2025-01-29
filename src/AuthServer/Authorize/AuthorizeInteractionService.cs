@@ -141,7 +141,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
             return InteractionResult.Success(authorizeUser.SubjectIdentifier, authorizeUser.AuthorizationGrantId);
         }
 
-        var consentedScope = await _consentGrantRepository.GetClientConsentedScope(authorizeUser.SubjectIdentifier, authorizeRequest.ClientId!, cancellationToken);
+        var consentedScope = await _consentGrantRepository.GetClientConsentedScopes(authorizeUser.SubjectIdentifier, authorizeRequest.ClientId!, cancellationToken);
         if (authorizeRequest.Scope.ExceptAny(consentedScope))
         {
             _logger.LogDebug("User has not granted consent to scope {@Scope}, deducing prompt {Prompt}", authorizeRequest.Scope.Except(consentedScope), PromptConstants.Consent);
