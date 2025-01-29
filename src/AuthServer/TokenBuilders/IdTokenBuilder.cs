@@ -82,7 +82,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             { ClaimNameConstants.Acr, query.AuthenticationContextReference }
         };
 
-        var authorizedClaimTypes = await _consentGrantRepository.GetConsentedClaims(query.SubjectIdentifier, query.ClientId, cancellationToken);
+        var authorizedClaimTypes = await _consentGrantRepository.GetGrantConsentedClaims(arguments.AuthorizationGrantId, cancellationToken);
         var userClaims = await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken);
         foreach (var userClaim in userClaims)
         {

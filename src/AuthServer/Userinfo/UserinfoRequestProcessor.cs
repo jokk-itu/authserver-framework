@@ -50,7 +50,7 @@ internal class UserinfoRequestProcessor : IRequestProcessor<UserinfoValidatedReq
             { Parameter.Subject, query.GrantSubjectId }
         };
 
-        var authorizedClaimTypes = await _consentGrantRepository.GetConsentedClaims(query.SubjectIdentifier, query.ClientId, cancellationToken);
+        var authorizedClaimTypes = await _consentGrantRepository.GetGrantConsentedClaims(request.AuthorizationGrantId, cancellationToken);
         var userClaims = await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken);
         foreach (var userClaim in userClaims)
         {
