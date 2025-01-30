@@ -1,5 +1,4 @@
-﻿using AuthServer.Authentication;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
