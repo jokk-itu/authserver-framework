@@ -6,6 +6,7 @@ public static class ClaimsHelper
     /// <summary>
     /// Get ClaimNames from the given scope.
     /// </summary>
+    /// <remarks>https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims</remarks>
     /// <param name="scopes"></param>
     /// <returns></returns>
     public static IEnumerable<string> MapToClaims(IEnumerable<string> scopes)
@@ -18,7 +19,6 @@ public static class ClaimsHelper
                     yield return ClaimNameConstants.Name;
                     yield return ClaimNameConstants.FamilyName;
                     yield return ClaimNameConstants.GivenName;
-                    yield return ClaimNameConstants.Address;
                     yield return ClaimNameConstants.Birthdate;
                     yield return ClaimNameConstants.Locale;
                     yield return ClaimNameConstants.Roles;
