@@ -295,6 +295,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         return new AuthorizeValidatedRequest
         {
             AuthorizationGrantId = interactionResult.AuthorizationGrantId!,
+            GrantManagementAction = request.GrantManagementAction,
             ResponseMode = request.ResponseMode,
             CodeChallenge = request.CodeChallenge!,
             Scope = request.Scope,
