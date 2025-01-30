@@ -1,5 +1,6 @@
 ﻿using AuthServer.Core;
 using AuthServer.Entities;
+using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
@@ -15,37 +16,28 @@ internal class ConsentGrantRepository : IConsentGrantRepository
     }
 
     /// <inheritdoc/>
-    public async Task CreateConsent(string authorizationGrantId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken)
+    public async Task CreateGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-
-        var clientConsents = await GetClientConsentedClaims(authorizationGrant.Session.SubjectIdentifier.Id, authorizationGrant.Client.Id, cancellationToken);
-        var consentToRemove = clientConsents
-            .Where(x => !claims.Contains(x))
-            .ToList();
-
-        _identityContext.RemoveRange(consentToRemove);
-        await _identityContext.SaveChangesAsync(cancellationToken);
-
-        await UpdateConsent(authorizationGrant, scopes, claims, cancellationToken);
+        await UpdateConsent(authorizationGrant, scopes, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task MergeConsent(string authorizationGrantId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken)
+    public async Task MergeGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-        await UpdateConsent(authorizationGrant, scopes, claims, cancellationToken);
+        await UpdateConsent(authorizationGrant, scopes, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task ReplaceConsent(string authorizationGrantId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken)
+    public async Task ReplaceGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
 
         authorizationGrant.AuthorizationGrantConsents.Clear();
         await _identityContext.SaveChangesAsync(cancellationToken);
 
-        await UpdateConsent(authorizationGrant, scopes, claims, cancellationToken);
+        await UpdateConsent(authorizationGrant, scopes, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -143,7 +135,7 @@ internal class ConsentGrantRepository : IConsentGrantRepository
         _identityContext.RemoveRange(claimsToRemove);
     }
 
-    private async Task UpdateConsent(AuthorizationGrant authorizationGrant, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken)
+    private async Task UpdateConsent(AuthorizationGrant authorizationGrant, IEnumerable<string> scopes, CancellationToken cancellationToken)
     {
         var clientConsents = await _identityContext
             .Set<Consent>()
@@ -170,7 +162,21 @@ internal class ConsentGrantRepository : IConsentGrantRepository
             }
         }
 
-        foreach (var claim in claims)
+        var fullConsentedScopes = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantScopeConsent>()
+            .Select(x => x.Consent)
+            .OfType<ScopeConsent>()
+            .Select(x => x.Scope.Name)
+            .ToList();
+
+        var fullRequestedClaims = ClaimsHelper.MapToClaims(fullConsentedScopes);
+        var fullConsentedClaims = clientConsents
+            .OfType<ClaimConsent>()
+            .Select(x => x.Claim.Name)
+            .Where(x => fullRequestedClaims.Contains(x))
+            .ToList();
+
+        foreach (var claim in fullConsentedClaims)
         {
             var claimConsent = clientConsents
                 .OfType<ClaimConsent>()
