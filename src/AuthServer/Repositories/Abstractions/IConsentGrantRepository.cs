@@ -1,5 +1,4 @@
-﻿using AuthServer.Entities;
-using AuthServer.Repositories.Models;
+﻿using AuthServer.Repositories.Models;
 
 namespace AuthServer.Repositories.Abstractions;
 internal interface IConsentGrantRepository
@@ -20,30 +19,27 @@ internal interface IConsentGrantRepository
     /// </summary>
     /// <param name="authorizationGrantId"></param>
     /// <param name="scopes"></param>
-    /// <param name="claims"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateConsent(string authorizationGrantId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken);
+    Task CreateGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="authorizationGrantId"></param>
     /// <param name="scopes"></param>
-    /// <param name="claims"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task ReplaceConsent(string authorizationGrantId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken);
+    Task ReplaceGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="authorizationGrantId"></param>
     /// <param name="scopes"></param>
-    /// <param name="claims"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task MergeConsent(string authorizationGrantId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken);
+    Task MergeGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken);
 
     /// <summary>
     /// 

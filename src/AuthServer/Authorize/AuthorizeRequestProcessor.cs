@@ -13,15 +13,18 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
     private readonly IAuthorizationCodeEncoder _authorizationCodeEncoder;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IClientRepository _clientRepository;
+    private readonly IConsentGrantRepository _consentGrantRepository;
 
     public AuthorizeRequestProcessor(
         IAuthorizationCodeEncoder authorizationCodeEncoder,
         IAuthorizationGrantRepository authorizationGrantRepository,
-        IClientRepository clientRepository)
+        IClientRepository clientRepository,
+        IConsentGrantRepository consentGrantRepository)
     {
         _authorizationCodeEncoder = authorizationCodeEncoder;
         _authorizationGrantRepository = authorizationGrantRepository;
         _clientRepository = clientRepository;
+        _consentGrantRepository = consentGrantRepository;
     }
 
     public async Task<string> Process(AuthorizeValidatedRequest request, CancellationToken cancellationToken)
@@ -55,6 +58,23 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             });
 
         authorizationCode.SetValue(encodedAuthorizationCode);
+
+        if (authorizationGrant.Client.RequireConsent)
+        {
+            if (request.GrantManagementAction is null
+                || request.GrantManagementAction == GrantManagementActionConstants.Create)
+            {
+                await _consentGrantRepository.CreateGrantConsent(request.AuthorizationGrantId, request.Scope, cancellationToken);
+            }
+            else if (request.GrantManagementAction == GrantManagementActionConstants.Merge)
+            {
+                await _consentGrantRepository.MergeGrantConsent(request.AuthorizationGrantId, request.Scope, cancellationToken);
+            }
+            else if (request.GrantManagementAction == GrantManagementActionConstants.Replace)
+            {
+                await _consentGrantRepository.ReplaceGrantConsent(request.AuthorizationGrantId, request.Scope, cancellationToken);
+            }
+        }
 
         return encodedAuthorizationCode;
     }
