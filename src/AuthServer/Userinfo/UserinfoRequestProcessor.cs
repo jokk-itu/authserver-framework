@@ -14,13 +14,13 @@ internal class UserinfoRequestProcessor : IRequestProcessor<UserinfoValidatedReq
     private readonly AuthorizationDbContext _identityContext;
     private readonly ITokenBuilder<UserinfoTokenArguments> _userinfoTokenBuilder;
     private readonly IUserClaimService _userClaimService;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
 
     public UserinfoRequestProcessor(
         AuthorizationDbContext identityContext,
         ITokenBuilder<UserinfoTokenArguments> userinfoTokenBuilder,
         IUserClaimService userClaimService,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository)
     {
         _identityContext = identityContext;
         _userinfoTokenBuilder = userinfoTokenBuilder;

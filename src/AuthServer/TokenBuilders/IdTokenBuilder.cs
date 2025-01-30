@@ -25,7 +25,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
     private readonly ITokenSecurityService _tokenSecurityService;
     private readonly IUserClaimService _userClaimService;
     private readonly IMetricService _metricService;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
 
     public IdTokenBuilder(
         AuthorizationDbContext identityContext,
@@ -34,7 +34,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
         ITokenSecurityService tokenSecurityService,
         IUserClaimService userClaimService,
         IMetricService metricService,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository)
     {
         _identityContext = identityContext;
         _discoveryDocumentOptions = discoveryDocumentOptions;

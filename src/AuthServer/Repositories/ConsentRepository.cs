@@ -6,11 +6,11 @@ using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.Repositories;
-internal class ConsentGrantRepository : IConsentGrantRepository
+internal class ConsentRepository : IConsentRepository
 {
     private readonly AuthorizationDbContext _identityContext;
 
-    public ConsentGrantRepository(AuthorizationDbContext identityContext)
+    public ConsentRepository(AuthorizationDbContext identityContext)
     {
         _identityContext = identityContext;
     }

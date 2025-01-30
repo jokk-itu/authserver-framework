@@ -13,13 +13,13 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
     private readonly IAuthorizationCodeEncoder _authorizationCodeEncoder;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IClientRepository _clientRepository;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
 
     public AuthorizeRequestProcessor(
         IAuthorizationCodeEncoder authorizationCodeEncoder,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository)
     {
         _authorizationCodeEncoder = authorizationCodeEncoder;
         _authorizationGrantRepository = authorizationGrantRepository;

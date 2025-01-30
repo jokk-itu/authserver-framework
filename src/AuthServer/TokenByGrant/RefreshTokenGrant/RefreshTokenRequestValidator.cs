@@ -23,7 +23,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
     private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IClientRepository _clientRepository;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
 
     public RefreshTokenRequestValidator(
         AuthorizationDbContext identityContext,
@@ -31,7 +31,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
         IClientRepository clientRepository,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository)
     {
         _identityContext = identityContext;
         _tokenDecoder = tokenDecoder;

@@ -102,7 +102,7 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddScoped<IClientRepository, ClientRepository>()
-            .AddScoped<IConsentGrantRepository, ConsentGrantRepository>()
+            .AddScoped<IConsentRepository, ConsentRepository>()
             .AddScoped<IAuthorizationGrantRepository, AuthorizationGrantRepository>()
             .AddScoped<ITokenRepository, TokenRepository>()
             .AddScoped<INonceRepository, NonceRepository>()

@@ -18,7 +18,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
     private readonly IAuthorizeUserAccessor _userAccessor;
     private readonly IAuthenticatedUserAccessor _authenticatedUserAccessor;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly ILogger<AuthorizeInteractionService> _logger;
 
@@ -27,7 +27,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         IAuthorizeUserAccessor userAccessor,
         IAuthenticatedUserAccessor authenticatedUserAccessor,
         IAuthorizationGrantRepository authorizationGrantRepository,
-        IConsentGrantRepository consentGrantRepository,
+        IConsentRepository consentGrantRepository,
         ICachedClientStore cachedClientStore,
         ILogger<AuthorizeInteractionService> logger)
     {

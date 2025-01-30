@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AuthServer.Authorize.UserInterface;
 internal class AuthorizeService : IAuthorizeService
 {
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IUserClaimService _userClaimService;
@@ -29,7 +29,7 @@ internal class AuthorizeService : IAuthorizeService
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
 
     public AuthorizeService(
-        IConsentGrantRepository consentGrantRepository,
+        IConsentRepository consentGrantRepository,
         IAuthorizationGrantRepository authorizationGrantRepository,
         ICachedClientStore cachedClientStore,
         IUserClaimService userClaimService,

@@ -1,7 +1,7 @@
 ﻿using AuthServer.Repositories.Models;
 
 namespace AuthServer.Repositories.Abstractions;
-internal interface IConsentGrantRepository
+internal interface IConsentRepository
 {
     /// <summary>
     /// 

@@ -22,7 +22,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
     private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly IClientRepository _clientRepository;
     private readonly ICachedClientStore _cachedEntityStore;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
 
     public AuthorizationCodeRequestValidator(
         AuthorizationDbContext identityContext,
@@ -30,7 +30,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         IClientAuthenticationService clientAuthenticationService,
         IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository)
     {
         _identityContext = identityContext;
         _authorizationCodeEncoder = authorizationCodeEncoder;
