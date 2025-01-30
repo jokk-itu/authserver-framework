@@ -117,7 +117,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
             }
 
             requestedScope = isScopeRequested ? request.Scope : consentedScope;
-            if (requestedScope.ExceptAny(consentedScope))
+            if (requestedScope.IsSubset(consentedScope))
             {
                 return TokenError.ScopeExceedsConsentedScope;
             }
@@ -125,7 +125,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         else
         {
             requestedScope = isScopeRequested ? request.Scope : cachedClient.Scopes;
-            if (requestedScope.ExceptAny(cachedClient.Scopes))
+            if (requestedScope.IsSubset(cachedClient.Scopes))
             {
                 return TokenError.UnauthorizedForScope;
             }

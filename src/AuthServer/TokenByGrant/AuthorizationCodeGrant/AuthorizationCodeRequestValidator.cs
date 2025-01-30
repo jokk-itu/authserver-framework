@@ -132,7 +132,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
                 return TokenError.ConsentRequired;
             }
 
-            if (scope.ExceptAny(consentedScopes))
+            if (scope.IsSubset(consentedScopes))
             {
                 return TokenError.ScopeExceedsConsentedScope;
             }

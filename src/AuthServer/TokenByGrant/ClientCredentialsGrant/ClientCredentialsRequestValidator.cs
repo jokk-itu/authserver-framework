@@ -64,7 +64,7 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
             return TokenError.UnauthorizedForGrantType;
         }
 
-        if (request.Scope.ExceptAny(cachedClient.Scopes))
+        if (request.Scope.IsSubset(cachedClient.Scopes))
         {
             return TokenError.UnauthorizedForScope;
         }

@@ -385,7 +385,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     private ProcessError? ValidateGrantTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.GrantTypes.Count != 0
-            && request.GrantTypes.ExceptAny(DiscoveryDocument.GrantTypesSupported))
+            && request.GrantTypes.IsSubset(DiscoveryDocument.GrantTypesSupported))
         {
             return RegisterError.InvalidGrantTypes;
         }
@@ -414,7 +414,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     {
         if (request.Scope.Count != 0)
         {
-            if (request.Scope.ExceptAny(DiscoveryDocument.ScopesSupported))
+            if (request.Scope.IsSubset(DiscoveryDocument.ScopesSupported))
             {
                 return RegisterError.InvalidScope;
             }
@@ -438,7 +438,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     private ProcessError? ValidateResponseTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.ResponseTypes.Count != 0
-            && request.ResponseTypes.ExceptAny(DiscoveryDocument.ResponseTypesSupported))
+            && request.ResponseTypes.IsSubset(DiscoveryDocument.ResponseTypesSupported))
         {
             return RegisterError.InvalidResponseTypes;
         }
@@ -894,7 +894,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (request.DefaultAcrValues.ExceptAny(DiscoveryDocument.AcrValuesSupported))
+        if (request.DefaultAcrValues.IsSubset(DiscoveryDocument.AcrValuesSupported))
         {
             return RegisterError.InvalidDefaultAcrValues;
         }
