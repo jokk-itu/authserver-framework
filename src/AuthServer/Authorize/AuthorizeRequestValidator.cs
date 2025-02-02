@@ -220,6 +220,11 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.UnauthorizedScope;
         }
 
+        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
+        {
+            return AuthorizeError.InvalidTarget;
+        }
+
         if (!HasValidMaxAge(request.MaxAge))
         {
             return AuthorizeError.InvalidMaxAge;
@@ -300,6 +305,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             CodeChallenge = request.CodeChallenge!,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
+            Resource = request.Resource,
             ClientId = request.ClientId!,
             Nonce = request.Nonce!,
             RedirectUri = request.RedirectUri,

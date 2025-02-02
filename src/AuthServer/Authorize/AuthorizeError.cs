@@ -77,6 +77,9 @@ internal class AuthorizeError
     public static readonly ProcessError InvalidGrantId =
         new(ErrorCode.InvalidGrantId, "grant_id is invalid", ResultCode.Redirect);
 
+    public static readonly ProcessError InvalidTarget =
+        new(ErrorCode.InvalidTarget, "resource is invalid", ResultCode.Redirect);
+
     public static readonly ProcessError InvalidRequestAndRequestUri =
         new(ErrorCode.InvalidRequest, "request_uri and request were both provided", ResultCode.BadRequest);
 
