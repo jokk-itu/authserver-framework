@@ -14,6 +14,41 @@ namespace AuthServer.Tests.UnitTest.Repositories;
 public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest(outputHelper)
 {
     [Fact]
+    public async Task GetResources_ThreeClients_ExpectOneResource()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
+
+        var scope = await GetScope(ScopeConstants.OpenId);
+
+        var clientUnauthorizedForScopeWithUri = new Client("web-app-one", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://webappone.authserver.dk"
+        };
+
+        var clientAuthorizedForScopeWithoutUri = new Client("web-app-two", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        clientAuthorizedForScopeWithoutUri.Scopes.Add(scope);
+
+        var client = new Client("web-app-three", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://webapp.authserver.dk"
+        };
+        client.Scopes.Add(scope);
+
+        await AddEntity(clientUnauthorizedForScopeWithUri);
+        await AddEntity(clientAuthorizedForScopeWithoutUri);
+        await AddEntity(client);
+
+        // Act
+        var resources = await clientRepository.GetResources([ScopeConstants.OpenId], CancellationToken.None);
+
+        // Assert
+        Assert.Single(resources);
+        Assert.Equal(resources.Single(), client.ClientUri);
+    }
+
+    [Fact]
     public async Task DoesResourcesExist_ClientForResourceAndScope_True()
     {
         // Arrange

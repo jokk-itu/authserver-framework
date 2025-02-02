@@ -5,6 +5,14 @@ namespace AuthServer.Repositories.Abstractions;
 internal interface IClientRepository
 {
     /// <summary>
+    /// Returns the ClientUri from all clients authorized to use the given scopes.
+    /// </summary>
+    /// <param name="scopes"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IReadOnlyCollection<string>> GetResources(IReadOnlyCollection<string> scopes, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Returns whether resources map to existing scope.
     /// </summary>
     /// <param name="resources"></param>

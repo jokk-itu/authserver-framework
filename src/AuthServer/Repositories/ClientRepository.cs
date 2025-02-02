@@ -18,6 +18,18 @@ internal class ClientRepository : IClientRepository
     }
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetResources(IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
+    {
+        return await _authorizationDbContext
+            .Set<Client>()
+            .Where(x => x.Scopes.AsQueryable().Any(s => scopes.Contains(s.Name)))
+            .Where(x => x.ClientUri != null)
+            .Select(x => x.ClientUri)
+            .OfType<string>()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<bool> DoesResourcesExist(IReadOnlyCollection<string> resources,
         IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
     {
