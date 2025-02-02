@@ -61,18 +61,23 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
 
         if (authorizationGrant.Client.RequireConsent)
         {
-            if (request.GrantManagementAction is null
-                || request.GrantManagementAction == GrantManagementActionConstants.Create)
+            var resources = request.Resource;
+            if (resources.Count == 0)
             {
-                await _consentGrantRepository.CreateGrantConsent(request.AuthorizationGrantId, request.Scope, cancellationToken);
+                resources = await _clientRepository.GetResources(request.Scope, cancellationToken);
+            }
+
+            if (request.GrantManagementAction is null or GrantManagementActionConstants.Create)
+            {
+                await _consentGrantRepository.CreateGrantConsent(request.AuthorizationGrantId, request.Scope, resources, cancellationToken);
             }
             else if (request.GrantManagementAction == GrantManagementActionConstants.Merge)
             {
-                await _consentGrantRepository.MergeGrantConsent(request.AuthorizationGrantId, request.Scope, cancellationToken);
+                await _consentGrantRepository.MergeGrantConsent(request.AuthorizationGrantId, request.Scope, resources, cancellationToken);
             }
             else if (request.GrantManagementAction == GrantManagementActionConstants.Replace)
             {
-                await _consentGrantRepository.ReplaceGrantConsent(request.AuthorizationGrantId, request.Scope, cancellationToken);
+                await _consentGrantRepository.ReplaceGrantConsent(request.AuthorizationGrantId, request.Scope, resources, cancellationToken);
             }
         }
 
