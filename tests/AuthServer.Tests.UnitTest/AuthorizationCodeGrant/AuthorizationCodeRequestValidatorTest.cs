@@ -43,26 +43,6 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_EmptyResource_ExpectInvalidTarget()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.AuthorizationCode
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.InvalidTarget, processResult);
-    }
-
-    [Fact]
     public async Task Validate_NullCode_ExpectInvalidCode()
     {
         // Arrange
