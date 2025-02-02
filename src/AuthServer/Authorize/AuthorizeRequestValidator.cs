@@ -31,7 +31,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         INonceRepository nonceRepository,
         IClientRepository clientRepository,
         IAuthorizationGrantRepository authorizationGrantRepository)
-        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository)
+        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;

@@ -15,17 +15,20 @@ internal class BaseAuthorizeValidator
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
+    private readonly IClientRepository _clientRepository;
 
     public BaseAuthorizeValidator(
         INonceRepository nonceRepository,
         ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
-        IAuthorizationGrantRepository authorizationGrantRepository)
+        IAuthorizationGrantRepository authorizationGrantRepository,
+        IClientRepository clientRepository)
     {
         _nonceRepository = nonceRepository;
         _tokenDecoder = tokenDecoder;
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _authorizationGrantRepository = authorizationGrantRepository;
+        _clientRepository = clientRepository;
     }
 
     protected static bool HasValidState(string? state) => !string.IsNullOrEmpty(state);
@@ -74,6 +77,9 @@ internal class BaseAuthorizeValidator
 
     protected async Task<bool> HasUniqueNonce(string nonce, CancellationToken cancellationToken)
         => !await _nonceRepository.IsNonceReplay(nonce, cancellationToken);
+
+    protected async Task<bool> HasValidResource(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
+        => resources.Count == 0 || await _clientRepository.DoesResourcesExist(resources, scopes, cancellationToken);
 
     protected async Task<bool> HasValidIdTokenHint(string? idTokenHint, string clientId, CancellationToken cancellationToken)
     {
