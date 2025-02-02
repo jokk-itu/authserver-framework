@@ -27,6 +27,7 @@ internal class PushedAuthorizationRequestProcessor : IRequestProcessor<PushedAut
             CodeChallengeMethod = request.CodeChallengeMethod,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
+            Resource = request.Resource,
             ClientId = request.ClientId,
             MaxAge = request.MaxAge,
             Nonce = request.Nonce,
