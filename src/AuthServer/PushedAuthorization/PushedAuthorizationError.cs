@@ -73,4 +73,7 @@ internal static class PushedAuthorizationError
 
     public static readonly ProcessError RequestRequiredAsRequestObject =
         new(ErrorCode.InvalidRequest, "client requires request as request_object", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidResource =
+        new(ErrorCode.InvalidTarget, "resource is invalid", ResultCode.BadRequest);
 }

@@ -152,6 +152,11 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return PushedAuthorizationError.UnauthorizedScope;
         }
 
+        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
+        {
+            return PushedAuthorizationError.InvalidResource;
+        }
+
         if (!HasValidMaxAge(request.MaxAge))
         {
             return PushedAuthorizationError.InvalidMaxAge;
@@ -194,6 +199,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             CodeChallengeMethod = request.CodeChallengeMethod!,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
+            Resource = request.Resource,
             ClientId = clientAuthenticationResult.ClientId,
             MaxAge = request.MaxAge,
             Nonce = request.Nonce!,
