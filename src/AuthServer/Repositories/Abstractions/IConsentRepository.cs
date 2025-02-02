@@ -12,34 +12,37 @@ internal interface IConsentRepository
     /// <param name="claims"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateOrUpdateClientConsent(string subjectIdentifier, string clientId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken);
+    Task CreateOrUpdateClientConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="authorizationGrantId"></param>
     /// <param name="scopes"></param>
+    /// <param name="resources"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken);
+    Task CreateGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="authorizationGrantId"></param>
     /// <param name="scopes"></param>
+    /// <param name="resources"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task ReplaceGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken);
+    Task ReplaceGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="authorizationGrantId"></param>
     /// <param name="scopes"></param>
+    /// <param name="resources"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task MergeGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken);
+    Task MergeGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken);
 
     /// <summary>
     /// 

@@ -16,28 +16,28 @@ internal class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
-    public async Task CreateGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken)
+    public async Task CreateGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-        await UpdateConsent(authorizationGrant, scopes, cancellationToken);
+        await UpdateConsent(authorizationGrant, scopes, resources, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task MergeGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken)
+    public async Task MergeGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-        await UpdateConsent(authorizationGrant, scopes, cancellationToken);
+        await UpdateConsent(authorizationGrant, scopes, resources, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task ReplaceGrantConsent(string authorizationGrantId, IEnumerable<string> scopes, CancellationToken cancellationToken)
+    public async Task ReplaceGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
 
         authorizationGrant.AuthorizationGrantConsents.Clear();
         await _identityContext.SaveChangesAsync(cancellationToken);
 
-        await UpdateConsent(authorizationGrant, scopes, cancellationToken);
+        await UpdateConsent(authorizationGrant, scopes, resources, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -83,7 +83,7 @@ internal class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
-    public async Task CreateOrUpdateClientConsent(string subjectIdentifier, string clientId, IEnumerable<string> scopes, IEnumerable<string> claims, CancellationToken cancellationToken)
+    public async Task CreateOrUpdateClientConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims, CancellationToken cancellationToken)
     {
         var clientConsents = await _identityContext
             .Set<Consent>()
@@ -135,7 +135,7 @@ internal class ConsentRepository : IConsentRepository
         _identityContext.RemoveRange(claimsToRemove);
     }
 
-    private async Task UpdateConsent(AuthorizationGrant authorizationGrant, IEnumerable<string> scopes, CancellationToken cancellationToken)
+    private async Task UpdateConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
     {
         var clientConsents = await _identityContext
             .Set<Consent>()
@@ -151,14 +151,18 @@ internal class ConsentRepository : IConsentRepository
                 .OfType<ScopeConsent>()
                 .Single(x => x.Scope.Name == scope);
 
-            var authorizationGrantScopeConsent = authorizationGrant.AuthorizationGrantConsents
-                .OfType<AuthorizationGrantScopeConsent>()
-                .SingleOrDefault(x => (x.Consent as ScopeConsent)!.Scope.Name == scope);
-
-            if (authorizationGrantScopeConsent is null)
+            foreach (var resource in resources)
             {
-                authorizationGrantScopeConsent ??= new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant);
-                authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
+                var authorizationGrantScopeConsent = authorizationGrant.AuthorizationGrantConsents
+                    .OfType<AuthorizationGrantScopeConsent>()
+                    .Where(x => x.Resource == resource)
+                    .SingleOrDefault(x => (x.Consent as ScopeConsent)!.Scope.Name == scope);
+
+                if (authorizationGrantScopeConsent is null)
+                {
+                    authorizationGrantScopeConsent ??= new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, resource);
+                    authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
+                }
             }
         }
 
