@@ -114,7 +114,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         var scope = authorizationCode.Scope;
 
         // Check scope again, as the authorized scope can change
-        if (cachedClient.Scopes.ExceptAny(scope))
+        if (scope.IsNotSubset(cachedClient.Scopes))
         {
             return TokenError.UnauthorizedForScope;
         }
@@ -126,8 +126,8 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             {
                 return TokenError.ConsentRequired;
             }
-
-            if (scope.IsSubset(consentedScopes))
+            
+            if (scope.SelectMany(_ => request.Resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
             {
                 return TokenError.ScopeExceedsConsentedScope;
             }
