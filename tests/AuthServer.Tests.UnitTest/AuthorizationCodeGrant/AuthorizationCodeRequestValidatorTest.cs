@@ -3,7 +3,6 @@ using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
@@ -40,6 +39,26 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(TokenError.UnsupportedGrantType, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_EmptyResource_ExpectInvalidTarget()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.AuthorizationCode
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidTarget, processResult);
     }
 
     [Fact]
