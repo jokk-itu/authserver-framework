@@ -313,7 +313,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_JwsWithInvalidDecryption_ExpectNull()
+    public async Task Validate_JweWithInvalidDecryption_ExpectNull()
     {
         // Arrange
         var clientJwkService = new Mock<IClientJwkService>();
