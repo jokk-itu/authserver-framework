@@ -9,6 +9,7 @@ using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.RequestAccessors.Token;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,6 +45,11 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         if (request.GrantType != GrantTypeConstants.AuthorizationCode)
         {
             return TokenError.UnsupportedGrantType;
+        }
+
+        if (request.Resource.Count == 0)
+        {
+            return TokenError.InvalidTarget;
         }
 
         var authorizationCode = _authorizationCodeEncoder.DecodeAuthorizationCode(request.Code);
