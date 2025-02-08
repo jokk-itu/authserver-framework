@@ -1,4 +1,5 @@
-﻿using AuthServer.Repositories.Models;
+﻿using AuthServer.Entities;
+using AuthServer.Repositories.Models;
 
 namespace AuthServer.Repositories.Abstractions;
 internal interface IConsentRepository
@@ -43,6 +44,15 @@ internal interface IConsentRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task MergeGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="subjectIdentifier"></param>
+    /// <param name="clientId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IReadOnlyCollection<Consent>> GetClientConsents(string subjectIdentifier, string clientId, CancellationToken cancellationToken);
 
     /// <summary>
     /// 

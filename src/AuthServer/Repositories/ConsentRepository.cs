@@ -59,6 +59,18 @@ internal class ConsentRepository : IConsentRepository
             .Select(x => ((ClaimConsent)x.Consent).Claim.Name)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<Consent>> GetClientConsents(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
+    {
+        return await _identityContext
+            .Set<Consent>()
+            .Where(x => x.Client.Id == clientId)
+            .Where(x => x.SubjectIdentifier.Id == subjectIdentifier)
+            .Include(x => ((ScopeConsent)x).Scope)
+            .Include(x => ((ClaimConsent)x).Claim)
+            .ToListAsync(cancellationToken);
+    }
     
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<string>> GetClientConsentedScopes(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
