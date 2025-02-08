@@ -1,6 +1,4 @@
-﻿using AuthServer.Authentication.Abstractions;
-using AuthServer.Authentication.Models;
-using AuthServer.Authorize.Abstractions;
+﻿using AuthServer.Authorize.Abstractions;
 using AuthServer.Authorize;
 using AuthServer.Constants;
 using AuthServer.Entities;
@@ -11,91 +9,23 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.Authorize;
+namespace AuthServer.Tests.UnitTest.Authorize.Interaction;
 
-public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
+public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
 {
-    public AuthorizeInteractionServiceCookieTest(ITestOutputHelper outputHelper)
+    public AuthorizeInteractionServiceCallbackTest(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
     }
 
     [Theory]
-    [InlineData(PromptConstants.None)]
+    [InlineData(PromptConstants.Login)]
     [InlineData(null)]
-    public async Task GetInteractionResult_ZeroAuthenticatedUsers_ExpectLogin(string? prompt)
+    public async Task GetInteractionResult_CallbackExpiredGrant_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
-        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(0)
-            .Verifiable();
-
-        // Act
-        var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest
-            {
-                Prompt = prompt
-            }, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
-        Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
-    }
-
-    [Theory]
-    [InlineData(PromptConstants.None)]
-    [InlineData(null)]
-    public async Task GetInteractionResult_MultipleAuthenticatedUsers_ExpectSelectAccount(string? prompt)
-    {
-        // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
-        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(2)
-            .Verifiable();
-
-        // Act
-        var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest
-            {
-                Prompt = prompt
-            }, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(InteractionResult.SelectAccountResult(prompt), interactionResult);
-        Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
-    }
-
-    [Theory]
-    [InlineData(PromptConstants.None)]
-    [InlineData(null)]
-    public async Task GetInteractionResult_OneAuthenticationUserWithExpiredGrant_ExpectLogin(string? prompt)
-    {
-        // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
         var subjectIdentifier = new SubjectIdentifier();
@@ -104,16 +34,13 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         authorizationGrant.Revoke();
+
         await AddEntity(authorizationGrant);
 
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, false, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
         // Act
@@ -121,27 +48,24 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
+                Scope = [ScopeConstants.OpenId],
                 Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
         Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
+        authorizeUserAccessorMock.Verify();
     }
 
     [Theory]
-    [InlineData("none")]
+    [InlineData(PromptConstants.Login)]
     [InlineData(null)]
-    public async Task GetInteractionResult_OneAuthenticatedUserMaxAgeExceeded_ExpectLogin(string? prompt)
+    public async Task GetInteractionResult_CallbackMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
         var subjectIdentifier = new SubjectIdentifier();
@@ -155,14 +79,10 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
 
         await AddEntity(authorizationGrant);
 
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, false, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
         // Act
@@ -170,6 +90,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
+                Scope = [ScopeConstants.OpenId],
                 MaxAge = "30",
                 Prompt = prompt
             }, CancellationToken.None);
@@ -177,21 +98,17 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         // Assert
         Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
+        authorizeUserAccessorMock.Verify();
     }
 
     [Theory]
-    [InlineData(PromptConstants.None)]
+    [InlineData(PromptConstants.Login)]
     [InlineData(null)]
-    public async Task GetInteractionResult_OneAuthenticatedUserDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
+    public async Task GetInteractionResult_CallbackDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
         var subjectIdentifier = new SubjectIdentifier();
@@ -208,14 +125,10 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
 
         await AddEntity(authorizationGrant);
 
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, false, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
         // Act
@@ -223,25 +136,22 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
+                Scope = [ScopeConstants.OpenId],
                 Prompt = prompt
             }, CancellationToken.None);
 
         // Assert
         Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
+        authorizeUserAccessorMock.Verify();
     }
 
     [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserWithInsufficientAuthenticationMethodReferenceAgainstRequest_ExpectUnmetAuthenticationRequirementResult()
+    public async Task GetInteractionResult_CallbackInsufficientAuthenticationMethodReferenceAgainstRequest_ExpectUnmetAuthenticationRequirementResult()
     {
         // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
         var subjectIdentifier = new SubjectIdentifier();
@@ -255,14 +165,10 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         };
         await AddEntity(authorizationGrant);
 
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
         // Act
@@ -270,25 +176,22 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
+                Scope = [ScopeConstants.OpenId],
                 AcrValues = [LevelOfAssuranceSubstantial]
             }, CancellationToken.None);
 
         // Assert
         Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
+        authorizeUserAccessorMock.Verify();
     }
 
     [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserWithInsufficientAuthenticationMethodReferenceAgainstDefault_ExpectUnmetAuthenticationRequirementResult()
+    public async Task GetInteractionResult_CallbackInsufficientAuthenticationMethodReferenceAgainstDefault_ExpectUnmetAuthenticationRequirementResult()
     {
         // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
         var subjectIdentifier = new SubjectIdentifier();
@@ -305,60 +208,10 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         await AddEntity(authorizationGrant);
         await AddEntity(clientAuthenticationContextReference);
 
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
-            .Verifiable();
-
-        // Act
-        var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest
-            {
-                ClientId = client.Id
-            }, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
-        Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
-    }
-
-    [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserSubjectDoesNotOwnGrant_ExpectInvalidGrantId()
-    {
-        // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
-        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr)
-        {
-            AuthenticationMethodReferences =
-                [await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password)]
-        };
-        await AddEntity(authorizationGrant);
-
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser("other_subject", authorizationGrant.Id))
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
         // Act
@@ -366,72 +219,21 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             new AuthorizeRequest
             {
                 ClientId = client.Id,
-                GrantId = authorizationGrant.Id
+                Scope = [ScopeConstants.OpenId],
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.InvalidGrantId, interactionResult);
+        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
+        authorizeUserAccessorMock.Verify();
     }
 
     [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserConsentNotRequired_ExpectNone()
+    public async Task GetInteractionResult_CallbackSubjectDoesNotOwnGrant_ExpectInvalidGrantId()
     {
         // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
-        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
-        {
-            RequireConsent = false
-        };
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
-        await AddEntity(authorizationGrant);
-
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
-            .Verifiable();
-
-        // Act
-        var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest
-            {
-                ClientId = client.Id
-            }, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(subjectIdentifier.Id, interactionResult.SubjectIdentifier);
-        Assert.True(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
-    }
-
-    [Theory]    
-    [InlineData(PromptConstants.None)]
-    [InlineData(null)]
-    public async Task GetInteractionResult_OneAuthenticatedUserConsentRequired_ExpectConsent(string? prompt)
-    {
-        // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
         var subjectIdentifier = new SubjectIdentifier();
@@ -441,14 +243,87 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
+        var authorizeUser = new AuthorizeUser("other_subject", true, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
+        // Act
+        var interactionResult = await authorizeInteractionService.GetInteractionResult(
+            new AuthorizeRequest
+            {
+                ClientId = client.Id,
+                Scope = [ScopeConstants.OpenId],
+                GrantId = authorizationGrant.Id
+            }, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(InteractionResult.InvalidGrantId, interactionResult);
+        Assert.False(interactionResult.IsSuccessful);
+        authorizeUserAccessorMock.Verify();
+    }
+
+    [Fact]
+    public async Task GetInteractionResult_CallbackConsentNotRequired_ExpectNone()
+    {
+        // Arrange
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
+        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequireConsent = false,
+        };
+        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        await AddEntity(authorizationGrant);
+
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
+            .Verifiable();
+
+        // Act
+        var interactionResult = await authorizeInteractionService.GetInteractionResult(
+            new AuthorizeRequest
+            {
+                ClientId = client.Id,
+                Scope = [ScopeConstants.OpenId],
+                GrantId = authorizationGrant.Id
+            }, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(subjectIdentifier.Id, interactionResult.SubjectIdentifier);
+        Assert.True(interactionResult.IsSuccessful);
+        authorizeUserAccessorMock.Verify();
+    }
+
+    [Theory]
+    [InlineData(PromptConstants.Login)]
+    [InlineData(null)]
+    public async Task GetInteractionResult_CallbackConsentRequired_ExpectConsent(string? prompt)
+    {
+        // Arrange
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
+        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        await AddEntity(authorizationGrant);
+
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
         // Act
@@ -463,19 +338,15 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         // Assert
         Assert.Equal(InteractionResult.ConsentResult(prompt), interactionResult);
         Assert.False(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
+        authorizeUserAccessorMock.Verify();
     }
 
     [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserConsentRequired_ExpectNone()
+    public async Task GetInteractionResult_CallbackFromConsent_ExpectNone()
     {
         // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
-        });
+        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
         var subjectIdentifier = new SubjectIdentifier();
@@ -489,14 +360,10 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         consentGrant.ConsentedScopes.Add(IdentityContext.Set<Scope>().Single(x => x.Name == ScopeConstants.OpenId));
         await AddEntity(consentGrant);
 
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
+        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
+        authorizeUserAccessorMock
+            .Setup(x => x.TryGetUser())
+            .Returns(authorizeUser)
             .Verifiable();
 
         // Act
@@ -510,6 +377,6 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         // Assert
         Assert.Equal(subjectIdentifier.Id, interactionResult.SubjectIdentifier);
         Assert.True(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
+        authorizeUserAccessorMock.Verify();
     }
 }

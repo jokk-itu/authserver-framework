@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.Authorize;
+namespace AuthServer.Tests.UnitTest.Authorize.Interaction;
 
 public class AuthorizeInteractionServiceTest : BaseUnitTest
 {
