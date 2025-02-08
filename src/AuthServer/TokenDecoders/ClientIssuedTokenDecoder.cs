@@ -44,7 +44,6 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             {
                 ValidateAudience = false,
                 ValidateIssuer = false,
-                ValidateIssuerSigningKey = false,
                 ValidateLifetime = false,
                 ValidateTokenReplay = false,
                 TokenDecryptionKeys = _jwkDocumentOptions.Value.EncryptionKeys.Select(x => x.Key),
@@ -73,7 +72,6 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             ValidateTokenReplay = true,
             ValidateLifetime = arguments.ValidateLifetime,
             ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
             ValidateIssuer = true,
         };
 

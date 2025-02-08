@@ -59,7 +59,6 @@ internal class ServerIssuedTokenDecoder : ITokenDecoder<ServerIssuedTokenDecodeA
             TokenDecryptionKeys = _jwkDocumentOptions.Value.EncryptionKeys.Select(x => x.Key),
             ValidateLifetime = arguments.ValidateLifetime,
             ValidateAudience = arguments.Audiences.Count != 0,
-            ValidateIssuerSigningKey = true,
             ValidateIssuer = true
         };
 
