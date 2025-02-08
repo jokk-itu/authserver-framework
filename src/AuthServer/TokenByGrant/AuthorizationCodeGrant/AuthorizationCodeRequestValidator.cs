@@ -127,8 +127,8 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
 
         if (cachedClient.RequireConsent)
         {
-            var consentedScopes = await _consentGrantRepository.GetConsentedScope(subjectIdentifier, clientId, cancellationToken);
-            if (consentedScopes.Count == 0)
+            var grantConsentScopes = await _consentGrantRepository.GetGrantConsentedScopes(authorizationCode.AuthorizationGrantId, cancellationToken);
+            if (grantConsentScopes.Count == 0)
             {
                 return TokenError.ConsentRequired;
             }
@@ -138,11 +138,13 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
                 return TokenError.ScopeExceedsConsentedScope;
             }
         }
-
-        var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, scope, cancellationToken);
-        if (!doesResourcesExist)
+        else
         {
-            return TokenError.InvalidTarget;
+            var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, scope, cancellationToken);
+            if (!doesResourcesExist)
+            {
+                return TokenError.InvalidTarget;
+            }
         }
 
         return new AuthorizationCodeValidatedRequest
