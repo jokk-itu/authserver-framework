@@ -140,6 +140,7 @@ internal class ClientAuthenticationService : IClientAuthenticationService
                 TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
                 Algorithms = [client.TokenEndpointAuthSigningAlg.GetDescription()], // TODO Add TokenEndpointAuthEncryptingEnc
                 ClientId = clientId,
+                SubjectId = clientId,
                 Audience = clientAssertionAuthentication.Audience,
                 ValidateLifetime = true
             },

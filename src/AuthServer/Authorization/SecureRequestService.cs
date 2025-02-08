@@ -67,6 +67,7 @@ internal class SecureRequestService : ISecureRequestService
                 Algorithms = algorithms.AsReadOnly(),
                 Audience = audience,
                 ClientId = clientId,
+                SubjectId = clientId,
                 TokenType = TokenTypeHeaderConstants.RequestObjectToken
             },
             cancellationToken);
