@@ -7,6 +7,7 @@ using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
+using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.RequestAccessors.Authorize;
 using AuthServer.TokenDecoders;
@@ -91,7 +92,7 @@ internal class AuthorizeService : IAuthorizeService
     }
 
     /// <inheritdoc/>
-    public async Task HandleConsent(string subjectIdentifier, string clientId, IEnumerable<string> consentedScopes, IEnumerable<string> consentedClaims, CancellationToken cancellationToken)
+    public async Task HandleConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> consentedScopes, IReadOnlyCollection<string> consentedClaims, CancellationToken cancellationToken)
     {
         await _consentGrantRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, consentedScopes, consentedClaims, cancellationToken);
     }
@@ -99,7 +100,7 @@ internal class AuthorizeService : IAuthorizeService
     /// <inheritdoc/>
     public async Task<ConsentGrantDto> GetConsentGrantDto(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
     {
-        // TODO get all client consents
+        var consents = await _consentGrantRepository.GetClientConsents(subjectIdentifier, clientId, cancellationToken);
         var cachedClient = await _cachedClientStore.Get(clientId, cancellationToken);
         var username = await _userClaimService.GetUsername(subjectIdentifier, cancellationToken);
 
@@ -109,8 +110,8 @@ internal class AuthorizeService : IAuthorizeService
             ClientLogoUri = cachedClient.LogoUri,
             ClientUri = cachedClient.ClientUri,
             Username = username,
-            ConsentedScope = [],
-            ConsentedClaims = []
+            ConsentedScope = consents.OfType<ScopeConsent>().Select(x => x.Scope.Name),
+            ConsentedClaims = consents.OfType<ClaimConsent>().Select(x => x.Claim.Name)
         };
     }
 

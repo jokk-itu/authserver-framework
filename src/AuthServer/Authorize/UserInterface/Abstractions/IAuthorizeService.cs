@@ -16,7 +16,7 @@ public interface IAuthorizeService
     /// <param name="consentedClaims"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task HandleConsent(string subjectIdentifier, string clientId, IEnumerable<string> consentedScopes, IEnumerable<string> consentedClaims, CancellationToken cancellationToken);
+    Task HandleConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> consentedScopes, IReadOnlyCollection<string> consentedClaims, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
