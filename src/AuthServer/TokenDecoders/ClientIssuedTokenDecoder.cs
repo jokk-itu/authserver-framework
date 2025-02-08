@@ -47,7 +47,7 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
                 ValidateLifetime = false,
                 ValidateTokenReplay = false,
                 TokenDecryptionKeys = _jwkDocumentOptions.Value.EncryptionKeys.Select(x => x.Key),
-                SignatureValidator = (x, y) => new JsonWebToken(x)
+                SignatureValidator = (x, _) => new JsonWebToken(x)
             };
 
             var tokenValidationResult = await handler.ValidateTokenAsync(token, parameters);
