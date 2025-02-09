@@ -84,5 +84,6 @@ public class RefreshTokenRequestProcessorTest : BaseUnitTest
         Assert.Null(tokenResponse.RefreshToken);
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
         Assert.Equal(client.AccessTokenExpiration, tokenResponse.ExpiresIn);
+        Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
     }
 }
