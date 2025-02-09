@@ -10,14 +10,10 @@ public class AuthorizationGrantScopeConsent : AuthorizationGrantConsent
         Resource = resource;
     }
     
-    public AuthorizationGrantScopeConsent(Consent consent, AuthorizationGrant authorizationGrant)
-        : base(consent, authorizationGrant, ConsentType.Scope)
-    {}
-    
 #pragma warning disable CS8618
     // Used to hydrate EF Core model
     private AuthorizationGrantScopeConsent() { }
 #pragma warning restore
     
-    public string? Resource { get; private init; }
+    public string Resource { get; private init; }
 }

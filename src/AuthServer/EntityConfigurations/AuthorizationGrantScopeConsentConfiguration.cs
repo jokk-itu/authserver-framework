@@ -12,6 +12,6 @@ public class AuthorizationGrantScopeConsentConfiguration : IEntityTypeConfigurat
         builder
             .Property(x => x.Resource)
             .HasMaxLength(255)
-            .IsRequired(false);
+            .IsRequired();
     }
 }
