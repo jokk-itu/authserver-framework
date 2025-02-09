@@ -222,7 +222,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
 
         if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
         {
-            return AuthorizeError.InvalidTarget;
+            return AuthorizeError.InvalidResource;
         }
 
         if (!HasValidMaxAge(request.MaxAge))
