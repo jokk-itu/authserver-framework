@@ -302,6 +302,6 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestHandler<GrantManagementRequest, GrantResponse>, GrantManagementQueryRequestHandler>()
             .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
-            .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantManagementQueryRequestProcessor>>();
+            .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>, GrantManagementQueryRequestProcessor>();
     }
 }
