@@ -16,6 +16,12 @@ public static class ResultExtensions
             StatusCodes.Status400BadRequest);
     }
 
+    public static IResult OAuthNotFound(this IResultExtensions _, OAuthError error)
+    {
+        return Results.Text(JsonSerializer.Serialize(error), MimeTypeConstants.Json, Encoding.UTF8,
+            StatusCodes.Status404NotFound);
+    }
+
     public static IResult OAuthOkWithHtml(this IResultExtensions _, string html)
     {
         return Results.Text(content: html, contentType: MimeTypeConstants.Html, statusCode: StatusCodes.Status200OK);
