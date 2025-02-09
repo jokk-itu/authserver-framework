@@ -30,6 +30,14 @@ internal class JwkDto
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? X509Thumbprint { get; set; }
 
+    [JsonPropertyName("x5c")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IEnumerable<string>? X509CertificateChain { get; set; }
+
+    [JsonPropertyName("x5t#S256")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? X509ThumbprintS256 { get; set; }
+
     [JsonPropertyName("crv")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Curve { get; set; }

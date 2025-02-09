@@ -83,6 +83,8 @@ internal static class JwksDocumentEndpoint
                 break;
             case X509SecurityKey:
                 key.X509Thumbprint = jsonWebKey.X5t;
+                key.X509CertificateChain = jsonWebKey.X5c;
+                key.X509ThumbprintS256 = jsonWebKey.X5tS256;
                 break;
         }
     }
