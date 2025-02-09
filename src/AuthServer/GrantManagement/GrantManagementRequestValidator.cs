@@ -39,7 +39,7 @@ internal class GrantManagementRequestValidator : IRequestValidator<GrantManageme
 
         if (clientIdFromGrant is null)
         {
-            return GrantManagementError.UnexistingGrantId;
+            return GrantManagementError.NotFoundGrantId;
         }
 
         string clientIdFromToken;
@@ -64,8 +64,8 @@ internal class GrantManagementRequestValidator : IRequestValidator<GrantManageme
         }
         
         return new GrantManagementValidatedRequest
-        {
-          GrantId = request.GrantId!
+        { 
+            GrantId = request.GrantId!
         };
     }
 }
