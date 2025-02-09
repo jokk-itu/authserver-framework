@@ -761,6 +761,96 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(PushedAuthorizationError.InvalidAcrValues, processResult.Error);
     }
 
+    [Theory]
+    [InlineData("", null)]
+    [InlineData(null, null)]
+    [InlineData("invalid_grant_management_action", null)]
+    [InlineData("", "grant_id")]
+    [InlineData(null, "grant_id")]
+    [InlineData(GrantManagementActionConstants.Create, "grant_id")]
+    [InlineData(GrantManagementActionConstants.Replace, "")]
+    [InlineData(GrantManagementActionConstants.Replace, null)]
+    [InlineData(GrantManagementActionConstants.Merge, "")]
+    [InlineData(GrantManagementActionConstants.Merge, null)]
+    public async Task Validate_GrantManagementActionWithGrantId_ExpectInvalidGrantManagement(string? grantManagementAction, string? grantId)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        DiscoveryDocument.GrantManagementActionRequired = true;
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            GrantManagementAction = grantManagementAction,
+            GrantId = grantId
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidGrantManagement, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidGrantId_ExpectInvalidGrantId()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            GrantManagementAction = GrantManagementActionConstants.Replace,
+            GrantId = "invalid_grant_id"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidGrantId, processResult.Error);
+    }
+
     [Fact]
     public async Task Validate_MinimalRequest_ExpectValidatedRequest()
     {
