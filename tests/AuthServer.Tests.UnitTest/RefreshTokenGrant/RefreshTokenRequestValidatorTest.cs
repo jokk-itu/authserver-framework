@@ -344,6 +344,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
+        client.GrantTypes.Clear();
 
         var refreshToken = await GetRefreshToken(client);
 
@@ -377,11 +378,9 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var refreshTokenGrantType = await GetGrantType(GrantTypeConstants.RefreshToken);
-        client.GrantTypes.Add(refreshTokenGrantType);
 
         var refreshToken = await GetRefreshToken(client);
-        client.ConsentGrants.Clear();
+        refreshToken.AuthorizationGrant.AuthorizationGrantConsents.Clear();
         await SaveChangesAsync();
 
         var request = new TokenRequest
@@ -414,8 +413,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var refreshTokenGrantType = await GetGrantType(GrantTypeConstants.RefreshToken);
-        client.GrantTypes.Add(refreshTokenGrantType);
 
         var refreshToken = await GetRefreshToken(client);
 
@@ -425,6 +422,40 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
             RefreshToken = refreshToken.Reference,
             Scope = [ScopeConstants.Profile],
             Resource = ["resource"],
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.ScopeExceedsConsentedScope, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_ConsentRequiredWithRequestScopeAndResource_ExpectScopeExceedsConsentedScope()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client);
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = refreshToken.Reference,
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["other_resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -451,10 +482,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
         client.RequireConsent = false;
-        var refreshTokenGrantType = await GetGrantType(GrantTypeConstants.RefreshToken);
-        client.GrantTypes.Add(refreshTokenGrantType);
-        var openIdScope = await GetScope(ScopeConstants.OpenId);
-        client.Scopes.Add(openIdScope);
 
         var refreshToken = await GetRefreshToken(client);
 
@@ -490,10 +517,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
         client.RequireConsent = false;
-        var refreshTokenGrantType = await GetGrantType(GrantTypeConstants.RefreshToken);
-        client.GrantTypes.Add(refreshTokenGrantType);
-        var openIdScope = await GetScope(ScopeConstants.OpenId);
-        client.Scopes.Add(openIdScope);
 
         var refreshToken = await GetRefreshToken(client);
 
@@ -527,8 +550,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var refreshTokenGrantType = await GetGrantType(GrantTypeConstants.RefreshToken);
-        client.GrantTypes.Add(refreshTokenGrantType);
 
         var refreshToken = await GetRefreshToken(client);
 
@@ -567,7 +588,15 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
+
+        var grantType = await GetGrantType(GrantTypeConstants.RefreshToken);
+        client.GrantTypes.Add(grantType);
+
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        client.Scopes.Add(openIdScope);
+
         await AddEntity(client);
+
         return client;
     }
 
@@ -575,7 +604,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     {
         var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
-            ClientUri = "https://weahter.authserver.dk"
+            ClientUri = "https://weather.authserver.dk"
         };
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         weatherClient.Scopes.Add(openIdScope);
@@ -592,10 +621,10 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600);
         await AddEntity(refreshToken);
 
-        var consentGrant = new ConsentGrant(subjectIdentifier, client);
         var openIdScope = await GetScope(ScopeConstants.OpenId);
-        consentGrant.ConsentedScopes.Add(openIdScope);
-        await AddEntity(consentGrant);
+        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://weather.authserver.dk");
+        await AddEntity(authorizationGrantScopeConsent);
 
         return refreshToken;
     }
