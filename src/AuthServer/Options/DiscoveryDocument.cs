@@ -156,5 +156,12 @@ public class DiscoveryDocument
     public bool GrantManagementActionRequired { get; set; }
     
     [JsonPropertyName("grant_management_actions_supported")]
-    public ICollection<string> GrantManagementActionsSupported => [GrantManagementActionConstants.Revoke];
+    public ICollection<string> GrantManagementActionsSupported =>
+    [
+        GrantManagementActionConstants.Revoke,
+        GrantManagementActionConstants.Query,
+        GrantManagementActionConstants.Create,
+        GrantManagementActionConstants.Replace,
+        GrantManagementActionConstants.Merge
+    ];
 }
