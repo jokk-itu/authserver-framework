@@ -49,7 +49,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
 
         if (request.Resource.Count == 0)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         var authorizationCode = _authorizationCodeEncoder.DecodeAuthorizationCode(request.Code);
@@ -143,7 +143,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, scope, cancellationToken);
             if (!doesResourcesExist)
             {
-                return TokenError.InvalidTarget;
+                return TokenError.InvalidResource;
             }
         }
 

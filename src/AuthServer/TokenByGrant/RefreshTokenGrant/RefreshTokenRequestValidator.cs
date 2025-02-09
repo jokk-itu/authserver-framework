@@ -55,7 +55,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
 
         if (request.Resource.Count == 0)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         if (request.ClientAuthentications.Count != 1)
@@ -121,7 +121,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
             var doesResourceExist = await _clientRepository.DoesResourcesExist(request.Resource, requestedScopes, cancellationToken);
             if (!doesResourceExist)
             {
-                return TokenError.InvalidTarget;
+                return TokenError.InvalidResource;
             }
         }
 

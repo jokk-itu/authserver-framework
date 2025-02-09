@@ -39,7 +39,7 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
 
         if (request.Resource.Count == 0)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         var isClientAuthenticationMethodInvalid = request.ClientAuthentications.Count != 1;
@@ -72,7 +72,7 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
         var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, request.Scope, cancellationToken);
         if (!doesResourcesExist)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         return new ClientCredentialsValidatedRequest

@@ -56,7 +56,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_EmptyResource_ExpectInvalidTarget()
+    public async Task Validate_EmptyResource_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -73,7 +73,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.InvalidTarget, processResult);
+        Assert.Equal(TokenError.InvalidResource, processResult);
     }
 
     [Fact]
@@ -480,7 +480,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_InvalidResource_ExpectInvalidTarget()
+    public async Task Validate_ConsentNotRequiredWithInvalidResource_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -514,7 +514,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.InvalidTarget, processResult);
+        Assert.Equal(TokenError.InvalidResource, processResult);
     }
 
     [Fact]
