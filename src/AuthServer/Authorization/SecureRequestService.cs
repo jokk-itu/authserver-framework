@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using System.Text.Json;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
@@ -77,23 +78,25 @@ internal class SecureRequestService : ISecureRequestService
             return null;
         }
 
-        jsonWebToken.TryGetClaim(Parameter.ClientId, out var clientIdClaim);
-        jsonWebToken.TryGetClaim(Parameter.CodeChallenge, out var codeChallengeClaim);
-        jsonWebToken.TryGetClaim(Parameter.CodeChallengeMethod, out var codeChallengeMethodClaim);
-        jsonWebToken.TryGetClaim(Parameter.Display, out var displayClaim);
-        jsonWebToken.TryGetClaim(Parameter.IdTokenHint, out var idTokenHintClaim);
-        jsonWebToken.TryGetClaim(Parameter.LoginHint, out var loginHintClaim);
-        jsonWebToken.TryGetClaim(Parameter.MaxAge, out var maxAgeClaim);
-        jsonWebToken.TryGetClaim(Parameter.Nonce, out var nonceClaim);
-        jsonWebToken.TryGetClaim(Parameter.RedirectUri, out var redirectUriClaim);
-        jsonWebToken.TryGetClaim(Parameter.Prompt, out var promptClaim);
-        jsonWebToken.TryGetClaim(Parameter.ResponseMode, out var responseModeClaim);
-        jsonWebToken.TryGetClaim(Parameter.ResponseType, out var responseTypeClaim);
-        jsonWebToken.TryGetClaim(Parameter.State, out var stateClaim);
-        jsonWebToken.TryGetClaim(Parameter.GrantId, out var grantIdClaim);
-        jsonWebToken.TryGetClaim(Parameter.GrantManagementAction, out var grantManagementAction);
-        jsonWebToken.TryGetClaim(Parameter.Scope, out var scopeClaim);
-        jsonWebToken.TryGetClaim(Parameter.AcrValues, out var acrValuesClaim);
+        var claims = jsonWebToken.Claims.ToList();
+        var clientIdClaim = claims.SingleOrDefault(x => x.Type == Parameter.ClientId);
+        var codeChallengeClaim = claims.SingleOrDefault(x => x.Type == Parameter.CodeChallenge);
+        var codeChallengeMethodClaim = claims.SingleOrDefault(x => x.Type == Parameter.CodeChallengeMethod);
+        var displayClaim = claims.SingleOrDefault(x => x.Type == Parameter.Display);
+        var idTokenHintClaim = claims.SingleOrDefault(x => x.Type == Parameter.IdTokenHint);
+        var loginHintClaim = claims.SingleOrDefault(x => x.Type == Parameter.LoginHint);
+        var maxAgeClaim = claims.SingleOrDefault(x => x.Type == Parameter.MaxAge);
+        var nonceClaim = claims.SingleOrDefault(x => x.Type == Parameter.Nonce);
+        var redirectUriClaim = claims.SingleOrDefault(x => x.Type == Parameter.RedirectUri);
+        var promptClaim = claims.SingleOrDefault(x => x.Type == Parameter.Prompt);
+        var responseModeClaim = claims.SingleOrDefault(x => x.Type == Parameter.ResponseMode);
+        var responseTypeClaim = claims.SingleOrDefault(x => x.Type == Parameter.ResponseType);
+        var stateClaim = claims.SingleOrDefault(x => x.Type == Parameter.State);
+        var grantIdClaim = claims.SingleOrDefault(x => x.Type == Parameter.GrantId);
+        var grantManagementActionClaim = claims.SingleOrDefault(x => x.Type == Parameter.GrantManagementAction);
+        var scopeClaim = claims.SingleOrDefault(x => x.Type == Parameter.Scope);
+        var acrValuesClaim = claims.SingleOrDefault(x => x.Type == Parameter.AcrValues);
+        var resourceClaims = claims.Where(x => x.Type == Parameter.Resource).ToList();
 
         _cachedAuthorizeRequestObjectDto = new AuthorizeRequestDto
         {
@@ -111,9 +114,10 @@ internal class SecureRequestService : ISecureRequestService
             ResponseType = responseTypeClaim?.Value,
             State = stateClaim?.Value,
             GrantId = grantIdClaim?.Value,
-            GrantManagementAction = grantManagementAction?.Value,
+            GrantManagementAction = grantManagementActionClaim?.Value,
             Scope = scopeClaim?.Value.Split(' ') ?? [],
             AcrValues = acrValuesClaim?.Value.Split(' ') ?? [],
+            Resource = resourceClaims.Select(x => x.Value).ToList()
         };
 
         return _cachedAuthorizeRequestObjectDto;

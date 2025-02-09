@@ -132,6 +132,8 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
         Assert.Equal(value, requestObject.AcrValues.Single());
+        Assert.Single(requestObject.Resource);
+        Assert.Equal(value, requestObject.Resource.Single());
 
         tokenDecoderMock.Verify();
     }
@@ -192,6 +194,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Null(requestObject.State);
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
+        Assert.Empty(requestObject.Resource);
 
         tokenDecoderMock.Verify();
     }
@@ -294,6 +297,8 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
         Assert.Equal(value, requestObject.AcrValues.Single());
+        Assert.Single(requestObject.Resource);
+        Assert.Equal(value, requestObject.Resource.Single());
 
         tokenDecoderMock.Verify();
     }
@@ -361,6 +366,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Null(requestObject.State);
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
+        Assert.Empty(requestObject.Resource);
 
         tokenDecoderMock.Verify();
     }
@@ -436,6 +442,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             { Parameter.State, value },
             { Parameter.Scope, value },
             { Parameter.AcrValues, value },
+            { Parameter.Resource, new List<string> { value } }
         };
         var requestToken = JwtBuilder.GetRequestObjectJwt(claims, value, jwks.PrivateJwks, ClientTokenAudience.AuthorizeEndpoint);
 
