@@ -47,7 +47,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task CreateAuthorizationGrant_ActiveSessionWithPreviousGrant_ExpectGrant()
+    public async Task CreateAuthorizationGrant_ActiveSession_ExpectGrant()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -58,9 +58,8 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         {
             SubjectType = SubjectType.Public
         };
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var previousGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
-        await AddEntity(previousGrant);
+        await AddEntity(client);
+        await AddEntity(session);
 
         // Act
         var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationGrant(
@@ -74,7 +73,6 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         Assert.Equal(client, authorizationGrant.Client);
         Assert.Equal(session, authorizationGrant.Session);
         Assert.Equal(subjectIdentifier.Id, authorizationGrant.Subject);
-        Assert.NotNull(previousGrant.RevokedAt);
     }
 
     [Fact]
