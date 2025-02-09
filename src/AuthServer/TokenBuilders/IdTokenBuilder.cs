@@ -26,6 +26,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
     private readonly IUserClaimService _userClaimService;
     private readonly IMetricService _metricService;
     private readonly IConsentRepository _consentGrantRepository;
+    private readonly IClientRepository _clientRepository;
 
     public IdTokenBuilder(
         AuthorizationDbContext identityContext,
@@ -34,7 +35,8 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
         ITokenSecurityService tokenSecurityService,
         IUserClaimService userClaimService,
         IMetricService metricService,
-        IConsentRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository,
+        IClientRepository clientRepository)
     {
         _identityContext = identityContext;
         _discoveryDocumentOptions = discoveryDocumentOptions;
@@ -43,6 +45,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
         _userClaimService = userClaimService;
         _metricService = metricService;
         _consentGrantRepository = consentGrantRepository;
+        _clientRepository = clientRepository;
     }
 
     public async Task<string> BuildToken(IdTokenArguments arguments, CancellationToken cancellationToken)
@@ -55,6 +58,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             {
                 x.AuthTime,
                 ClientId = x.Client.Id,
+                x.Client.RequireConsent,
                 SessionId = x.Session.Id,
                 SubjectIdentifier = x.Session.SubjectIdentifier.Id,
                 GrantSubject = x.Subject,
@@ -82,11 +86,20 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             { ClaimNameConstants.Acr, query.AuthenticationContextReference }
         };
 
-        var authorizedClaimTypes = await _consentGrantRepository.GetGrantConsentedClaims(arguments.AuthorizationGrantId, cancellationToken);
         var userClaims = await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken);
+        IReadOnlyCollection<string> authorizedClaims;
+        if (query.RequireConsent)
+        {
+            authorizedClaims = await _consentGrantRepository.GetGrantConsentedClaims(arguments.AuthorizationGrantId, cancellationToken);
+        }
+        else
+        {
+            authorizedClaims = await _clientRepository.GetAuthorizedClaims(query.ClientId, cancellationToken);
+        }
+        
         foreach (var userClaim in userClaims)
         {
-            if (authorizedClaimTypes.Contains(userClaim.Type))
+            if (authorizedClaims.Contains(userClaim.Type))
             {
                 claims.Add(userClaim.Type, userClaim.Value);
             }
