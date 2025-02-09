@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.GrantManagement;
 
-public class GrantManagementRequestValidatorTest : BaseUnitTest
+public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
 {
-    public GrantManagementRequestValidatorTest(ITestOutputHelper outputHelper)
+    public GrantManagementRevokeRequestValidatorTest(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
     }
