@@ -24,6 +24,7 @@ internal class InteractionResult
     private InteractionResult(string subjectIdentifier, string authorizationGrantId)
     {
         SubjectIdentifier = subjectIdentifier;
+        AuthorizationGrantId = authorizationGrantId;
     }
 
     public ProcessError? Error { get; private init; }
