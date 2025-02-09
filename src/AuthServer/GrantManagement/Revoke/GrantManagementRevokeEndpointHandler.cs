@@ -6,31 +6,32 @@ using AuthServer.Extensions;
 using AuthServer.RequestAccessors.GrantManagement;
 using Microsoft.AspNetCore.Http;
 
-namespace AuthServer.GrantManagement;
+namespace AuthServer.GrantManagement.Revoke;
 
-internal class GrantManagementEndpointHandler : IEndpointHandler
+internal class GrantManagementRevokeEndpointHandler : IEndpointHandler
 {
     private readonly IRequestAccessor<GrantManagementRequest> _requestAccessor;
     private readonly IRequestHandler<GrantManagementRequest, Unit> _requestHandler;
 
-    public GrantManagementEndpointHandler(
+    public GrantManagementRevokeEndpointHandler(
         IRequestAccessor<GrantManagementRequest> requestAccessor,
         IRequestHandler<GrantManagementRequest, Unit> requestHandler)
     {
         _requestAccessor = requestAccessor;
         _requestHandler = requestHandler;
     }
-    
+
     public async Task<IResult> Handle(HttpContext httpContext, CancellationToken cancellationToken)
     {
         var request = await _requestAccessor.GetRequest(httpContext.Request);
         var result = await _requestHandler.Handle(request, cancellationToken);
         return result.Match(
-            _ => Results.NoContent(),
+            _ => throw new NotImplementedException(), // This is 204 for revoke and 200 for query
             error =>
                 error.ResultCode switch
                 {
-                    ResultCode.BadRequest => Results.Extensions.OAuthBadRequest(error),
+                    ResultCode.NotFound => Results.Extensions.OAuthNotFound(error),
+                    ResultCode.Forbidden => throw new NotImplementedException(),
                     _ => Results.Extensions.OAuthBadRequest(
                         new OAuthError(ErrorCode.ServerError, "unexpected error occurred"))
                 });

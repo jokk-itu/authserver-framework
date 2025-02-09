@@ -3,15 +3,15 @@ using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.RequestAccessors.GrantManagement;
 
-namespace AuthServer.GrantManagement;
+namespace AuthServer.GrantManagement.Revoke;
 
-internal class GrantManagementRequestHandler : RequestHandler<GrantManagementRequest, GrantManagementValidatedRequest, Unit>
+internal class GrantManagementRevokeRequestHandler : RequestHandler<GrantManagementRequest, GrantManagementValidatedRequest, Unit>
 {
     private readonly IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest> _requestValidator;
     private readonly IRequestProcessor<GrantManagementValidatedRequest, Unit> _requestProcessor;
     private readonly IUnitOfWork _unitOfWork;
 
-    public GrantManagementRequestHandler(
+    public GrantManagementRevokeRequestHandler(
         IMetricService metricService,
         IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest> requestValidator,
         IRequestProcessor<GrantManagementValidatedRequest, Unit> requestProcessor,

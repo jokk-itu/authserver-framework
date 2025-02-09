@@ -4,11 +4,11 @@ using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.GrantManagement;
 
-internal class GrantManagementRequestProcessor : IRequestProcessor<GrantManagementValidatedRequest, Unit>
+internal class GrantManagementRevokeRequestProcessor : IRequestProcessor<GrantManagementValidatedRequest, Unit>
 {
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
 
-    public GrantManagementRequestProcessor(IAuthorizationGrantRepository authorizationGrantRepository)
+    public GrantManagementRevokeRequestProcessor(IAuthorizationGrantRepository authorizationGrantRepository)
     {
         _authorizationGrantRepository = authorizationGrantRepository;
     }

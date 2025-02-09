@@ -15,7 +15,7 @@ internal class GrantManagementEndpointModule : IEndpointModule
     {
         var revokeRouteBuilder = endpointRouteBuilder.MapDelete(
             "connect/grants/{grant_id}",
-            (HttpContext httpContext, [FromKeyedServices("GrantManagement")] IEndpointHandler endpointHandler,
+            (HttpContext httpContext, [FromKeyedServices("GrantManagementRevoke")] IEndpointHandler endpointHandler,
                 CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         revokeRouteBuilder

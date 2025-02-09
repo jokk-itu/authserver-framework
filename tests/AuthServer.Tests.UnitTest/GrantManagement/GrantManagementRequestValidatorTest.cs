@@ -57,7 +57,7 @@ public class GrantManagementRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.False(processResult.IsSuccess);
-        Assert.Equal(GrantManagementError.UnexistingGrantId, processResult.Error);
+        Assert.Equal(GrantManagementError.NotFoundGrantId, processResult.Error);
     }
 
     [Fact]

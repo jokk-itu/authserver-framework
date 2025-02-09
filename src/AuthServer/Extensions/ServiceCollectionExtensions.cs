@@ -18,6 +18,7 @@ using AuthServer.Core.Request;
 using AuthServer.EndSession;
 using AuthServer.EndSession.Abstractions;
 using AuthServer.GrantManagement;
+using AuthServer.GrantManagement.Revoke;
 using AuthServer.Introspection;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
@@ -293,10 +294,10 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddScoped<IRequestAccessor<GrantManagementRequest>, GrantManagementRequestAccessor>()
-            .AddKeyedScoped<IEndpointHandler, GrantManagementEndpointHandler>("GrantManagement")
+            .AddKeyedScoped<IEndpointHandler, GrantManagementRevokeEndpointHandler>("GrantManagementRevoke")
             .AddSingleton<IEndpointModule, GrantManagementEndpointModule>()
-            .AddScoped<IRequestHandler<GrantManagementRequest, Unit>, GrantManagementRequestHandler>()
+            .AddScoped<IRequestHandler<GrantManagementRequest, Unit>, GrantManagementRevokeRequestHandler>()
             .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
-            .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRequestProcessor>();
+            .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
     }
 }
