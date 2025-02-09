@@ -87,4 +87,12 @@ internal interface IConsentRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IReadOnlyCollection<string>> GetGrantConsentedClaims(string authorizationGrantId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="authorizationGrantId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IReadOnlyCollection<AuthorizationGrantConsent>> GetGrantConsents(string authorizationGrantId, CancellationToken cancellationToken);
 }
