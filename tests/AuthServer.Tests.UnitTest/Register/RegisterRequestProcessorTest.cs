@@ -385,7 +385,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             client,
             await GetClaim(ClaimNameConstants.Name));
         
-        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant);
+        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://idp.authserver.dk");
         var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
         authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
         authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
