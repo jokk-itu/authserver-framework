@@ -13,6 +13,14 @@ internal interface IClientRepository
     Task<IReadOnlyCollection<string>> GetResources(IReadOnlyCollection<string> scopes, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Returns the Claims that are authorized by the client from scopes.
+    /// </summary>
+    /// <param name="clientId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IReadOnlyCollection<string>> GetAuthorizedClaims(string clientId, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Returns whether resources map to existing scope.
     /// </summary>
     /// <param name="resources"></param>
