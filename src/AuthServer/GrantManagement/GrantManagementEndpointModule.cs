@@ -27,5 +27,20 @@ internal class GrantManagementEndpointModule : IEndpointModule
             .AddEndpointFilter<NoCacheFilter>()
             .AddEndpointFilter<NoReferrerFilter>()
             .AddEndpointFilter(new FeatureFilter(FeatureFlags.GrantManagementRevoke));
+
+        var queryRouteBuilder = endpointRouteBuilder.MapGet(
+            "connect/grants/{grant_id}",
+            (HttpContext httpContext, [FromKeyedServices("GrantManagementQuery")] IEndpointHandler endpointHandler,
+                CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
+
+        queryRouteBuilder
+            .WithDisplayName("OpenId Connect GrantManagement Query")
+            .WithName("OpenId Connect GrantManagement Query")
+            .WithDescription("Endpoint to query grants")
+            .WithGroupName("GrantManagement")
+            .RequireAuthorization(AuthorizationConstants.GrantManagementQuery)
+            .AddEndpointFilter<NoCacheFilter>()
+            .AddEndpointFilter<NoReferrerFilter>()
+            .AddEndpointFilter(new FeatureFilter(FeatureFlags.GrantManagementQuery));
     }
 }
