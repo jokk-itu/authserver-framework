@@ -135,7 +135,8 @@ internal class BaseAuthorizeValidator
             return false;
         }
 
-        if (grantManagementAction != GrantManagementActionConstants.Create
+        if (!string.IsNullOrEmpty(grantManagementAction)
+            && grantManagementAction != GrantManagementActionConstants.Create
             && string.IsNullOrEmpty(grantId))
         {
             return false;
