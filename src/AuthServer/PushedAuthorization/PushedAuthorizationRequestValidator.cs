@@ -64,27 +64,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
                 return PushedAuthorizationError.InvalidRequest;
             }
 
-            request = new PushedAuthorizationRequest
-            {
-                IdTokenHint = newRequest.IdTokenHint,
-                LoginHint = newRequest.LoginHint,
-                Prompt = newRequest.Prompt,
-                Display = newRequest.Display,
-                RedirectUri = newRequest.RedirectUri,
-                CodeChallenge = newRequest.CodeChallenge,
-                CodeChallengeMethod = newRequest.CodeChallengeMethod,
-                ResponseType = newRequest.ResponseType,
-                Nonce = newRequest.Nonce,
-                MaxAge = newRequest.MaxAge,
-                State = newRequest.State,
-                ResponseMode = newRequest.ResponseMode,
-                GrantId = newRequest.GrantId,
-                GrantManagementAction = newRequest.GrantManagementAction,
-                RequestObject = string.Empty,
-                Scope = newRequest.Scope,
-                AcrValues = newRequest.AcrValues,
-                ClientAuthentications = request.ClientAuthentications
-            };
+            request = new PushedAuthorizationRequest(newRequest, request.ClientAuthentications);
         }
 
         if (!HasValidState(request.State))
