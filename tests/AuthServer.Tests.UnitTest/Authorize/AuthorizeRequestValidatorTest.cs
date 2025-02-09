@@ -221,6 +221,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
         await AddEntity(client);
 
+        var resource = await GetResource();
+
         const string requestUri = $"{RequestUriConstants.RequestUriPrefix}valid_value";
         const string subjectIdentifier = "subjectIdentifier";
         const string authorizationGrantId = "authorizationGrantId";
@@ -233,7 +235,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             AcrValues = [LevelOfAssuranceLow],
             ClientId = client.Id,
             Nonce = CryptographyHelper.GetRandomString(16),
-            RedirectUri = "https://webapp.authserver.dk/callback"
+            RedirectUri = "https://webapp.authserver.dk/callback",
+            Resource = [resource.ClientUri!]
         };
 
         secureRequestService
@@ -251,6 +254,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.ClientId == authorizeRequestDto.ClientId &&
                     y.Nonce == authorizeRequestDto.Nonce &&
                     y.RedirectUri == authorizeRequestDto.RedirectUri &&
+                    y.Resource == authorizeRequestDto.Resource &&
                     y.RequestUri == requestUri), CancellationToken.None))
             .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
@@ -276,6 +280,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
         Assert.Equal(requestUri, processResult.Value!.RequestUri);
     }
 
@@ -768,7 +773,35 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_InvalidMaxAge_ExpectInvalidMaxAge()
+    public async Task Validate_EmptyResource_ExpectInvalidResource()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.InvalidResource, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidResource_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -786,6 +819,37 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = ["invalid_target"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.InvalidResource, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidMaxAge_ExpectInvalidMaxAge()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+        var resource = await GetResource();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             MaxAge = "-1"
         };
 
@@ -805,6 +869,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         var request = new AuthorizeRequest
         {
@@ -815,6 +880,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             IdTokenHint = "invalid_id_token"
         };
 
@@ -834,6 +900,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         var request = new AuthorizeRequest
         {
@@ -844,6 +911,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             Prompt = "invalid_prompt"
         };
 
@@ -863,6 +931,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         var request = new AuthorizeRequest
         {
@@ -873,6 +942,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             AcrValues = ["invalid_acr_value"]
         };
 
@@ -896,6 +966,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         var request = new AuthorizeRequest
         {
@@ -905,7 +976,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
         };
 
         authorizeInteractionService
@@ -919,6 +991,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         // Assert
         authorizeInteractionService.Verify();
+
         Assert.Equal(AuthorizeError.LoginRequired.Error, processResult.Error!.Error);
         Assert.Equal(AuthorizeError.LoginRequired.ErrorDescription, processResult.Error!.ErrorDescription);
         Assert.Equal(AuthorizeError.LoginRequired.ResultCode, processResult.Error!.ResultCode);
@@ -938,6 +1011,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         var request = new AuthorizeRequest
         {
@@ -947,7 +1021,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
         };
 
         authorizeInteractionService
@@ -961,6 +1036,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         // Assert
         authorizeInteractionService.Verify();
+
         Assert.Equal(AuthorizeError.LoginRequired.Error, processResult.Error!.Error);
         Assert.Equal(AuthorizeError.LoginRequired.ErrorDescription, processResult.Error!.ErrorDescription);
         Assert.Equal(AuthorizeError.LoginRequired.ResultCode, processResult.Error!.ResultCode);
@@ -986,6 +1062,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         var request = new AuthorizeRequest
         {
@@ -995,7 +1072,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
         };
 
         const string subjectIdentifier = "subjectIdentifier";
@@ -1009,6 +1087,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
+        authorizeInteractionService.Verify();
+
         Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
@@ -1033,6 +1113,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         var request = new AuthorizeRequest
         {
@@ -1048,7 +1129,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             MaxAge = "300",
             Prompt = PromptConstants.None,
             RedirectUri = client.RedirectUris.Single().Uri,
-            ResponseMode = ResponseModeConstants.FormPost
+            ResponseMode = ResponseModeConstants.FormPost,
+            Resource = [resource.ClientUri!]
         };
 
         const string subjectIdentifier = "subjectIdentifier";
@@ -1062,6 +1144,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
+        authorizeInteractionService.Verify();
+
         Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
@@ -1091,6 +1175,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var requestUri = new RequestUri("https://webapp.authserver.dk/request", client);
         await AddEntity(requestUri);
 
+        var resource = await GetResource();
+
         var givenRequestUri = $"{requestUri.Uri}#1234";
         const string subjectIdentifier = "subjectIdentifier";
         const string authorizationGrantId = "authorizationGrantId";
@@ -1106,7 +1192,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ClientId = client.Id,
             Nonce = CryptographyHelper.GetRandomString(16),
             State = CryptographyHelper.GetRandomString(16),
-            RedirectUri = client.RedirectUris.Single().Uri
+            RedirectUri = client.RedirectUris.Single().Uri,
+            Resource = [resource.ClientUri!]
         };
 
         secureRequestService
@@ -1133,6 +1220,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.CodeChallengeMethod == authorizeRequestDto.CodeChallengeMethod &&
                     y.State == authorizeRequestDto.State &&
                     y.ResponseType == authorizeRequestDto.ResponseType &&
+                    y.Resource == authorizeRequestDto.Resource &&
                     y.RequestUri == null), CancellationToken.None))
             .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
@@ -1158,6 +1246,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
         Assert.Null(processResult.Value!.RequestUri);
     }
 
@@ -1176,6 +1265,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = await GetClient();
+        var resource = await GetResource();
 
         const string givenRequestObject = "request_object";
         const string subjectIdentifier = "subjectIdentifier";
@@ -1192,7 +1282,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ClientId = client.Id,
             Nonce = CryptographyHelper.GetRandomString(16),
             State = CryptographyHelper.GetRandomString(16),
-            RedirectUri = client.RedirectUris.Single().Uri
+            RedirectUri = client.RedirectUris.Single().Uri,
+            Resource = [resource.ClientUri!]
         };
 
         secureRequestService
@@ -1219,6 +1310,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.CodeChallengeMethod == authorizeRequestDto.CodeChallengeMethod &&
                     y.State == authorizeRequestDto.State &&
                     y.ResponseType == authorizeRequestDto.ResponseType &&
+                    y.Resource == authorizeRequestDto.Resource &&
                     y.RequestUri == null), CancellationToken.None))
             .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
@@ -1244,6 +1336,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
         Assert.Null(processResult.Value!.RequestUri);
     }
 
@@ -1261,6 +1354,19 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         await AddEntity(redirectUri);
 
         return client;
+    }
+
+    private async Task<Client> GetResource()
+    {
+        var resource = new Client("weather-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        resource.Scopes.Add(openIdScope);
+        await AddEntity(resource);
+
+        return resource;
     }
 
     private async Task<Client> GetClientWithoutScope()
