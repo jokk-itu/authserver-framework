@@ -26,7 +26,15 @@ internal class GrantManagementQueryEndpointHandler : IEndpointHandler
         var request = await _requestAccessor.GetRequest(httpContext.Request);
         var result = await _requestHandler.Handle(request, cancellationToken);
         return result.Match(
-            _ => Results.Ok(),
+            response => Results.Ok(new GetGrantResponse
+            {
+                Scopes = response.Scopes.Select(x => new GetGrantScopeDto
+                {
+                    Scopes = x.Scopes,
+                    Resources = x.Resources
+                }),
+                Claims = response.Claims
+            }),
             error =>
                 error.ResultCode switch
                 {

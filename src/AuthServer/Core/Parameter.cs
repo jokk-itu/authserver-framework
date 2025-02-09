@@ -87,6 +87,8 @@ public static class Parameter
     public const string DPoPJkt = "dpop_jkt";
     public const string GrantId = "grant_id";
     public const string GrantManagementAction = "grant_management_action";
+    public const string Scopes = "scopes";
+    public const string Claims = "claims";
 
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";
