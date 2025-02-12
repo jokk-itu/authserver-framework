@@ -18,7 +18,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Process_HasPushedAuthorize_ExpectReferenceIsRedeemed()
+    public async Task Process_ClientWithoutConsentAndWithRequestUri_ExpectAuthorizationCode()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -28,7 +28,8 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
-            AuthorizationCodeExpiration = 60
+            AuthorizationCodeExpiration = 60,
+            RequireConsent = false
         };
         var authorizeMessage = new AuthorizeMessage("value", DateTime.Now.AddSeconds(60), client);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
@@ -47,15 +48,24 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         };
 
         // Act
-        await processor.Process(request, CancellationToken.None);
+        var authorizationCode = await processor.Process(request, CancellationToken.None);
         await SaveChangesAsync();
 
         // Assert
         Assert.NotNull(authorizeMessage.RedeemedAt);
+        Assert.NotNull(authorizationCode);
+        Assert.Single(authorizationGrant.Nonces);
+        Assert.Single(authorizationGrant.AuthorizationCodes);
+        Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().Value);
     }
 
-    [Fact]
-    public async Task Process_GenerateAuthorizationCode_ExpectAuthorizationCodeAndPersistedNonce()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(GrantManagementActionConstants.Create)]
+    [InlineData(GrantManagementActionConstants.Replace)]
+    [InlineData(GrantManagementActionConstants.Merge)]
+    public async Task Process_ClientWithConsent_ExpectAuthorizationCode(string? grantManagementAction)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -71,13 +81,19 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
 
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        await AddEntity(scopeConsent);
+
         var request = new AuthorizeValidatedRequest
         {
             ClientId = client.Id,
             CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
             Nonce = CryptographyHelper.GetRandomString(16),
             AuthorizationGrantId = authorizationGrant.Id,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["https://weather.authserver.dk"],
+            GrantManagementAction = grantManagementAction
         };
 
         // Act
@@ -89,5 +105,6 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         Assert.Single(authorizationGrant.Nonces);
         Assert.Single(authorizationGrant.AuthorizationCodes);
         Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().Value);
+        Assert.Single(authorizationGrant.AuthorizationGrantConsents);
     }
 }

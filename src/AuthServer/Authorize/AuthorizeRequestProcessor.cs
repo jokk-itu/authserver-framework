@@ -61,7 +61,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
 
         if (authorizationGrant.Client.RequireConsent)
         {
-            if (request.GrantManagementAction is null or GrantManagementActionConstants.Create)
+            if (string.IsNullOrEmpty(request.GrantManagementAction) || request.GrantManagementAction == GrantManagementActionConstants.Create)
             {
                 await _consentGrantRepository.CreateGrantConsent(request.AuthorizationGrantId, request.Scope, request.Resource, cancellationToken);
             }
