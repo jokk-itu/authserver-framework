@@ -146,8 +146,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Query = new QueryCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Scope, value },
-                    { Parameter.AcrValues, value },
-                    { Parameter.Resource, value }
+                    { Parameter.AcrValues, value }
                 })
             }
         };
@@ -158,7 +157,6 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedValue, request.Scope);
         Assert.Equal(expectedValue, request.AcrValues);
-        Assert.Equal(expectedValue, request.Resource);
     }
 
     [Fact]
@@ -177,8 +175,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Scope, value },
-                    { Parameter.AcrValues, value },
-                    { Parameter.Resource, value },
+                    { Parameter.AcrValues, value }
                 })
             }
         };
@@ -189,7 +186,6 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedValue, request.Scope);
         Assert.Equal(expectedValue, request.AcrValues);
-        Assert.Equal(expectedValue, request.Resource);
     }
 
     [Theory]
@@ -208,8 +204,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Query = new QueryCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Scope, value },
-                    { Parameter.AcrValues, value },
-                    { Parameter.Resource, value },
+                    { Parameter.AcrValues, value }
                 })
             }
         };
@@ -220,7 +215,6 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedCount, request.Scope.Count);
         Assert.Equal(expectedCount, request.AcrValues.Count);
-        Assert.Equal(expectedCount, request.Resource.Count);
     }
 
     [Theory]
@@ -239,8 +233,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Scope, value },
-                    { Parameter.AcrValues, value },
-                    { Parameter.Resource, value },
+                    { Parameter.AcrValues, value }
                 })
             }
         };
@@ -251,6 +244,117 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         // Assert
         Assert.Equal(expectedCount, request.Scope.Count);
         Assert.Equal(expectedCount, request.AcrValues.Count);
+    }
+
+    [Fact]
+    public async Task GetRequest_CollectionParametersQuery_ExpectValues()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var requestAccessor = serviceProvider.GetRequiredService<IRequestAccessor<AuthorizeRequest>>();
+        var values = new StringValues(["three", "random", "values"]);
+        string[] expectedValue = ["three", "random", "values"];
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Method = "GET",
+                Query = new QueryCollection(new Dictionary<string, StringValues>
+                {
+                    { Parameter.Resource, values }
+                })
+            }
+        };
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
+
+        // Assert
+        Assert.Equal(expectedValue, request.Resource);
+    }
+
+    [Fact]
+    public async Task GetRequest_CollectionParametersBody_ExpectValues()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var requestAccessor = serviceProvider.GetRequiredService<IRequestAccessor<AuthorizeRequest>>();
+        var values = new StringValues(["three", "random", "values"]);
+        string[] expectedValue = ["three", "random", "values"];
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Method = "POST",
+                Form = new FormCollection(new Dictionary<string, StringValues>
+                {
+                    { Parameter.Resource, values },
+                })
+            }
+        };
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
+
+        // Assert
+        Assert.Equal(expectedValue, request.Resource);
+    }
+
+    [Theory]
+    [InlineData("", 0)]
+    [InlineData(null, 0)]
+    public async Task GetRequest_CollectionParametersQuery_ExpectZeroValues(string? value, int expectedCount)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var requestAccessor = serviceProvider.GetRequiredService<IRequestAccessor<AuthorizeRequest>>();
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Method = "GET",
+                Query = new QueryCollection(new Dictionary<string, StringValues>
+                {
+                    { Parameter.Resource, value },
+                })
+            }
+        };
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
+
+        // Assert
+        Assert.Equal(expectedCount, request.Resource.Count);
+    }
+
+    [Theory]
+    [InlineData("", 0)]
+    [InlineData(null, 0)]
+    public async Task GetRequest_CollectionParametersBody_ExpectZeroValues(string? value, int expectedCount)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var requestAccessor = serviceProvider.GetRequiredService<IRequestAccessor<AuthorizeRequest>>();
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Method = "POST",
+                Form = new FormCollection(new Dictionary<string, StringValues>
+                {
+                    { Parameter.Resource, value },
+                })
+            }
+        };
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
+
+        // Assert
         Assert.Equal(expectedCount, request.Resource.Count);
     }
 }

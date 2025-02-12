@@ -2,7 +2,6 @@
 using AuthServer.Core.Abstractions;
 using AuthServer.Extensions;
 using Microsoft.AspNetCore.Http;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AuthServer.RequestAccessors.Authorize;
 internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
@@ -41,7 +40,8 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
 
         var scope = query.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = query.GetSpaceDelimitedValue(Parameter.AcrValues);
-        var resource = query.GetSpaceDelimitedValue(Parameter.Resource);
+
+        var resource = query.GetCollectionValue(Parameter.Resource);
 
         return new AuthorizeRequest
         {
@@ -63,7 +63,8 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             GrantId = grantId,
             GrantManagementAction = grantManagementAction,
             Scope = scope,
-            AcrValues = acrValues
+            AcrValues = acrValues,
+            Resource = resource
         };
     }
 
@@ -92,6 +93,8 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
 
+        var resource = body.GetCollectionValue(Parameter.Resource);
+
         return new AuthorizeRequest
         {
             IdTokenHint = idTokenHint,
@@ -112,7 +115,8 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             GrantId = grantId,
             GrantManagementAction = grantManagementAction,
             Scope = scope,
-            AcrValues = acrValues
+            AcrValues = acrValues,
+            Resource = resource
         };
     }
 }
