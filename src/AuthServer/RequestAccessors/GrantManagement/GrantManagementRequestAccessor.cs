@@ -22,7 +22,6 @@ internal class GrantManagementRequestAccessor : IRequestAccessor<GrantManagement
         var token = (await httpRequest.HttpContext.GetTokenAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme, Parameter.AccessToken))!;
         return new GrantManagementRequest
         {
-            Method = HttpMethod.Parse(httpRequest.Method),
             AccessToken = token,
             GrantId = string.IsNullOrEmpty(grantId) ? null : grantId
         };

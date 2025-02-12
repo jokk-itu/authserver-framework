@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.GrantManagement;
 
-public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
+public class GrantManagementRequestValidatorTest : BaseUnitTest
 {
-    public GrantManagementRevokeRequestValidatorTest(ITestOutputHelper outputHelper)
+    public GrantManagementRequestValidatorTest(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
     }
@@ -25,7 +25,6 @@ public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
 
         var request = new GrantManagementRequest
         {
-            Method = HttpMethod.Delete,
             AccessToken = "token"
         };
 
@@ -38,7 +37,7 @@ public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_InvalidGrantId_ExpectUnexistingGrantId()
+    public async Task Validate_InvalidGrantId_ExpectNotFoundGrantId()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -47,7 +46,6 @@ public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
 
         var request = new GrantManagementRequest
         {
-            Method = HttpMethod.Delete,
             AccessToken = "token",
             GrantId = Guid.NewGuid().ToString()
         };
@@ -78,7 +76,6 @@ public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
 
         var request = new GrantManagementRequest
         {
-            Method = HttpMethod.Delete,
             AccessToken = accessToken,
             GrantId = authorizationGrant.Id
         };
@@ -113,7 +110,6 @@ public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
 
         var request = new GrantManagementRequest
         {
-            Method = HttpMethod.Delete,
             AccessToken = accessToken.Reference,
             GrantId = authorizationGrantOne.Id
         };
@@ -144,7 +140,6 @@ public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
 
         var request = new GrantManagementRequest
         {
-            Method = HttpMethod.Delete,
             AccessToken = accessToken,
             GrantId = authorizationGrant.Id
         };
@@ -174,7 +169,6 @@ public class GrantManagementRevokeRequestValidatorTest : BaseUnitTest
 
         var request = new GrantManagementRequest
         {
-            Method = HttpMethod.Delete,
             AccessToken = accessToken.Reference,
             GrantId = authorizationGrant.Id
         };

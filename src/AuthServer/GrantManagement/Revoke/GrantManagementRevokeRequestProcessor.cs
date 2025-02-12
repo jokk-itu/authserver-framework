@@ -2,7 +2,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Repositories.Abstractions;
 
-namespace AuthServer.GrantManagement;
+namespace AuthServer.GrantManagement.Revoke;
 
 internal class GrantManagementRevokeRequestProcessor : IRequestProcessor<GrantManagementValidatedRequest, Unit>
 {

@@ -61,7 +61,6 @@ public class GrantManagementRequestAccessorTest : BaseUnitTest
         var request = await requestAccessor.GetRequest(httpContext.Request);
         
         // Assert
-        Assert.Equal(HttpMethod.Parse(method), request.Method);
         Assert.Equal(token, request.AccessToken);
         Assert.Null(request.GrantId);
     }
