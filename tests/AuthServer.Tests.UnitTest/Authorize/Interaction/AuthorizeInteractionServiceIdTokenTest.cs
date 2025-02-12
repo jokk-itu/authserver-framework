@@ -346,11 +346,13 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
-        await AddEntity(authorizationGrant);
 
-        var consentGrant = new ConsentGrant(subjectIdentifier, client);
-        consentGrant.ConsentedScopes.Add(IdentityContext.Set<Scope>().Single(x => x.Name == ScopeConstants.OpenId));
-        await AddEntity(consentGrant);
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://weather.authserver.dk");
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
+
+        await AddEntity(authorizationGrant);
 
         var idToken = JwtBuilder.GetIdToken(
             client.Id, authorizationGrant.Id, subjectIdentifier.Id, session.Id,
