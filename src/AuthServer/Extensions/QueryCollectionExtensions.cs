@@ -17,4 +17,11 @@ public static class QueryCollectionExtensions
         var hasValue = !StringValues.IsNullOrEmpty(value);
         return !hasValue ? [] : value.ToString().Split(' ');
     }
+
+    public static IReadOnlyCollection<string> GetCollectionValue(this IQueryCollection queryCollection, string key)
+    {
+        queryCollection.TryGetValue(key, out var value);
+        var hasValue = !StringValues.IsNullOrEmpty(value);
+        return !hasValue ? [] : value.ToArray() as string[];
+    }
 }
