@@ -15,7 +15,4 @@ public class Claim : Entity<int>
 
     public string Name { get; private init; }
     public ICollection<ClaimConsent> ClaimConsents { get; private init; } = [];
-    
-    [Obsolete]
-    public ICollection<ConsentGrant> ConsentGrants { get; private init; } = [];
 }

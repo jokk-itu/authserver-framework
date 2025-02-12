@@ -190,9 +190,6 @@ public class Client : Entity<string>
     public ICollection<AuthorizeMessage> AuthorizeMessages { get; set; } = [];
     public ICollection<ClientAuthenticationContextReference> ClientAuthenticationContextReferences { get; set; } = [];
 
-    [Obsolete]
-    public ICollection<ConsentGrant> ConsentGrants { get; set; } = [];
-
     public void SetSecret(string secretHash)
     {
         SecretHash = secretHash;
