@@ -8,7 +8,6 @@ using AuthServer.TokenDecoders;
 using Xunit.Abstractions;
 using AuthServer.Enums;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Web;
@@ -70,9 +69,15 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    public PushedAuthorizationEndpointBuilder WithScope(IReadOnlyCollection<string> scope)
+    public PushedAuthorizationEndpointBuilder WithScope(IReadOnlyCollection<string> scopes)
     {
-        _parameters.Add(new(Parameter.Scope, string.Join(' ', scope)));
+        _parameters.Add(new(Parameter.Scope, string.Join(' ', scopes)));
+        return this;
+    }
+
+    public PushedAuthorizationEndpointBuilder WithResource(IReadOnlyCollection<string> resources)
+    {
+        resources.ToList().ForEach(x => _parameters.Add(new(Parameter.Resource, x)));
         return this;
     }
 
