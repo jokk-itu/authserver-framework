@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using AuthServer.Constants;
+using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Options;
@@ -27,6 +28,10 @@ public class JwtBuilder
         var jsonWebKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
         var signingCredentials = new SigningCredentials(jsonWebKey, jsonWebKey.Alg);
         var now = DateTime.UtcNow;
+        var claims = new Dictionary<string, object>
+        {
+            { ClaimNameConstants.Sub, clientId }
+        };
         return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = clientId,
@@ -35,7 +40,8 @@ public class JwtBuilder
             IssuedAt = now,
             SigningCredentials = signingCredentials,
             Audience = MapToAudience(audience),
-            TokenType = TokenTypeHeaderConstants.PrivateKeyToken
+            TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+            Claims = claims
         });
     }
 
@@ -66,6 +72,7 @@ public class JwtBuilder
         var jsonWebKey = jwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
         var signingCredentials = new SigningCredentials(jsonWebKey, jsonWebKey.Alg);
         var now = DateTime.UtcNow;
+        claims.Add(ClaimNameConstants.Sub, clientId);
         return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = clientId,
