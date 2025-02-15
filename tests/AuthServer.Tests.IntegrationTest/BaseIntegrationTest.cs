@@ -127,17 +127,6 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         AllowAutoRedirect = false
     });
 
-    protected string GetUserinfoScope() =>
-        ServiceProvider.GetRequiredService<AuthorizationDbContext>().
-            Set<Scope>().Single(x => x.Name == ScopeConstants.UserInfo).Name;
-    
-    protected string GetGrantManagementRevokeScopeScope() =>
-        ServiceProvider.GetRequiredService<AuthorizationDbContext>().
-            Set<Scope>().Single(x => x.Name == ScopeConstants.GrantManagementRevoke).Name;
-    
-    protected string GetGrantManagementQueryScope() =>
-        ServiceProvider.GetRequiredService<AuthorizationDbContext>().
-            Set<Scope>().Single(x => x.Name == ScopeConstants.GrantManagementQuery).Name;
     protected async Task<string> CreateAuthorizationGrant(string clientId, IReadOnlyCollection<string> amr)
     {
         var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();

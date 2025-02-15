@@ -1,13 +1,10 @@
 ﻿using System.Net;
 using System.Text.Json;
-using AuthServer.Authorization;
-using AuthServer.Authorize.UserInterface.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Xunit.Abstractions;
@@ -36,45 +33,31 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Userinfo_PostWithAccessTokenWithoutUserinfoScope_ExpectForbidden()
+    public async Task Userinfo_PostWithoutUserinfoScope_ExpectForbiddenWithInsufficientScope()
     {
         // Arrange
-        var grantManagementQueryScope = GetGrantManagementQueryScope();
         var identityProviderClient = await AddIdentityProviderClient();
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode])
-            .WithScope([grantManagementQueryScope, ScopeConstants.OpenId])
+            .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.HandleAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            new AuthorizeRequestDto
-            {
-                ClientId = registerResponse.ClientId
-            },
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        await authorizeService.HandleConsent(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [grantManagementQueryScope, ScopeConstants.OpenId],
-            [],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], []);
 
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser(Guid.NewGuid().ToString())
+            .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
-            .WithScope([grantManagementQueryScope, ScopeConstants.OpenId])
+            .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId])
+            .WithResource([identityProviderClient.ClientUri!])
             .Get();
 
         var tokenResponse = await TokenEndpointBuilder
@@ -103,42 +86,28 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
     public async Task Userinfo_Post_ExpectJson()
     {
         // Arrange
-        var userinfoScope = GetUserinfoScope();
         var identityProviderClient = await AddIdentityProviderClient();
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode])
-            .WithScope([userinfoScope, ScopeConstants.OpenId])
+            .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.HandleAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            new AuthorizeRequestDto
-            {
-                ClientId = registerResponse.ClientId
-            },
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        await authorizeService.HandleConsent(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [userinfoScope, ScopeConstants.OpenId],
-            [],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser(Guid.NewGuid().ToString())
+            .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
-            .WithScope([userinfoScope, ScopeConstants.OpenId])
+            .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
+            .WithResource([identityProviderClient.ClientUri!])
             .Get();
 
         var tokenResponse = await TokenEndpointBuilder
@@ -167,7 +136,6 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
     public async Task Userinfo_Get_ExpectJwt()
     {
         // Arrange
-        var userinfoScope = GetUserinfoScope();
         var identityProviderClient = await AddIdentityProviderClient();
         var jwks = ClientJwkBuilder.GetClientJwks();
 
@@ -175,7 +143,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode])
-            .WithScope([userinfoScope, ScopeConstants.OpenId])
+            .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
             .WithUserinfoSignedResponseAlg(SigningAlg.RsaSha256)
             .WithJwks(jwks.PublicJwks)
             .Post();
@@ -183,29 +151,16 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.HandleAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            new AuthorizeRequestDto
-            {
-                ClientId = registerResponse.ClientId
-            },
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        await authorizeService.HandleConsent(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [userinfoScope, ScopeConstants.OpenId],
-            [],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser(Guid.NewGuid().ToString())
+            .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
-            .WithScope([userinfoScope, ScopeConstants.OpenId])
+            .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
+            .WithResource([identityProviderClient.ClientUri!])
             .Get();
 
         var tokenResponse = await TokenEndpointBuilder

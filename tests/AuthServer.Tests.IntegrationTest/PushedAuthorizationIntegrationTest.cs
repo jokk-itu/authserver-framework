@@ -22,6 +22,8 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
     public async Task PushedAuthorization_ValidRequest_ExpectCreated()
     {
         // Arrange
+        var identityClient = await AddIdentityProviderClient();
+
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
@@ -36,6 +38,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .WithResource([identityClient.ClientUri!])
             .Post();
 
         // Assert
@@ -65,6 +68,8 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
     public async Task PushedAuthorization_ValidJwtRequest_ExpectCreated()
     {
         // Arrange
+        var identityClient = await AddIdentityProviderClient();
+
         var jwks = ClientJwkBuilder.GetClientJwks();
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
@@ -82,6 +87,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .WithResource([identityClient.ClientUri!])
             .Post();
 
         // Assert

@@ -1,12 +1,9 @@
-﻿using AuthServer.Authorization;
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
 using Xunit.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
-using AuthServer.Authorize.UserInterface.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
 public class TokenIntegrationTest : BaseIntegrationTest
@@ -21,7 +18,6 @@ public class TokenIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
-        var userinfoScope = GetUserinfoScope(); 
         var weatherClient = await AddWeatherClient();
         var identityProviderClient = await AddIdentityProviderClient();
 
@@ -29,35 +25,22 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode])
-            .WithScope([userinfoScope, weatherReadScope, ScopeConstants.OpenId])
+            .WithScope([ScopeConstants.UserInfo, weatherReadScope, ScopeConstants.OpenId])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.HandleAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            new AuthorizeRequestDto
-            {
-                ClientId = registerResponse.ClientId
-            },
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        await authorizeService.HandleConsent(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [weatherReadScope, userinfoScope, ScopeConstants.OpenId],
-            [],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId, weatherReadScope], []);
 
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser(Guid.NewGuid().ToString())
+            .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
-            .WithScope([weatherReadScope, userinfoScope, ScopeConstants.OpenId])
+            .WithScope([weatherReadScope, ScopeConstants.UserInfo, ScopeConstants.OpenId])
+            .WithResource([identityProviderClient.ClientUri!, weatherClient.ClientUri!])
             .Get();
 
         // Act
@@ -72,7 +55,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.NotNull(tokenResponse);
-        Assert.Equal($"{weatherReadScope} {userinfoScope} {ScopeConstants.OpenId}", tokenResponse.Scope);
+        Assert.Equal($"{weatherReadScope} {ScopeConstants.UserInfo} {ScopeConstants.OpenId}", tokenResponse.Scope);
         Assert.Equal("Bearer", tokenResponse.TokenType);
         Assert.Null(tokenResponse.RefreshToken);
         Assert.NotNull(tokenResponse.IdToken);
@@ -84,42 +67,29 @@ public class TokenIntegrationTest : BaseIntegrationTest
     public async Task Token_RefreshTokenGrant_ExpectTokens()
     {
         // Arrange
-        var scope = await AddWeatherReadScope();
+        var weatherReadScope = await AddWeatherReadScope();
         var weatherClient = await AddWeatherClient();
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode, GrantTypeConstants.RefreshToken])
-            .WithScope([scope, ScopeConstants.OpenId])
+            .WithScope([weatherReadScope, ScopeConstants.OpenId])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.HandleAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            new AuthorizeRequestDto
-            {
-                ClientId = registerResponse.ClientId
-            },
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        await authorizeService.HandleConsent(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [scope, ScopeConstants.OpenId],
-            [],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
 
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser(Guid.NewGuid().ToString())
+            .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
-            .WithScope([scope, ScopeConstants.OpenId])
+            .WithScope([weatherReadScope, ScopeConstants.OpenId])
+            .WithResource([weatherClient.ClientUri!])
             .Get();
 
         var tokenResponse = await TokenEndpointBuilder
@@ -137,12 +107,12 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .WithRefreshToken(tokenResponse.RefreshToken!)
             .WithGrantType(GrantTypeConstants.RefreshToken)
             .WithResource([weatherClient.ClientUri!])
-            .WithScope([scope])
+            .WithScope([weatherReadScope])
             .Post();
 
         // Assert
         Assert.NotNull(refreshResponse);
-        Assert.Equal(scope, refreshResponse.Scope);
+        Assert.Equal(weatherReadScope, refreshResponse.Scope);
         Assert.Equal("Bearer", refreshResponse.TokenType);
         Assert.Null(refreshResponse.RefreshToken);
         Assert.NotEqual(tokenResponse.RefreshToken, refreshResponse.RefreshToken);
@@ -155,7 +125,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
     public async Task Token_ClientCredentialsGrantWithPrivateKeyJwt_ExpectAccessToken()
     {
         // Arrange
-        var scope = await AddWeatherReadScope();
+        var weatherReadScope = await AddWeatherReadScope();
         var weatherClient = await AddWeatherClient();
         var jwks = ClientJwkBuilder.GetClientJwks();
 
@@ -163,7 +133,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .WithJwks(jwks.PublicJwks)
             .WithGrantTypes([GrantTypeConstants.ClientCredentials])
             .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.PrivateKeyJwt)
-            .WithScope([scope])
+            .WithScope([weatherReadScope])
             .WithClientName("worker-app")
             .Post();
         
@@ -175,13 +145,13 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .WithClientAssertion(clientAssertion)
             .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.PrivateKeyJwt)
             .WithGrantType(GrantTypeConstants.ClientCredentials)
-            .WithScope([scope])
+            .WithScope([weatherReadScope])
             .WithResource([weatherClient.ClientUri!])
             .Post();
 
         // Assert
         Assert.NotNull(tokenResponse);
-        Assert.Equal(scope, tokenResponse.Scope);
+        Assert.Equal(weatherReadScope, tokenResponse.Scope);
         Assert.Equal("Bearer", tokenResponse.TokenType);
         Assert.Null(tokenResponse.RefreshToken);
         Assert.Null(tokenResponse.IdToken);
