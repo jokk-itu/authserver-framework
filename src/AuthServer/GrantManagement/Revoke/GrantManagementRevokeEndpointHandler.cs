@@ -26,7 +26,7 @@ internal class GrantManagementRevokeEndpointHandler : IEndpointHandler
         var request = await _requestAccessor.GetRequest(httpContext.Request);
         var result = await _requestHandler.Handle(request, cancellationToken);
         return result.Match(
-            _ => throw new NotImplementedException(), // This is 204 for revoke and 200 for query
+            _ => Results.NoContent(),
             error =>
                 error.ResultCode switch
                 {
