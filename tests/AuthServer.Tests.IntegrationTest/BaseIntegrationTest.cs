@@ -30,6 +30,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     protected readonly RevocationEndpointBuilder RevocationEndpointBuilder;
     protected readonly UserinfoEndpointBuilder UserinfoEndpointBuilder;
     protected readonly PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder;
+    protected readonly GrantManagementEndpointBuilder GrantManagementEndpointBuilder;
 
     protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, TestOutputHelper);
 
@@ -107,6 +108,12 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
             TestOutputHelper);
 
         PushedAuthorizationEndpointBuilder = new PushedAuthorizationEndpointBuilder(
+            GetHttpClient(),
+            DiscoveryDocument,
+            JwksDocument,
+            TestOutputHelper);
+
+        GrantManagementEndpointBuilder = new GrantManagementEndpointBuilder(
             GetHttpClient(),
             DiscoveryDocument,
             JwksDocument,
