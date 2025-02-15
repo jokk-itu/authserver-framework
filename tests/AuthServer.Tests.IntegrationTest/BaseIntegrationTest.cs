@@ -1,9 +1,11 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Options;
+using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
 using AuthServer.Tests.IntegrationTest.EndpointBuilders;
 using Microsoft.AspNetCore.DataProtection;
@@ -136,6 +138,40 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     protected string GetGrantManagementQueryScope() =>
         ServiceProvider.GetRequiredService<AuthorizationDbContext>().
             Set<Scope>().Single(x => x.Name == ScopeConstants.GrantManagementQuery).Name;
+    protected async Task<string> CreateAuthorizationGrant(string clientId, IReadOnlyCollection<string> amr)
+    {
+        var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
+        var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
+
+        var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+        var grant = await authorizationGrantRepository.CreateAuthorizationGrant(
+            UserConstants.SubjectIdentifier,
+            clientId,
+            acr,
+            amr,
+            CancellationToken.None);
+
+        return grant.Id;
+    }
+
+    protected async Task UpdateAuthorizationGrant(string authorizationGrantId, IReadOnlyCollection<string> amr)
+    {
+        var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
+        var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
+
+        var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+        await authorizationGrantRepository.UpdateAuthorizationGrant(
+            authorizationGrantId,
+            acr,
+            amr,
+            CancellationToken.None);
+    }
+
+    protected async Task Consent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims)
+    {
+        var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
+        await consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, scopes, claims, CancellationToken.None);
+    }
 
     protected async Task<string> AddWeatherReadScope()
     {
