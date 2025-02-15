@@ -55,7 +55,8 @@ internal class TokenEndpointHandler : IEndpointHandler
                 Scope = response.Scope,
                 ExpiresIn = response.ExpiresIn,
                 IdToken = response.IdToken,
-                RefreshToken = response.RefreshToken
+                RefreshToken = response.RefreshToken,
+                GrantId = response.GrantId
             }),
             error => Results.Extensions.OAuthBadRequest(error));
     }
