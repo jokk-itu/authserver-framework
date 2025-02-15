@@ -158,6 +158,8 @@ internal class ConsentRepository : IConsentRepository
             .ToList();
 
         _identityContext.RemoveRange(claimsToRemove);
+
+        await _identityContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task UpdateConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
