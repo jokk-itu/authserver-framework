@@ -34,6 +34,6 @@ public class RegistrationTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(DiscoveryDocument.Issuer, token.Issuer);
         Assert.Equal(ScopeConstants.Register, token.Scope);
         Assert.Null(token.ExpiresAt);
-        Assert.Equal(client.Id, token.Audience);
+        Assert.Equal(DiscoveryDocument.Issuer, token.Audience);
     }
 }
