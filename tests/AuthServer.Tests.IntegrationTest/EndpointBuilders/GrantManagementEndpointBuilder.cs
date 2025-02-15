@@ -4,7 +4,7 @@ using AuthServer.Options;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
-internal class GrantManagementEndpointBuilder : EndpointBuilder
+public class GrantManagementEndpointBuilder : EndpointBuilder
 {
     private string? token;
     private string? grantId;
@@ -41,7 +41,8 @@ internal class GrantManagementEndpointBuilder : EndpointBuilder
         return new GrantResponse
         {
             StatusCode = httpResponseMessage.StatusCode,
-            Content = content
+            Content = content,
+            WwwAuthenticate = httpResponseMessage.Headers.WwwAuthenticate
         };
     }
 
@@ -60,7 +61,8 @@ internal class GrantManagementEndpointBuilder : EndpointBuilder
         return new GrantResponse
         {
             StatusCode = httpResponseMessage.StatusCode,
-            Content = content
+            Content = content,
+            WwwAuthenticate = httpResponseMessage.Headers.WwwAuthenticate
         };
     }
 
@@ -68,5 +70,6 @@ internal class GrantManagementEndpointBuilder : EndpointBuilder
     {
         public required HttpStatusCode StatusCode { get; init; }
         public string? Content { get; init; }
+        public required HttpHeaderValueCollection<AuthenticationHeaderValue> WwwAuthenticate { get; init; }
     }
 }
