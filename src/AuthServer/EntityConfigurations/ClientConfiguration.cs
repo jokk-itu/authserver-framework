@@ -47,7 +47,7 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
 
         builder
             .Property(x => x.Jwks)
-            .HasMaxLength(int.MaxValue);
+            .HasMaxLength(4096);
 
         builder
             .Property(client => client.ApplicationType)
