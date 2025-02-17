@@ -94,13 +94,13 @@ internal class AuthorizeService : IAuthorizeService
     /// <inheritdoc/>
     public async Task HandleConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> consentedScopes, IReadOnlyCollection<string> consentedClaims, CancellationToken cancellationToken)
     {
-        await _consentGrantRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, consentedScopes, consentedClaims, cancellationToken);
+        await _consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, consentedScopes, consentedClaims, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<ConsentGrantDto> GetConsentGrantDto(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
     {
-        var consents = await _consentGrantRepository.GetClientConsents(subjectIdentifier, clientId, cancellationToken);
+        var consents = await _consentRepository.GetClientConsents(subjectIdentifier, clientId, cancellationToken);
         var cachedClient = await _cachedClientStore.Get(clientId, cancellationToken);
         var username = await _userClaimService.GetUsername(subjectIdentifier, cancellationToken);
 
