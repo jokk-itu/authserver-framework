@@ -41,6 +41,19 @@ internal class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AuthorizationGrantConsent>> GetGrantConsents(string authorizationGrantId, CancellationToken cancellationToken)
+    {
+        return await _identityContext
+            .Set<AuthorizationGrantConsent>()
+            .Where(x => x.AuthorizationGrant.Id == authorizationGrantId)
+            .Include(x => x.Consent)
+            .ThenInclude(x => ((ScopeConsent)x).Scope)
+            .Include(x => x.Consent)
+            .ThenInclude(x => ((ClaimConsent)x).Claim)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<ScopeDto>> GetGrantConsentedScopes(string authorizationGrantId, CancellationToken cancellationToken)
     {
         return await _identityContext
@@ -91,19 +104,6 @@ internal class ConsentRepository : IConsentRepository
             .Where(x => x.SubjectIdentifier.Id == subjectIdentifier)
             .Where(x => x.Client.Id == clientId)
             .Select(x => x.Claim.Name)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<AuthorizationGrantConsent>> GetGrantConsents(string authorizationGrantId, CancellationToken cancellationToken)
-    {
-        return await _identityContext
-            .Set<AuthorizationGrantConsent>()
-            .Where(x => x.AuthorizationGrant.Id == authorizationGrantId)
-            .Include(x => x.Consent)
-                .ThenInclude(x => ((ScopeConsent)x).Scope)
-            .Include(x => x.Consent)
-                .ThenInclude(x => ((ClaimConsent)x).Claim)
             .ToListAsync(cancellationToken);
     }
 
