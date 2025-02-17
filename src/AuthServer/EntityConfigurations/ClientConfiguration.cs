@@ -30,6 +30,9 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasMaxLength(255);
 
         builder
+            .HasIndex(x => x.ClientUri);
+
+        builder
             .Property(x => x.LogoUri)
             .HasMaxLength(255);
 
