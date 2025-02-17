@@ -19,14 +19,14 @@ internal class ConsentRepository : IConsentRepository
     public async Task CreateGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-        await UpdateConsent(authorizationGrant, scopes, resources, cancellationToken);
+        await UpdateGrantConsent(authorizationGrant, scopes, resources, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task MergeGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
     {
         var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-        await UpdateConsent(authorizationGrant, scopes, resources, cancellationToken);
+        await UpdateGrantConsent(authorizationGrant, scopes, resources, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -37,7 +37,7 @@ internal class ConsentRepository : IConsentRepository
         authorizationGrant.AuthorizationGrantConsents.Clear();
         await _identityContext.SaveChangesAsync(cancellationToken);
 
-        await UpdateConsent(authorizationGrant, scopes, resources, cancellationToken);
+        await UpdateGrantConsent(authorizationGrant, scopes, resources, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -162,7 +162,7 @@ internal class ConsentRepository : IConsentRepository
         await _identityContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task UpdateConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
+    private async Task UpdateGrantConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
     {
         var clientConsents = await _identityContext
             .Set<Consent>()
