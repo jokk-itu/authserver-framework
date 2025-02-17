@@ -214,6 +214,11 @@ internal class ConsentRepository : IConsentRepository
             }
         }
 
+        AddGrantConsentClaims(authorizationGrant, clientConsents);
+    }
+
+    private static void AddGrantConsentClaims(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents)
+    {
         var fullConsentedScopes = authorizationGrant.AuthorizationGrantConsents
             .OfType<AuthorizationGrantScopeConsent>()
             .Select(x => x.Consent)
