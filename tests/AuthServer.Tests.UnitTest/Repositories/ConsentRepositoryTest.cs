@@ -16,23 +16,15 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var serviceProvider = BuildServiceProvider();
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
-        var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
-        var openIdScope = await GetScope(ScopeConstants.OpenId);
-        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
-        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://weather.authserver.dk");
-        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
-        await AddEntity(authorizationGrant);
+        var authorizationGrant = await GetAuthorizationGrant(
+            ScopeConstants.OpenId,
+            "https://weather.authserver.dk",
+            ClaimNameConstants.Name);
 
-        var otherAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
-        var profileScope = await GetScope(ScopeConstants.Profile);
-        var otherScopeConsent = new ScopeConsent(subjectIdentifier, client, profileScope);
-        var otherAuthorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(otherScopeConsent, otherAuthorizationGrant, "https://idp.authserver.dk");
-        otherAuthorizationGrant.AuthorizationGrantConsents.Add(otherAuthorizationGrantScopeConsent);
-        await AddEntity(otherAuthorizationGrant);
+        await GetAuthorizationGrant(
+            ScopeConstants.Profile,
+            "https://idp.authserver.dk",
+            ClaimNameConstants.Address);
 
         // Act
         var grantConsentedScopes = await consentRepository.GetGrantConsentedScopes(authorizationGrant.Id, CancellationToken.None);
@@ -41,8 +33,8 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         Assert.Single(grantConsentedScopes);
 
         var scopeDto = grantConsentedScopes.Single();
-        Assert.Equal(openIdScope.Name, scopeDto.Name);
-        Assert.Equal(authorizationGrantScopeConsent.Resource, scopeDto.Resource);
+        Assert.Equal(ScopeConstants.OpenId, scopeDto.Name);
+        Assert.Equal("https://weather.authserver.dk", scopeDto.Resource);
     }
 
     [Fact]
@@ -52,31 +44,79 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var serviceProvider = BuildServiceProvider();
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
-        var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
-        var nameClaim = await GetClaim(ClaimNameConstants.Name);
-        var claimConsent = new ClaimConsent(subjectIdentifier, client, nameClaim);
-        var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
-        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
-        await AddEntity(authorizationGrant);
+        var authorizationGrant = await GetAuthorizationGrant(
+            ScopeConstants.OpenId,
+            "https://weather.authserver.dk",
+            ClaimNameConstants.Name);
 
-        var otherAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
-        var addressClaim = await GetClaim(ClaimNameConstants.Address);
-        var otherClaimConsent = new ClaimConsent(subjectIdentifier, client, addressClaim);
-        var otherAuthorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(otherClaimConsent, otherAuthorizationGrant);
-        otherAuthorizationGrant.AuthorizationGrantConsents.Add(otherAuthorizationGrantClaimConsent);
-        await AddEntity(otherAuthorizationGrant);
+        await GetAuthorizationGrant(
+            ScopeConstants.Profile,
+            "https://idp.authserver.dk",
+            ClaimNameConstants.Address);
 
         // Act
         var grantConsentedClaims = await consentRepository.GetGrantConsentedClaims(authorizationGrant.Id, CancellationToken.None);
 
         // Assert
         Assert.Single(grantConsentedClaims);
-        Assert.Equal(nameClaim.Name, grantConsentedClaims.Single());
+        Assert.Equal(ClaimNameConstants.Name, grantConsentedClaims.Single());
     }
 
+    [Fact]
+    public async Task GetGrantConsents_TwoGrantsWithGrantConsents_ExpectOneConsent()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
+        var authorizationGrant = await GetAuthorizationGrant(
+            ScopeConstants.OpenId,
+            "https://weather.authserver.dk",
+            ClaimNameConstants.Name);
+
+        await GetAuthorizationGrant(
+            ScopeConstants.Profile,
+            "https://idp.authserver.dk",
+            ClaimNameConstants.Address);
+
+        // Act
+        var grantConsents = await consentRepository.GetGrantConsents(authorizationGrant.Id, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, grantConsents.Count);
+
+        var claimQuery = grantConsents.OfType<AuthorizationGrantClaimConsent>().ToList();
+        Assert.Single(claimQuery);
+        var authorizationGrantClaimConsent = claimQuery.Single();
+        var claimConsent = (authorizationGrantClaimConsent.Consent as ClaimConsent)!;
+        Assert.Equal(ClaimNameConstants.Name, claimConsent.Claim.Name);
+
+        var scopeQuery = grantConsents.OfType<AuthorizationGrantScopeConsent>().ToList();
+        Assert.Single(scopeQuery);
+        var authorizationGrantScopeConsent = scopeQuery.Single();
+        Assert.Equal("https://weather.authserver.dk", authorizationGrantScopeConsent.Resource);
+
+        var scopeConsent = (authorizationGrantScopeConsent.Consent as ScopeConsent)!;
+        Assert.Equal(ScopeConstants.OpenId, scopeConsent.Scope.Name);
+    }
+
+    private async Task<AuthorizationGrant> GetAuthorizationGrant(string scope, string resource, string claim)
+    {
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+
+        var scopeConsent = new ScopeConsent(subjectIdentifier, client, await GetScope(scope));
+        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, resource);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
+
+        var claimConsent = new ClaimConsent(subjectIdentifier, client, await GetClaim(ClaimNameConstants.Name));
+        var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
+
+        await AddEntity(authorizationGrant);
+        return authorizationGrant;
+    }
 }
