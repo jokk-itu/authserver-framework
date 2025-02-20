@@ -2,6 +2,7 @@
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -245,6 +246,174 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         Assert.Single(claimConsents);
         Assert.Equal(ClaimNameConstants.Name, claimConsents.Single().Claim.Name);
     }
+
+    [Fact]
+    public async Task CreateGrantConsent_WithClientConsents_ExpectGrantConsentCreated()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
+
+        var authorizationGrant = await GetAuthorizationGrant(
+            ScopeConstants.Profile, "https://idp.authserver.dk", ClaimNameConstants.Name);
+
+        authorizationGrant.AuthorizationGrantConsents.Clear();
+
+        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://idp.authserver.dk"
+        };
+        idpClient.Scopes.Add(await GetScope(ScopeConstants.Profile));
+        await AddEntity(idpClient);
+
+        // Act
+        await consentRepository.CreateGrantConsent(
+            authorizationGrant.Id,
+            [ScopeConstants.Profile],
+            ["https://idp.authserver.dk"],
+            CancellationToken.None);
+
+        // Assert
+        var scopeDtos = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantScopeConsent>()
+            .Select(x => new ScopeDto(((ScopeConsent)x.Consent).Scope.Name, x.Resource))
+            .ToList();
+
+        Assert.Single(scopeDtos);
+        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://idp.authserver.dk" });
+
+        var claims = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantClaimConsent>()
+            .Select(x => x.Consent)
+            .OfType<ClaimConsent>()
+            .Select(x => x.Claim.Name)
+            .ToList();
+
+        Assert.Single(claims);
+        Assert.Single(claims, ClaimNameConstants.Name);
+    }
+
+    [Fact]
+    public async Task MergeGrantConsent_WithGrantConsents_ExpectGrantConsentMerged()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
+
+        var authorizationGrant = await GetAuthorizationGrant(
+            ScopeConstants.UserInfo, "https://idp.authserver.dk", ClaimNameConstants.Name);
+
+        var scopeConsent = new ScopeConsent(
+            authorizationGrant.Session.SubjectIdentifier,
+            authorizationGrant.Client,
+            await GetScope(ScopeConstants.Profile));
+
+        await AddEntity(scopeConsent);
+
+        var claimConsent = new ClaimConsent(
+            authorizationGrant.Session.SubjectIdentifier,
+            authorizationGrant.Client,
+            await GetClaim(ClaimNameConstants.FamilyName));
+
+        await AddEntity(claimConsent);
+
+        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://idp.authserver.dk"
+        };
+        idpClient.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
+        idpClient.Scopes.Add(await GetScope(ScopeConstants.Profile));
+        await AddEntity(idpClient);
+
+        var weatherClient = new Client("weather", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        weatherClient.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
+        await AddEntity(weatherClient);
+
+        // Act
+        await consentRepository.MergeGrantConsent(
+            authorizationGrant.Id,
+            [ScopeConstants.UserInfo, ScopeConstants.Profile],
+            ["https://idp.authserver.dk", "https://weather.authserver.dk"],
+            CancellationToken.None);
+
+        // Assert
+        var scopeDtos = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantScopeConsent>()
+            .Select(x => new ScopeDto(((ScopeConsent)x.Consent).Scope.Name, x.Resource))
+            .ToList();
+
+        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.UserInfo, Resource: "https://idp.authserver.dk" });
+        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.UserInfo, Resource: "https://weather.authserver.dk" });
+        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://idp.authserver.dk" });
+        Assert.DoesNotContain(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://weather.authserver.dk" });
+
+        var claims = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantClaimConsent>()
+            .Select(x => x.Consent)
+            .OfType<ClaimConsent>()
+            .Select(x => x.Claim.Name)
+            .ToList();
+
+        Assert.Equal(2, claims.Count);
+        Assert.Single(claims, ClaimNameConstants.Name);
+        Assert.Single(claims, ClaimNameConstants.FamilyName);
+    }
+
+    [Fact]
+    public async Task ReplaceGrantConsent_WithGrantConsents_ExpectGrantConsentReplaced()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
+
+        var authorizationGrant = await GetAuthorizationGrant(
+            ScopeConstants.UserInfo, "https://idp.authserver.dk", ClaimNameConstants.FamilyName);
+
+        var scopeConsent = new ScopeConsent(
+            authorizationGrant.Session.SubjectIdentifier,
+            authorizationGrant.Client,
+            await GetScope(ScopeConstants.Profile));
+
+        await AddEntity(scopeConsent);
+
+        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://idp.authserver.dk"
+        };
+        idpClient.Scopes.Add(await GetScope(ScopeConstants.Profile));
+        idpClient.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
+        await AddEntity(idpClient);
+
+        // Act
+        await consentRepository.ReplaceGrantConsent(
+            authorizationGrant.Id,
+            [ScopeConstants.Profile],
+            ["https://idp.authserver.dk"],
+            CancellationToken.None);
+
+        // Assert
+        var scopeDtos = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantScopeConsent>()
+            .Select(x => new ScopeDto(((ScopeConsent)x.Consent).Scope.Name, x.Resource))
+            .ToList();
+
+        Assert.Single(scopeDtos);
+        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://idp.authserver.dk" });
+
+        var claims = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantClaimConsent>()
+            .Select(x => x.Consent)
+            .OfType<ClaimConsent>()
+            .Select(x => x.Claim.Name)
+            .ToList();
+
+        Assert.Single(claims);
+        Assert.Single(claims, ClaimNameConstants.FamilyName);
+    }
+
     private async Task<(string SubjectIdentifier, string ClientId)> GetClientConsent(string scope, string claim)
     {
         var subjectIdentifier = new SubjectIdentifier();
