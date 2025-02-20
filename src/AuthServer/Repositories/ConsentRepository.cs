@@ -208,7 +208,7 @@ internal class ConsentRepository : IConsentRepository
                 
                 if (authorizationGrantScopeConsent is null)
                 {
-                    authorizationGrantScopeConsent ??= new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, resource);
+                    authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, resource);
                     authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
                 }
             }
