@@ -85,6 +85,13 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
         await AddEntity(scopeConsent);
 
+        var weatherClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        weatherClient.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        await AddEntity(weatherClient);
+
         var request = new AuthorizeValidatedRequest
         {
             ClientId = client.Id,
