@@ -1,4 +1,5 @@
-﻿using AuthServer.Constants;
+﻿using System.Runtime.CompilerServices;
+using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
@@ -13,6 +14,94 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     public AuthorizationGrantRepositoryTest(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
+    }
+
+    [Fact]
+    public async Task IsActiveAuthorizationGrant_ActiveGrant_ExpectTrue()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        await AddEntity(authorizationGrant);
+
+        // Act
+        var isActive = await authorizationGrantRepository.IsActiveAuthorizationGrant(authorizationGrant.Id, client.Id, CancellationToken.None);
+
+        // Assert
+        Assert.True(isActive);
+    }
+
+    [Fact]
+    public async Task IsActiveAuthorizationGrant_RevokedGrant_ExpectFalse()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        authorizationGrant.Revoke();
+        await AddEntity(authorizationGrant);
+
+        // Act
+        var isActive = await authorizationGrantRepository.IsActiveAuthorizationGrant(authorizationGrant.Id, client.Id, CancellationToken.None);
+
+        // Assert
+        Assert.False(isActive);
+    }
+
+    [Fact]
+    public async Task UpdateAuthorizationGrant_GrantWithTokens_ExpectUpdatedGrantWithRevokedTokens()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authenticationMethodReference = await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        var originalAuthTime = DateTime.UtcNow.AddSeconds(-180);
+        typeof(AuthorizationGrant)
+            .GetProperty(nameof(AuthorizationGrant.AuthTime))!
+            .SetValue(authorizationGrant, originalAuthTime);
+
+        authorizationGrant.AuthenticationMethodReferences.Add(authenticationMethodReference);
+        var grantAccessToken = new GrantAccessToken(authorizationGrant, "aud", "iss", ScopeConstants.UserInfo, 300);
+        await AddEntity(grantAccessToken);
+
+        // Act
+        await authorizationGrantRepository.UpdateAuthorizationGrant(
+            authorizationGrant.Id,
+            LevelOfAssuranceSubstantial,
+            [AuthenticationMethodReferenceConstants.OneTimePassword],
+            CancellationToken.None);
+
+        // Assert
+        Assert.True(authorizationGrant.AuthTime > originalAuthTime);
+        Assert.Equal(LevelOfAssuranceSubstantial, authorizationGrant.AuthenticationContextReference.Name);
+        Assert.Single(authorizationGrant.AuthenticationMethodReferences);
+        Assert.Single(authorizationGrant.AuthenticationMethodReferences,
+            x => x.Name == AuthenticationMethodReferenceConstants.OneTimePassword);
+
+        var revokedAt = await IdentityContext
+            .Set<GrantAccessToken>()
+            .Where(x => x.Id == grantAccessToken.Id)
+            .Select(x => x.RevokedAt)
+            .SingleAsync();
+
+        Assert.NotNull(revokedAt);
     }
 
     [Fact]
