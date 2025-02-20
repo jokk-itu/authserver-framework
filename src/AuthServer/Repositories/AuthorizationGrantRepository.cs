@@ -50,6 +50,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
 
         authorizationGrant.SetAuthTime();
         authorizationGrant.AuthenticationContextReference = acr;
+        authorizationGrant.AuthenticationMethodReferences.Clear();
 
         foreach (var reference in amr)
         {
