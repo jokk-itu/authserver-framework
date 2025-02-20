@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using AuthServer.Constants;
-using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Options;
