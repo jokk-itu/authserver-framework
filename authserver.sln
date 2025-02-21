@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthServer", "src\AuthServer\AuthServer.csproj", "{C98FAAD0-0DBC-42CA-99C2-D5C43D4DF0B6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthServer.Tests.ArchitectureTest", "tests\AuthServer.Tests.ArchitectureTest\AuthServer.Tests.ArchitectureTest.csproj", "{07FBB232-3B80-4335-B75E-E195E46754EB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthServer.Tests.Core", "tests\AuthServer.Tests.Core\AuthServer.Tests.Core.csproj", "{057AB97C-D946-4BB7-B79E-A79FBB6AE108}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthServer.Tests.IntegrationTest", "tests\AuthServer.Tests.IntegrationTest\AuthServer.Tests.IntegrationTest.csproj", "{B1B31CD2-08D3-4967-B52A-6B983A9A00A7}"
@@ -27,10 +25,6 @@ Global
 		{C98FAAD0-0DBC-42CA-99C2-D5C43D4DF0B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C98FAAD0-0DBC-42CA-99C2-D5C43D4DF0B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C98FAAD0-0DBC-42CA-99C2-D5C43D4DF0B6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{07FBB232-3B80-4335-B75E-E195E46754EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07FBB232-3B80-4335-B75E-E195E46754EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07FBB232-3B80-4335-B75E-E195E46754EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07FBB232-3B80-4335-B75E-E195E46754EB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{057AB97C-D946-4BB7-B79E-A79FBB6AE108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{057AB97C-D946-4BB7-B79E-A79FBB6AE108}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{057AB97C-D946-4BB7-B79E-A79FBB6AE108}.Release|Any CPU.ActiveCfg = Release|Any CPU

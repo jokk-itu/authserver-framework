@@ -375,12 +375,22 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         authorizationCode.SetValue(CryptographyHelper.GetRandomString(16));
         authorizationGrant.AuthorizationCodes.Add(authorizationCode);
 
-        await AddEntity(authorizationGrant);
+        var scopeConsent = new ScopeConsent(
+            subjectIdentifier,
+            client,
+            await GetScope(ScopeConstants.OpenId));
         
-        var consentGrant = new ConsentGrant(subjectIdentifier, client);
-        consentGrant.ConsentedScopes.Add(await GetScope(ScopeConstants.OpenId));
-        consentGrant.ConsentedClaims.Add(await GetClaim(ClaimNameConstants.Name));
-        await AddEntity(consentGrant);
+        var claimConsent = new ClaimConsent(
+            subjectIdentifier,
+            client,
+            await GetClaim(ClaimNameConstants.Name));
+        
+        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://idp.authserver.dk");
+        var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
+        
+        await AddEntity(authorizationGrant);
         
         return client;
     }

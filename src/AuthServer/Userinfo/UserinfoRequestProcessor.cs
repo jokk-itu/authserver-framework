@@ -4,7 +4,6 @@ using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using AuthServer.Core.Request;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Authentication.Abstractions;
 using AuthServer.Core.Abstractions;
@@ -15,18 +14,21 @@ internal class UserinfoRequestProcessor : IRequestProcessor<UserinfoValidatedReq
     private readonly AuthorizationDbContext _identityContext;
     private readonly ITokenBuilder<UserinfoTokenArguments> _userinfoTokenBuilder;
     private readonly IUserClaimService _userClaimService;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
+    private readonly IClientRepository _clientRepository;
 
     public UserinfoRequestProcessor(
         AuthorizationDbContext identityContext,
         ITokenBuilder<UserinfoTokenArguments> userinfoTokenBuilder,
         IUserClaimService userClaimService,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository,
+        IClientRepository clientRepository)
     {
         _identityContext = identityContext;
         _userinfoTokenBuilder = userinfoTokenBuilder;
         _userClaimService = userClaimService;
         _consentGrantRepository = consentGrantRepository;
+        _clientRepository = clientRepository;
     }
 
     public async Task<string> Process(UserinfoValidatedRequest request, CancellationToken cancellationToken)
@@ -38,6 +40,7 @@ internal class UserinfoRequestProcessor : IRequestProcessor<UserinfoValidatedReq
             .Select(x => new
             {
                 ClientId = x.Client.Id,
+                RequiresConsent = x.Client.RequireConsent,
                 SubjectIdentifier = x.Session.SubjectIdentifier.Id,
                 GrantSubjectId = x.Subject,
                 SigningAlg = x.Client.UserinfoSignedResponseAlg,
@@ -51,11 +54,20 @@ internal class UserinfoRequestProcessor : IRequestProcessor<UserinfoValidatedReq
             { Parameter.Subject, query.GrantSubjectId }
         };
 
-        var authorizedClaimTypes = await _consentGrantRepository.GetConsentedClaims(query.SubjectIdentifier, query.ClientId, cancellationToken);
         var userClaims = await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken);
+        IReadOnlyCollection<string> authorizedClaims;
+        if (query.RequiresConsent)
+        {
+            authorizedClaims = await _consentGrantRepository.GetGrantConsentedClaims(request.AuthorizationGrantId, cancellationToken);
+        }
+        else
+        {
+            authorizedClaims = await _clientRepository.GetAuthorizedClaims(query.ClientId, cancellationToken);
+        }
+
         foreach (var userClaim in userClaims)
         {
-            if (authorizedClaimTypes.Contains(userClaim.Type))
+            if (authorizedClaims.Contains(userClaim.Type))
             {
                 claims.Add(userClaim.Type, userClaim.Value);
             }

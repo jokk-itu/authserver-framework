@@ -1,4 +1,5 @@
-﻿using AuthServer.Core.Abstractions;
+﻿using AuthServer.Core;
+using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +27,7 @@ internal class RevocationEndpointModule : IEndpointModule
 
         routeBuilder
             .AddEndpointFilter<NoCacheFilter>()
-            .AddEndpointFilter<NoReferrerFilter>();
+            .AddEndpointFilter<NoReferrerFilter>()
+            .AddEndpointFilter(new FeatureFilter(FeatureFlags.TokenRevocation));
     }
 }

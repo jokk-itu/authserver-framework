@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Web;
-using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
@@ -23,36 +22,30 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     public async Task Authorize_NoPromptWithLoginAndConsentWithRequestObject_ExpectRedirectWithAuthorizationCode()
     {
         // Arrange
+        var identityProvider = await AddIdentityProviderClient();
+
         var jwks = ClientJwkBuilder.GetClientJwks();
         var registerResponse = await RegisterEndpointBuilder
             .WithRedirectUris(["https://webapp.authserver.dk/"])
             .WithClientName("webapp")
             .WithJwks(jwks.PublicJwks)
+            .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
             .WithRequestObjectSigningAlg(SigningAlg.RsaSha256)
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        await authorizeService.CreateOrUpdateConsentGrant(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [ScopeConstants.OpenId],
-            [],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithRequest(jwks.PrivateJwks)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(grantId)
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .WithResource([identityProvider.ClientUri!])
             .Get();
 
         // Assert
@@ -65,32 +58,26 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     public async Task Authorize_NoPromptWithGrantAndConsent_ExpectRedirectWithAuthorizationCode()
     {
         // Arrange
+        var identityProvider = await AddIdentityProviderClient();
+
         var registerResponse = await RegisterEndpointBuilder
             .WithRedirectUris(["https://webapp.authserver.dk/"])
             .WithClientName("webapp")
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        await authorizeService.CreateOrUpdateConsentGrant(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [ScopeConstants.OpenId],
-            [],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, ScopeConstants.UserInfo], []);
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithAuthorizeUser(grantId)
+            .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
+            .WithResource([identityProvider.ClientUri!])
             .Get();
 
         // Assert
@@ -103,20 +90,18 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     public async Task Authorize_NoPromptWithIdTokenHintWithMaxAgeZero_ExpectRedirectLogin()
     {
         // Arrange
+        var identityProvider = await AddIdentityProviderClient();
+
         var registerResponse = await RegisterEndpointBuilder
             .WithRedirectUris(["https://webapp.authserver.dk/"])
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
             .WithClientName("webapp")
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
+        await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
 
         var databaseContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
         var grant = await databaseContext
@@ -137,6 +122,8 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithMaxAge(0)
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .WithResource([identityProvider.ClientUri!])
             .WithIdTokenHint(idToken)
             .Get();
 
@@ -162,25 +149,25 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     public async Task Authorize_NoPromptWithPreviousLoginAndNoConsent_ExpectRedirectConsent()
     {
         // Arrange
+        var identityProvider = await AddIdentityProviderClient();
+
         var registerResponse = await RegisterEndpointBuilder
             .WithRedirectUris(["https://webapp.authserver.dk/"])
             .WithClientName("webapp")
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var authorizeService = ServiceProvider.GetRequiredService<IAuthorizeService>();
-        await authorizeService.CreateAuthorizationGrant(
-            UserConstants.SubjectIdentifier,
-            registerResponse.ClientId,
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
-            .WithAuthorizeUser()
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .WithResource([identityProvider.ClientUri!])
+            .WithAuthorizeUser(grantId)
             .Get();
 
         // Assert
@@ -205,14 +192,19 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     public async Task Authorize_NoPromptWithMultipleActiveUsers_ExpectRedirectSelectAccount()
     {
         // Arrange
+        var identityProvider = await AddIdentityProviderClient();
+
         var registerResponse = await RegisterEndpointBuilder
             .WithRedirectUris(["https://webapp.authserver.dk/"])
             .WithClientName("webapp")
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
             .Post();
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .WithResource([identityProvider.ClientUri!])
             .Get();
 
         // Assert

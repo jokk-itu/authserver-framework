@@ -1,23 +1,27 @@
 ﻿using AuthServer.Constants;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
 using AuthServer.RequestAccessors.Token;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FeatureManagement;
 
 namespace AuthServer.TokenByGrant;
 internal class TokenEndpointHandler : IEndpointHandler
 {
     private readonly IRequestAccessor<TokenRequest> _requestAccessor;
+    private readonly IFeatureManagerSnapshot _featureManagerSnapshot;
     private readonly IServiceProvider _serviceProvider;
 
     public TokenEndpointHandler(
         IRequestAccessor<TokenRequest> requestAccessor,
+        IFeatureManagerSnapshot featureManagerSnapshot,
         IServiceProvider serviceProvider)
     {
         _requestAccessor = requestAccessor;
+        _featureManagerSnapshot = featureManagerSnapshot;
         _serviceProvider = serviceProvider;
     }
 
@@ -28,6 +32,17 @@ internal class TokenEndpointHandler : IEndpointHandler
         if (!GrantTypeConstants.GrantTypes.Contains(request.GrantType))
         {
             return Results.Extensions.OAuthBadRequest(TokenError.UnsupportedGrantType);
+        }
+        
+        switch (request.GrantType)
+        {
+            case GrantTypeConstants.AuthorizationCode when
+                !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.AuthorizationCode):
+            case GrantTypeConstants.RefreshToken when
+                !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.RefreshToken):
+            case GrantTypeConstants.ClientCredentials when
+                !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.ClientCredentials):
+                return Results.Extensions.OAuthBadRequest(TokenError.UnsupportedGrantType);
         }
 
         var requestHandler = _serviceProvider.GetRequiredKeyedService<IRequestHandler<TokenRequest, TokenResponse>>(request.GrantType);
@@ -40,7 +55,8 @@ internal class TokenEndpointHandler : IEndpointHandler
                 Scope = response.Scope,
                 ExpiresIn = response.ExpiresIn,
                 IdToken = response.IdToken,
-                RefreshToken = response.RefreshToken
+                RefreshToken = response.RefreshToken,
+                GrantId = response.GrantId
             }),
             error => Results.Extensions.OAuthBadRequest(error));
     }

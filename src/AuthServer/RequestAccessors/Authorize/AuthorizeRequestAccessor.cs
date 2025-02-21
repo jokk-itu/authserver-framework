@@ -35,9 +35,13 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var state = query.GetValue(Parameter.State);
         var requestObject = query.GetValue(Parameter.Request);
         var requestUri = query.GetValue(Parameter.RequestUri);
+        var grantId = query.GetValue(Parameter.GrantId);
+        var grantManagementAction = query.GetValue(Parameter.GrantId);
 
         var scope = query.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = query.GetSpaceDelimitedValue(Parameter.AcrValues);
+
+        var resource = query.GetCollectionValue(Parameter.Resource);
 
         return new AuthorizeRequest
         {
@@ -56,8 +60,11 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             ResponseMode = responseMode,
             RequestObject = requestObject,
             RequestUri = requestUri,
+            GrantId = grantId,
+            GrantManagementAction = grantManagementAction,
             Scope = scope,
-            AcrValues = acrValues
+            AcrValues = acrValues,
+            Resource = resource
         };
     }
 
@@ -80,9 +87,13 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var state = body.GetValue(Parameter.State);
         var requestObject = body.GetValue(Parameter.Request);
         var requestUri = body.GetValue(Parameter.RequestUri);
+        var grantId = body.GetValue(Parameter.GrantId);
+        var grantManagementAction = body.GetValue(Parameter.GrantId);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
+
+        var resource = body.GetCollectionValue(Parameter.Resource);
 
         return new AuthorizeRequest
         {
@@ -101,8 +112,11 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             ResponseMode = responseMode,
             RequestObject = requestObject,
             RequestUri = requestUri,
+            GrantId = grantId,
+            GrantManagementAction = grantManagementAction,
             Scope = scope,
-            AcrValues = acrValues
+            AcrValues = acrValues,
+            Resource = resource
         };
     }
 }

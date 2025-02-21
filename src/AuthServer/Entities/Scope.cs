@@ -15,5 +15,5 @@ public class Scope : Entity<int>
 
     public string Name { get; private init; }
     public ICollection<Client> Clients { get; private init; } = [];
-    public ICollection<ConsentGrant> ConsentGrants { get; private init; } = [];
+    public ICollection<ScopeConsent> ScopeConsents { get; private init; } = [];
 }

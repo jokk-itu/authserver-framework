@@ -1,17 +1,25 @@
-﻿using AuthServer.Endpoints.Responses;
+﻿using AuthServer.Core;
+using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
 using AuthServer.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthServer.Endpoints;
 internal static class JwksDocumentEndpoint
 {
-    public static Task<IResult> HandleJwksDocument(
-        [FromServices] IOptionsSnapshot<JwksDocument> jwksDocumentOptions)
+    public static async Task<IResult> HandleJwksDocument(
+        [FromServices] IOptionsSnapshot<JwksDocument> jwksDocumentOptions,
+        [FromServices] IFeatureManagerSnapshot featureManagerSnapshot)
     {
+        if (!await featureManagerSnapshot.IsEnabledAsync(FeatureFlags.Jwks))
+        {
+            return Results.NotFound();
+        }
+        
         var keys = new List<JwkDto>();
         keys.AddRange(GetSigningJsonWebKeys(jwksDocumentOptions.Value));
         keys.AddRange(GetEncryptionJsonWebKeys(jwksDocumentOptions.Value));
@@ -21,7 +29,7 @@ internal static class JwksDocumentEndpoint
             Keys = keys
         };
 
-        return Task.FromResult(Results.Ok(response));
+        return Results.Ok(response);
     }
 
     private static IEnumerable<JwkDto> GetSigningJsonWebKeys(JwksDocument jwksDocument)
@@ -75,6 +83,8 @@ internal static class JwksDocumentEndpoint
                 break;
             case X509SecurityKey:
                 key.X509Thumbprint = jsonWebKey.X5t;
+                key.X509CertificateChain = jsonWebKey.X5c;
+                key.X509ThumbprintS256 = jsonWebKey.X5tS256;
                 break;
         }
     }

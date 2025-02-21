@@ -23,9 +23,12 @@ internal class AuthorizeRequest
         MaxAge = authorizeRequestDto.MaxAge;
         State = authorizeRequestDto.State;
         ResponseMode = authorizeRequestDto.ResponseMode;
+        GrantId = authorizeRequestDto.GrantId;
+        GrantManagementAction = authorizeRequestDto.GrantManagementAction;
         RequestUri = requestUri;
         Scope = authorizeRequestDto.Scope;
         AcrValues = authorizeRequestDto.AcrValues;
+        Resource = authorizeRequestDto.Resource;
     }
 
     public string? IdTokenHint { get; init; }
@@ -43,6 +46,9 @@ internal class AuthorizeRequest
     public string? ResponseMode { get; init; }
     public string? RequestObject { get; init; }
     public string? RequestUri { get ; init; }
+    public string? GrantId { get; init; }
+    public string? GrantManagementAction { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
+    public IReadOnlyCollection<string> Resource { get; init; } = [];
 }

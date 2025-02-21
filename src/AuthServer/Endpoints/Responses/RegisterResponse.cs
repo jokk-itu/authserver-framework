@@ -138,6 +138,10 @@ internal class RegisterResponse
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? JwksExpiration { get; init; }
 
+	[JsonPropertyName(Parameter.RequestUriExpiration)]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public int? RequestUriExpiration { get; init; }
+
 	[JsonPropertyName(Parameter.DefaultAcrValues)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public IReadOnlyCollection<string>? DefaultAcrValues { get; init; }

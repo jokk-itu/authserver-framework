@@ -14,15 +14,21 @@ internal class BaseAuthorizeValidator
     private readonly INonceRepository _nonceRepository;
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
+    private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
+    private readonly IClientRepository _clientRepository;
 
     public BaseAuthorizeValidator(
         INonceRepository nonceRepository,
         ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
-        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions)
+        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
+        IAuthorizationGrantRepository authorizationGrantRepository,
+        IClientRepository clientRepository)
     {
         _nonceRepository = nonceRepository;
         _tokenDecoder = tokenDecoder;
         _discoveryDocumentOptions = discoveryDocumentOptions;
+        _authorizationGrantRepository = authorizationGrantRepository;
+        _clientRepository = clientRepository;
     }
 
     protected static bool HasValidState(string? state) => !string.IsNullOrEmpty(state);
@@ -58,7 +64,7 @@ internal class BaseAuthorizeValidator
         => scope.Contains(ScopeConstants.OpenId);
 
     protected static bool HasAuthorizedScope(IReadOnlyCollection<string> scope, CachedClient cachedClient)
-        => !scope.ExceptAny(cachedClient.Scopes);
+        => !scope.IsNotSubset(cachedClient.Scopes);
 
     protected static bool HasValidMaxAge(string? maxAge)
         => MaxAgeHelper.IsMaxAgeValid(maxAge);
@@ -67,10 +73,13 @@ internal class BaseAuthorizeValidator
         => string.IsNullOrEmpty(prompt) || PromptConstants.Prompts.Contains(prompt);
 
     protected bool HasValidAcrValues(IReadOnlyCollection<string> acrValues)
-        => acrValues.Count == 0 || !acrValues.ExceptAny(_discoveryDocumentOptions.Value.AcrValuesSupported);
+        => acrValues.Count == 0 || !acrValues.IsNotSubset(_discoveryDocumentOptions.Value.AcrValuesSupported);
 
     protected async Task<bool> HasUniqueNonce(string nonce, CancellationToken cancellationToken)
         => !await _nonceRepository.IsNonceReplay(nonce, cancellationToken);
+
+    protected async Task<bool> HasValidResource(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
+        => resources.Count != 0 && await _clientRepository.DoesResourcesExist(resources, scopes, cancellationToken);
 
     protected async Task<bool> HasValidIdTokenHint(string? idTokenHint, string clientId, CancellationToken cancellationToken)
     {
@@ -89,5 +98,60 @@ internal class BaseAuthorizeValidator
             }, cancellationToken);
 
         return validatedToken is not null;
+    }
+
+    protected bool HasValidGrantManagementAction(string? grantId, string? grantManagementAction)
+    {
+        if (string.IsNullOrEmpty(grantManagementAction)
+            && _discoveryDocumentOptions.Value.GrantManagementActionRequired)
+        {
+            return false;
+        }
+
+        var allowedValues = new List<string>
+            {
+                GrantManagementActionConstants.Create,
+                GrantManagementActionConstants.Merge,
+                GrantManagementActionConstants.Replace
+            }
+            .Intersect(_discoveryDocumentOptions.Value.GrantManagementActionsSupported)
+            .ToList();
+        
+        if (!string.IsNullOrEmpty(grantManagementAction)
+            && !allowedValues.Contains(grantManagementAction))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(grantManagementAction)
+            && !string.IsNullOrEmpty(grantId))
+        {
+            return false;
+        }
+
+        if (grantManagementAction == GrantManagementActionConstants.Create
+            && !string.IsNullOrEmpty(grantId))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(grantManagementAction)
+            && grantManagementAction != GrantManagementActionConstants.Create
+            && string.IsNullOrEmpty(grantId))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected async Task<bool> HasValidGrantId(string? grantId, string clientId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(grantId))
+        {
+            return true;
+        }
+
+        return await _authorizationGrantRepository.IsActiveAuthorizationGrant(grantId, clientId, cancellationToken);
     }
 }

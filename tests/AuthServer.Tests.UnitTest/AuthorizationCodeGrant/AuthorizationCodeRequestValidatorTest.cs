@@ -3,7 +3,6 @@ using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
@@ -43,7 +42,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_EmptyResource_ExpectInvalidTarget()
+    public async Task Validate_EmptyResource_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -59,7 +58,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.InvalidTarget, processResult);
+        Assert.Equal(TokenError.InvalidResource, processResult);
     }
 
     [Fact]
@@ -530,7 +529,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
+        authorizationGrant.Client.Scopes.Remove(await GetScope(ScopeConstants.Profile));
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
+        await SaveChangesAsync();
 
         authorizationCodeEncoder
             .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
@@ -581,7 +582,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
-        authorizationGrant.Client.ConsentGrants.Single().ConsentedScopes.Clear();
+        authorizationGrant.AuthorizationGrantConsents.Clear();
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
         await SaveChangesAsync();
 
@@ -632,6 +633,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
+        var weatherClient = await GetWeatherClient();
+
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
@@ -650,7 +653,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
-            Resource = ["resource"],
+            Resource = [weatherClient.ClientUri!],
             CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
             ClientAuthentications =
             [
@@ -670,7 +673,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_ResourceDoesNotExist_ExpectInvalidTarget()
+    public async Task Validate_ExceedConsentedScopeWithResource_ExpectScopeExceedsConsentedScope()
     {
         // Arrange
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
@@ -701,6 +704,60 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Resource = ["other_resource"],
+            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    authorizationGrant.Client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.ScopeExceedsConsentedScope, processResult);
+        authorizationCodeEncoder.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_ResourceDoesNotExist_ExpectInvalidResource()
+    {
+        // Arrange
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(authorizationCodeEncoder);
+        });
+
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
+        authorizationGrant.Client.RequireConsent = false;
+        authorizationGrant.AuthorizationGrantConsents.Clear();
+        var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
+        await SaveChangesAsync();
+
+        authorizationCodeEncoder
+            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Returns(new EncodedAuthorizationCode
+            {
+                AuthorizationCodeId = authorizationCodeId,
+                AuthorizationGrantId = authorizationGrant.Id,
+                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                Scope = [ScopeConstants.OpenId]
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
             CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
             ClientAuthentications =
@@ -716,7 +773,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.InvalidTarget, processResult);
+        Assert.Equal(TokenError.InvalidResource, processResult);
         authorizationCodeEncoder.Verify();
     }
 
@@ -790,22 +847,25 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var redirectUri = new RedirectUri("https://webapp.authserver.dk/callback", client);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var profileScope = await GetScope(ScopeConstants.Profile);
         client.Scopes.Add(openIdScope);
+        client.Scopes.Add(profileScope);
 
         var authorizationCodeGrantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);
         client.GrantTypes.Add(authorizationCodeGrantType);
-
-        var consentGrant = new ConsentGrant(subjectIdentifier, client);
-        consentGrant.ConsentedScopes.Add(openIdScope);
 
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         var authorizationCode = new AuthorizationCode(authorizationGrant, 60);
         authorizationCode.SetValue("authorization_code");
 
+        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(
+            scopeConsent, authorizationGrant, "https://weather.authserver.dk");
+
         await AddEntity(redirectUri);
         await AddEntity(authorizationCode);
-        await AddEntity(consentGrant);
+        await AddEntity(authorizationGrantScopeConsent);
 
         return authorizationGrant;
     }

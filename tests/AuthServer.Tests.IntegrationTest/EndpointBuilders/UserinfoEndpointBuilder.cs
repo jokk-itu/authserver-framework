@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using AuthServer.Options;
 using Xunit.Abstractions;
 
@@ -23,7 +24,7 @@ public class UserinfoEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    internal async Task<string> Get()
+    internal async Task<UserinfoResponse> Get()
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "connect/userinfo");
         httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
@@ -35,11 +36,16 @@ public class UserinfoEndpointBuilder : EndpointBuilder
             httpResponseMessage.StatusCode,
             content);
 
-        httpResponseMessage.EnsureSuccessStatusCode();
-        return content;
+        return new UserinfoResponse
+        {
+            StatusCode = httpResponseMessage.StatusCode,
+            Content = content,
+            ContentType = httpResponseMessage.Content.Headers.ContentType,
+            WwwAuthenticate = httpResponseMessage.Headers.WwwAuthenticate
+        };
     }
 
-    internal async Task<string> Post()
+    internal async Task<UserinfoResponse> Post()
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/userinfo");
         httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
@@ -51,7 +57,20 @@ public class UserinfoEndpointBuilder : EndpointBuilder
             httpResponseMessage.StatusCode,
             content);
 
-        httpResponseMessage.EnsureSuccessStatusCode();
-        return content;
+        return new UserinfoResponse
+        {
+            StatusCode = httpResponseMessage.StatusCode,
+            Content = content,
+            ContentType = httpResponseMessage.Content.Headers.ContentType,
+            WwwAuthenticate = httpResponseMessage.Headers.WwwAuthenticate
+        };
+    }
+    
+    internal class UserinfoResponse
+    {
+        public required HttpStatusCode StatusCode { get; init; }
+        public string? Content { get; init; }
+        public MediaTypeHeaderValue? ContentType { get; init; }
+        public required HttpHeaderValueCollection<AuthenticationHeaderValue> WwwAuthenticate { get; init; }
     }
 }

@@ -24,8 +24,10 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         INonceRepository nonceRepository,
         ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
-        ISecureRequestService secureRequestService)
-        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions)
+        ISecureRequestService secureRequestService,
+        IAuthorizationGrantRepository authorizationGrantRepository,
+        IClientRepository clientRepository)
+        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
     {
         _cachedClientStore = cachedClientStore;
         _clientAuthenticationService = clientAuthenticationService;
@@ -53,7 +55,8 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         {
             return PushedAuthorizationError.RequestRequiredAsRequestObject;
         }
-        else if (!isRequestObjectEmpty)
+
+        if (!isRequestObjectEmpty)
         {
             var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, clientAuthenticationResult.ClientId, ClientTokenAudience.PushedAuthorizeEndpoint, cancellationToken);
             if (newRequest is null)
@@ -61,25 +64,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
                 return PushedAuthorizationError.InvalidRequest;
             }
 
-            request = new PushedAuthorizationRequest
-            {
-                IdTokenHint = newRequest.IdTokenHint,
-                LoginHint = newRequest.LoginHint,
-                Prompt = newRequest.Prompt,
-                Display = newRequest.Display,
-                RedirectUri = newRequest.RedirectUri,
-                CodeChallenge = newRequest.CodeChallenge,
-                CodeChallengeMethod = newRequest.CodeChallengeMethod,
-                ResponseType = newRequest.ResponseType,
-                Nonce = newRequest.Nonce,
-                MaxAge = newRequest.MaxAge,
-                State = newRequest.State,
-                ResponseMode = newRequest.ResponseMode,
-                RequestObject = string.Empty,
-                Scope = newRequest.Scope,
-                AcrValues = newRequest.AcrValues,
-                ClientAuthentications = request.ClientAuthentications
-            };
+            request = new PushedAuthorizationRequest(newRequest, request.ClientAuthentications);
         }
 
         if (!HasValidState(request.State))
@@ -147,6 +132,11 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return PushedAuthorizationError.UnauthorizedScope;
         }
 
+        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
+        {
+            return PushedAuthorizationError.InvalidResource;
+        }
+
         if (!HasValidMaxAge(request.MaxAge))
         {
             return PushedAuthorizationError.InvalidMaxAge;
@@ -166,6 +156,16 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         {
             return PushedAuthorizationError.InvalidAcrValues;
         }
+        
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        {
+            return PushedAuthorizationError.InvalidGrantManagement;
+        }
+
+        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
+        {
+            return PushedAuthorizationError.InvalidGrantId;
+        }
 
         return new PushedAuthorizationValidatedRequest
         {
@@ -179,11 +179,14 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             CodeChallengeMethod = request.CodeChallengeMethod!,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
+            Resource = request.Resource,
             ClientId = clientAuthenticationResult.ClientId,
             MaxAge = request.MaxAge,
             Nonce = request.Nonce!,
             State = request.State!,
-            RedirectUri = request.RedirectUri
+            RedirectUri = request.RedirectUri,
+            GrantId = request.GrantId,
+            GrantManagementAction = request.GrantManagementAction
         };
     }
 }

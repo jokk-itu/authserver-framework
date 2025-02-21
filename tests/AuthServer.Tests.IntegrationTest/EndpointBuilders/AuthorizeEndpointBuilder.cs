@@ -71,6 +71,12 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return this;
     }
 
+    public AuthorizeEndpointBuilder WithResource(IReadOnlyCollection<string> resources)
+    {
+        resources.ToList().ForEach(x => _parameters.Add(new(Parameter.Resource, x)));
+        return this;
+    }
+
     public AuthorizeEndpointBuilder WithCodeChallenge(string codeChallenge)
     {
         _parameters.Add(new(Parameter.CodeChallenge, codeChallenge));
@@ -101,10 +107,10 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    public AuthorizeEndpointBuilder WithAuthorizeUser()
+    public AuthorizeEndpointBuilder WithAuthorizeUser(string authorizationGrantId)
     {
         var dataProtector = _dataProtectionProvider.CreateProtector(AuthorizeUserAccessor.DataProtectorPurpose);
-        var authorizeUser = new AuthorizeUser(UserConstants.SubjectIdentifier, true);
+        var authorizeUser = new AuthorizeUser(UserConstants.SubjectIdentifier, true, authorizationGrantId);
         var authorizeUserBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(authorizeUser));
         var encryptedAuthorizeUser = dataProtector.Protect(authorizeUserBytes);
         var cookieValue = Convert.ToBase64String(encryptedAuthorizeUser);
@@ -130,7 +136,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         SetDefaultValues();
         OverwriteForRequestObject();
 
-        var query = new QueryBuilder(_parameters.ToDictionary(x => x.Key, x => x.Value.ToString()!)).ToQueryString();
+        var query = new QueryBuilder(_parameters.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString()!))).ToQueryString();
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"connect/authorize{query}");
         requestMessage.Headers.Add("Cookie", _cookies.Select(x => x.ToString()));
         var authorizeResponseMessage = await HttpClient.SendAsync(requestMessage);

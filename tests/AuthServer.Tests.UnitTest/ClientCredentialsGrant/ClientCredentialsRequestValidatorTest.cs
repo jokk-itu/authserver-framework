@@ -56,7 +56,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_EmptyResource_ExpectInvalidTarget()
+    public async Task Validate_EmptyResource_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -72,7 +72,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.InvalidTarget, processResult);
+        Assert.Equal(TokenError.InvalidResource, processResult);
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_ResourceDoesNotExist_ExpectInvalidTarget()
+    public async Task Validate_ResourceDoesNotExist_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -228,7 +228,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.InvalidTarget, processResult);
+        Assert.Equal(TokenError.InvalidResource, processResult);
     }
 
     [Fact]

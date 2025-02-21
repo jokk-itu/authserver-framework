@@ -23,7 +23,7 @@ internal static class TokenError
     public static readonly ProcessError UnauthorizedForScope =
         new(ErrorCode.UnauthorizedClient, "client is unauthorized for scope", ResultCode.BadRequest);
 
-    public static readonly ProcessError InvalidTarget =
+    public static readonly ProcessError InvalidResource =
         new(ErrorCode.InvalidTarget, "resource is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidCode =

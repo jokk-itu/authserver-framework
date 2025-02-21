@@ -1,6 +1,5 @@
 ﻿using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Tests.Core;
@@ -88,6 +87,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
 
         Assert.Equal(client.AccessTokenExpiration, tokenResponse.ExpiresIn);
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
+        Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
     }
 
     [Fact]
@@ -147,6 +147,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
 
         Assert.Equal(client.AccessTokenExpiration, tokenResponse.ExpiresIn);
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
+        Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
     }
 
     private async Task<Client> GetWeatherClient()

@@ -2,7 +2,6 @@
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
@@ -78,6 +77,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             RefreshToken = refreshToken,
             ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
+            GrantId = query.AuthorizationCodeGrant.Id
         };
     }
 }

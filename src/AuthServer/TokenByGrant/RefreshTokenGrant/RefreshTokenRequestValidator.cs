@@ -1,5 +1,4 @@
-﻿using AuthServer.Authentication;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
@@ -9,6 +8,7 @@ using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.RequestAccessors.Token;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
@@ -23,7 +23,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
     private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IClientRepository _clientRepository;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
 
     public RefreshTokenRequestValidator(
         AuthorizationDbContext identityContext,
@@ -31,7 +31,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
         IClientRepository clientRepository,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository)
     {
         _identityContext = identityContext;
         _tokenDecoder = tokenDecoder;
@@ -55,7 +55,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
 
         if (request.Resource.Count == 0)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         if (request.ClientAuthentications.Count != 1)
@@ -93,51 +93,36 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
             return TokenError.UnauthorizedForGrantType;
         }
 
-        /*
-         * Do not check for validity of grant,
-         * as the grant and session must be active,
-         * if the RefreshToken is active.
-         */
-        var subjectIdentifier = await _identityContext
-            .Set<AuthorizationGrant>()
-            .Where(x => x.Id == authorizationGrantId)
-            .Select(x => x.Session.SubjectIdentifier.Id)
-            .SingleAsync(cancellationToken);
-
-        IReadOnlyCollection<string> requestedScope;
+        IReadOnlyCollection<string> requestedScopes;
         var isScopeRequested = request.Scope.Count != 0;
 
         if (cachedClient.RequireConsent)
         {
-            var consentedScope = await _consentGrantRepository.GetConsentedScope(
-                subjectIdentifier, clientId, cancellationToken);
-
-            if (consentedScope.Count == 0)
+            var grantConsentScopes = await _consentGrantRepository.GetGrantConsentedScopes(authorizationGrantId, cancellationToken);
+            if (grantConsentScopes.Count == 0)
             {
                 return TokenError.ConsentRequired;
             }
 
-            requestedScope = isScopeRequested ? request.Scope : consentedScope;
-            if (requestedScope.ExceptAny(consentedScope))
+            requestedScopes = isScopeRequested ? request.Scope : grantConsentScopes.Select(x => x.Name).ToList();
+            if (requestedScopes.SelectMany(_ => request.Resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
             {
                 return TokenError.ScopeExceedsConsentedScope;
             }
         }
         else
         {
-            requestedScope = isScopeRequested ? request.Scope : cachedClient.Scopes;
-            if (requestedScope.ExceptAny(cachedClient.Scopes))
+            requestedScopes = isScopeRequested ? request.Scope : cachedClient.Scopes;
+            if (requestedScopes.IsNotSubset(cachedClient.Scopes))
             {
                 return TokenError.UnauthorizedForScope;
             }
-        }
 
-        var doesResourceExist = await _clientRepository.DoesResourcesExist(
-            request.Resource, requestedScope, cancellationToken);
-
-        if (!doesResourceExist)
-        {
-            return TokenError.InvalidTarget;
+            var doesResourceExist = await _clientRepository.DoesResourcesExist(request.Resource, requestedScopes, cancellationToken);
+            if (!doesResourceExist)
+            {
+                return TokenError.InvalidResource;
+            }
         }
 
         return new RefreshTokenValidatedRequest
@@ -145,7 +130,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
             AuthorizationGrantId = authorizationGrantId,
             ClientId = clientId,
             Resource = request.Resource,
-            Scope = requestedScope
+            Scope = requestedScopes
         };
     }
 

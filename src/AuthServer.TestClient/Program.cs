@@ -133,7 +133,8 @@ app.MapGet("/api/logout/silent", async httpContext =>
 app.MapGet("/api/logout/interactive", async httpContext =>
 {
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties(null, new Dictionary<string, object?>
+    await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties(
+        new Dictionary<string, string?>(), new Dictionary<string, object?>
     {
         { "interactive", true }
     }));

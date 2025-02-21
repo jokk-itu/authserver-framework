@@ -5,6 +5,8 @@ using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
+using AuthServer.Authorize.UserInterface;
+using AuthServer.Authorize.UserInterface.Abstractions;
 using AuthServer.Cache;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Codes;
@@ -15,6 +17,9 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.EndSession;
 using AuthServer.EndSession.Abstractions;
+using AuthServer.GrantManagement;
+using AuthServer.GrantManagement.Query;
+using AuthServer.GrantManagement.Revoke;
 using AuthServer.Introspection;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
@@ -25,6 +30,7 @@ using AuthServer.Repositories;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.RequestAccessors.Authorize;
 using AuthServer.RequestAccessors.EndSession;
+using AuthServer.RequestAccessors.GrantManagement;
 using AuthServer.RequestAccessors.Introspection;
 using AuthServer.RequestAccessors.PushedAuthorization;
 using AuthServer.RequestAccessors.Register;
@@ -43,6 +49,7 @@ using AuthServer.TokenDecoders.Abstractions;
 using AuthServer.Userinfo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthServer.Extensions;
@@ -52,11 +59,92 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAuthServer(this IServiceCollection services,
         Action<IServiceProvider, DbContextOptionsBuilder> databaseConfigurator)
     {
+        services.AddScopedFeatureManagement();
+        services.AddDataProtection();
+        services.AddSingleton<IMetricService, MetricService>();
+        services.AddHttpContextAccessor();
+        services.AddHttpClient(HttpClientNameConstants.Client);
+
+        services
+            .AddDbContext<AuthorizationDbContext>(databaseConfigurator)
+            .AddScoped<IUnitOfWork, UnitOfWork>()
+            .AddScoped<ICachedClientStore, CachedClientStore>()
+            .AddScoped<ITokenReplayCache, TokenReplayCache>();
+
+        services
+            .AddScoped<ITokenDecoder<ServerIssuedTokenDecodeArguments>, ServerIssuedTokenDecoder>()
+            .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
+            .AddScoped<IAuthorizationCodeEncoder, AuthorizationCodeEncoder>();
+
+        services
+            .AddScoped<IClientAuthenticationService, ClientAuthenticationService>()
+            .AddScoped<IClientJwkService, ClientJwkService>()
+            .AddScoped<IClientSectorService, ClientSectorService>()
+            .AddScoped<IClientLogoutService, ClientLogoutService>();
+
+        AddAuthServerAuthentication(services);
+        AddAuthServerAuthorization(services);
+        AddAuthServerOptions(services);
+        AddTokenBuilders(services);
+        AddRepositories(services);
+        AddAuthorize(services);
+        AddToken(services);
+        AddUserinfo(services);
+        AddEndSession(services);
+        AddIntrospection(services);
+        AddRevocation(services);
+        AddPushedAuthorization(services);
+        AddRegister(services);
+        AddGrantManagement(services);
+
+        return services;
+    }
+
+    private static IServiceCollection AddRepositories(IServiceCollection services)
+    {
+        return services
+            .AddScoped<IClientRepository, ClientRepository>()
+            .AddScoped<IConsentRepository, ConsentRepository>()
+            .AddScoped<IAuthorizationGrantRepository, AuthorizationGrantRepository>()
+            .AddScoped<ITokenRepository, TokenRepository>()
+            .AddScoped<INonceRepository, NonceRepository>()
+            .AddScoped<ISessionRepository, SessionRepository>();
+    }
+
+    private static IServiceCollection AddAuthServerOptions(IServiceCollection services)
+    {
+        return services
+            .ConfigureOptions<PostConfigureDiscoveryDocumentOptions>()
+            .ConfigureOptions<ValidateDiscoveryDocumentOptions>()
+            .ConfigureOptions<ValidateJwksDocument>()
+            .ConfigureOptions<ValidateUserInteractionOptions>();
+    }
+    
+    private static IServiceCollection AddTokenBuilders(IServiceCollection services)
+    {
+        return services
+            .AddScoped<ITokenBuilder<LogoutTokenArguments>, LogoutTokenBuilder>()
+            .AddScoped<ITokenBuilder<IdTokenArguments>, IdTokenBuilder>()
+            .AddScoped<ITokenBuilder<ClientAccessTokenArguments>, ClientAccessTokenBuilder>()
+            .AddScoped<ITokenBuilder<GrantAccessTokenArguments>, GrantAccessTokenBuilder>()
+            .AddScoped<ITokenBuilder<RefreshTokenArguments>, RefreshTokenBuilder>()
+            .AddScoped<ITokenBuilder<RegistrationTokenArguments>, RegistrationTokenBuilder>()
+            .AddScoped<ITokenBuilder<UserinfoTokenArguments>, UserinfoTokenBuilder>()
+            .AddScoped<ITokenSecurityService, TokenSecurityService>();
+    }
+
+    private static IServiceCollection AddAuthServerAuthentication(IServiceCollection services)
+    {
         services
             .AddAuthentication()
             .AddScheme<OAuthTokenAuthenticationOptions, OAuthTokenAuthenticationHandler>(
                 OAuthTokenAuthenticationDefaults.AuthenticationScheme, null);
+        
+        return services;
+    }
 
+    private static IServiceCollection AddAuthServerAuthorization(IServiceCollection services)
+    {
         services
             .AddAuthorizationBuilder()
             .AddPolicy(AuthorizationConstants.Userinfo, policy =>
@@ -72,67 +160,30 @@ public static class ServiceCollectionExtensions
             {
                 policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
                 policy.RequireClaim(ClaimNameConstants.Scope, ScopeConstants.Register);
+            })
+            .AddPolicy(AuthorizationConstants.GrantManagementQuery, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion(context =>
+                {
+                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
+                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementQuery);
+                });
+            })
+            .AddPolicy(AuthorizationConstants.GrantManagementRevoke, policy =>
+            {
+                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAssertion(context =>
+                {
+                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
+                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementRevoke);
+                });
             });
-
-        services.AddDataProtection();
-        services.AddSingleton<IMetricService, MetricService>();
-        services.AddHttpContextAccessor();
-        services.AddHttpClient(HttpClientNameConstants.Client);
-
-        services
-            .ConfigureOptions<PostConfigureDiscoveryDocumentOptions>()
-            .ConfigureOptions<ValidateDiscoveryDocumentOptions>()
-            .ConfigureOptions<ValidateJwksDocument>()
-            .ConfigureOptions<ValidateUserInteractionOptions>();
-
-        services
-            .AddDbContext<AuthorizationDbContext>(databaseConfigurator)
-            .AddScoped<IUnitOfWork, UnitOfWork>()
-            .AddScoped<ICachedClientStore, CachedClientStore>()
-            .AddScoped<ITokenReplayCache, TokenReplayCache>();
-
-        services
-            .AddScoped<ITokenBuilder<LogoutTokenArguments>, LogoutTokenBuilder>()
-            .AddScoped<ITokenBuilder<IdTokenArguments>, IdTokenBuilder>()
-            .AddScoped<ITokenBuilder<ClientAccessTokenArguments>, ClientAccessTokenBuilder>()
-            .AddScoped<ITokenBuilder<GrantAccessTokenArguments>, GrantAccessTokenBuilder>()
-            .AddScoped<ITokenBuilder<RefreshTokenArguments>, RefreshTokenBuilder>()
-            .AddScoped<ITokenBuilder<RegistrationTokenArguments>, RegistrationTokenBuilder>()
-            .AddScoped<ITokenBuilder<UserinfoTokenArguments>, UserinfoTokenBuilder>()
-            .AddScoped<ITokenSecurityService, TokenSecurityService>();
-
-        services
-            .AddScoped<ITokenDecoder<ServerIssuedTokenDecodeArguments>, ServerIssuedTokenDecoder>()
-            .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
-            .AddScoped<IAuthorizationCodeEncoder, AuthorizationCodeEncoder>();
-
-        services
-            .AddScoped<IClientAuthenticationService, ClientAuthenticationService>()
-            .AddScoped<IClientJwkService, ClientJwkService>()
-            .AddScoped<IClientSectorService, ClientSectorService>()
-            .AddScoped<IClientLogoutService, ClientLogoutService>();
-
-        services
-            .AddScoped<IClientRepository, ClientRepository>()
-            .AddScoped<IConsentGrantRepository, ConsentGrantRepository>()
-            .AddScoped<IAuthorizationGrantRepository, AuthorizationGrantRepository>()
-            .AddScoped<ITokenRepository, TokenRepository>()
-            .AddScoped<INonceRepository, NonceRepository>()
-            .AddScoped<ISessionRepository, SessionRepository>();
-
-        AddAuthorize(services);
-        AddToken(services);
-        AddUserinfo(services);
-        AddEndSession(services);
-        AddIntrospection(services);
-        AddRevocation(services);
-        AddPushedAuthorization(services);
-        AddRegister(services);
-
+        
         return services;
     }
 
-    internal static IServiceCollection AddPushedAuthorization(this IServiceCollection services)
+    private static IServiceCollection AddPushedAuthorization(IServiceCollection services)
     {
         return services
             .AddKeyedScoped<IEndpointHandler, PushedAuthorizationEndpointHandler>("PushedAuthorization")
@@ -143,7 +194,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>, PushedAuthorizationRequestValidator>();
     }
 
-    internal static IServiceCollection AddRegister(this IServiceCollection services)
+    private static IServiceCollection AddRegister(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<RegisterRequest>, RegisterRequestAccessor>()
@@ -154,7 +205,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<RegisterValidatedRequest, ProcessResult<RegisterResponse, Unit>>, RegisterRequestProcessor>();
     }
 
-    internal static IServiceCollection AddEndSession(this IServiceCollection services)
+    private static IServiceCollection AddEndSession(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<EndSessionRequest>, EndSessionRequestAccessor>()
@@ -166,7 +217,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<EndSessionValidatedRequest, Unit>, EndSessionRequestProcessor>();
     }
 
-    internal static IServiceCollection AddAuthorize(this IServiceCollection services)
+    private static IServiceCollection AddAuthorize(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<AuthorizeRequest>, AuthorizeRequestAccessor>()
@@ -182,7 +233,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>, AuthorizeRequestValidator>();
     }
 
-    internal static IServiceCollection AddUserinfo(this IServiceCollection services)
+    private static IServiceCollection AddUserinfo(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<UserinfoRequest>, UserinfoRequestAccessor>()
@@ -193,7 +244,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<UserinfoValidatedRequest, string>, UserinfoRequestProcessor>();
     }
 
-    internal static IServiceCollection AddIntrospection(this IServiceCollection services)
+    private static IServiceCollection AddIntrospection(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<IntrospectionRequest>, IntrospectionRequestAccessor>()
@@ -204,7 +255,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>, IntrospectionRequestProcessor>();
     }
 
-    internal static IServiceCollection AddRevocation(this IServiceCollection services)
+    private static IServiceCollection AddRevocation(IServiceCollection services)
     {
         return services
             .AddScoped<IRequestAccessor<RevocationRequest>, RevocationRequestAccessor>()
@@ -215,7 +266,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<RevocationValidatedRequest, Unit>, RevocationRequestProcessor>();
     }
 
-    internal static IServiceCollection AddToken(this IServiceCollection services)
+    private static IServiceCollection AddToken(IServiceCollection services)
     {
         services
             .AddScoped<IRequestAccessor<TokenRequest>, TokenRequestAccessor>()
@@ -238,5 +289,19 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>, ClientCredentialsRequestValidator>();
 
         return services;
+    }
+
+    private static IServiceCollection AddGrantManagement(IServiceCollection services)
+    {
+        return services
+            .AddScoped<IRequestAccessor<GrantManagementRequest>, GrantManagementRequestAccessor>()
+            .AddKeyedScoped<IEndpointHandler, GrantManagementRevokeEndpointHandler>("GrantManagementRevoke")
+            .AddKeyedScoped<IEndpointHandler, GrantManagementQueryEndpointHandler>("GrantManagementQuery")
+            .AddSingleton<IEndpointModule, GrantManagementEndpointModule>()
+            .AddScoped<IRequestHandler<GrantManagementRequest, Unit>, GrantManagementRevokeRequestHandler>()
+            .AddScoped<IRequestHandler<GrantManagementRequest, GrantResponse>, GrantManagementQueryRequestHandler>()
+            .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
+            .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
+            .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>, GrantManagementQueryRequestProcessor>();
     }
 }

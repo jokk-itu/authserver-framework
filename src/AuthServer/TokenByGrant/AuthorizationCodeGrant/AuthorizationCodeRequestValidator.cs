@@ -1,5 +1,4 @@
-﻿using AuthServer.Authentication;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
@@ -10,6 +9,7 @@ using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.RequestAccessors.Token;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +22,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
     private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly IClientRepository _clientRepository;
     private readonly ICachedClientStore _cachedEntityStore;
-    private readonly IConsentGrantRepository _consentGrantRepository;
+    private readonly IConsentRepository _consentGrantRepository;
 
     public AuthorizationCodeRequestValidator(
         AuthorizationDbContext identityContext,
@@ -30,7 +30,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         IClientAuthenticationService clientAuthenticationService,
         IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentGrantRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository)
     {
         _identityContext = identityContext;
         _authorizationCodeEncoder = authorizationCodeEncoder;
@@ -49,7 +49,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
 
         if (request.Resource.Count == 0)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         var authorizationCode = _authorizationCodeEncoder.DecodeAuthorizationCode(request.Code);
@@ -120,29 +120,31 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         var scope = authorizationCode.Scope;
 
         // Check scope again, as the authorized scope can change
-        if (cachedClient.Scopes.ExceptAny(scope))
+        if (scope.IsNotSubset(cachedClient.Scopes))
         {
             return TokenError.UnauthorizedForScope;
         }
 
         if (cachedClient.RequireConsent)
         {
-            var consentedScopes = await _consentGrantRepository.GetConsentedScope(subjectIdentifier, clientId, cancellationToken);
-            if (consentedScopes.Count == 0)
+            var grantConsentScopes = await _consentGrantRepository.GetGrantConsentedScopes(authorizationCode.AuthorizationGrantId, cancellationToken);
+            if (grantConsentScopes.Count == 0)
             {
                 return TokenError.ConsentRequired;
             }
-
-            if (scope.ExceptAny(consentedScopes))
+            
+            if (scope.SelectMany(_ => request.Resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
             {
                 return TokenError.ScopeExceedsConsentedScope;
             }
         }
-
-        var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, scope, cancellationToken);
-        if (!doesResourcesExist)
+        else
         {
-            return TokenError.InvalidTarget;
+            var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, scope, cancellationToken);
+            if (!doesResourcesExist)
+            {
+                return TokenError.InvalidResource;
+            }
         }
 
         return new AuthorizationCodeValidatedRequest

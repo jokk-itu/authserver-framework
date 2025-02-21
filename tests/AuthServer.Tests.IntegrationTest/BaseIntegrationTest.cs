@@ -1,9 +1,11 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Options;
+using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
 using AuthServer.Tests.IntegrationTest.EndpointBuilders;
 using Microsoft.AspNetCore.DataProtection;
@@ -29,6 +31,8 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     protected readonly IntrospectionEndpointBuilder IntrospectionEndpointBuilder;
     protected readonly RevocationEndpointBuilder RevocationEndpointBuilder;
     protected readonly UserinfoEndpointBuilder UserinfoEndpointBuilder;
+    protected readonly PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder;
+    protected readonly GrantManagementEndpointBuilder GrantManagementEndpointBuilder;
 
     protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, TestOutputHelper);
 
@@ -104,6 +108,18 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
             DiscoveryDocument,
             JwksDocument,
             TestOutputHelper);
+
+        PushedAuthorizationEndpointBuilder = new PushedAuthorizationEndpointBuilder(
+            GetHttpClient(),
+            DiscoveryDocument,
+            JwksDocument,
+            TestOutputHelper);
+
+        GrantManagementEndpointBuilder = new GrantManagementEndpointBuilder(
+            GetHttpClient(),
+            DiscoveryDocument,
+            JwksDocument,
+            TestOutputHelper);
     }
 
     protected HttpClient GetHttpClient() => _factory.CreateClient(new WebApplicationFactoryClientOptions
@@ -111,8 +127,40 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         AllowAutoRedirect = false
     });
 
-    protected string GetUserinfoScope() =>
-        ServiceProvider.GetRequiredService<AuthorizationDbContext>().Set<Scope>().Single(x => x.Name == ScopeConstants.UserInfo).Name;
+    protected async Task<string> CreateAuthorizationGrant(string clientId, IReadOnlyCollection<string> amr)
+    {
+        var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
+        var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
+
+        var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+        var grant = await authorizationGrantRepository.CreateAuthorizationGrant(
+            UserConstants.SubjectIdentifier,
+            clientId,
+            acr,
+            amr,
+            CancellationToken.None);
+
+        return grant.Id;
+    }
+
+    protected async Task UpdateAuthorizationGrant(string authorizationGrantId, IReadOnlyCollection<string> amr)
+    {
+        var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
+        var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
+
+        var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+        await authorizationGrantRepository.UpdateAuthorizationGrant(
+            authorizationGrantId,
+            acr,
+            amr,
+            CancellationToken.None);
+    }
+
+    protected async Task Consent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims)
+    {
+        var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
+        await consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, scopes, claims, CancellationToken.None);
+    }
 
     protected async Task<string> AddWeatherReadScope()
     {
@@ -149,9 +197,19 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
 
         var userinfoScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.UserInfo);
+        var grantManagementRevokeScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.GrantManagementRevoke);
+        var grantManagementQueryScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.GrantManagementQuery);
+
+        var openId = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
+        var email = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Email);
+        var address = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Address);
+        var phone = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Phone);
+        var profile = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Profile);
+        var offlineAccess = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OfflineAccess);
+
         var client = new Client("identity-provider", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
-            Scopes = [userinfoScope],
+            Scopes = [openId, email, address, phone, profile, offlineAccess, userinfoScope, grantManagementRevokeScope, grantManagementQueryScope],
             ClientUri = "https://localhost:7254"
         };
 

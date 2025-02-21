@@ -48,9 +48,13 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
             return AuthenticateResult.NoResult();
         }
 
-        var token = parsedHeader!.Parameter!;
-
-        if (parsedHeader.Scheme != "Bearer")
+        if (parsedHeader!.Scheme != "Bearer")
+        {
+            return AuthenticateResult.NoResult();
+        }
+        
+        var token = parsedHeader.Parameter;
+        if (string.IsNullOrEmpty(token))
         {
             return AuthenticateResult.NoResult();
         }
@@ -133,6 +137,11 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
         {
             Logger.LogDebug("Token {Token} does not exist", token);
             return (null, AuthenticateResult.NoResult());
+        }
+
+        if (!query.Token.Audience.Split(' ').Contains(_discoveryDocumentOptions.CurrentValue.Issuer))
+        {
+            return (null, AuthenticateResult.Fail("Token does not have AuthServer has audience"));
         }
 
         if (query.Token.RevokedAt != null)

@@ -24,10 +24,13 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
         var responseType = body.GetValue(Parameter.ResponseType);
         var nonce = body.GetValue(Parameter.Nonce);
         var state = body.GetValue(Parameter.State);
+        var grantId = body.GetValue(Parameter.GrantId);
+        var grantManagementAction = body.GetValue(Parameter.GrantManagementAction);
         var requestObject = body.GetValue(Parameter.Request);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
+        var resource = body.GetSpaceDelimitedValue(Parameter.Resource);
 
         var clientSecretBasic = httpRequest.GetClientSecretBasic();
         var clientSecretPost = body.GetClientSecretPost();
@@ -52,9 +55,12 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
             MaxAge = maxAge,
             State = state,
             ResponseMode = responseMode,
+            GrantId = grantId,
+            GrantManagementAction = grantManagementAction,
             RequestObject = requestObject,
             Scope = scope,
             AcrValues = acrValues,
+            Resource = resource,
             ClientAuthentications = clientAuthentications.AsReadOnly()
         };
     }

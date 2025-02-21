@@ -540,7 +540,41 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_InvalidMaxAge_ExpectInvalidMaxAge()
+    public async Task Validate_EmptyResource_ExpectInvalidTarget()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidResource, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidResource_ExpectInvalidTarget()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -563,6 +597,44 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = ["invalid_resource"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidResource, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidMaxAge_ExpectInvalidMaxAge()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             MaxAge = "invalid_max_age"
         };
 
@@ -586,6 +658,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var request = new PushedAuthorizationRequest
         {
             ClientAuthentications =
@@ -598,6 +672,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             IdTokenHint = "invalid_token"
         };
 
@@ -621,6 +696,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var request = new PushedAuthorizationRequest
         {
             ClientAuthentications =
@@ -633,6 +710,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             Prompt = "invalid_prompt"
         };
 
@@ -657,6 +735,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var request = new PushedAuthorizationRequest
         {
             ClientAuthentications =
@@ -669,6 +749,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
             AcrValues = ["invalid_acr_value"]
         };
 
@@ -678,6 +759,96 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         // Arrange
         Assert.False(processResult.IsSuccess);
         Assert.Equal(PushedAuthorizationError.InvalidAcrValues, processResult.Error);
+    }
+
+    [Theory]
+    [InlineData("", null)]
+    [InlineData(null, null)]
+    [InlineData("invalid_grant_management_action", null)]
+    [InlineData("", "grant_id")]
+    [InlineData(null, "grant_id")]
+    [InlineData(GrantManagementActionConstants.Create, "grant_id")]
+    [InlineData(GrantManagementActionConstants.Replace, "")]
+    [InlineData(GrantManagementActionConstants.Replace, null)]
+    [InlineData(GrantManagementActionConstants.Merge, "")]
+    [InlineData(GrantManagementActionConstants.Merge, null)]
+    public async Task Validate_GrantManagementActionWithGrantId_ExpectInvalidGrantManagement(string? grantManagementAction, string? grantId)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        DiscoveryDocument.GrantManagementActionRequired = true;
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            GrantManagementAction = grantManagementAction,
+            GrantId = grantId
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidGrantManagement, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidGrantId_ExpectInvalidGrantId()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            GrantManagementAction = GrantManagementActionConstants.Replace,
+            GrantId = "invalid_grant_id"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidGrantId, processResult.Error);
     }
 
     [Fact]
@@ -692,6 +863,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var request = new PushedAuthorizationRequest
         {
             ClientAuthentications =
@@ -703,7 +876,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             Nonce = Guid.NewGuid().ToString(),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
         };
 
         // Act
@@ -743,6 +917,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         const string requestObject = "requestObject";
         var authorizeRequestDto = new AuthorizeRequestDto
         {
@@ -752,7 +928,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
         };
 
         secureRequestService
@@ -774,6 +951,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Arrange
+        secureRequestService.Verify();
+
         Assert.True(processResult.IsSuccess);
         Assert.Null(processResult.Value!.LoginHint);
         Assert.Null(processResult.Value!.IdTokenHint);
@@ -801,5 +980,17 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         client.SetSecret(hashedSecret);
         await AddEntity(client);
         return client;
+    }
+
+    private async Task<Client> GetResource()
+    {
+        var resource = new Client("weather-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        resource.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        await AddEntity(resource);
+
+        return resource;
     }
 }

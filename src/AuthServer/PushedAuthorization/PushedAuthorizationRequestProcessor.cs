@@ -1,7 +1,6 @@
 ﻿using AuthServer.Authorization;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.PushedAuthorization;
@@ -28,11 +27,14 @@ internal class PushedAuthorizationRequestProcessor : IRequestProcessor<PushedAut
             CodeChallengeMethod = request.CodeChallengeMethod,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
+            Resource = request.Resource,
             ClientId = request.ClientId,
             MaxAge = request.MaxAge,
             Nonce = request.Nonce,
             State = request.State,
-            RedirectUri = request.RedirectUri
+            RedirectUri = request.RedirectUri,
+            GrantId = request.GrantId,
+            GrantManagementAction = request.GrantManagementAction
         };
         var authorizeMessage = await _clientRepository.AddAuthorizeMessage(authorizeDto, cancellationToken);
 

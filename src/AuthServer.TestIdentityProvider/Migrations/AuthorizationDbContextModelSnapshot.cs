@@ -239,6 +239,37 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.ToTable("AuthorizationGrant");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantConsent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorizationGrantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ConsentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ConsentType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorizationGrantId");
+
+                    b.HasIndex("ConsentId");
+
+                    b.ToTable("AuthorizationGrantConsent");
+
+                    b.HasDiscriminator<int>("ConsentType");
+
+                    b.UseTphMappingStrategy();
+                });
+
             modelBuilder.Entity("AuthServer.Entities.AuthorizeMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -440,7 +471,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Jwks")
-                        .HasMaxLength(2147483647)
+                        .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("JwksExpiration")
@@ -530,6 +561,8 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClientUri");
+
                     b.HasIndex("SectorIdentifierId");
 
                     b.ToTable("Client");
@@ -553,7 +586,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.ToTable("ClientAuthenticationContextReference");
                 });
 
-            modelBuilder.Entity("AuthServer.Entities.ConsentGrant", b =>
+            modelBuilder.Entity("AuthServer.Entities.Consent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -565,6 +598,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ConsentType")
+                        .HasColumnType("int");
+
                     b.Property<string>("SubjectIdentifierId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -575,7 +611,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
                     b.HasIndex("SubjectIdentifierId");
 
-                    b.ToTable("ConsentGrant");
+                    b.ToTable("Consent");
+
+                    b.HasDiscriminator<int>("ConsentType");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("AuthServer.Entities.Contact", b =>
@@ -829,6 +869,16 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 8,
                             Name = "authserver:register"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Name = "grant_management_query"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Name = "grant_management_revoke"
                         });
                 });
 
@@ -999,34 +1049,47 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.ToTable("ClientScope");
                 });
 
-            modelBuilder.Entity("ConsentGrantClaim", b =>
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantClaimConsent", b =>
                 {
+                    b.HasBaseType("AuthServer.Entities.AuthorizationGrantConsent");
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantScopeConsent", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.AuthorizationGrantConsent");
+
+                    b.Property<string>("Resource")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.ClaimConsent", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.Consent");
+
                     b.Property<int>("ClaimId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ConsentGrantId")
-                        .HasColumnType("int");
+                    b.HasIndex("ClaimId");
 
-                    b.HasKey("ClaimId", "ConsentGrantId");
-
-                    b.HasIndex("ConsentGrantId");
-
-                    b.ToTable("ConsentGrantClaim");
+                    b.HasDiscriminator().HasValue(0);
                 });
 
-            modelBuilder.Entity("ConsentGrantScope", b =>
+            modelBuilder.Entity("AuthServer.Entities.ScopeConsent", b =>
                 {
-                    b.Property<int>("ConsentGrantId")
-                        .HasColumnType("int");
+                    b.HasBaseType("AuthServer.Entities.Consent");
 
                     b.Property<int>("ScopeId")
                         .HasColumnType("int");
 
-                    b.HasKey("ConsentGrantId", "ScopeId");
-
                     b.HasIndex("ScopeId");
 
-                    b.ToTable("ConsentGrantScope");
+                    b.HasDiscriminator().HasValue(1);
                 });
 
             modelBuilder.Entity("AuthServer.Entities.ClientToken", b =>
@@ -1117,6 +1180,25 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("Session");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantConsent", b =>
+                {
+                    b.HasOne("AuthServer.Entities.AuthorizationGrant", "AuthorizationGrant")
+                        .WithMany("AuthorizationGrantConsents")
+                        .HasForeignKey("AuthorizationGrantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AuthServer.Entities.Consent", "Consent")
+                        .WithMany("AuthorizationGrantConsents")
+                        .HasForeignKey("ConsentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorizationGrant");
+
+                    b.Navigation("Consent");
+                });
+
             modelBuilder.Entity("AuthServer.Entities.AuthorizeMessage", b =>
                 {
                     b.HasOne("AuthServer.Entities.Client", "Client")
@@ -1156,16 +1238,16 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("AuthServer.Entities.ConsentGrant", b =>
+            modelBuilder.Entity("AuthServer.Entities.Consent", b =>
                 {
                     b.HasOne("AuthServer.Entities.Client", "Client")
-                        .WithMany("ConsentGrants")
+                        .WithMany("Consents")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("AuthServer.Entities.SubjectIdentifier", "SubjectIdentifier")
-                        .WithMany("ConsentGrants")
+                        .WithMany("Consents")
                         .HasForeignKey("SubjectIdentifierId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
@@ -1301,34 +1383,26 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ConsentGrantClaim", b =>
+            modelBuilder.Entity("AuthServer.Entities.ClaimConsent", b =>
                 {
-                    b.HasOne("AuthServer.Entities.Claim", null)
-                        .WithMany()
+                    b.HasOne("AuthServer.Entities.Claim", "Claim")
+                        .WithMany("ClaimConsents")
                         .HasForeignKey("ClaimId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("AuthServer.Entities.ConsentGrant", null)
-                        .WithMany()
-                        .HasForeignKey("ConsentGrantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Claim");
                 });
 
-            modelBuilder.Entity("ConsentGrantScope", b =>
+            modelBuilder.Entity("AuthServer.Entities.ScopeConsent", b =>
                 {
-                    b.HasOne("AuthServer.Entities.ConsentGrant", null)
-                        .WithMany()
-                        .HasForeignKey("ConsentGrantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("AuthServer.Entities.Scope", "Scope")
+                        .WithMany("ScopeConsents")
+                        .HasForeignKey("ScopeId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("AuthServer.Entities.Scope", null)
-                        .WithMany()
-                        .HasForeignKey("ScopeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Scope");
                 });
 
             modelBuilder.Entity("AuthServer.Entities.ClientToken", b =>
@@ -1364,9 +1438,16 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 {
                     b.Navigation("AuthorizationCodes");
 
+                    b.Navigation("AuthorizationGrantConsents");
+
                     b.Navigation("GrantTokens");
 
                     b.Navigation("Nonces");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.Claim", b =>
+                {
+                    b.Navigation("ClaimConsents");
                 });
 
             modelBuilder.Entity("AuthServer.Entities.Client", b =>
@@ -1379,7 +1460,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
                     b.Navigation("ClientTokens");
 
-                    b.Navigation("ConsentGrants");
+                    b.Navigation("Consents");
 
                     b.Navigation("Contacts");
 
@@ -1388,6 +1469,16 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("RedirectUris");
 
                     b.Navigation("RequestUris");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.Consent", b =>
+                {
+                    b.Navigation("AuthorizationGrantConsents");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.Scope", b =>
+                {
+                    b.Navigation("ScopeConsents");
                 });
 
             modelBuilder.Entity("AuthServer.Entities.SectorIdentifier", b =>
@@ -1402,7 +1493,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
             modelBuilder.Entity("AuthServer.Entities.SubjectIdentifier", b =>
                 {
-                    b.Navigation("ConsentGrants");
+                    b.Navigation("Consents");
 
                     b.Navigation("Sessions");
                 });

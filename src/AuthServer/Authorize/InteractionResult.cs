@@ -13,6 +13,7 @@ internal class InteractionResult
     public static readonly InteractionResult SelectAccountRedirectResult = new(AuthorizeError.AccountSelectionRequired, true);
 
     public static readonly InteractionResult UnmetAuthenticationRequirementResult = new(AuthorizeError.UnmetAuthenticationRequirement, false);
+    public static readonly InteractionResult InvalidGrantId = new(AuthorizeError.InvalidGrantId, false);
 
     private InteractionResult(ProcessError error, bool redirectToInteraction)
     {
@@ -20,20 +21,22 @@ internal class InteractionResult
         RedirectToInteraction = redirectToInteraction;
     }
 
-    private InteractionResult(string subjectIdentifier)
+    private InteractionResult(string subjectIdentifier, string authorizationGrantId)
     {
         SubjectIdentifier = subjectIdentifier;
+        AuthorizationGrantId = authorizationGrantId;
     }
 
     public ProcessError? Error { get; private init; }
     public bool RedirectToInteraction { get; private init; }
     public string? SubjectIdentifier { get; private init; }
+    public string? AuthorizationGrantId { get; private init; }
 
     public bool IsSuccessful => Error is null && !string.IsNullOrEmpty(SubjectIdentifier);
 
-    public static InteractionResult Success(string subjectIdentifier)
+    public static InteractionResult Success(string subjectIdentifier, string authorizationGrantId)
     {
-        return new InteractionResult(subjectIdentifier);
+        return new InteractionResult(subjectIdentifier, authorizationGrantId);
     }
 
     public static InteractionResult LoginResult(string? prompt) => prompt == PromptConstants.None ? LoginErrorResult : LoginRedirectResult;

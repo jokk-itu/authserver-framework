@@ -1,6 +1,5 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
-using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
@@ -181,15 +180,20 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         var nonce = new Nonce(value, value.Sha256(), authorizationGrant);
         authorizationGrant.Nonces.Add(nonce);
 
-        await AddEntity(authorizationGrant);
-
         var nameClaim = await IdentityContext.Set<Claim>().SingleAsync(x => x.Name == ClaimNameConstants.Name);
-        var consentGrant = new ConsentGrant(subjectIdentifier, client);
-        consentGrant.ConsentedClaims.Add(nameClaim);
-        consentGrant.ConsentedScopes.Add(openIdScope);
-        consentGrant.ConsentedScopes.Add(profileScope);
+        var nameClaimConsent = new ClaimConsent(subjectIdentifier, client, nameClaim);
+        var openIdScopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        var profileScopeConsent = new ScopeConsent(subjectIdentifier, client, profileScope);
 
-        await AddEntity(consentGrant);
+        var authorizationGrantNameClaimConsent = new AuthorizationGrantClaimConsent(nameClaimConsent, authorizationGrant);
+        var authorizationGrantOpenIdScopeConsent = new AuthorizationGrantScopeConsent(openIdScopeConsent, authorizationGrant, "https://weather.authserver.dk");
+        var authorizationGrantProfileScopeConsent = new AuthorizationGrantScopeConsent(profileScopeConsent, authorizationGrant, "https://weather.authserver.dk");
+
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantNameClaimConsent);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantOpenIdScopeConsent);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantProfileScopeConsent);
+
+        await AddEntity(authorizationGrant);
 
         return authorizationGrant;
     }
@@ -229,15 +233,20 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         var nonce = new Nonce(value, value.Sha256(), authorizationGrant);
         authorizationGrant.Nonces.Add(nonce);
 
-        await AddEntity(authorizationGrant);
-
         var nameClaim = await IdentityContext.Set<Claim>().SingleAsync(x => x.Name == ClaimNameConstants.Name);
-        var consentGrant = new ConsentGrant(subjectIdentifier, client);
-        consentGrant.ConsentedClaims.Add(nameClaim);
-        consentGrant.ConsentedScopes.Add(openIdScope);
-        consentGrant.ConsentedScopes.Add(profileScope);
+        var nameClaimConsent = new ClaimConsent(subjectIdentifier, client, nameClaim);
+        var openIdScopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        var profileScopeConsent = new ScopeConsent(subjectIdentifier, client, profileScope);
 
-        await AddEntity(consentGrant);
+        var authorizationGrantNameClaimConsent = new AuthorizationGrantClaimConsent(nameClaimConsent, authorizationGrant);
+        var authorizationGrantOpenIdScopeConsent = new AuthorizationGrantScopeConsent(openIdScopeConsent, authorizationGrant, "https://weather.authserver.dk");
+        var authorizationGrantProfileScopeConsent = new AuthorizationGrantScopeConsent(profileScopeConsent, authorizationGrant, "https://weather.authserver.dk");
+
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantNameClaimConsent);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantOpenIdScopeConsent);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantProfileScopeConsent);
+
+        await AddEntity(authorizationGrant);
 
         return authorizationGrant;
     }

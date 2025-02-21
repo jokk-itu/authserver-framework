@@ -13,6 +13,7 @@ using AuthServer.Enums;
 using AuthServer.Repositories.Abstractions;
 using Xunit.Abstractions;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Extensions;
 
 namespace AuthServer.Tests.UnitTest.Authorization;
 
@@ -39,30 +40,35 @@ public class SecureRequestServiceTest : BaseUnitTest
     {
         // Arrange
         const string token = "invalid_token";
-        const string clientId = "clientId";
         var tokenDecoderMock = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
-            tokenDecoderMock
-                .Setup(x => x.Validate(
-                    token,
-                    It.Is<ClientIssuedTokenDecodeArguments>(
-                        y =>
-                            y.ValidateLifetime &&
-                            !y.Algorithms.Except(DiscoveryDocument.RequestObjectSigningAlgValuesSupported).Any() &&
-                            y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
-                            y.ClientId == clientId &&
-                            y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
-                    CancellationToken.None))
-                .ReturnsAsync((JsonWebToken?)null)
-                .Verifiable();
-
             services.AddScopedMock(tokenDecoderMock);
         });
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequestObjectSigningAlg = SigningAlg.RsaSha256
+        };
+        await AddEntity(client);
+
+        tokenDecoderMock
+            .Setup(x => x.Validate(
+                token,
+                It.Is<ClientIssuedTokenDecodeArguments>(
+                    y =>
+                        y.ValidateLifetime &&
+                        y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
+                        y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
+                        y.ClientId == client.Id &&
+                        y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
+                CancellationToken.None))
+            .ReturnsAsync((JsonWebToken?)null)
+            .Verifiable();
+
         // Act
-        var requestObject = await authorizeRequestParameterService.GetRequestByObject(token, clientId, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByObject(token, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
 
         // Assert
         Assert.Null(requestObject);
@@ -79,6 +85,12 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddScopedMock(tokenDecoderMock);
         });
 
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequestObjectSigningAlg = SigningAlg.RsaSha256
+        };
+        await AddEntity(client);
+
         const string value = "value";
         var requestToken = GetRequestObjectToken(value);
 
@@ -88,9 +100,9 @@ public class SecureRequestServiceTest : BaseUnitTest
                 It.Is<ClientIssuedTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
-                        !y.Algorithms.Except(DiscoveryDocument.RequestObjectSigningAlgValuesSupported).Any() &&
+                        y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
                         y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
-                        y.ClientId == value &&
+                        y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
             .ReturnsAsync(new JsonWebToken(requestToken))
@@ -99,7 +111,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
         // Act
-        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, value, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -120,6 +132,8 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
         Assert.Equal(value, requestObject.AcrValues.Single());
+        Assert.Single(requestObject.Resource);
+        Assert.Equal(value, requestObject.Resource.Single());
 
         tokenDecoderMock.Verify();
     }
@@ -134,7 +148,12 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddScopedMock(tokenDecoderMock);
         });
 
-        const string clientId = "clientId";
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequestObjectSigningAlg = SigningAlg.RsaSha256,
+            RequestObjectEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256
+        };
+        await AddEntity(client);
         var requestToken = GetRequestObjectToken();
 
         tokenDecoderMock
@@ -143,9 +162,11 @@ public class SecureRequestServiceTest : BaseUnitTest
                 It.Is<ClientIssuedTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
-                        !y.Algorithms.Except(DiscoveryDocument.RequestObjectSigningAlgValuesSupported).Any() &&
+                        y.Algorithms.Count == 2 &&
+                        y.Algorithms.Contains(SigningAlg.RsaSha256.GetDescription()) &&
+                        y.Algorithms.Contains(EncryptionEnc.Aes128CbcHmacSha256.GetDescription()) &&
                         y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
-                        y.ClientId == clientId &&
+                        y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
             .ReturnsAsync(new JsonWebToken(requestToken))
@@ -154,7 +175,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
         // Act
-        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, clientId, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -173,6 +194,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Null(requestObject.State);
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
+        Assert.Empty(requestObject.Resource);
 
         tokenDecoderMock.Verify();
     }
@@ -194,9 +216,15 @@ public class SecureRequestServiceTest : BaseUnitTest
         });
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
-        // Act
         var requestUri = new Uri($"https://demo.authserver.dk/request-object/{Guid.NewGuid()}");
-        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, "clientId", ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequestObjectSigningAlg = SigningAlg.RsaSha256
+        };
+        await AddEntity(client);
+
+        // Act
+        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
 
         // Assert
         Assert.Null(requestObject);
@@ -215,6 +243,12 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddSingletonMock(httpClientFactory);
         });
 
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequestObjectSigningAlg = SigningAlg.RsaSha256
+        };
+        await AddEntity(client);
+
         const string value = "value";
         var requestToken = GetRequestObjectToken(value);
 
@@ -224,9 +258,9 @@ public class SecureRequestServiceTest : BaseUnitTest
                 It.Is<ClientIssuedTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
-                        !y.Algorithms.Except(DiscoveryDocument.RequestObjectSigningAlgValuesSupported).Any() &&
+                        y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
                         y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
-                        y.ClientId == value &&
+                        y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
             .ReturnsAsync(new JsonWebToken(requestToken))
@@ -242,7 +276,7 @@ public class SecureRequestServiceTest : BaseUnitTest
 
         // Act
         var requestUri = new Uri($"https://demo.authserver.dk/request-object/{Guid.NewGuid()}");
-        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, value, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -263,6 +297,8 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
         Assert.Equal(value, requestObject.AcrValues.Single());
+        Assert.Single(requestObject.Resource);
+        Assert.Equal(value, requestObject.Resource.Single());
 
         tokenDecoderMock.Verify();
     }
@@ -279,7 +315,12 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddSingletonMock(httpClientFactory);
         });
 
-        const string clientId = "clientId";
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        {
+            RequestObjectSigningAlg = SigningAlg.RsaSha256
+        };
+        await AddEntity(client);
+
         var requestToken = GetRequestObjectToken();
 
         tokenDecoderMock
@@ -288,9 +329,9 @@ public class SecureRequestServiceTest : BaseUnitTest
                 It.Is<ClientIssuedTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
-                        !y.Algorithms.Except(DiscoveryDocument.RequestObjectSigningAlgValuesSupported).Any() &&
+                        y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
                         y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
-                        y.ClientId == clientId &&
+                        y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
             .ReturnsAsync(new JsonWebToken(requestToken))
@@ -306,7 +347,7 @@ public class SecureRequestServiceTest : BaseUnitTest
 
         // Act
         var requestUri = new Uri($"https://demo.authserver.dk/request-object/{Guid.NewGuid()}");
-        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, clientId, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -325,6 +366,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Null(requestObject.State);
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
+        Assert.Empty(requestObject.Resource);
 
         tokenDecoderMock.Verify();
     }
@@ -400,6 +442,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             { Parameter.State, value },
             { Parameter.Scope, value },
             { Parameter.AcrValues, value },
+            { Parameter.Resource, new List<string> { value } }
         };
         var requestToken = JwtBuilder.GetRequestObjectJwt(claims, value, jwks.PrivateJwks, ClientTokenAudience.AuthorizeEndpoint);
 

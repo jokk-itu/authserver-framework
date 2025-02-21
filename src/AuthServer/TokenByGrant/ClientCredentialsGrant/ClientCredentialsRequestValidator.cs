@@ -1,5 +1,4 @@
-﻿using AuthServer.Authentication;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
@@ -40,7 +39,7 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
 
         if (request.Resource.Count == 0)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         var isClientAuthenticationMethodInvalid = request.ClientAuthentications.Count != 1;
@@ -65,7 +64,7 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
             return TokenError.UnauthorizedForGrantType;
         }
 
-        if (request.Scope.ExceptAny(cachedClient.Scopes))
+        if (request.Scope.IsNotSubset(cachedClient.Scopes))
         {
             return TokenError.UnauthorizedForScope;
         }
@@ -73,7 +72,7 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
         var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, request.Scope, cancellationToken);
         if (!doesResourcesExist)
         {
-            return TokenError.InvalidTarget;
+            return TokenError.InvalidResource;
         }
 
         return new ClientCredentialsValidatedRequest

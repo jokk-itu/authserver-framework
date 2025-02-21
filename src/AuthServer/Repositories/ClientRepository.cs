@@ -2,6 +2,7 @@
 using AuthServer.Authorization;
 using AuthServer.Core;
 using AuthServer.Entities;
+using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,31 @@ internal class ClientRepository : IClientRepository
         AuthorizationDbContext authorizationDbContext)
     {
         _authorizationDbContext = authorizationDbContext;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetResources(IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
+    {
+        return await _authorizationDbContext
+            .Set<Client>()
+            .Where(x => x.Scopes.AsQueryable().Any(s => scopes.Contains(s.Name)))
+            .Where(x => x.ClientUri != null)
+            .Select(x => x.ClientUri)
+            .OfType<string>()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetAuthorizedClaims(string clientId, CancellationToken cancellationToken)
+    {
+        var scopes = await _authorizationDbContext
+            .Set<Client>()
+            .Where(x => x.Id == clientId)
+            .SelectMany(x => x.Scopes)
+            .Select(x => x.Name)
+            .ToListAsync(cancellationToken);
+
+        return ClaimsHelper.MapToClaims(scopes).ToList();
     }
 
     /// <inheritdoc/>

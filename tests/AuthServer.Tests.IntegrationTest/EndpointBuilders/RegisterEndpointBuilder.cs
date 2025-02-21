@@ -30,6 +30,12 @@ public class RegisterEndpointBuilder : EndpointBuilder
         return this;
     }
 
+    public RegisterEndpointBuilder WithRequestUriExpiration(int expiration)
+    {
+        _parameters.Add(Parameter.RequestUriExpiration, expiration);
+        return this;
+    }
+
     public RegisterEndpointBuilder WithSectorIdentifierUri(string sectorIdentifierUri)
     {
         _parameters.Add(Parameter.SectorIdentifierUri, sectorIdentifierUri);

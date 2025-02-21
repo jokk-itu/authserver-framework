@@ -44,6 +44,12 @@ public class DiscoveryDocument
     [JsonPropertyName("pushed_authorization_request_endpoint")]
     public string PushedAuthorizationRequestEndpoint => $"{Issuer}/connect/par";
 
+    [JsonPropertyName("grant_management_endpoint")]
+    public string GrantManagementEndpoint => $"{Issuer}/connect/grants";
+    
+    [JsonPropertyName("protected_resources")]
+    public ICollection<string> ProtectedResources { get; set; } = [];
+
     [JsonPropertyName("claims_support")]
     public ICollection<string> ClaimsSupported { get; set; } = [];
 
@@ -145,4 +151,17 @@ public class DiscoveryDocument
 
     [JsonPropertyName("require_pushed_authorization_requests")]
     public bool RequirePushedAuthorizationRequests { get; set; }
+    
+    [JsonPropertyName("grant_management_action_required")]
+    public bool GrantManagementActionRequired { get; set; }
+    
+    [JsonPropertyName("grant_management_actions_supported")]
+    public ICollection<string> GrantManagementActionsSupported =>
+    [
+        GrantManagementActionConstants.Revoke,
+        GrantManagementActionConstants.Query,
+        GrantManagementActionConstants.Create,
+        GrantManagementActionConstants.Replace,
+        GrantManagementActionConstants.Merge
+    ];
 }

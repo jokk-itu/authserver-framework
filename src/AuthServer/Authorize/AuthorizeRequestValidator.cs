@@ -1,4 +1,4 @@
-﻿using AuthServer.Authorization;
+using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
@@ -29,7 +29,9 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         ISecureRequestService secureRequestService,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         INonceRepository nonceRepository,
-        IClientRepository clientRepository) : base(nonceRepository, tokenDecoder, discoveryDocumentOptions)
+        IClientRepository clientRepository,
+        IAuthorizationGrantRepository authorizationGrantRepository)
+        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;
@@ -57,19 +59,23 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         {
             return AuthorizeError.InvalidRequestAndRequestUri;
         }
-        else if (isRequestUriEmpty && isRequestObjectEmpty && cachedClient.RequireSignedRequestObject)
+
+        if (isRequestUriEmpty && isRequestObjectEmpty && cachedClient.RequireSignedRequestObject)
         {
             return AuthorizeError.RequestOrRequestUriRequiredAsRequestObject;
         }
-        else if (isRequestUriEmpty && cachedClient.RequirePushedAuthorizationRequests)
+
+        if (isRequestUriEmpty && cachedClient.RequirePushedAuthorizationRequests)
         {
             return AuthorizeError.RequestUriRequiredAsPushedAuthorizationRequest;
         }
-        else if (request.RequestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true)
+
+        if (request.RequestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true)
         {
             return await ValidateFromPushedAuthorization(request, cancellationToken);
         }
-        else if (!isRequestUriEmpty)
+
+        if (!isRequestUriEmpty)
         {
             var substitutedRequestUri = await SubstituteRequestUri(request, cachedClient, cancellationToken);
             if (substitutedRequestUri.IsSuccess)
@@ -214,6 +220,11 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.UnauthorizedScope;
         }
 
+        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
+        {
+            return AuthorizeError.InvalidResource;
+        }
+
         if (!HasValidMaxAge(request.MaxAge))
         {
             return AuthorizeError.InvalidMaxAge;
@@ -232,6 +243,16 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         if (!HasValidAcrValues(request.AcrValues))
         {
             return AuthorizeError.InvalidAcrValues;
+        }
+
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        {
+            return AuthorizeError.InvalidGrantManagement;
+        }
+
+        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
+        {
+            return AuthorizeError.InvalidGrantId;
         }
 
         return null;
@@ -278,11 +299,13 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
 
         return new AuthorizeValidatedRequest
         {
-            SubjectIdentifier = interactionResult.SubjectIdentifier!,
+            AuthorizationGrantId = interactionResult.AuthorizationGrantId!,
+            GrantManagementAction = request.GrantManagementAction,
             ResponseMode = request.ResponseMode,
             CodeChallenge = request.CodeChallenge!,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
+            Resource = request.Resource,
             ClientId = request.ClientId!,
             Nonce = request.Nonce!,
             RedirectUri = request.RedirectUri,

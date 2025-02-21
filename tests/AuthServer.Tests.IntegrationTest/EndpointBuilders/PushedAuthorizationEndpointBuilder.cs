@@ -1,4 +1,5 @@
-﻿using AuthServer.Constants;
+﻿using System.Net;
+using AuthServer.Constants;
 using AuthServer.Options;
 using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
@@ -7,8 +8,8 @@ using AuthServer.TokenDecoders;
 using Xunit.Abstractions;
 using AuthServer.Enums;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Web;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
@@ -56,15 +57,27 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         return this;
     }
 
+    public PushedAuthorizationEndpointBuilder WithClientSecret(string clientSecret)
+    {
+        _parameters.Add(new(Parameter.ClientSecret, clientSecret));
+        return this;
+    }
+
     public PushedAuthorizationEndpointBuilder WithPrompt(string prompt)
     {
         _parameters.Add(new(Parameter.Prompt, prompt));
         return this;
     }
 
-    public PushedAuthorizationEndpointBuilder WithScope(IReadOnlyCollection<string> scope)
+    public PushedAuthorizationEndpointBuilder WithScope(IReadOnlyCollection<string> scopes)
     {
-        _parameters.Add(new(Parameter.Scope, string.Join(' ', scope)));
+        _parameters.Add(new(Parameter.Scope, string.Join(' ', scopes)));
+        return this;
+    }
+
+    public PushedAuthorizationEndpointBuilder WithResource(IReadOnlyCollection<string> resources)
+    {
+        resources.ToList().ForEach(x => _parameters.Add(new(Parameter.Resource, x)));
         return this;
     }
 
@@ -105,7 +118,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    internal async Task<PostPushedAuthorizationResponse> Post()
+    internal async Task<PushedAuthorizationResponse> Post()
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/par");
 
@@ -115,10 +128,20 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         {
             var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
             var clientSecret = _parameters.Single(x => x.Key == Parameter.ClientSecret).Value;
-
-            OverwriteForRequestObject();
-
             _parameters.RemoveAll(x => x.Key is Parameter.ClientId or Parameter.ClientSecret);
+
+            if (_isProtectedWithRequestParameter)
+            {
+                var claims = _parameters
+                    .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
+                    .ToDictionary();
+
+                var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+
+                _parameters.Clear();
+                _parameters.Add(new(Parameter.Request, requestObject));
+                _parameters.Add(new(Parameter.ClientId, clientId));
+            }
 
             var encodedClientId = HttpUtility.UrlEncode(clientId);
             var encodedClientSecret = HttpUtility.UrlEncode(clientSecret);
@@ -126,21 +149,67 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
             var convertedHeaderValue = Convert.ToBase64String(Encoding.UTF8.GetBytes(headerValue));
             httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", convertedHeaderValue);
         }
-        else
+        else if (_tokenEndpointAuthMethod == TokenEndpointAuthMethod.ClientSecretPost && _isProtectedWithRequestParameter)
         {
-            OverwriteForRequestObject();
+            var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
+            var clientSecret = _parameters.Single(x => x.Key == Parameter.ClientSecret).Value;
+            _parameters.RemoveAll(x => x.Key is Parameter.ClientId or Parameter.ClientSecret);
+
+            var claims = _parameters
+                .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
+                .ToDictionary();
+
+            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+
+            _parameters.Clear();
+            _parameters.Add(new(Parameter.Request, requestObject));
+            _parameters.Add(new(Parameter.ClientId, clientId));
+            _parameters.Add(new(Parameter.ClientSecret, clientSecret));
+        }
+        else if (_tokenEndpointAuthMethod == TokenEndpointAuthMethod.PrivateKeyJwt && _isProtectedWithRequestParameter)
+        {
+            var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
+            var clientAssertion = _parameters.Single(x => x.Key == Parameter.ClientAssertion).Value;
+            var clientAssertionType = _parameters.Single(x => x.Key == Parameter.ClientAssertionType).Value;
+            _parameters.RemoveAll(x => x.Key is Parameter.ClientId or Parameter.ClientAssertion or Parameter.ClientAssertionType);
+
+            var claims = _parameters
+                .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
+                .ToDictionary();
+
+            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+
+            _parameters.Clear();
+            _parameters.Add(new(Parameter.Request, requestObject));
+            _parameters.Add(new(Parameter.ClientId, clientId));
+            _parameters.Add(new(Parameter.ClientAssertion, clientAssertion));
+            _parameters.Add(new(Parameter.ClientAssertionType, clientAssertionType));
         }
 
         httpRequestMessage.Content = new FormUrlEncodedContent(_parameters);
         var httpResponseMessage = await HttpClient.SendAsync(httpRequestMessage);
 
         TestOutputHelper.WriteLine(
-            "Received Token response {0}, Content: {1}",
+            "Received PushedAuthorization response {0}, Content: {1}",
             httpResponseMessage.StatusCode,
             await httpResponseMessage.Content.ReadAsStringAsync());
+        
+        var content = await httpResponseMessage.Content.ReadAsStringAsync();
+        if (httpResponseMessage.StatusCode == HttpStatusCode.Created)
+        {
+            return new PushedAuthorizationResponse
+            {
+                StatusCode = HttpStatusCode.Created,
+                Response = JsonSerializer.Deserialize<PostPushedAuthorizationResponse>(content),
+                Location = httpResponseMessage.Headers.Location
+            };
+        }
 
-        httpResponseMessage.EnsureSuccessStatusCode();
-        return (await httpResponseMessage.Content.ReadFromJsonAsync<PostPushedAuthorizationResponse>())!;
+        return new PushedAuthorizationResponse
+        {
+            StatusCode = httpResponseMessage.StatusCode,
+            Error = JsonSerializer.Deserialize<OAuthError>(content)
+        };
     }
 
     private void SetDefaultValues()
@@ -176,22 +245,11 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         }
     }
 
-    private void OverwriteForRequestObject()
+    internal class PushedAuthorizationResponse
     {
-        if (!_isProtectedWithRequestParameter)
-        {
-            return;
-        }
-
-        var clientId = _parameters.Single(x => x.Key == Parameter.ClientId).Value;
-        var claims = _parameters
-            .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
-            .ToDictionary();
-
-        var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
-
-        _parameters.Clear();
-        _parameters.Add(new(Parameter.Request, requestObject));
-        _parameters.Add(new(Parameter.ClientId, clientId));
+        public HttpStatusCode StatusCode { get; set; }
+        public OAuthError? Error { get; set; }
+        public PostPushedAuthorizationResponse? Response { get; set; }
+        public Uri? Location { get; set; }
     }
 }

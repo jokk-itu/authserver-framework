@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using System.Web;
-using AuthServer.Authorize;
-using AuthServer.Authorize.Abstractions;
+using AuthServer.Authorize.UserInterface.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Tests.Core;
@@ -15,14 +14,10 @@ namespace AuthServer.TestIdentityProvider.Pages;
 [ValidateAntiForgeryToken]
 public class SignInModel : PageModel
 {
-    private readonly IAuthorizeUserAccessor _authorizeUserAccessor;
     private readonly IAuthorizeService _authorizeService;
 
-    public SignInModel(
-        IAuthorizeUserAccessor authorizeUserAccessor,
-        IAuthorizeService authorizeService)
+    public SignInModel(IAuthorizeService authorizeService)
     {
-        _authorizeUserAccessor = authorizeUserAccessor;
         _authorizeService = authorizeService;
     }
 
@@ -56,8 +51,8 @@ public class SignInModel : PageModel
             var query = HttpUtility.ParseQueryString(new Uri(ReturnUrl).Query);
             var requestUri = query.Get(Parameter.RequestUri)!;
             var clientId = query.Get(Parameter.ClientId)!;
-            await _authorizeService.CreateAuthorizationGrant(UserConstants.SubjectIdentifier, clientId, [AuthenticationMethodReferenceConstants.Password], cancellationToken);
-            _authorizeUserAccessor.SetUser(new AuthorizeUser(UserConstants.SubjectIdentifier, true));
+            var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
+            await _authorizeService.HandleAuthorizationGrant(UserConstants.SubjectIdentifier, request, [AuthenticationMethodReferenceConstants.Password], cancellationToken);
 
             var claimsIdentity = new ClaimsIdentity(
                 [new Claim(ClaimNameConstants.Sub, UserConstants.SubjectIdentifier)],
@@ -66,7 +61,6 @@ public class SignInModel : PageModel
             var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
 
-            var request = (await _authorizeService.GetRequest(requestUri, clientId, cancellationToken))!;
             if (request.Prompt?.Contains(PromptConstants.Consent) == true)
             {
                 return Redirect($"/Consent?returnUrl={HttpUtility.UrlEncode(returnUrl)}");
