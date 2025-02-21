@@ -348,7 +348,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.UserInfo, Resource: "https://idp.authserver.dk" });
         Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.UserInfo, Resource: "https://weather.authserver.dk" });
         Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://idp.authserver.dk" });
-        Assert.DoesNotContain(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://weather.authserver.dk" });
+        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://weather.authserver.dk" });
 
         var claims = authorizationGrant.AuthorizationGrantConsents
             .OfType<AuthorizationGrantClaimConsent>()

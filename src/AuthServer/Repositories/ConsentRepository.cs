@@ -172,16 +172,12 @@ internal class ConsentRepository : IConsentRepository
             .Include(x => ((ClaimConsent)x).Claim)
             .ToListAsync(cancellationToken);
 
-        var resourceQuery = await _identityContext
-            .Set<Client>()
-            .Where(x => resources.Contains(x.ClientUri))
-            .Select(x => new
-            {
-                Resource = x.ClientUri,
-                Scopes = x.Scopes.Select(y => y.Name)
-            })
-            .ToListAsync(cancellationToken);
+        AddGrantScopeClaims(authorizationGrant, clientConsents, scopes, resources);
+        AddGrantConsentClaims(authorizationGrant, clientConsents);
+    }
 
+    private static void AddGrantScopeClaims(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources)
+    {
         foreach (var scope in scopes)
         {
             var scopeConsent = clientConsents
@@ -190,22 +186,11 @@ internal class ConsentRepository : IConsentRepository
 
             foreach (var resource in resources)
             {
-                var authorizedScopes = resourceQuery
-                    .Where(x => x.Resource == resource)
-                    .SelectMany(x => x.Scopes)
-                    .ToList();
-
-                var isScopeAuthorized = authorizedScopes.Contains(scope);
-                if (!isScopeAuthorized)
-                {
-                    continue;
-                }
-
                 var authorizationGrantScopeConsent = authorizationGrant.AuthorizationGrantConsents
                     .OfType<AuthorizationGrantScopeConsent>()
                     .Where(x => x.Resource == resource)
                     .SingleOrDefault(x => (x.Consent as ScopeConsent)!.Scope.Name == scope);
-                
+
                 if (authorizationGrantScopeConsent is null)
                 {
                     authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, resource);
@@ -213,8 +198,6 @@ internal class ConsentRepository : IConsentRepository
                 }
             }
         }
-
-        AddGrantConsentClaims(authorizationGrant, clientConsents);
     }
 
     private static void AddGrantConsentClaims(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents)
