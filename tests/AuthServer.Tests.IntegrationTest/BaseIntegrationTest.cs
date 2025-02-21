@@ -199,9 +199,17 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var userinfoScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.UserInfo);
         var grantManagementRevokeScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.GrantManagementRevoke);
         var grantManagementQueryScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.GrantManagementQuery);
+
+        var openId = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
+        var email = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Email);
+        var address = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Address);
+        var phone = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Phone);
+        var profile = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Profile);
+        var offlineAccess = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OfflineAccess);
+
         var client = new Client("identity-provider", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
-            Scopes = [userinfoScope, grantManagementRevokeScope, grantManagementQueryScope],
+            Scopes = [openId, email, address, phone, profile, offlineAccess, userinfoScope, grantManagementRevokeScope, grantManagementQueryScope],
             ClientUri = "https://localhost:7254"
         };
 
