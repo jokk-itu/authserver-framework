@@ -153,6 +153,8 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             JwksExpiration = client.JwksExpiration,
             RequestUriExpiration = client.RequestUriExpiration,
             TokenEndpointAuthSigningAlg = client.TokenEndpointAuthSigningAlg,
+            TokenEndpointAuthEncryptionAlg = client.TokenEndpointAuthEncryptionAlg,
+            TokenEndpointAuthEncryptionEnc = client.TokenEndpointAuthEncryptionEnc,
             RequestObjectSigningAlg = client.RequestObjectSigningAlg,
             RequestObjectEncryptionAlg = client.RequestObjectEncryptionAlg,
             RequestObjectEncryptionEnc = client.RequestObjectEncryptionEnc,
@@ -214,6 +216,8 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.JwksExpiration = request.JwksExpiration;
         client.RequestUriExpiration = request.RequestUriExpiration;
         client.TokenEndpointAuthSigningAlg = request.TokenEndpointAuthSigningAlg;
+        client.TokenEndpointAuthEncryptionAlg = request.TokenEndpointAuthEncryptionAlg;
+        client.TokenEndpointAuthEncryptionEnc = request.TokenEndpointAuthEncryptionEnc;
         client.RequestObjectSigningAlg = request.RequestObjectSigningAlg;
         client.RequestObjectEncryptionAlg = request.RequestObjectEncryptionAlg;
         client.RequestObjectEncryptionEnc = request.RequestObjectEncryptionEnc;
