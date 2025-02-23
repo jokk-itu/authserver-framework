@@ -184,7 +184,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return requestUriExpirationError;
         }
 
-        var tokenEndpointAuthSigningAlgError = ValidateTokenEndpointAuthSigningAlg(request, validatedRequest);
+        var tokenEndpointAuthSigningAlgError = ValidateTokenEndpointAuth(request, validatedRequest);
         if (tokenEndpointAuthSigningAlgError is not null)
         {
             return tokenEndpointAuthSigningAlgError;
@@ -1095,18 +1095,23 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     }
 
     /// <summary>
-    /// TokenEndpointAuthSigningAlg is OPTIONAL.
-    /// Default value is <see cref="SigningAlg.RsaSha256"/>.
+    /// TokenEndpointAuthSigningAlg, TokenEndpointAuthEncryptionAlg and TokenEndpointAuthEncryptionEnc are OPTIONAL.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private ProcessError? ValidateTokenEndpointAuthSigningAlg(RegisterRequest request,
+    private ProcessError? ValidateTokenEndpointAuth(RegisterRequest request,
         RegisterValidatedRequest validatedRequest)
     {
-        if (string.IsNullOrEmpty(request.TokenEndpointAuthSigningAlg))
+        if (string.IsNullOrEmpty(request.TokenEndpointAuthSigningAlg)
+            && validatedRequest.TokenEndpointAuthMethod == TokenEndpointAuthMethod.PrivateKeyJwt)
         {
             validatedRequest.TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256;
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(request.TokenEndpointAuthSigningAlg))
+        {
             return null;
         }
 
@@ -1116,6 +1121,38 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         validatedRequest.TokenEndpointAuthSigningAlg = request.TokenEndpointAuthSigningAlg.GetEnum<SigningAlg>();
+
+        var hasEmptyEncryptionAlg = string.IsNullOrEmpty(request.TokenEndpointAuthEncryptionAlg);
+        var hasEmptyEncryptionEnc = string.IsNullOrEmpty(request.TokenEndpointAuthEncryptionEnc);
+
+        if (hasEmptyEncryptionAlg && hasEmptyEncryptionEnc)
+        {
+            return null;
+        }
+
+        if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
+        {
+            return RegisterError.InvalidTokenEndpointAuthEncryptionEnc;
+        }
+
+        if (!DiscoveryDocument.TokenEndpointAuthEncryptionAlgValuesSupported
+                .Contains(request.TokenEndpointAuthEncryptionAlg!))
+        {
+            return RegisterError.InvalidTokenEndpointAuthEncryptionAlg;
+        }
+
+        if (!hasEmptyEncryptionEnc
+            && !DiscoveryDocument.TokenEndpointAuthEncryptionEncValuesSupported
+                .Contains(request.TokenEndpointAuthEncryptionEnc!))
+        {
+            return RegisterError.InvalidTokenEndpointAuthEncryptionEnc;
+        }
+
+        validatedRequest.TokenEndpointAuthEncryptionAlg = request.TokenEndpointAuthEncryptionAlg!.GetEnum<EncryptionAlg>();
+        validatedRequest.TokenEndpointAuthEncryptionEnc = hasEmptyEncryptionEnc
+            ? EncryptionEnc.Aes128CbcHmacSha256
+            : request.TokenEndpointAuthEncryptionEnc!.GetEnum<EncryptionEnc>();
+
         return null;
     }
 
@@ -1219,7 +1256,10 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         validatedRequest.UserinfoEncryptedResponseAlg = request.UserinfoEncryptedResponseAlg!.GetEnum<EncryptionAlg>();
-        validatedRequest.UserinfoEncryptedResponseEnc = request.UserinfoEncryptedResponseEnc!.GetEnum<EncryptionEnc>();
+        validatedRequest.UserinfoEncryptedResponseEnc = hasEmptyEncryptionEnc
+            ? EncryptionEnc.Aes128CbcHmacSha256
+            : request.UserinfoEncryptedResponseEnc!.GetEnum<EncryptionEnc>();
+
         return null;
     }
 

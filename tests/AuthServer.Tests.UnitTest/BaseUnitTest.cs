@@ -24,12 +24,12 @@ public abstract class BaseUnitTest
     private readonly SqliteConnection _connection;
     internal AuthorizationDbContext IdentityContext;
 
-    private RsaSecurityKey RsaSecurityKey = new RsaSecurityKey(RSA.Create(3072))
+    private readonly RsaSecurityKey RsaSecurityKey = new RsaSecurityKey(RSA.Create(3072))
     {
         KeyId = Guid.NewGuid().ToString()
     };
 
-    private ECDsaSecurityKey ECDsaSecurityKey = new ECDsaSecurityKey(ECDsa.Create())
+    private readonly ECDsaSecurityKey ECDsaSecurityKey = new ECDsaSecurityKey(ECDsa.Create())
     {
         KeyId = Guid.NewGuid().ToString()
     };
@@ -78,6 +78,10 @@ public abstract class BaseUnitTest
             var supportedSigningAlgorithms = new[] { JwsAlgConstants.RsaSha256, JwsAlgConstants.EcdsaSha256 };
             var supportedEncryptionAlgorithms = new[] { JweAlgConstants.RsaPKCS1, JweAlgConstants.EcdhEsA128KW };
             var supportedEncryptionEncoding = new[] { JweEncConstants.Aes128CbcHmacSha256 };
+
+            discoveryDocument.TokenEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
+            discoveryDocument.TokenEndpointAuthEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            discoveryDocument.TokenEndpointAuthEncryptionEncValuesSupported = supportedEncryptionEncoding;
 
             discoveryDocument.RequestObjectSigningAlgValuesSupported = supportedSigningAlgorithms;
             discoveryDocument.RequestObjectEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;

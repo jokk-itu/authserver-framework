@@ -133,12 +133,17 @@ internal class ClientAuthenticationService : IClientAuthenticationService
             return new ClientAuthenticationResult(null, false);
         }
 
+        List<string> algorithms = [client.TokenEndpointAuthSigningAlg!.GetDescription()];
+        if (client.TokenEndpointAuthEncryptionEnc is not null)
+        {
+            algorithms.Add(client.TokenEndpointAuthEncryptionEnc.GetDescription());
+        }
         var validatedToken = await _clientIssuedTokenDecoder.Validate(
             clientAssertionAuthentication.ClientAssertion,
             new ClientIssuedTokenDecodeArguments
             {
                 TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
-                Algorithms = [client.TokenEndpointAuthSigningAlg.GetDescription()], // TODO Add TokenEndpointAuthEncryptingEnc
+                Algorithms = algorithms,
                 ClientId = clientId,
                 SubjectId = clientId,
                 Audience = clientAssertionAuthentication.Audience,

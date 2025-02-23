@@ -42,9 +42,6 @@ internal class RegisterResponse
 	[JsonPropertyName(Parameter.TokenEndpointAuthMethod)]
 	public required string TokenEndpointAuthMethod { get; init; }
 
-	[JsonPropertyName(Parameter.TokenEndpointAuthSigningAlg)]
-	public required string TokenEndpointAuthSigningAlg { get; init; }
-
 	[JsonPropertyName(Parameter.Jwks)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Jwks { get; init; }
@@ -83,7 +80,18 @@ internal class RegisterResponse
 	[JsonPropertyName(Parameter.RequireReferenceToken)]
 	public required bool RequireReferenceToken { get; init; }
 
-	[JsonPropertyName(Parameter.RequestObjectEncryptionEnc)]
+    [JsonPropertyName(Parameter.TokenEndpointAuthEncryptionEnc)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TokenEndpointAuthEncryptionEnc { get; init; }
+
+    [JsonPropertyName(Parameter.TokenEndpointAuthEncryptionAlg)]
+    public string? TokenEndpointAuthEncryptionAlg { get; init; }
+
+    [JsonPropertyName(Parameter.TokenEndpointAuthSigningAlg)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TokenEndpointAuthSigningAlg { get; init; }
+
+    [JsonPropertyName(Parameter.RequestObjectEncryptionEnc)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? RequestObjectEncryptionEnc { get; init; }
 

@@ -106,6 +106,8 @@ internal class CachedClientStore : ICachedClientStore
             ApplicationType = client.ApplicationType,
             TokenEndpointAuthMethod = client.TokenEndpointAuthMethod,
             SubjectType = client.SubjectType,
+            TokenEndpointAuthEncryptionEnc = client.TokenEndpointAuthEncryptionEnc,
+            TokenEndpointAuthEncryptionAlg = client.TokenEndpointAuthEncryptionAlg,
             TokenEndpointAuthSigningAlg = client.TokenEndpointAuthSigningAlg,
             UserinfoEncryptedResponseEnc = client.UserinfoEncryptedResponseEnc,
             UserinfoEncryptedResponseAlg = client.UserinfoEncryptedResponseAlg,

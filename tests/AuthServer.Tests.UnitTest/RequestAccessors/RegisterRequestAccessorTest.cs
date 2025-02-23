@@ -38,7 +38,6 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.SubjectType, value },
             { Parameter.DefaultMaxAge, value },
             { Parameter.TokenEndpointAuthMethod, value },
-            { Parameter.TokenEndpointAuthSigningAlg, value },
             { Parameter.Jwks, value },
 
             { Parameter.JwksUri, value },
@@ -53,6 +52,10 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.RequireSignedRequestObject, value },
             { Parameter.RequireReferenceToken, value },
             { Parameter.RequirePushedAuthorizationRequests, value },
+
+            { Parameter.TokenEndpointAuthEncryptionEnc, value },
+            { Parameter.TokenEndpointAuthEncryptionAlg, value },
+            { Parameter.TokenEndpointAuthSigningAlg, value },
 
             { Parameter.RequestObjectEncryptionEnc, value },
             { Parameter.RequestObjectEncryptionAlg, value },
@@ -91,10 +94,9 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             var authResult = AuthenticateResult.Success(
                 new AuthenticationTicket(new ClaimsPrincipal(), OAuthTokenAuthenticationDefaults.AuthenticationScheme));
 
-            authResult.Properties!.StoreTokens(new[]
-            {
+            authResult.Properties!.StoreTokens([
                 new AuthenticationToken { Name = Parameter.AccessToken, Value = value }
-            });
+            ]);
 
             authenticationServiceMock
                 .Setup(x => x.AuthenticateAsync(httpContext, OAuthTokenAuthenticationDefaults.AuthenticationScheme))
@@ -138,6 +140,10 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.BackchannelLogoutUri);
         Assert.Equal(expectedValue, request.SectorIdentifierUri);
 
+        Assert.Equal(expectedValue, request.TokenEndpointAuthEncryptionEnc);
+        Assert.Equal(expectedValue, request.TokenEndpointAuthEncryptionAlg);
+        Assert.Equal(expectedValue, request.TokenEndpointAuthSigningAlg);
+
         Assert.Equal(expectedValue, request.RequestObjectEncryptionEnc);
         Assert.Equal(expectedValue, request.RequestObjectEncryptionAlg);
         Assert.Equal(expectedValue, request.RequestObjectSigningAlg);
@@ -177,10 +183,9 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             var authResult = AuthenticateResult.Success(
                 new AuthenticationTicket(new ClaimsPrincipal(), OAuthTokenAuthenticationDefaults.AuthenticationScheme));
 
-            authResult.Properties!.StoreTokens(new[]
-            {
+            authResult.Properties!.StoreTokens([
                 new AuthenticationToken { Name = Parameter.AccessToken, Value = value }
-            });
+            ]);
 
             authenticationServiceMock
                 .Setup(x => x.AuthenticateAsync(httpContext, OAuthTokenAuthenticationDefaults.AuthenticationScheme))
@@ -235,10 +240,9 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             var authResult = AuthenticateResult.Success(
                 new AuthenticationTicket(new ClaimsPrincipal(), OAuthTokenAuthenticationDefaults.AuthenticationScheme));
 
-            authResult.Properties!.StoreTokens(new[]
-            {
+            authResult.Properties!.StoreTokens([
                 new AuthenticationToken { Name = Parameter.AccessToken, Value = "value" }
-            });
+            ]);
 
             authenticationServiceMock
                 .Setup(x => x.AuthenticateAsync(httpContext, OAuthTokenAuthenticationDefaults.AuthenticationScheme))
@@ -299,10 +303,9 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             var authResult = AuthenticateResult.Success(
                 new AuthenticationTicket(new ClaimsPrincipal(), OAuthTokenAuthenticationDefaults.AuthenticationScheme));
 
-            authResult.Properties!.StoreTokens(new[]
-            {
+            authResult.Properties!.StoreTokens([
                 new AuthenticationToken { Name = Parameter.AccessToken, Value = "value" }
-            });
+            ]);
 
             authenticationServiceMock
                 .Setup(x => x.AuthenticateAsync(httpContext, OAuthTokenAuthenticationDefaults.AuthenticationScheme))

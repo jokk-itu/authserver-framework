@@ -28,7 +28,9 @@ internal class CachedClient
     public required TokenEndpointAuthMethod TokenEndpointAuthMethod { get; init; }
     public required SubjectType? SubjectType { get; init; }
 
-    public required SigningAlg TokenEndpointAuthSigningAlg { get; set; }
+    public required EncryptionEnc? TokenEndpointAuthEncryptionEnc { get; init; }
+    public required EncryptionAlg? TokenEndpointAuthEncryptionAlg { get; init; }
+    public required SigningAlg? TokenEndpointAuthSigningAlg { get; set; }
 
     public required EncryptionEnc? UserinfoEncryptedResponseEnc { get; set; }
     public required EncryptionAlg? UserinfoEncryptedResponseAlg { get; set; }

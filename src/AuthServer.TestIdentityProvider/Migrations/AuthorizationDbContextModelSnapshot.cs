@@ -540,10 +540,16 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<int?>("SubjectType")
                         .HasColumnType("int");
 
+                    b.Property<int?>("TokenEndpointAuthEncryptionAlg")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TokenEndpointAuthEncryptionEnc")
+                        .HasColumnType("int");
+
                     b.Property<int>("TokenEndpointAuthMethod")
                         .HasColumnType("int");
 
-                    b.Property<int>("TokenEndpointAuthSigningAlg")
+                    b.Property<int?>("TokenEndpointAuthSigningAlg")
                         .HasColumnType("int");
 
                     b.Property<string>("TosUri")

@@ -37,7 +37,6 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 		var subjectType = json.GetStringValue(Parameter.SubjectType);
 		var defaultMaxAge = json.GetStringValue(Parameter.DefaultMaxAge);
 		var tokenEndpointAuthMethod = json.GetStringValue(Parameter.TokenEndpointAuthMethod);
-		var tokenEndpointAuthSigningAlg = json.GetStringValue(Parameter.TokenEndpointAuthSigningAlg);
 		var jwks = json.GetStringValue(Parameter.Jwks);
 
 		var jwksUri = json.GetStringValue(Parameter.JwksUri);
@@ -53,7 +52,11 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 		var requireReferenceToken = json.GetBoolValue(Parameter.RequireReferenceToken);
         var requirePushedAuthorizationRequests = json.GetBoolValue(Parameter.RequirePushedAuthorizationRequests);
 
-		var requestObjectEncryptionEnc = json.GetStringValue(Parameter.RequestObjectEncryptionEnc);
+        var tokenEndpointAuthEncryptionEnc = json.GetStringValue(Parameter.TokenEndpointAuthEncryptionEnc);
+        var tokenEndpointAuthEncryptionAlg = json.GetStringValue(Parameter.TokenEndpointAuthEncryptionAlg);
+        var tokenEndpointAuthSigningAlg = json.GetStringValue(Parameter.TokenEndpointAuthSigningAlg);
+
+        var requestObjectEncryptionEnc = json.GetStringValue(Parameter.RequestObjectEncryptionEnc);
 		var requestObjectEncryptionAlg = json.GetStringValue(Parameter.RequestObjectEncryptionAlg);
 		var requestObjectSigningAlg = json.GetStringValue(Parameter.RequestObjectSigningAlg);
 
@@ -92,7 +95,6 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 			SubjectType = subjectType,
 			DefaultMaxAge = defaultMaxAge,
 			TokenEndpointAuthMethod = tokenEndpointAuthMethod,
-			TokenEndpointAuthSigningAlg = tokenEndpointAuthSigningAlg,
 			Jwks = jwks,
 			JwksUri = jwksUri,
 			ClientUri = clientUri,
@@ -105,7 +107,10 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 			RequireSignedRequestObject = requireSignedRequestObject,
 			RequireReferenceToken = requireReferenceToken,
 			RequirePushedAuthorizationRequests = requirePushedAuthorizationRequests,
-			RequestObjectEncryptionEnc = requestObjectEncryptionEnc,
+            TokenEndpointAuthEncryptionEnc = tokenEndpointAuthEncryptionEnc,
+            TokenEndpointAuthEncryptionAlg = tokenEndpointAuthEncryptionAlg,
+            TokenEndpointAuthSigningAlg = tokenEndpointAuthSigningAlg,
+            RequestObjectEncryptionEnc = requestObjectEncryptionEnc,
 			RequestObjectEncryptionAlg = requestObjectEncryptionAlg,
 			RequestObjectSigningAlg = requestObjectSigningAlg,
 			UserinfoEncryptedResponseEnc = userinfoEncryptedResponseEnc,

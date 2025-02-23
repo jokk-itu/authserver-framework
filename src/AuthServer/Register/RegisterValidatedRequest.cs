@@ -12,7 +12,6 @@ internal class RegisterValidatedRequest
 	public SubjectType? SubjectType { get; set; }
 	public int? DefaultMaxAge { get; set; }
 	public TokenEndpointAuthMethod TokenEndpointAuthMethod { get; set; }
-	public SigningAlg TokenEndpointAuthSigningAlg { get; set; }
 	public string? Jwks { get; set; }
 	public string? JwksUri { get; set; }
 	public string? ClientUri { get; set; }
@@ -25,7 +24,10 @@ internal class RegisterValidatedRequest
 	public bool RequireSignedRequestObject { get; set; }
 	public bool RequireReferenceToken { get; set; }
 	public bool RequirePushedAuthorizationRequests { get; set; }
-	public EncryptionEnc? RequestObjectEncryptionEnc { get; set; }
+    public EncryptionEnc? TokenEndpointAuthEncryptionEnc { get; set; }
+    public EncryptionAlg? TokenEndpointAuthEncryptionAlg { get; set; }
+    public SigningAlg? TokenEndpointAuthSigningAlg { get; set; }
+    public EncryptionEnc? RequestObjectEncryptionEnc { get; set; }
 	public EncryptionAlg? RequestObjectEncryptionAlg { get; set; }
 	public SigningAlg? RequestObjectSigningAlg { get; set; }
 	public EncryptionEnc? UserinfoEncryptedResponseEnc { get; set; }

@@ -15,7 +15,6 @@ internal class RegisterResponse
 	public required SubjectType? SubjectType { get; init; }
 	public required int? DefaultMaxAge { get; init; }
 	public required TokenEndpointAuthMethod TokenEndpointAuthMethod { get; init; }
-	public required SigningAlg TokenEndpointAuthSigningAlg { get; init; }
 	public required string? Jwks { get; init; }
 	public required string? JwksUri { get; init; }
 	public required string? ClientUri { get; init; }
@@ -27,7 +26,10 @@ internal class RegisterResponse
 	public required bool RequireSignedRequestObject { get; init; }
 	public required bool RequireReferenceToken { get; init; }
 	public required bool RequirePushedAuthorizationRequests { get; init; }
-	public required EncryptionEnc? RequestObjectEncryptionEnc { get; init; }
+	public required EncryptionEnc? TokenEndpointAuthEncryptionEnc { get; init; }
+	public required EncryptionAlg? TokenEndpointAuthEncryptionAlg { get; init; }
+    public required SigningAlg? TokenEndpointAuthSigningAlg { get; init; }
+    public required EncryptionEnc? RequestObjectEncryptionEnc { get; init; }
 	public required EncryptionAlg? RequestObjectEncryptionAlg { get; init; }
 	public required SigningAlg? RequestObjectSigningAlg { get; init; }
 	public required EncryptionEnc? UserinfoEncryptedResponseEnc { get; init; }

@@ -122,6 +122,12 @@ public class DiscoveryDocument
     [JsonPropertyName("token_endpoint_auth_signing_alg_values_supported")]
     public ICollection<string> TokenEndpointAuthSigningAlgValuesSupported { get; set; } = [];
 
+    [JsonPropertyName("token_endpoint_auth_encryption_alg_values_supported")]
+    public ICollection<string> TokenEndpointAuthEncryptionAlgValuesSupported { get; set; } = [];
+
+    [JsonPropertyName("token_endpoint_auth_encryption_enc_values_supported")]
+    public ICollection<string> TokenEndpointAuthEncryptionEncValuesSupported { get; set; } = [];
+
     [JsonPropertyName("introspection_endpoint_auth_signing_alg_values_supported")]
     public ICollection<string> IntrospectionEndpointAuthSigningAlgValuesSupported { get; set; } = [];
 
