@@ -1,5 +1,4 @@
-﻿using AuthServer.Authentication;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
@@ -63,7 +62,6 @@ internal class IntrospectionRequestValidator : IRequestValidator<IntrospectionRe
 
         return new IntrospectionValidatedRequest
         {
-            ClientId = clientAuthenticationResult.ClientId,
             Token = request.Token!,
             Scope = cachedClient.Scopes
         };

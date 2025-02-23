@@ -39,4 +39,10 @@ internal class PostIntrospectionResponse
 
     [JsonPropertyName(Parameter.JwtId)]
     public string? JwtId { get; init; }
+
+    [JsonPropertyName(Parameter.AuthTime)]
+    public long? AuthTime { get; init; }
+
+    [JsonPropertyName(Parameter.Acr)]
+    public string? Acr { get; init; }
 }

@@ -4,6 +4,7 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Helpers;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
@@ -175,7 +176,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         return scopeName;
     }
 
-    protected async Task<Client> AddWeatherClient()
+    protected async Task<Client> AddWeatherClient(string plainSecret)
     {
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
 
@@ -185,6 +186,8 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
             Scopes = [weatherScope],
             ClientUri = "https://weather.authserver.dk"
         };
+
+        client.SetSecret(CryptographyHelper.HashPassword(plainSecret));
 
         await dbContext.AddAsync(client);
         await dbContext.SaveChangesAsync();

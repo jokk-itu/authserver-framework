@@ -45,7 +45,8 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
                 AuthorizationGrant = x,
                 Client = x.Client,
                 Subject = x.Subject,
-                SessionId = x.Session.Id
+                SessionId = x.Session.Id,
+                Acr = x.AuthenticationContextReference.Name
             })
             .SingleAsync(cancellationToken);
 
@@ -73,7 +74,9 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             { ClaimNameConstants.GrantId, arguments.AuthorizationGrantId },
             { ClaimNameConstants.Sub, grantQuery.Subject },
             { ClaimNameConstants.Sid, grantQuery.SessionId },
-            { ClaimNameConstants.ClientId, grantQuery.Client.Id }
+            { ClaimNameConstants.ClientId, grantQuery.Client.Id },
+            { ClaimNameConstants.AuthTime, grantQuery.AuthorizationGrant.AuthTime.ToUnixTimeSeconds() },
+            { ClaimNameConstants.Acr, grantQuery.Acr }
         };
 
         var now = DateTime.UtcNow;
@@ -110,5 +113,6 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
         public required Client Client { get; init; }
         public required string SessionId { get; init; }
         public required string Subject { get; init; }
+        public required string Acr { get; init; }
     }
 }

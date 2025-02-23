@@ -172,7 +172,6 @@ public class IntrospectionRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.IsType<IntrospectionValidatedRequest>(processResult.Value);
-        Assert.Equal(client.Id, processResult.Value.ClientId);
         Assert.Equal(token.Reference, processResult.Value.Token);
     }
 }

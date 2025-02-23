@@ -1,6 +1,9 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Extensions;
+using AuthServer.Tests.Core;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -91,6 +94,8 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         Assert.NotNull(validatedTokenResult.Claims[ClaimNameConstants.Jti].ToString());
         Assert.Equal(authorizationGrant.Id, validatedTokenResult.Claims[ClaimNameConstants.GrantId].ToString());
         Assert.Equal(authorizationGrant.Client.Id, validatedTokenResult.Claims[ClaimNameConstants.ClientId].ToString());
+        Assert.Equal(authorizationGrant.AuthenticationContextReference.Name, validatedTokenResult.Claims[ClaimNameConstants.Acr].ToString());
+        Assert.Equal(authorizationGrant.AuthTime.ToUnixTimeSeconds().ToString(), validatedTokenResult.Claims[ClaimNameConstants.AuthTime].ToString());
     }
 
     private async Task<AuthorizationGrant> GetAuthorizationGrant(bool requireReferenceToken)

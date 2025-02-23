@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using AuthServer.Constants;
+﻿using AuthServer.Constants;
 using AuthServer.Enums;
+using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit.Abstractions;
+using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
 namespace AuthServer.Tests.IntegrationTest;
 public class TokenIntegrationTest : BaseIntegrationTest
@@ -18,7 +20,8 @@ public class TokenIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
-        var weatherClient = await AddWeatherClient();
+        var weatherClientSecret = CryptographyHelper.GetRandomString(16);
+        var weatherClient = await AddWeatherClient(weatherClientSecret);
         var identityProviderClient = await AddIdentityProviderClient();
 
         var registerResponse = await RegisterEndpointBuilder
@@ -68,7 +71,8 @@ public class TokenIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
-        var weatherClient = await AddWeatherClient();
+        var weatherClientSecret = CryptographyHelper.GetRandomString(16);
+        var weatherClient = await AddWeatherClient(weatherClientSecret);
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
@@ -126,7 +130,8 @@ public class TokenIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
-        var weatherClient = await AddWeatherClient();
+        var weatherClientSecret = CryptographyHelper.GetRandomString(16);
+        var weatherClient = await AddWeatherClient(weatherClientSecret);
         var jwks = ClientJwkBuilder.GetClientJwks();
 
         var registerResponse = await RegisterEndpointBuilder

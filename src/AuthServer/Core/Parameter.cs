@@ -89,6 +89,8 @@ public static class Parameter
     public const string GrantManagementAction = "grant_management_action";
     public const string Scopes = "scopes";
     public const string Claims = "claims";
+    public const string AuthTime = "auth_time";
+    public const string Acr = "acr";
 
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";
