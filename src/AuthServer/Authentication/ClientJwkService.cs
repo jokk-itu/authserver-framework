@@ -1,6 +1,5 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authentication.Exceptions;
-using AuthServer.Cache.Abstractions;
 using AuthServer.Core;
 using AuthServer.Entities;
 using Microsoft.Extensions.Logging;
@@ -9,18 +8,15 @@ using Microsoft.IdentityModel.Tokens;
 namespace AuthServer.Authentication;
 internal class ClientJwkService : IClientJwkService
 {
-    private readonly ICachedClientStore _cachedClientStore;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AuthorizationDbContext _identityContext;
     private readonly ILogger<ClientJwkService> _logger;
 
     public ClientJwkService(
-        ICachedClientStore cachedClientStore,
         IHttpClientFactory httpClientFactory,
         AuthorizationDbContext identityContext,
         ILogger<ClientJwkService> logger)
     {
-        _cachedClientStore = cachedClientStore;
         _httpClientFactory = httpClientFactory;
         _identityContext = identityContext;
         _logger = logger;
@@ -37,27 +33,27 @@ internal class ClientJwkService : IClientJwkService
     /// <inheritdoc/>
 	public async Task<IEnumerable<JsonWebKey>> GetKeys(string clientId, string use, CancellationToken cancellationToken)
     {
-        var cachedClient = await _cachedClientStore.Get(clientId, cancellationToken);
+        var client = (await _identityContext.FindAsync<Client>([clientId], cancellationToken))!;
 
-        if (string.IsNullOrWhiteSpace(cachedClient.Jwks) && string.IsNullOrWhiteSpace(cachedClient.JwksUri))
+        if (string.IsNullOrWhiteSpace(client.Jwks) && string.IsNullOrWhiteSpace(client.JwksUri))
         {
             return [];
         }
 
-        var useJwks = cachedClient.JwksExpiresAt is null || DateTime.UtcNow < cachedClient.JwksExpiresAt;
+        var useJwks = client.JwksExpiresAt is null || DateTime.UtcNow < client.JwksExpiresAt;
         if (useJwks)
         {
-            return JsonWebKeySet.Create(cachedClient.Jwks).Keys.Where(k => k.Use == use);
+            return JsonWebKeySet.Create(client.Jwks).Keys.Where(k => k.Use == use);
         }
         
-        if (cachedClient.JwksUri is null)
+        if (client.JwksUri is null)
         {
             _logger.LogWarning("Jwks has expired for client {ClientId}", clientId);
             return [];
         }
 
         _logger.LogDebug("Refreshing jwks for client {ClientId}", clientId);
-        var jwks = await RefreshJwks(clientId, cachedClient.JwksUri!, cancellationToken);
+        var jwks = await RefreshJwks(clientId, client.JwksUri!, cancellationToken);
         var jsonWebKeySet = JsonWebKeySet.Create(jwks);
         if (jsonWebKeySet.Keys.Any(x => x.HasPrivateKey))
         {
@@ -65,7 +61,6 @@ internal class ClientJwkService : IClientJwkService
             return [];
         }
 
-        var client = (await _identityContext.FindAsync<Client>([clientId], cancellationToken))!;
         client.Jwks = jwks;
         client.JwksExpiresAt = DateTime.UtcNow.AddSeconds(client.JwksExpiration!.Value);
 

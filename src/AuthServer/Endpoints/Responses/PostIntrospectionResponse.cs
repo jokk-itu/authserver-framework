@@ -45,4 +45,7 @@ internal class PostIntrospectionResponse
 
     [JsonPropertyName(Parameter.Acr)]
     public string? Acr { get; init; }
+
+    [JsonPropertyName(Parameter.AccessControl)]
+    public IDictionary<string, object>? AccessControl { get; init; }
 }

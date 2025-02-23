@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
@@ -21,17 +22,20 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IOptionsSnapshot<JwksDocument> _jwksDocument;
     private readonly IMetricService _metricService;
+    private readonly IUserClaimService _userClaimService;
 
     public GrantAccessTokenBuilder(
         AuthorizationDbContext identityContext,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         IOptionsSnapshot<JwksDocument> jwksDocument,
-        IMetricService metricService)
+        IMetricService metricService,
+        IUserClaimService userClaimService)
     {
         _identityContext = identityContext;
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _jwksDocument = jwksDocument;
         _metricService = metricService;
+        _userClaimService = userClaimService;
     }
 
     public async Task<string> BuildToken(GrantAccessTokenArguments arguments, CancellationToken cancellationToken)
@@ -45,6 +49,7 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
                 AuthorizationGrant = x,
                 Client = x.Client,
                 Subject = x.Subject,
+                SubjectIdentifier = x.Session.SubjectIdentifier.Id,
                 SessionId = x.Session.Id,
                 Acr = x.AuthenticationContextReference.Name
             })
@@ -58,14 +63,17 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             return referenceToken;
         }
 
-        var jwt = BuildStructuredToken(arguments, grantQuery);
+        var jwt = await BuildStructuredToken(arguments, grantQuery, cancellationToken);
         stopWatch.Stop();
         _metricService.AddBuiltToken(stopWatch.ElapsedMilliseconds, TokenTypeTag.AccessToken, TokenStructureTag.Jwt);
         return jwt;
     }
 
-    private string BuildStructuredToken(GrantAccessTokenArguments arguments, GrantQuery grantQuery)
+    private async Task<string> BuildStructuredToken(GrantAccessTokenArguments arguments, GrantQuery grantQuery, CancellationToken cancellationToken)
     {
+        var accessControl = (await _userClaimService.GetAccessClaims(grantQuery.SubjectIdentifier, cancellationToken))
+            .ToDictionary(x => x.Type, x => JsonSerializer.SerializeToElement(x.Value));
+
         var claims = new Dictionary<string, object>
         {
             { ClaimNameConstants.Jti, Guid.NewGuid() },
@@ -76,7 +84,8 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             { ClaimNameConstants.Sid, grantQuery.SessionId },
             { ClaimNameConstants.ClientId, grantQuery.Client.Id },
             { ClaimNameConstants.AuthTime, grantQuery.AuthorizationGrant.AuthTime.ToUnixTimeSeconds() },
-            { ClaimNameConstants.Acr, grantQuery.Acr }
+            { ClaimNameConstants.Acr, grantQuery.Acr },
+            { ClaimNameConstants.AccessControl, accessControl }
         };
 
         var now = DateTime.UtcNow;
@@ -113,6 +122,7 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
         public required Client Client { get; init; }
         public required string SessionId { get; init; }
         public required string Subject { get; init; }
+        public required string SubjectIdentifier { get; init; }
         public required string Acr { get; init; }
     }
 }

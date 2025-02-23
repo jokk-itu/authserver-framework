@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using System.Text.Json;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;

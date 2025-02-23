@@ -1,4 +1,5 @@
-﻿using AuthServer.Authentication.Abstractions;
+﻿using System.Text.Json;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
@@ -69,6 +70,13 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
 
         var subject = query.SubjectFromGrantToken ?? query.SubjectFromClientToken;
 
+        IDictionary<string, object>? accessControl = null;
+        if (query.SubjectIdentifier is not null)
+        {
+            accessControl = (await _userClaimService.GetAccessClaims(query.SubjectIdentifier, cancellationToken))
+                .ToDictionary(x => x.Type, x => JsonSerializer.SerializeToElement(x.Value) as object);
+        }
+
         _metricService.AddIntrospectedToken(query.Token is RefreshToken
             ? TokenTypeTag.RefreshToken
             : TokenTypeTag.AccessToken);
@@ -88,7 +96,8 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
             TokenType = token.TokenType.GetDescription(),
             Username = username,
             AuthTime = query.AuthTime?.ToUnixTimeSeconds(),
-            Acr = query.Acr
+            Acr = query.Acr,
+            AccessControl = accessControl
         };
     }
 

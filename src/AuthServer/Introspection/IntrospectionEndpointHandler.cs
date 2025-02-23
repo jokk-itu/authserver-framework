@@ -38,7 +38,8 @@ internal class IntrospectionEndpointHandler : IEndpointHandler
                 Scope = response.Scope,
                 Subject = response.Subject,
                 AuthTime = response.AuthTime,
-                Acr = response.Acr
+                Acr = response.Acr,
+                AccessControl = response.AccessControl
             }),
             error => Results.Extensions.OAuthBadRequest(error));
     }

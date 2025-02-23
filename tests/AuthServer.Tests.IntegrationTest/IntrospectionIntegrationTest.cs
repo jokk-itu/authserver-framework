@@ -1,4 +1,5 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Tests.Core;
@@ -22,7 +23,6 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         var weatherReadScope = await AddWeatherReadScope();
         var weatherClientSecret = CryptographyHelper.GetRandomString(16);
         var weatherClient = await AddWeatherClient(weatherClientSecret);
-        var identityProviderClient = await AddIdentityProviderClient();
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
@@ -79,6 +79,9 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         Assert.NotNull(introspectionResponse.Username);
         Assert.NotNull(introspectionResponse.AuthTime);
         Assert.NotNull(introspectionResponse.Acr);
+
+        Assert.NotNull(introspectionResponse.AccessControl);
+        Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(introspectionResponse.AccessControl[ClaimNameConstants.Roles].ToString()!));
     }
 
     [Fact]
@@ -123,5 +126,6 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         Assert.Equal(registerResponse.ClientId, introspectionResponse.Subject);
         Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
         Assert.NotNull(introspectionResponse.JwtId);
+        Assert.Null(introspectionResponse.AccessControl);
     }
 }

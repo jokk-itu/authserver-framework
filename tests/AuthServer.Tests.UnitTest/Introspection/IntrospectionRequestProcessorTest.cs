@@ -1,4 +1,4 @@
-﻿using AuthServer.Authentication.Abstractions;
+﻿using System.Text.Json;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
@@ -8,7 +8,6 @@ using AuthServer.Introspection;
 using AuthServer.Tests.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.Introspection;
@@ -136,20 +135,10 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
     public async Task Process_ActiveGrantAccessToken_ExpectActive()
     {
         // Arrange
-        var userClaimServiceMock = new Mock<IUserClaimService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(userClaimServiceMock);
-        });
+        var serviceProvider = BuildServiceProvider();
         var processor = serviceProvider.GetRequiredService<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>>();
 
         var subjectIdentifier = new SubjectIdentifier();
-        const string username = "JohnDoe";
-        userClaimServiceMock
-            .Setup(x => x.GetUsername(subjectIdentifier.Id, CancellationToken.None))
-            .ReturnsAsync(username)
-            .Verifiable();
-
         var session = new Session(subjectIdentifier);
 
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
@@ -176,6 +165,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var introspectionResponse = await processor.Process(introspectionValidatedRequest, CancellationToken.None);
 
         // Assert
+
         Assert.True(introspectionResponse.Active);
         Assert.Equal(token.Id.ToString(), introspectionResponse.JwtId);
         Assert.Equal(client.Id, introspectionResponse.ClientId);
@@ -187,10 +177,12 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(ScopeConstants.OpenId, introspectionResponse.Scope);
         Assert.Equal(subjectIdentifier.Id, introspectionResponse.Subject);
         Assert.Equal(token.TokenType.GetDescription(), introspectionResponse.TokenType);
-        Assert.Equal(username, introspectionResponse.Username);
+        Assert.Equal(UserConstants.Username, introspectionResponse.Username);
         Assert.Equal(authorizationGrant.AuthTime.ToUnixTimeSeconds(), introspectionResponse.AuthTime);
         Assert.Equal(lowAcr.Name, introspectionResponse.Acr);
-        userClaimServiceMock.Verify();
+
+        Assert.NotNull(introspectionResponse.AccessControl);
+        Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(introspectionResponse.AccessControl[ClaimNameConstants.Roles].ToString()!));
     }
 
     [Fact]

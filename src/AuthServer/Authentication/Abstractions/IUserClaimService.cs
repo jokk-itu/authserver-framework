@@ -18,4 +18,12 @@ public interface IUserClaimService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<string> GetUsername(string subjectIdentifier, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="subjectIdentifier"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IEnumerable<Claim>> GetAccessClaims(string subjectIdentifier, CancellationToken cancellationToken);
 }

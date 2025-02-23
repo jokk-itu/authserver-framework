@@ -13,9 +13,6 @@ internal class CachedClient
     public required int? AuthorizationCodeExpiration { get; init; }
     public required int? JwksExpiration { get; init; }
     public required int? RequestUriExpiration { get; init; }
-    public required string? JwksUri { get; set; }
-    public required string? Jwks { get; init; }
-    public required DateTime? JwksExpiresAt { get; init; }
     public required string? TosUri { get; init; }
     public required string? PolicyUri { get; init; }
     public required string? ClientUri { get; init; }

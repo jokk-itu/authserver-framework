@@ -10,9 +10,10 @@ internal class IntrospectionResponse
     public long? IssuedAt { get; init; }
     public long? NotBefore { get; init; }
     public string? Subject { get; init; }
-    public IEnumerable<string> Audience { get; init; } = [];
+    public IEnumerable<string>? Audience { get; init; }
     public string? Issuer { get; init; }
     public string? JwtId { get; init; }
     public long? AuthTime { get; init; }
     public string? Acr { get; init; }
+    public IDictionary<string, object>? AccessControl { get; init; }
 }
