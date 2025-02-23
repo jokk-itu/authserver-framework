@@ -1,4 +1,6 @@
-﻿namespace AuthServer.Constants;
+﻿using AuthServer.Enums;
+
+namespace AuthServer.Constants;
 
 /// <summary>
 /// Constants defined at IANA.
@@ -212,6 +214,11 @@ public static class ClaimNameConstants
     /// Roles
     /// </summary>
     public const string Roles = "roles";
+
+    /// <summary>
+    /// Subject claims used for access control.
+    /// </summary>
+    public const string AccessControl = "access_control";
 
     public static readonly string[] SupportedEndUserClaims =
     [
