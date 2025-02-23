@@ -90,7 +90,8 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
         var clientJwks = ClientJwkBuilder.GetClientJwks();
         var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
         {
-            Jwks = clientJwks.PublicJwks
+            Jwks = clientJwks.PublicJwks,
+            TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256
         };
         await AddEntity(client);
         var clientAuthentication = new ClientAssertionAuthentication(ClientTokenAudience.TokenEndpoint, client.Id,
@@ -107,7 +108,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
     }
 
     [Fact]
-    public async Task AuthenticateClient_ValidAssertion_Authenticated()
+    public async Task AuthenticateClient_ValidSignedAssertionWithoutClientId_Authenticated()
     {
         // Arrange
         var tokenDecoder = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
@@ -119,7 +120,8 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
         var clientJwks = ClientJwkBuilder.GetClientJwks();
         var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
         {
-            Jwks = clientJwks.PublicJwks
+            Jwks = clientJwks.PublicJwks,
+            TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256
         };
         await AddEntity(client);
         var token = JwtBuilder.GetPrivateKeyJwt(client.Id, clientJwks.PrivateJwks, ClientTokenAudience.TokenEndpoint);
@@ -148,8 +150,54 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
             await clientAuthenticationService.AuthenticateClient(clientAuthentication, CancellationToken.None);
 
         // Assert
-        Assert.Equal(client.Id, clientAuthenticationResult.ClientId);
         Assert.True(clientAuthenticationResult.IsAuthenticated);
+        Assert.Equal(client.Id, clientAuthenticationResult.ClientId);
+        tokenDecoder.Verify();
+    }
+
+    [Fact]
+    public async Task AuthenticateClient_ValidEncryptedAssertionWithClientId_Authenticated()
+    {
+        // Arrange
+        var tokenDecoder = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(tokenDecoder);
+        });
+
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        {
+            Jwks = clientJwks.PublicJwks,
+            TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256,
+            TokenEndpointAuthEncryptionAlg = EncryptionAlg.RsaPKCS1,
+            TokenEndpointAuthEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256
+        };
+        await AddEntity(client);
+        var token = JwtBuilder.GetEncryptedPrivateKeyJwt(client.Id, clientJwks.PrivateJwks, ClientTokenAudience.TokenEndpoint);
+        var jsonWebToken = new JsonWebToken(token);
+
+        tokenDecoder
+            .Setup(x => x.Validate(token,
+                It.Is<ClientIssuedTokenDecodeArguments>(a =>
+                    a.ValidateLifetime && a.TokenType == TokenTypeHeaderConstants.PrivateKeyToken &&
+                    a.ClientId == client.Id && a.Audience == ClientTokenAudience.TokenEndpoint),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(jsonWebToken)
+            .Verifiable();
+
+        var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
+
+        var clientAuthentication = new ClientAssertionAuthentication(ClientTokenAudience.TokenEndpoint, client.Id,
+            ClientAssertionTypeConstants.PrivateKeyJwt, token);
+
+        // Act
+        var clientAuthenticationResult =
+            await clientAuthenticationService.AuthenticateClient(clientAuthentication, CancellationToken.None);
+
+        // Assert
+        Assert.True(clientAuthenticationResult.IsAuthenticated);
+        Assert.Equal(client.Id, clientAuthenticationResult.ClientId);
         tokenDecoder.Verify();
     }
 }
