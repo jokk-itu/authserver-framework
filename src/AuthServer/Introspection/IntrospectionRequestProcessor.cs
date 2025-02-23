@@ -1,7 +1,6 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Metrics;
@@ -42,15 +41,14 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
         var isInvalidToken = query is null;
         var hasExceededExpiration = query?.Token.ExpiresAt < DateTime.UtcNow;
         var isRevoked = query?.Token.RevokedAt is not null;
-
         var scope = query?.Token.Scope?.Split(' ') ?? [];
-        var hasInsufficientScope = !request.Scope.Intersect(scope).Any();
+        var authorizedScope = request.Scope.Intersect(scope).ToList();
 
         /*
          * If active is false, then the requesting client does not need to know more.
          * Therefore, the other optional properties are not set.
          */
-        if (isInvalidToken || hasExceededExpiration || isRevoked || hasInsufficientScope)
+        if (isInvalidToken || hasExceededExpiration || isRevoked || authorizedScope.Count == 0)
         {
             return new IntrospectionResponse
             {
@@ -67,7 +65,9 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
 
         var subject = query.SubjectFromGrantToken ?? query.SubjectFromClientToken;
 
-        _metricService.AddIntrospectedToken(query.Token is RefreshToken ? TokenTypeTag.RefreshToken : TokenTypeTag.AccessToken);
+        _metricService.AddIntrospectedToken(query.Token is RefreshToken
+            ? TokenTypeTag.RefreshToken
+            : TokenTypeTag.AccessToken);
 
         return new IntrospectionResponse
         {
@@ -79,7 +79,7 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
             Audience = token.Audience.Split(' '),
             IssuedAt = token.IssuedAt.ToUnixTimeSeconds(),
             NotBefore = token.NotBefore.ToUnixTimeSeconds(),
-            Scope = token.Scope,
+            Scope = string.Join(' ', authorizedScope),
             Subject = subject,
             TokenType = token.TokenType.GetDescription(),
             Username = username
