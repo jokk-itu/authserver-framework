@@ -45,7 +45,7 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
                 AuthorizationGrant = x,
                 Client = x.Client,
                 Subject = x.Subject,
-                SessionId = x.Session.Id
+                SessionId = x.Session.Id,
                 Acr = x.AuthenticationContextReference.Name
             })
             .SingleAsync(cancellationToken);
