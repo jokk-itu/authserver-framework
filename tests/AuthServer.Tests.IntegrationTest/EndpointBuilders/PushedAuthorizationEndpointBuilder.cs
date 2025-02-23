@@ -190,8 +190,9 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         var httpResponseMessage = await HttpClient.SendAsync(httpRequestMessage);
 
         TestOutputHelper.WriteLine(
-            "Received PushedAuthorization response {0}, Content: {1}",
+            "Received PushedAuthorization response {0}, Location: {1}, Content: {2}",
             httpResponseMessage.StatusCode,
+            httpResponseMessage.Headers.Location,
             await httpResponseMessage.Content.ReadAsStringAsync());
         
         var content = await httpResponseMessage.Content.ReadAsStringAsync();
