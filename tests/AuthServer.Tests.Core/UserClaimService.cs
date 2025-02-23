@@ -21,16 +21,16 @@ public class UserClaimService : IUserClaimService
             new Claim(ClaimNameConstants.Profile, UserConstants.Profile),
             new Claim(ClaimNameConstants.Picture, UserConstants.Picture),
             new Claim(ClaimNameConstants.Website, UserConstants.Website),
-            new Claim(ClaimNameConstants.Email, UserConstants.Email),
-            new Claim(ClaimNameConstants.EmailVerified, UserConstants.EmailVerified),
+            new Claim(ClaimNameConstants.Email, UserConstants.Email, ClaimValueTypes.Email),
+            new Claim(ClaimNameConstants.EmailVerified, UserConstants.EmailVerified, ClaimValueTypes.Boolean),
             new Claim(ClaimNameConstants.Gender, UserConstants.Gender),
-            new Claim(ClaimNameConstants.Birthdate, UserConstants.Birthdate),
+            new Claim(ClaimNameConstants.Birthdate, UserConstants.Birthdate, ClaimValueTypes.DateTime),
             new Claim(ClaimNameConstants.ZoneInfo, UserConstants.ZoneInfo),
             new Claim(ClaimNameConstants.Locale, UserConstants.Locale),
             new Claim(ClaimNameConstants.PhoneNumber, UserConstants.PhoneNumber),
-            new Claim(ClaimNameConstants.PhoneNumberVerified, UserConstants.PhoneNumberVerified),
-            new Claim(ClaimNameConstants.UpdatedAt, UserConstants.UpdatedAt),
-            new Claim(ClaimNameConstants.Roles, JsonSerializer.Serialize(UserConstants.Roles))
+            new Claim(ClaimNameConstants.PhoneNumberVerified, UserConstants.PhoneNumberVerified, ClaimValueTypes.Boolean),
+            new Claim(ClaimNameConstants.UpdatedAt, UserConstants.UpdatedAt, ClaimValueTypes.DateTime),
+            new Claim(ClaimNameConstants.Roles, JsonSerializer.Serialize(UserConstants.Roles), JsonClaimValueTypes.JsonArray)
         ]);
     }
 
