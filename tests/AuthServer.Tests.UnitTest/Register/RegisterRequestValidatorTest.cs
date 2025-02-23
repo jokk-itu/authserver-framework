@@ -1024,6 +1024,79 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_EmptyTokenEndpointAuthEncryptionAlgAndGivenTokenEndpointAuthEncryptionEnc_ExpectInvalidTokenEndpointAuthEncryptionEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            TokenEndpointAuthSigningAlg = JwsAlgConstants.RsaSha256,
+            TokenEndpointAuthEncryptionEnc = JweEncConstants.Aes128CbcHmacSha256
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidTokenEndpointAuthEncryptionEnc, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidTokenEndpointAuthEncryptionAlg_ExpectInvalidTokenEndpointAuthEncryptionAlg()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            TokenEndpointAuthSigningAlg = JwsAlgConstants.RsaSha256,
+            TokenEndpointAuthEncryptionAlg = "invalid_token_endpoint_auth_encryption_alg"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidTokenEndpointAuthEncryptionAlg, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidTokenEndpointAuthEncryptionEnc_ExpectInvalidTokenEndpointAuthEncryptionEnc()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            TokenEndpointAuthSigningAlg = JwsAlgConstants.RsaSha256,
+            TokenEndpointAuthEncryptionAlg = JweAlgConstants.RsaPKCS1,
+            TokenEndpointAuthEncryptionEnc = "invalid_token_endpoint_auth_encryption_enc"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidTokenEndpointAuthEncryptionEnc, processResult);
+    }
+
+    [Fact]
     public async Task Validate_InvalidRequestObjectSigningAlg_ExpectInvalidRequestObjectSigningAlg()
     {
         // Arrange
@@ -1071,7 +1144,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_InvalidRequestObjectEncryptionAlg_ExpectRequestObjectEncryptionAlg()
+    public async Task Validate_InvalidRequestObjectEncryptionAlg_ExpectInvalidRequestObjectEncryptionAlg()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -1444,6 +1517,8 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             IdTokenEncryptedResponseAlg = JweAlgConstants.RsaPKCS1,
             IdTokenEncryptedResponseEnc = JweEncConstants.Aes128CbcHmacSha256,
             IdTokenSignedResponseAlg = JwsAlgConstants.RsaSha256,
+            TokenEndpointAuthEncryptionAlg = JweAlgConstants.RsaPKCS1,
+            TokenEndpointAuthEncryptionEnc = JweEncConstants.Aes128CbcHmacSha256,
             TokenEndpointAuthSigningAlg = JwsAlgConstants.RsaSha256,
             Jwks = jwks.PublicJwks,
             JwksExpiration = 86400 * 30
@@ -1491,7 +1566,9 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.IdTokenEncryptedResponseAlg, validatedRequest.Value!.IdTokenEncryptedResponseAlg!.GetDescription());
         Assert.Equal(request.IdTokenEncryptedResponseEnc, validatedRequest.Value!.IdTokenEncryptedResponseEnc!.GetDescription());
         Assert.Equal(request.IdTokenSignedResponseAlg, validatedRequest.Value!.IdTokenSignedResponseAlg!.GetDescription());
-        Assert.Equal(request.TokenEndpointAuthSigningAlg, validatedRequest.Value!.TokenEndpointAuthSigningAlg.GetDescription());
+        Assert.Equal(request.TokenEndpointAuthEncryptionAlg, validatedRequest.Value!.TokenEndpointAuthEncryptionAlg!.GetDescription());
+        Assert.Equal(request.TokenEndpointAuthEncryptionEnc, validatedRequest.Value!.TokenEndpointAuthEncryptionEnc!.GetDescription());
+        Assert.Equal(request.TokenEndpointAuthSigningAlg, validatedRequest.Value!.TokenEndpointAuthSigningAlg!.GetDescription());
         Assert.Equal(request.Jwks, validatedRequest.Value!.Jwks);
         Assert.Equal(request.JwksExpiration, validatedRequest.Value!.JwksExpiration);
     }
