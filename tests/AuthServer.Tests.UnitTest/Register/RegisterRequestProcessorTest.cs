@@ -69,6 +69,8 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             IdTokenEncryptedResponseAlg = EncryptionAlg.RsaPKCS1,
             IdTokenEncryptedResponseEnc = EncryptionEnc.Aes128CbcHmacSha256,
             IdTokenSignedResponseAlg = SigningAlg.RsaSha256,
+            TokenEndpointAuthEncryptionAlg = EncryptionAlg.RsaPKCS1,
+            TokenEndpointAuthEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256,
             TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256,
             Jwks = jwks.PublicJwks,
             JwksUri = "https://webapp.authserverdk/jwks",
@@ -133,6 +135,8 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(request.RefreshTokenExpiration, response.RefreshTokenExpiration);
         Assert.Equal(request.JwksExpiration, response.JwksExpiration);
         Assert.Equal(request.RequestUriExpiration, response.RequestUriExpiration);
+        Assert.Equal(request.TokenEndpointAuthEncryptionAlg, response.TokenEndpointAuthEncryptionAlg);
+        Assert.Equal(request.TokenEndpointAuthEncryptionEnc, response.TokenEndpointAuthEncryptionEnc);
         Assert.Equal(request.TokenEndpointAuthSigningAlg, response.TokenEndpointAuthSigningAlg);
         Assert.Equal(request.RequestObjectEncryptionAlg, response.RequestObjectEncryptionAlg);
         Assert.Equal(request.RequestObjectEncryptionEnc, response.RequestObjectEncryptionEnc);
@@ -260,6 +264,8 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.RefreshTokenExpiration, response.RefreshTokenExpiration);
         Assert.Equal(client.JwksExpiration, response.JwksExpiration);
         Assert.Equal(client.RequestUriExpiration, response.RequestUriExpiration);
+        Assert.Equal(client.TokenEndpointAuthEncryptionAlg, response.TokenEndpointAuthEncryptionAlg);
+        Assert.Equal(client.TokenEndpointAuthEncryptionEnc, response.TokenEndpointAuthEncryptionEnc);
         Assert.Equal(client.TokenEndpointAuthSigningAlg, response.TokenEndpointAuthSigningAlg);
         Assert.Equal(client.RequestObjectEncryptionAlg, response.RequestObjectEncryptionAlg);
         Assert.Equal(client.RequestObjectEncryptionEnc, response.RequestObjectEncryptionEnc);
@@ -324,6 +330,8 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             SecretExpiration = 86400 * 30,
             JwksExpiration = 86400 * 30,
             RequestUriExpiration = 60,
+            TokenEndpointAuthEncryptionAlg = EncryptionAlg.RsaPKCS1,
+            TokenEndpointAuthEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256,
             TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256,
             RequestObjectEncryptionAlg = EncryptionAlg.RsaPKCS1,
             RequestObjectEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256,
