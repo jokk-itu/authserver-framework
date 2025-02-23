@@ -67,6 +67,8 @@ public static class Parameter
     public const string Jwks = "jwks";
     public const string JwksUri = "jwks_uri";
     public const string TokenEndpointAuthSigningAlg = "token_endpoint_auth_signing_alg";
+    public const string TokenEndpointAuthEncryptionAlg = "token_endpoint_auth_encryption_alg";
+    public const string TokenEndpointAuthEncryptionEnc = "token_endpoint_auth_encryption_enc";
     public const string DefaultAcrValues = "default_acr_values";
     public const string RequestUris = "request_uris";
     public const string RequirePushedAuthorizationRequests = "require_pushed_authorization_requests";

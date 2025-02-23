@@ -10,7 +10,6 @@ internal class RegisterRequest
     public string? SubjectType { get; init; }
     public string? DefaultMaxAge { get; init; }
     public string? TokenEndpointAuthMethod { get; init; }
-    public string? TokenEndpointAuthSigningAlg { get; init; }
     public string? Jwks { get; init; }
     public string? JwksUri { get; init; }
     public string? ClientUri { get; init; }
@@ -23,6 +22,9 @@ internal class RegisterRequest
     public bool? RequireSignedRequestObject { get; init; }
     public bool? RequireReferenceToken { get; init; }
     public bool? RequirePushedAuthorizationRequests { get; init; }
+    public string? TokenEndpointAuthEncryptionEnc { get; init; }
+    public string? TokenEndpointAuthEncryptionAlg { get; init; }
+    public string? TokenEndpointAuthSigningAlg { get; init; }
     public string? RequestObjectEncryptionEnc { get; init; }
     public string? RequestObjectEncryptionAlg { get; init; }
     public string? RequestObjectSigningAlg { get; init; }
