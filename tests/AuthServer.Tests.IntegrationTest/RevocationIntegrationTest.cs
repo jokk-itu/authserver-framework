@@ -2,6 +2,7 @@
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,8 @@ public class RevocationIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
-        var weatherClient = await AddWeatherClient();
+        var weatherClientSecret = CryptographyHelper.GetRandomString(16);
+        var weatherClient = await AddWeatherClient(weatherClientSecret);
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("worker-app")
