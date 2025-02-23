@@ -2,6 +2,7 @@
 using System.Text.Json;
 using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace AuthServer.Tests.Core;
 public class UserClaimService : IUserClaimService
@@ -36,5 +37,13 @@ public class UserClaimService : IUserClaimService
     public Task<string> GetUsername(string subjectIdentifier, CancellationToken cancellationToken)
     {
         return Task.FromResult(UserConstants.Username);
+    }
+
+    public Task<IEnumerable<Claim>> GetAccessClaims(string subjectIdentifier, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IEnumerable<Claim>>(
+        [
+            new Claim(ClaimNameConstants.Roles, JsonSerializer.Serialize(UserConstants.Roles), JsonClaimValueTypes.JsonArray)
+        ]);
     }
 }
