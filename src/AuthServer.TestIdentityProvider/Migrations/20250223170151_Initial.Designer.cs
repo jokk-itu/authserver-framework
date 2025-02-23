@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250220213444_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250223170151_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -543,10 +543,16 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<int?>("SubjectType")
                         .HasColumnType("int");
 
+                    b.Property<int?>("TokenEndpointAuthEncryptionAlg")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TokenEndpointAuthEncryptionEnc")
+                        .HasColumnType("int");
+
                     b.Property<int>("TokenEndpointAuthMethod")
                         .HasColumnType("int");
 
-                    b.Property<int>("TokenEndpointAuthSigningAlg")
+                    b.Property<int?>("TokenEndpointAuthSigningAlg")
                         .HasColumnType("int");
 
                     b.Property<string>("TosUri")

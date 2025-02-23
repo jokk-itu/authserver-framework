@@ -20,47 +20,47 @@ public class Client : Entity<string>
 #pragma warning restore
 
     /// <summary>
-    /// Name of client
+    /// Name of client.
     /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// Timestamp at the creation of the client
+    /// Timestamp at the creation of the client.
     /// </summary>
     public DateTime CreatedAt { get; private init; }
 
     /// <summary>
-    /// Secret of client
+    /// Secret of client.
     /// </summary>
     public string? SecretHash { get; private set; }
 
     /// <summary>
-    /// Secret expiration
+    /// Secret expiration.
     /// </summary>
     public DateTime? SecretExpiresAt { get; private set; }
 
     /// <summary>
-    /// Secret lifetime in seconds
+    /// Secret lifetime in seconds.
     /// </summary>
     public int? SecretExpiration { get; set; }
 
     /// <summary>
-    /// Access token lifetime in seconds
+    /// Access token lifetime in seconds.
     /// </summary>
     public int AccessTokenExpiration { get; set; }
 
     /// <summary>
-    /// Refresh token lifetime in seconds
+    /// Refresh token lifetime in seconds.
     /// </summary>
     public int? RefreshTokenExpiration { get; set; }
 
     /// <summary>
-    /// Authorization code lifetime in seconds
+    /// Authorization code lifetime in seconds.
     /// </summary>
     public int? AuthorizationCodeExpiration { get; set; }
 
     /// <summary>
-    /// Request uri from a PushedAuthorizationRequest lifetime in seconds
+    /// Request uri from a PushedAuthorizationRequest lifetime in seconds.
     /// </summary>
     public int? RequestUriExpiration { get; set; }
 
@@ -70,42 +70,42 @@ public class Client : Entity<string>
     public int? JwksExpiration { get; set; }
 
     /// <summary>
-    /// Uri to terms of service page
+    /// Uri to terms of service page.
     /// </summary>
     public string? TosUri { get; set; }
 
     /// <summary>
-    /// Uri to policy page
+    /// Uri to policy page.
     /// </summary>
     public string? PolicyUri { get; set; }
 
     /// <summary>
-    /// Uri to client
+    /// Uri to client.
     /// </summary>
     public string? ClientUri { get; set; }
 
     /// <summary>
-    /// Uri to logo of client
+    /// Uri to logo of client.
     /// </summary>
     public string? LogoUri { get; set; }
 
     /// <summary>
-    /// Uri which the identity provider can invoke to start authentication flow
+    /// Uri which the identity provider can invoke to start authentication flow.
     /// </summary>
     public string? InitiateLoginUri { get; set; }
 
     /// <summary>
-    /// Uri which the identity provider can invoke to log out the client
+    /// Uri which the identity provider can invoke to log out the client.
     /// </summary>
     public string? BackchannelLogoutUri { get; set; }
 
     /// <summary>
-    /// Uri to fetch a JWK set
+    /// Uri to fetch a JWK set.
     /// </summary>
     public string? JwksUri { get; set; }
 
     /// <summary>
-    /// JSON array of a JWK set
+    /// JSON array of a JWK set.
     /// </summary>
     public string? Jwks { get; set; }
 
@@ -115,12 +115,12 @@ public class Client : Entity<string>
     public DateTime? JwksExpiresAt { get; set; }
 
     /// <summary>
-    /// All tokens sent to the client are reference tokens
+    /// All tokens sent to the client are reference tokens.
     /// </summary>
     public bool RequireReferenceToken { get; set; }
 
     /// <summary>
-    /// All authorization attempts involving an end user requires an active consent grant
+    /// All authorization attempts involving an end user requires an active consent grant.
     /// </summary>
     public bool RequireConsent { get; set; }
 
@@ -138,40 +138,83 @@ public class Client : Entity<string>
 
     /// <summary>
     /// Maximum age since last authentication by end user in epoch format
-    /// Zero means it always requires authentication by end user
+    /// Zero means it always requires authentication by end user.
     /// </summary>
     public int? DefaultMaxAge { get; set; }
 
     /// <summary>
-    /// Type of the client
+    /// Type of the client.
     /// </summary>
     public ApplicationType ApplicationType { get; set; }
 
     /// <summary>
-    /// Method of client authentication which is used at the token endpoint
+    /// Method of client authentication which is used at the token endpoint.
     /// </summary>
     public TokenEndpointAuthMethod TokenEndpointAuthMethod { get; set; }
 
     /// <summary>
-    /// Type of subject identifier belonging to end users authenticating
+    /// Type of subject identifier belonging to end users authenticating.
     /// </summary>
     public SubjectType? SubjectType { get; set; }
 
     /// <summary>
-    /// Algorithm used to sign tokens for client authentication private_key_jwt.
+    /// Encoding used to encrypt tokens for client authentication.
     /// </summary>
-    public SigningAlg TokenEndpointAuthSigningAlg { get; set; }
+    public EncryptionEnc? TokenEndpointAuthEncryptionEnc { get; set; }
 
+    /// <summary>
+    /// Algorithm used to encrypt tokens for client authentication.
+    /// </summary>
+    public EncryptionAlg? TokenEndpointAuthEncryptionAlg { get; set; }
+
+    /// <summary>
+    /// Algorithm used to sign tokens for client authentication.
+    /// </summary>
+    public SigningAlg? TokenEndpointAuthSigningAlg { get; set; }
+
+    /// <summary>
+    /// Encoding used to encrypt claims for userinfo responses.
+    /// </summary>
     public EncryptionEnc? UserinfoEncryptedResponseEnc { get; set; }
+
+    /// <summary>
+    /// Algorithm used to encrypt claims for userinfo responses.
+    /// </summary>
     public EncryptionAlg? UserinfoEncryptedResponseAlg { get; set; }
+
+    /// <summary>
+    /// Algorithm used to sign claims for userinfo responses.
+    /// </summary>
     public SigningAlg? UserinfoSignedResponseAlg { get; set; }
 
+    /// <summary>
+    /// Encoding used to encrypt request tokens.
+    /// </summary>
     public EncryptionEnc? RequestObjectEncryptionEnc { get; set; }
+
+    /// <summary>
+    /// Algorithm used to encrypt request tokens.
+    /// </summary>
     public EncryptionAlg? RequestObjectEncryptionAlg { get; set; }
+
+    /// <summary>
+    /// Algorithm used to sign request tokens.
+    /// </summary>
     public SigningAlg? RequestObjectSigningAlg { get; set; }
 
+    /// <summary>
+    /// Encoding used to encrypt id tokens.
+    /// </summary>
     public EncryptionEnc? IdTokenEncryptedResponseEnc { get; set; }
+
+    /// <summary>
+    /// Algorithm used to encrypt id tokens.
+    /// </summary>
     public EncryptionAlg? IdTokenEncryptedResponseAlg { get; set; }
+
+    /// <summary>
+    /// Algorithm used to sign id tokens.
+    /// </summary>
     public SigningAlg? IdTokenSignedResponseAlg { get; set; }
 
     public SectorIdentifier? SectorIdentifier { get; set; }
@@ -182,8 +225,6 @@ public class Client : Entity<string>
     public ICollection<Scope> Scopes { get; set; } = [];
     public ICollection<Contact> Contacts { get; set; } = [];
     public ICollection<ResponseType> ResponseTypes { get; set; } = [];
-
-
     public ICollection<Consent> Consents { get; set; } = [];
     public ICollection<AuthorizationGrant> AuthorizationGrants { get; set; } = [];
     public ICollection<ClientToken> ClientTokens { get; set; } = [];

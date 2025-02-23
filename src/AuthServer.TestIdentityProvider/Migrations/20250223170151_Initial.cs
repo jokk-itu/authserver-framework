@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -148,7 +148,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     ApplicationType = table.Column<int>(type: "int", nullable: false),
                     TokenEndpointAuthMethod = table.Column<int>(type: "int", nullable: false),
                     SubjectType = table.Column<int>(type: "int", nullable: true),
-                    TokenEndpointAuthSigningAlg = table.Column<int>(type: "int", nullable: false),
+                    TokenEndpointAuthEncryptionEnc = table.Column<int>(type: "int", nullable: true),
+                    TokenEndpointAuthEncryptionAlg = table.Column<int>(type: "int", nullable: true),
+                    TokenEndpointAuthSigningAlg = table.Column<int>(type: "int", nullable: true),
                     UserinfoEncryptedResponseEnc = table.Column<int>(type: "int", nullable: true),
                     UserinfoEncryptedResponseAlg = table.Column<int>(type: "int", nullable: true),
                     UserinfoSignedResponseAlg = table.Column<int>(type: "int", nullable: true),
