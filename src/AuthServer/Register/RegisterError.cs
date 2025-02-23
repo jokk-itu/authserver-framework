@@ -70,15 +70,6 @@ internal class RegisterError
     public static readonly ProcessError InvalidJwksUri =
         new(ErrorCode.InvalidClientMetadata, "invalid jwks_uri", ResultCode.BadRequest);
 
-    public static readonly ProcessError InvalidRequireSignedRequestObject =
-        new(ErrorCode.InvalidClientMetadata, "invalid require_signed_request_object", ResultCode.BadRequest);
-
-    public static readonly ProcessError InvalidRequireReferenceToken =
-        new(ErrorCode.InvalidClientMetadata, "invalid require_reference_token", ResultCode.BadRequest);
-
-    public static readonly ProcessError InvalidRequirePushedAuthorizationRequests =
-        new(ErrorCode.InvalidClientMetadata, "invalid require_pushed_authorization_requests", ResultCode.BadRequest);
-
     public static readonly ProcessError InvalidSubjectType =
         new(ErrorCode.InvalidClientMetadata, "invalid subject_type", ResultCode.BadRequest);
 
@@ -111,6 +102,12 @@ internal class RegisterError
 
     public static readonly ProcessError InvalidTokenEndpointAuthSigningAlg =
         new(ErrorCode.InvalidClientMetadata, "invalid token_endpoint_auth_signing_alg", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidTokenEndpointAuthEncryptionAlg =
+        new(ErrorCode.InvalidClientMetadata, "invalid token_endpoint_auth_encryption_alg", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidTokenEndpointAuthEncryptionEnc =
+        new(ErrorCode.InvalidClientMetadata, "invalid token_endpoint_auth_encryption_enc", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidRequestObjectSigningAlg =
         new(ErrorCode.InvalidClientMetadata, "invalid request_object_signing_alg", ResultCode.BadRequest);
