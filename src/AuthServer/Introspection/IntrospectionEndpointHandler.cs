@@ -36,7 +36,9 @@ internal class IntrospectionEndpointHandler : IEndpointHandler
                 JwtId = response.JwtId,
                 NotBefore = response.NotBefore,
                 Scope = response.Scope,
-                Subject = response.Subject
+                Subject = response.Subject,
+                AuthTime = response.AuthTime,
+                Acr = response.Acr
             }),
             error => Results.Extensions.OAuthBadRequest(error));
     }
