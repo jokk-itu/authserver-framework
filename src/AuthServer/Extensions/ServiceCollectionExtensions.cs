@@ -22,6 +22,7 @@ using AuthServer.GrantManagement;
 using AuthServer.GrantManagement.Query;
 using AuthServer.GrantManagement.Revoke;
 using AuthServer.Introspection;
+using AuthServer.Jwks;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Options;
@@ -97,6 +98,7 @@ public static class ServiceCollectionExtensions
         AddPushedAuthorization(services);
         AddRegister(services);
         AddGrantManagement(services);
+        AddJwks(services);
 
         return services;
     }
@@ -307,5 +309,11 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>, GrantManagementQueryRequestProcessor>();
+    }
+    private static void AddJwks(IServiceCollection services)
+    {
+        services
+            .AddKeyedScoped<IEndpointHandler, JwksEndpointHandler>(EndpointNameConstants.Jwks)
+            .AddSingleton<IEndpointModule, JwksEndpointModule>();
     }
 }
