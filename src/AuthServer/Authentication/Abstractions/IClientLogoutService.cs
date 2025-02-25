@@ -3,12 +3,12 @@
 internal interface IClientLogoutService
 {
     /// <summary>
-    /// Requests the client's backchannel logout endpoint.
+    /// Requests logout for all provided clients at the backchannel logout endpoint.
     /// </summary>
-    /// <param name="clientId"></param>
+    /// <param name="clientIds"></param>
     /// <param name="sessionId"></param>
     /// <param name="subjectIdentifier"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Logout(string clientId, string? sessionId, string? subjectIdentifier, CancellationToken cancellationToken);
+    Task Logout(IReadOnlyCollection<string> clientIds, string? sessionId, string? subjectIdentifier, CancellationToken cancellationToken);
 }
