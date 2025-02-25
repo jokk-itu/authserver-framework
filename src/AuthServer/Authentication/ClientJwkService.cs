@@ -84,8 +84,6 @@ internal class ClientJwkService : IClientJwkService
 
     private async Task<string> RefreshJwks(string? clientId, string jwksUri, CancellationToken cancellationToken)
     {
-        // TODO implement a Timeout to reduce Denial-Of-Service attacks
-        // TODO implement retry delegate handler (5XX and 429)
         try
         {
             using var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.Client);

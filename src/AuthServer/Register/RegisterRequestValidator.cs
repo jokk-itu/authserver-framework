@@ -755,7 +755,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         {
             return null;
         }
-        // TODO verify the application_type is web
+        
         if (!UrlHelper.IsUrlValidForWebClient(request.JwksUri))
         {
             return RegisterError.InvalidJwksUri;

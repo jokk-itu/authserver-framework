@@ -126,8 +126,6 @@ internal class SecureRequestService : ISecureRequestService
     public async Task<AuthorizeRequestDto?> GetRequestByReference(Uri requestUri, string clientId,
         ClientTokenAudience audience, CancellationToken cancellationToken)
     {
-        // TODO implement a Timeout to reduce Denial-Of-Service attacks, where a RequestUri recursively calls Authorize
-        // TODO implement retry delegate handler (5XX and 429)
         var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.Client);
         var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MimeTypeConstants.OAuthRequestJwt));

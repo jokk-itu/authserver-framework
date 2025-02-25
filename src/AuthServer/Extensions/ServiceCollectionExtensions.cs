@@ -63,7 +63,12 @@ public static class ServiceCollectionExtensions
         services.AddDataProtection();
         services.AddSingleton<IMetricService, MetricService>();
         services.AddHttpContextAccessor();
-        services.AddHttpClient(HttpClientNameConstants.Client);
+        services.AddHttpClient(
+            HttpClientNameConstants.Client, client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(2);
+                client.MaxResponseContentBufferSize = 8192;
+            });
 
         services
             .AddDbContext<AuthorizationDbContext>(databaseConfigurator)
