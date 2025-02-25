@@ -1,6 +1,7 @@
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Endpoints;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,7 @@ internal class GrantManagementEndpointModule : IEndpointModule
     {
         var revokeRouteBuilder = endpointRouteBuilder.MapDelete(
             "connect/grants/{grant_id}",
-            (HttpContext httpContext, [FromKeyedServices("GrantManagementRevoke")] IEndpointHandler endpointHandler,
+            (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.GrantManagementRevoke)] IEndpointHandler endpointHandler,
                 CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         revokeRouteBuilder
@@ -30,7 +31,7 @@ internal class GrantManagementEndpointModule : IEndpointModule
 
         var queryRouteBuilder = endpointRouteBuilder.MapGet(
             "connect/grants/{grant_id}",
-            (HttpContext httpContext, [FromKeyedServices("GrantManagementQuery")] IEndpointHandler endpointHandler,
+            (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.GrantManagementQuery)] IEndpointHandler endpointHandler,
                 CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         queryRouteBuilder

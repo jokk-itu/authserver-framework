@@ -1,5 +1,6 @@
 ﻿using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Endpoints;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,7 @@ internal class AuthorizeEndpointModule : IEndpointModule
         var routeBuilder = endpointRouteBuilder.MapMethods(
             "connect/authorize",
             ["GET", "POST"],
-            (HttpContext httpContext, [FromKeyedServices("Authorize")] IEndpointHandler endpointHandler,
+            (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Authorize)] IEndpointHandler endpointHandler,
                 CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         routeBuilder
