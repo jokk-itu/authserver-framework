@@ -82,12 +82,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
             .AddScoped<IAuthorizationCodeEncoder, AuthorizationCodeEncoder>();
 
-        services
-            .AddScoped<IClientAuthenticationService, ClientAuthenticationService>()
-            .AddScoped<IClientJwkService, ClientJwkService>()
-            .AddScoped<IClientSectorService, ClientSectorService>()
-            .AddScoped<IClientLogoutService, ClientLogoutService>();
-
+        AddClientServices(services);
         AddAuthServerAuthentication(services);
         AddAuthServerAuthorization(services);
         AddAuthServerOptions(services);
@@ -104,6 +99,15 @@ public static class ServiceCollectionExtensions
         AddGrantManagement(services);
 
         return services;
+    }
+
+    private static void AddClientServices(IServiceCollection services)
+    {
+        services
+            .AddScoped<IClientAuthenticationService, ClientAuthenticationService>()
+            .AddScoped<IClientJwkService, ClientJwkService>()
+            .AddScoped<IClientSectorService, ClientSectorService>()
+            .AddScoped<IClientLogoutService, ClientLogoutService>();
     }
 
     private static void AddRepositories(IServiceCollection services)
