@@ -15,6 +15,7 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
+using AuthServer.Discovery;
 using AuthServer.Endpoints;
 using AuthServer.EndSession;
 using AuthServer.EndSession.Abstractions;
@@ -98,6 +99,7 @@ public static class ServiceCollectionExtensions
         AddPushedAuthorization(services);
         AddRegister(services);
         AddGrantManagement(services);
+        AddDiscovery(services);
         AddJwks(services);
 
         return services;
@@ -310,6 +312,14 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>, GrantManagementQueryRequestProcessor>();
     }
+
+    private static void AddDiscovery(IServiceCollection services)
+    {
+        services
+            .AddKeyedScoped<IEndpointHandler, DiscoveryEndpointHandler>(EndpointNameConstants.Discovery)
+            .AddSingleton<IEndpointModule, DiscoveryEndpointModule>();
+    }
+
     private static void AddJwks(IServiceCollection services)
     {
         services
