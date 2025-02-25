@@ -1,6 +1,7 @@
 ﻿using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Endpoints;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +18,7 @@ internal class UserinfoEndpointModule : IEndpointModule
             .MapMethods(
                 "connect/userinfo",
                 ["GET", "POST"],
-                (HttpContext httpContext, [FromKeyedServices("Userinfo")] IEndpointHandler endpointHandler,
+                (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Userinfo)] IEndpointHandler endpointHandler,
                     CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         routeBuilder

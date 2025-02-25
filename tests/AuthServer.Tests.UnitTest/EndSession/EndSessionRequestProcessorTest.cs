@@ -63,8 +63,12 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
         // Assert
         Assert.NotNull(session.RevokedAt);
         clientLogoutService.Verify(
-            x => x.Logout(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), CancellationToken.None),
-            Times.Never);
+            x => x.Logout(
+                It.Is<IReadOnlyCollection<string>>(y => y.Count == 0),
+                session.Id,
+                null,
+                CancellationToken.None),
+            Times.Once);
     }
 
     [Fact]
@@ -89,7 +93,11 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
         await AddEntity(authorizationGrant);
 
         clientLogoutService
-            .Setup(x => x.Logout(client.Id, session.Id, subjectIdentifier.Id, CancellationToken.None))
+            .Setup(x => x.Logout(
+                It.Is<IReadOnlyCollection<string>>(y => y.SingleOrDefault() == client.Id),
+                session.Id,
+                subjectIdentifier.Id,
+                CancellationToken.None))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
@@ -171,7 +179,11 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
         // Assert
         Assert.NotNull(authorizationGrant.RevokedAt);
         clientLogoutService.Verify(
-            x => x.Logout(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), CancellationToken.None),
+            x => x.Logout(
+                It.Is<IReadOnlyCollection<string>>(y => y.SingleOrDefault() == client.Id),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                CancellationToken.None),
             Times.Never);
     }
 
@@ -197,7 +209,11 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
         await AddEntity(authorizationGrant);
 
         clientLogoutService
-            .Setup(x => x.Logout(client.Id, session.Id, subjectIdentifier.Id, CancellationToken.None))
+            .Setup(x => x.Logout(
+                It.Is<IReadOnlyCollection<string>>(y => y.Single() == client.Id),
+                session.Id,
+                subjectIdentifier.Id,
+                CancellationToken.None))
             .Returns(Task.CompletedTask)
             .Verifiable();
 

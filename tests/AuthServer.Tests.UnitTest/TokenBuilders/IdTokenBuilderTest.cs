@@ -67,7 +67,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         Assert.Equal(authorizationGrant.Nonces.Single().Value, validatedTokenResult.Claims[ClaimNameConstants.Nonce].ToString());
         Assert.Equal(UserConstants.Name, validatedTokenResult.ClaimsIdentity.Name);
         Assert.Equal(LevelOfAssuranceLow, validatedTokenResult.Claims[ClaimNameConstants.Acr].ToString());
-        // TODO validate Amr claim
+        Assert.Equal(AuthenticationMethodReferenceConstants.Password, validatedTokenResult.Claims[ClaimNameConstants.Amr].ToString());
         Assert.NotNull(validatedTokenResult.Claims[ClaimNameConstants.Jti]);
     }
 

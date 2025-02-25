@@ -1,5 +1,6 @@
 ﻿using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Endpoints;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ internal class RevocationEndpointModule : IEndpointModule
             .MapMethods(
                 "connect/revoke",
                 ["POST"],
-                (HttpContext httpContext, [FromKeyedServices("Revocation")] IEndpointHandler endpointHandler,
+                (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Revocation)] IEndpointHandler endpointHandler,
                     CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         routeBuilder

@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
+using AuthServer.Core;
+using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
@@ -16,28 +18,28 @@ internal class LogoutTokenBuilder : ITokenBuilder<LogoutTokenArguments>
 {
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IOptionsSnapshot<JwksDocument> _jwksDocumentOptions;
-    private readonly ICachedClientStore _cachedClientStore;
     private readonly ITokenSecurityService _tokenSecurityService;
     private readonly IMetricService _metricService;
+    private readonly AuthorizationDbContext _authorizationDbContext;
 
     public LogoutTokenBuilder(
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         IOptionsSnapshot<JwksDocument> jwksDocumentOptions,
-        ICachedClientStore cachedClientStore,
         ITokenSecurityService tokenSecurityService,
-        IMetricService metricService)
+        IMetricService metricService,
+        AuthorizationDbContext authorizationDbContext)
     {
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _jwksDocumentOptions = jwksDocumentOptions;
-        _cachedClientStore = cachedClientStore;
         _tokenSecurityService = tokenSecurityService;
         _metricService = metricService;
+        _authorizationDbContext = authorizationDbContext;
     }
 
     public async Task<string> BuildToken(LogoutTokenArguments arguments, CancellationToken cancellationToken)
     {
         var stopWatch = Stopwatch.StartNew();
-        var cachedClient = await _cachedClientStore.Get(arguments.ClientId, cancellationToken);
+        var client = (await _authorizationDbContext.FindAsync<Client>([arguments.ClientId], cancellationToken))!;
         var claims = new Dictionary<string, object?>
         {
             { ClaimNameConstants.Aud, arguments.ClientId },
@@ -54,9 +56,9 @@ internal class LogoutTokenBuilder : ITokenBuilder<LogoutTokenArguments>
         };
 
         var now = DateTime.UtcNow;
-        var signingKey = _jwksDocumentOptions.Value.GetSigningKey(cachedClient.IdTokenSignedResponseAlg!.Value);
+        var signingKey = _jwksDocumentOptions.Value.GetSigningKey(client.IdTokenSignedResponseAlg!.Value);
         var signingCredentials =
-            new SigningCredentials(signingKey, cachedClient.IdTokenSignedResponseAlg.GetDescription());
+            new SigningCredentials(signingKey, client.IdTokenSignedResponseAlg.GetDescription());
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -69,13 +71,13 @@ internal class LogoutTokenBuilder : ITokenBuilder<LogoutTokenArguments>
             Claims = claims
         };
 
-        if (cachedClient.IdTokenEncryptedResponseAlg is not null &&
-            cachedClient.IdTokenEncryptedResponseEnc is not null)
+        if (client.IdTokenEncryptedResponseAlg is not null &&
+            client.IdTokenEncryptedResponseEnc is not null)
         {
             tokenDescriptor.EncryptingCredentials = await _tokenSecurityService.GetEncryptingCredentials(
                 arguments.ClientId,
-                cachedClient.IdTokenEncryptedResponseAlg.Value,
-                cachedClient.IdTokenEncryptedResponseEnc.Value,
+                client.IdTokenEncryptedResponseAlg.Value,
+                client.IdTokenEncryptedResponseEnc.Value,
                 cancellationToken);
         }
 

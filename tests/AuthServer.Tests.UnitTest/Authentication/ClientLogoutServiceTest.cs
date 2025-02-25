@@ -41,7 +41,7 @@ public class ClientLogoutServiceTest : BaseUnitTest
         await AddEntity(client);
 
         // Act
-        await clientLogoutService.Logout(client.Id, null, null, CancellationToken.None);
+        await clientLogoutService.Logout([client.Id], null, null, CancellationToken.None);
 
         // Assert
         httpClientFactory.Verify();
@@ -76,7 +76,7 @@ public class ClientLogoutServiceTest : BaseUnitTest
         await AddEntity(client);
 
         // Act
-        await clientLogoutService.Logout(client.Id, session.Id, subjectIdentifier.Id, CancellationToken.None);
+        await clientLogoutService.Logout([client.Id], session.Id, subjectIdentifier.Id, CancellationToken.None);
 
         // Assert
         httpClientFactory.Verify();

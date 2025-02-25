@@ -1,6 +1,7 @@
 ﻿using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Endpoints;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ internal class RegisterEndpointModule : IEndpointModule
         var postRegisterBuilder = endpointRouteBuilder.MapMethods(
             "connect/register",
             ["POST"],
-            (HttpContext httpContext, [FromKeyedServices("Register")] IEndpointHandler endpointHandler,
+            (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Register)] IEndpointHandler endpointHandler,
                 CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         postRegisterBuilder
@@ -34,7 +35,7 @@ internal class RegisterEndpointModule : IEndpointModule
             .MapMethods(
                 "connect/register",
                 ["GET", "PUT", "DELETE"],
-                (HttpContext httpContext, [FromKeyedServices("Register")] IEndpointHandler endpointHandler,
+                (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Register)] IEndpointHandler endpointHandler,
                     CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         manageRegisterBuilder

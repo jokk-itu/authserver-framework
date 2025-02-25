@@ -98,10 +98,12 @@ internal class EndSessionRequestProcessor : IRequestProcessor<EndSessionValidate
     private async Task BackchannelLogout(IEnumerable<Client> clients, EndSessionValidatedRequest request,
         CancellationToken cancellationToken)
     {
-        foreach (var client in clients.Where(x => x.BackchannelLogoutUri is not null))
-        {
-            await _clientLogoutService.Logout(client.Id, request.SessionId, request.SubjectIdentifier, cancellationToken);
-        }
+        var clientIds = clients
+            .Where(x => x.BackchannelLogoutUri is not null)
+            .Select(x => x.Id)
+            .ToList();
+
+        await _clientLogoutService.Logout(clientIds, request.SessionId, request.SubjectIdentifier, cancellationToken);
     }
 
     private sealed record SessionQuery(IEnumerable<Client> Clients);

@@ -1,5 +1,6 @@
 ﻿using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Endpoints;
 using AuthServer.Endpoints.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,7 @@ internal class IntrospectionEndpointModule : IEndpointModule
         var routeBuilder = endpointRouteBuilder.MapMethods(
             "connect/introspection",
             ["POST"],
-            (HttpContext httpContext, [FromKeyedServices("Introspection")] IEndpointHandler endpointHandler,
+            (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Introspection)] IEndpointHandler endpointHandler,
                 CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
         routeBuilder
