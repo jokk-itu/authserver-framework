@@ -2,6 +2,7 @@
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
@@ -35,7 +36,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     protected readonly PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder;
     protected readonly GrantManagementEndpointBuilder GrantManagementEndpointBuilder;
 
-    protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, TestOutputHelper);
+    protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, EndpointResolver, TestOutputHelper);
 
     private readonly IOptionsMonitor<DiscoveryDocument> _discoveryDocumentOptions;
     protected DiscoveryDocument DiscoveryDocument => _discoveryDocumentOptions.CurrentValue;
@@ -46,7 +47,9 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     private readonly IOptionsMonitor<JwksDocument> _jwksDocumentOptions;
     protected JwksDocument JwksDocument => _jwksDocumentOptions.CurrentValue;
 
-    protected JwtBuilder JwtBuilder => new (DiscoveryDocument, JwksDocument);
+    protected IEndpointResolver EndpointResolver { get; }
+
+    protected JwtBuilder JwtBuilder => new (DiscoveryDocument, JwksDocument, EndpointResolver);
 
     protected const string LevelOfAssuranceLow = AuthenticationContextReferenceConstants.LevelOfAssuranceLow;
     protected const string LevelOfAssuranceSubstantial = AuthenticationContextReferenceConstants.LevelOfAssuranceSubstantial;
@@ -74,6 +77,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         _discoveryDocumentOptions = _factory.Services.GetRequiredService<IOptionsMonitor<DiscoveryDocument>>();
         _userInteractionOptions = _factory.Services.GetRequiredService<IOptionsMonitor<UserInteraction>>();
         _jwksDocumentOptions = _factory.Services.GetRequiredService<IOptionsMonitor<JwksDocument>>();
+        EndpointResolver = _factory.Services.GetRequiredService<IEndpointResolver>();
 
         ServiceProvider.GetRequiredService<AuthorizationDbContext>().Database.EnsureDeleted();
         ServiceProvider.GetRequiredService<AuthorizationDbContext>().Database.Migrate();
@@ -84,42 +88,49 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
             dataProtectionProvider,
             DiscoveryDocument,
             JwksDocument,
+            EndpointResolver,
             TestOutputHelper);
 
         RegisterEndpointBuilder = new RegisterEndpointBuilder(
             GetHttpClient(),
             DiscoveryDocument,
             JwksDocument,
+            EndpointResolver,
             TestOutputHelper);
 
         IntrospectionEndpointBuilder = new IntrospectionEndpointBuilder(
             GetHttpClient(),
             DiscoveryDocument,
             JwksDocument,
+            EndpointResolver,
             TestOutputHelper);
 
         RevocationEndpointBuilder = new RevocationEndpointBuilder(
             GetHttpClient(),
             DiscoveryDocument,
             JwksDocument,
+            EndpointResolver,
             TestOutputHelper);
 
         UserinfoEndpointBuilder = new UserinfoEndpointBuilder(
             GetHttpClient(),
             DiscoveryDocument,
             JwksDocument,
+            EndpointResolver,
             TestOutputHelper);
 
         PushedAuthorizationEndpointBuilder = new PushedAuthorizationEndpointBuilder(
             GetHttpClient(),
             DiscoveryDocument,
             JwksDocument,
+            EndpointResolver,
             TestOutputHelper);
 
         GrantManagementEndpointBuilder = new GrantManagementEndpointBuilder(
             GetHttpClient(),
             DiscoveryDocument,
             JwksDocument,
+            EndpointResolver,
             TestOutputHelper);
     }
 

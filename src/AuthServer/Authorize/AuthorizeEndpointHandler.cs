@@ -56,9 +56,9 @@ internal class AuthorizeEndpointHandler : IEndpointHandler
 
                     return error switch
                     {
-                        { Error: ErrorCode.LoginRequired } => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.LoginUri, httpContext, substituteRequest),
-                        { Error: ErrorCode.ConsentRequired } => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.ConsentUri, httpContext, substituteRequest),
-                        _ => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.AccountSelectionUri, httpContext, substituteRequest)
+                        { Error: ErrorCode.LoginRequired } => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.LoginUri!, httpContext, substituteRequest),
+                        { Error: ErrorCode.ConsentRequired } => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.ConsentUri!, httpContext, substituteRequest),
+                        _ => Results.Extensions.LocalRedirectWithForwardSubstitutedRequest(_userInteractionOptions.Value.AccountSelectionUri!, httpContext, substituteRequest)
                     };
                 }
 

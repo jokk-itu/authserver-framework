@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Web;
+using AuthServer.Endpoints.Abstractions;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
@@ -27,8 +28,9 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         HttpClient httpClient,
         DiscoveryDocument discoveryDocument,
         JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
         ITestOutputHelper testOutputHelper)
-        : base(httpClient, discoveryDocument, jwksDocument, testOutputHelper)
+        : base(httpClient, discoveryDocument, jwksDocument, endpointResolver, testOutputHelper)
     {
     }
 
@@ -136,7 +138,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
                     .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
                     .ToDictionary();
 
-                var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+                var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizationEndpoint);
 
                 _parameters.Clear();
                 _parameters.Add(new(Parameter.Request, requestObject));
@@ -159,7 +161,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
                 .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
                 .ToDictionary();
 
-            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizationEndpoint);
 
             _parameters.Clear();
             _parameters.Add(new(Parameter.Request, requestObject));
@@ -177,7 +179,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
                 .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
                 .ToDictionary();
 
-            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizeEndpoint);
+            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _privateJwks!, ClientTokenAudience.PushedAuthorizationEndpoint);
 
             _parameters.Clear();
             _parameters.Add(new(Parameter.Request, requestObject));

@@ -5,6 +5,7 @@ using AuthServer.Options;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using Xunit.Abstractions;
@@ -19,8 +20,9 @@ public class RegisterEndpointBuilder : EndpointBuilder
         HttpClient httpClient,
         DiscoveryDocument discoveryDocument,
         JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
         ITestOutputHelper testOutputHelper)
-        : base(httpClient, discoveryDocument, jwksDocument, testOutputHelper)
+        : base(httpClient, discoveryDocument, jwksDocument, endpointResolver, testOutputHelper)
     {
     }
 

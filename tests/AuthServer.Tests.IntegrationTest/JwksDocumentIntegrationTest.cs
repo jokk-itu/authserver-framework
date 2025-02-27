@@ -32,7 +32,7 @@ public class JwksDocumentIntegrationTest : BaseIntegrationTest
         var token = jsonWebTokenHandler.CreateToken(securityTokenDescriptor);
 
         var httpClient = GetHttpClient();
-        var response = await httpClient.GetAsync(DiscoveryDocument.JwksUri);
+        var response = await httpClient.GetAsync(EndpointResolver.JwksEndpoint);
         response.EnsureSuccessStatusCode();
         var responseContent = await response.Content.ReadAsStringAsync();
         var jwks = JsonWebKeySet.Create(responseContent);

@@ -4,6 +4,7 @@ using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
@@ -22,7 +23,7 @@ namespace AuthServer.Tests.UnitTest;
 public abstract class BaseUnitTest
 {
     private readonly SqliteConnection _connection;
-    internal AuthorizationDbContext IdentityContext;
+    internal AuthorizationDbContext IdentityContext = null!;
 
     private readonly RsaSecurityKey RsaSecurityKey = new RsaSecurityKey(RSA.Create(3072))
     {
@@ -35,9 +36,10 @@ public abstract class BaseUnitTest
     };
 
     protected ITestOutputHelper OutputHelper;
-    protected JwtBuilder JwtBuilder;
-    protected DiscoveryDocument DiscoveryDocument;
-    protected JwksDocument JwksDocument;
+    protected JwtBuilder JwtBuilder = null!;
+    protected DiscoveryDocument DiscoveryDocument = null!;
+    protected JwksDocument JwksDocument = null!;
+    protected IEndpointResolver EndpointResolver = null!;
     protected SigningAlg TokenSigningAlg = SigningAlg.RsaSha256;
 
     protected const string LevelOfAssuranceLow = AuthenticationContextReferenceConstants.LevelOfAssuranceLow;
@@ -163,7 +165,10 @@ public abstract class BaseUnitTest
         var jwksDocument = serviceProvider.GetRequiredService<IOptionsSnapshot<JwksDocument>>();
         JwksDocument = jwksDocument.Value;
 
-        JwtBuilder = new JwtBuilder(DiscoveryDocument, JwksDocument);
+        var endpointResolver = serviceProvider.GetRequiredService<IEndpointResolver>();
+        EndpointResolver = endpointResolver;
+
+        JwtBuilder = new JwtBuilder(DiscoveryDocument, JwksDocument, EndpointResolver);
 
         return serviceProvider;
     }

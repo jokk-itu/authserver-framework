@@ -87,7 +87,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             Expires = now.AddSeconds(-1),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -138,7 +138,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             Expires = now.AddSeconds(60),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = "invalid_token_type"
         });
 
@@ -189,7 +189,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             Expires = now.AddSeconds(60),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -291,7 +291,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             Expires = now.AddSeconds(60),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -348,7 +348,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             IssuedAt = now,
             SigningCredentials = signingCredentials,
             EncryptingCredentials = encryptingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -401,7 +401,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             Expires = now.AddSeconds(60),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -457,7 +457,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             Expires = now.AddSeconds(60),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -515,7 +515,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             IssuedAt = now,
             SigningCredentials = signingCredentials,
             EncryptingCredentials = encryptingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -568,7 +568,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             Expires = now.AddSeconds(60),
             IssuedAt = now,
             SigningCredentials = signingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 
@@ -626,7 +626,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             IssuedAt = now,
             SigningCredentials = signingCredentials,
             EncryptingCredentials = encryptingCredentials,
-            Audience = DiscoveryDocument.TokenEndpoint,
+            Audience = EndpointResolver.TokenEndpoint,
             TokenType = TokenTypeHeaderConstants.PrivateKeyToken
         });
 

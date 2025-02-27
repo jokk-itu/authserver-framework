@@ -15,13 +15,16 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
+using AuthServer.Discovery;
 using AuthServer.Endpoints;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.EndSession;
 using AuthServer.EndSession.Abstractions;
 using AuthServer.GrantManagement;
 using AuthServer.GrantManagement.Query;
 using AuthServer.GrantManagement.Revoke;
 using AuthServer.Introspection;
+using AuthServer.Jwks;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Options;
@@ -63,6 +66,7 @@ public static class ServiceCollectionExtensions
         services.AddScopedFeatureManagement();
         services.AddDataProtection();
         services.AddSingleton<IMetricService, MetricService>();
+        services.AddScoped<IEndpointResolver, EndpointResolver>();
         services.AddHttpContextAccessor();
         services.AddHttpClient(
             HttpClientNameConstants.Client, client =>
@@ -82,12 +86,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
             .AddScoped<IAuthorizationCodeEncoder, AuthorizationCodeEncoder>();
 
-        services
-            .AddScoped<IClientAuthenticationService, ClientAuthenticationService>()
-            .AddScoped<IClientJwkService, ClientJwkService>()
-            .AddScoped<IClientSectorService, ClientSectorService>()
-            .AddScoped<IClientLogoutService, ClientLogoutService>();
-
+        AddClientServices(services);
         AddAuthServerAuthentication(services);
         AddAuthServerAuthorization(services);
         AddAuthServerOptions(services);
@@ -102,8 +101,19 @@ public static class ServiceCollectionExtensions
         AddPushedAuthorization(services);
         AddRegister(services);
         AddGrantManagement(services);
+        AddDiscovery(services);
+        AddJwks(services);
 
         return services;
+    }
+
+    private static void AddClientServices(IServiceCollection services)
+    {
+        services
+            .AddScoped<IClientAuthenticationService, ClientAuthenticationService>()
+            .AddScoped<IClientJwkService, ClientJwkService>()
+            .AddScoped<IClientSectorService, ClientSectorService>()
+            .AddScoped<IClientLogoutService, ClientLogoutService>();
     }
 
     private static void AddRepositories(IServiceCollection services)
@@ -303,5 +313,19 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>, GrantManagementQueryRequestProcessor>();
+    }
+
+    private static void AddDiscovery(IServiceCollection services)
+    {
+        services
+            .AddKeyedScoped<IEndpointHandler, DiscoveryEndpointHandler>(EndpointNameConstants.Discovery)
+            .AddSingleton<IEndpointModule, DiscoveryEndpointModule>();
+    }
+
+    private static void AddJwks(IServiceCollection services)
+    {
+        services
+            .AddKeyedScoped<IEndpointHandler, JwksEndpointHandler>(EndpointNameConstants.Jwks)
+            .AddSingleton<IEndpointModule, JwksEndpointModule>();
     }
 }

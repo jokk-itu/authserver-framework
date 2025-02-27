@@ -6,19 +6,23 @@ using AuthServer.Options;
 using AuthServer.TokenDecoders;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using AuthServer.Endpoints.Abstractions;
 
 namespace AuthServer.Tests.Core;
 public class JwtBuilder
 {
     private readonly DiscoveryDocument _discoveryDocument;
     private readonly JwksDocument _jwksDocument;
+    private readonly IEndpointResolver _endpointResolver;
 
     public JwtBuilder(
         DiscoveryDocument discoveryDocument,
-        JwksDocument jwksDocument)
+        JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver)
     {
         _discoveryDocument = discoveryDocument;
         _jwksDocument = jwksDocument;
+        _endpointResolver = endpointResolver;
     }
 
     public string GetPrivateKeyJwt(string clientId, string privateJwks, ClientTokenAudience audience)
@@ -165,11 +169,11 @@ public class JwtBuilder
     private string MapToAudience(ClientTokenAudience audience)
         => audience switch
         {
-            ClientTokenAudience.AuthorizeEndpoint => _discoveryDocument.AuthorizationEndpoint,
-            ClientTokenAudience.TokenEndpoint => _discoveryDocument.TokenEndpoint,
-            ClientTokenAudience.IntrospectionEndpoint => _discoveryDocument.IntrospectionEndpoint,
-            ClientTokenAudience.RevocationEndpoint => _discoveryDocument.RevocationEndpoint,
-            ClientTokenAudience.PushedAuthorizeEndpoint => _discoveryDocument.PushedAuthorizationRequestEndpoint,
+            ClientTokenAudience.AuthorizationEndpoint => _endpointResolver.AuthorizationEndpoint,
+            ClientTokenAudience.TokenEndpoint => _endpointResolver.TokenEndpoint,
+            ClientTokenAudience.IntrospectionEndpoint => _endpointResolver.IntrospectionEndpoint,
+            ClientTokenAudience.RevocationEndpoint => _endpointResolver.RevocationEndpoint,
+            ClientTokenAudience.PushedAuthorizationEndpoint => _endpointResolver.PushedAuthorizationEndpoint,
             _ => throw new ArgumentException("unknown value", nameof(audience))
         };
 }

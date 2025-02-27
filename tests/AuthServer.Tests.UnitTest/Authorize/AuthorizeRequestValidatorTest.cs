@@ -1277,7 +1277,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                 x.GetRequestByReference(
                     It.Is<Uri>(y => y.AbsoluteUri == givenRequestUri),
                     client.Id,
-                    ClientTokenAudience.AuthorizeEndpoint,
+                    ClientTokenAudience.AuthorizationEndpoint,
                     CancellationToken.None)
                 )
             .ReturnsAsync(authorizeRequestDto)
@@ -1367,7 +1367,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                 x.GetRequestByObject(
                     givenRequestObject,
                     client.Id,
-                    ClientTokenAudience.AuthorizeEndpoint,
+                    ClientTokenAudience.AuthorizationEndpoint,
                     CancellationToken.None)
                 )
             .ReturnsAsync(authorizeRequestDto)

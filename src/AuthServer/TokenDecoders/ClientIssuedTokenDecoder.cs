@@ -1,4 +1,5 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Helpers;
 using AuthServer.Options;
 using AuthServer.TokenDecoders.Abstractions;
@@ -14,17 +15,17 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
     private readonly ITokenReplayCache _tokenReplayCache;
     private readonly IClientJwkService _clientJwkService;
     private readonly IOptionsSnapshot<JwksDocument> _jwkDocumentOptions;
-    private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
+    private readonly IEndpointResolver _endpointResolver;
 
     public ClientIssuedTokenDecoder(
-        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         IOptionsSnapshot<JwksDocument> jwkDocumentOptions,
+        IEndpointResolver endpointResolver,
         ILogger<ServerIssuedTokenDecoder> logger,
         ITokenReplayCache tokenReplayCache,
         IClientJwkService clientJwkService)
     {
-        _discoveryDocumentOptions = discoveryDocumentOptions;
         _jwkDocumentOptions = jwkDocumentOptions;
+        _endpointResolver = endpointResolver;
         _logger = logger;
         _tokenReplayCache = tokenReplayCache;
         _clientJwkService = clientJwkService;
@@ -101,11 +102,11 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
     {
         return audience switch
         {
-            ClientTokenAudience.TokenEndpoint => _discoveryDocumentOptions.Value.TokenEndpoint,
-            ClientTokenAudience.AuthorizeEndpoint => _discoveryDocumentOptions.Value.AuthorizationEndpoint,
-            ClientTokenAudience.IntrospectionEndpoint => _discoveryDocumentOptions.Value.IntrospectionEndpoint,
-            ClientTokenAudience.RevocationEndpoint => _discoveryDocumentOptions.Value.RevocationEndpoint,
-            ClientTokenAudience.PushedAuthorizeEndpoint => _discoveryDocumentOptions.Value.PushedAuthorizationRequestEndpoint,
+            ClientTokenAudience.TokenEndpoint => _endpointResolver.TokenEndpoint,
+            ClientTokenAudience.AuthorizationEndpoint => _endpointResolver.AuthorizationEndpoint,
+            ClientTokenAudience.IntrospectionEndpoint => _endpointResolver.IntrospectionEndpoint,
+            ClientTokenAudience.RevocationEndpoint => _endpointResolver.RevocationEndpoint,
+            ClientTokenAudience.PushedAuthorizationEndpoint => _endpointResolver.PushedAuthorizationEndpoint,
             _ => throw new ArgumentOutOfRangeException(nameof(audience), audience, "does not map to a valid enum")
         };
     }

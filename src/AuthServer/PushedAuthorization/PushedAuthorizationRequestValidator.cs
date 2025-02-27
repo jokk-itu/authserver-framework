@@ -58,7 +58,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
 
         if (!isRequestObjectEmpty)
         {
-            var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, clientAuthenticationResult.ClientId, ClientTokenAudience.PushedAuthorizeEndpoint, cancellationToken);
+            var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, clientAuthenticationResult.ClientId, ClientTokenAudience.PushedAuthorizationEndpoint, cancellationToken);
             if (newRequest is null)
             {
                 return PushedAuthorizationError.InvalidRequest;

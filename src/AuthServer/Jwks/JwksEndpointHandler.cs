@@ -1,35 +1,35 @@
-﻿using AuthServer.Core;
+﻿using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
 using AuthServer.Options;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AuthServer.Endpoints;
-internal static class JwksDocumentEndpoint
+namespace AuthServer.Jwks;
+
+internal class JwksEndpointHandler : IEndpointHandler
 {
-    public static async Task<IResult> HandleJwksDocument(
-        [FromServices] IOptionsSnapshot<JwksDocument> jwksDocumentOptions,
-        [FromServices] IFeatureManagerSnapshot featureManagerSnapshot)
+    private readonly IOptionsSnapshot<JwksDocument> _jwksDocumentOptions;
+
+    public JwksEndpointHandler(
+        IOptionsSnapshot<JwksDocument> jwksDocumentOptions)
     {
-        if (!await featureManagerSnapshot.IsEnabledAsync(FeatureFlags.Jwks))
-        {
-            return Results.NotFound();
-        }
-        
+        _jwksDocumentOptions = jwksDocumentOptions;
+    }
+
+    public Task<IResult> Handle(HttpContext httpContext, CancellationToken cancellationToken)
+    {
         var keys = new List<JwkDto>();
-        keys.AddRange(GetSigningJsonWebKeys(jwksDocumentOptions.Value));
-        keys.AddRange(GetEncryptionJsonWebKeys(jwksDocumentOptions.Value));
+        keys.AddRange(GetSigningJsonWebKeys(_jwksDocumentOptions.Value));
+        keys.AddRange(GetEncryptionJsonWebKeys(_jwksDocumentOptions.Value));
 
         var response = new GetJwksResponse
         {
             Keys = keys
         };
 
-        return Results.Ok(response);
+        return Task.FromResult(Results.Ok(response));
     }
 
     private static IEnumerable<JwkDto> GetSigningJsonWebKeys(JwksDocument jwksDocument)
@@ -74,7 +74,7 @@ internal static class JwksDocumentEndpoint
         {
             case ECDsaSecurityKey:
                 key.Curve = jsonWebKey.Crv;
-                key.X =  jsonWebKey.X;
+                key.X = jsonWebKey.X;
                 key.Y = jsonWebKey.Y;
                 break;
             case RsaSecurityKey:

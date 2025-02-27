@@ -60,7 +60,7 @@ public class SecureRequestServiceTest : BaseUnitTest
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
-                        y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
+                        y.Audience == ClientTokenAudience.AuthorizationEndpoint &&
                         y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
@@ -68,7 +68,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             .Verifiable();
 
         // Act
-        var requestObject = await authorizeRequestParameterService.GetRequestByObject(token, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByObject(token, client.Id, ClientTokenAudience.AuthorizationEndpoint, CancellationToken.None);
 
         // Assert
         Assert.Null(requestObject);
@@ -101,7 +101,7 @@ public class SecureRequestServiceTest : BaseUnitTest
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
-                        y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
+                        y.Audience == ClientTokenAudience.AuthorizationEndpoint &&
                         y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
@@ -111,7 +111,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
         // Act
-        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, client.Id, ClientTokenAudience.AuthorizationEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -165,7 +165,7 @@ public class SecureRequestServiceTest : BaseUnitTest
                         y.Algorithms.Count == 2 &&
                         y.Algorithms.Contains(SigningAlg.RsaSha256.GetDescription()) &&
                         y.Algorithms.Contains(EncryptionEnc.Aes128CbcHmacSha256.GetDescription()) &&
-                        y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
+                        y.Audience == ClientTokenAudience.AuthorizationEndpoint &&
                         y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
@@ -175,7 +175,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
         // Act
-        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByObject(requestToken, client.Id, ClientTokenAudience.AuthorizationEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -224,7 +224,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         await AddEntity(client);
 
         // Act
-        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizationEndpoint, CancellationToken.None);
 
         // Assert
         Assert.Null(requestObject);
@@ -259,7 +259,7 @@ public class SecureRequestServiceTest : BaseUnitTest
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
-                        y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
+                        y.Audience == ClientTokenAudience.AuthorizationEndpoint &&
                         y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
@@ -276,7 +276,7 @@ public class SecureRequestServiceTest : BaseUnitTest
 
         // Act
         var requestUri = new Uri($"https://demo.authserver.dk/request-object/{Guid.NewGuid()}");
-        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizationEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -330,7 +330,7 @@ public class SecureRequestServiceTest : BaseUnitTest
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
-                        y.Audience == ClientTokenAudience.AuthorizeEndpoint &&
+                        y.Audience == ClientTokenAudience.AuthorizationEndpoint &&
                         y.ClientId == client.Id &&
                         y.TokenType == TokenTypeHeaderConstants.RequestObjectToken),
                 CancellationToken.None))
@@ -347,7 +347,7 @@ public class SecureRequestServiceTest : BaseUnitTest
 
         // Act
         var requestUri = new Uri($"https://demo.authserver.dk/request-object/{Guid.NewGuid()}");
-        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizeEndpoint, CancellationToken.None);
+        var requestObject = await authorizeRequestParameterService.GetRequestByReference(requestUri, client.Id, ClientTokenAudience.AuthorizationEndpoint, CancellationToken.None);
 
         // Assert
         Assert.NotNull(requestObject);
@@ -444,7 +444,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             { Parameter.AcrValues, value },
             { Parameter.Resource, new List<string> { value } }
         };
-        var requestToken = JwtBuilder.GetRequestObjectJwt(claims, value, jwks.PrivateJwks, ClientTokenAudience.AuthorizeEndpoint);
+        var requestToken = JwtBuilder.GetRequestObjectJwt(claims, value, jwks.PrivateJwks, ClientTokenAudience.AuthorizationEndpoint);
 
         return requestToken;
     }
@@ -452,7 +452,7 @@ public class SecureRequestServiceTest : BaseUnitTest
     private string GetRequestObjectToken()
     {
         var jwks = ClientJwkBuilder.GetClientJwks();
-        var requestToken = JwtBuilder.GetRequestObjectJwt([], "clientId", jwks.PrivateJwks, ClientTokenAudience.AuthorizeEndpoint);
+        var requestToken = JwtBuilder.GetRequestObjectJwt([], "clientId", jwks.PrivateJwks, ClientTokenAudience.AuthorizationEndpoint);
 
         return requestToken;
     }
