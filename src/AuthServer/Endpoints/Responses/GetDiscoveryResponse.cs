@@ -33,31 +33,31 @@ internal class GetDiscoveryResponse
 
     [JsonPropertyName("jwks_uri")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string JwksUri => $"{Issuer}/.well-known/jwks";
+    public string? JwksUri { get; init; }
 
     [JsonPropertyName("registration_endpoint")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string RegistrationEndpoint => $"{Issuer}/connect/register";
+    public string? RegistrationEndpoint { get; init; }
 
     [JsonPropertyName("end_session_endpoint")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string EndSessionEndpoint => $"{Issuer}/connect/end-session";
+    public string? EndSessionEndpoint { get; init; }
 
     [JsonPropertyName("introspection_endpoint")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string IntrospectionEndpoint => $"{Issuer}/connect/introspection";
+    public string? IntrospectionEndpoint { get; init; }
 
     [JsonPropertyName("revocation_endpoint")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string RevocationEndpoint => $"{Issuer}/connect/revocation";
+    public string? RevocationEndpoint { get; init; }
 
     [JsonPropertyName("pushed_authorization_request_endpoint")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string PushedAuthorizationRequestEndpoint => $"{Issuer}/connect/par";
+    public string? PushedAuthorizationRequestEndpoint { get; init; }
 
     [JsonPropertyName("grant_management_endpoint")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string GrantManagementEndpoint => $"{Issuer}/connect/grants";
+    public string? GrantManagementEndpoint { get; init; }
 
     [JsonPropertyName("protected_resources")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
