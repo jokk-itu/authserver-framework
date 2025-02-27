@@ -34,7 +34,7 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
 
         var clientSecretBasic = httpRequest.GetClientSecretBasic();
         var clientSecretPost = body.GetClientSecretPost();
-        var clientAssertion = body.GetClientAssertion(ClientTokenAudience.PushedAuthorizeEndpoint);
+        var clientAssertion = body.GetClientAssertion(ClientTokenAudience.PushedAuthorizationEndpoint);
 
         var clientAuthentications = new List<ClientAuthentication>();
         if (clientSecretBasic is not null) clientAuthentications.Add(clientSecretBasic);

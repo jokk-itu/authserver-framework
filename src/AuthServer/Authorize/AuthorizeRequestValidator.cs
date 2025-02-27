@@ -111,7 +111,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
 
     private async Task<ProcessResult<AuthorizeRequest, ProcessError>> SubstituteRequestObject(AuthorizeRequest request, CancellationToken cancellationToken)
     {
-        var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, request.ClientId!, ClientTokenAudience.AuthorizeEndpoint, cancellationToken);
+        var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, request.ClientId!, ClientTokenAudience.AuthorizationEndpoint, cancellationToken);
         if (newRequest is null)
         {
             return AuthorizeError.InvalidRequest;
@@ -132,7 +132,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.UnauthorizedRequestUri;
         }
 
-        var newRequest = await _secureRequestService.GetRequestByReference(requestUri, request.ClientId!, ClientTokenAudience.AuthorizeEndpoint, cancellationToken);
+        var newRequest = await _secureRequestService.GetRequestByReference(requestUri, request.ClientId!, ClientTokenAudience.AuthorizationEndpoint, cancellationToken);
         if (newRequest is null)
         {
             return AuthorizeError.InvalidRequestObjectFromRequestUri;

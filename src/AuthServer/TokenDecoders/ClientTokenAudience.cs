@@ -2,8 +2,8 @@
 public enum ClientTokenAudience
 {
     TokenEndpoint,
-    AuthorizeEndpoint,
+    AuthorizationEndpoint,
     IntrospectionEndpoint,
     RevocationEndpoint,
-    PushedAuthorizeEndpoint
+    PushedAuthorizationEndpoint
 }

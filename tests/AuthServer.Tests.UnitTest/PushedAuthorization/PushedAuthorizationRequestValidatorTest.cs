@@ -934,7 +934,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         secureRequestService
             .Setup(x =>
-                x.GetRequestByObject(requestObject, client.Id, ClientTokenAudience.PushedAuthorizeEndpoint, CancellationToken.None))
+                x.GetRequestByObject(requestObject, client.Id, ClientTokenAudience.PushedAuthorizationEndpoint, CancellationToken.None))
             .ReturnsAsync(authorizeRequestDto)
             .Verifiable();
 
