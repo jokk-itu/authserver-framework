@@ -10,6 +10,7 @@ internal class EndpointResolver : IEndpointResolver
     public string TokenEndpoint { get; }
     public string UserinfoEndpoint { get; }
     public string JwksEndpoint { get; }
+    public string DiscoveryEndpoint { get; }
     public string RegistrationEndpoint { get; }
     public string EndSessionEndpoint { get; }
     public string IntrospectionEndpoint { get; }
@@ -24,6 +25,7 @@ internal class EndpointResolver : IEndpointResolver
         TokenEndpoint = $"{issuer}/connect/token";
         UserinfoEndpoint = $"{issuer}/connect/userinfo";
         JwksEndpoint = $"{issuer}/.well-known/jwks";
+        DiscoveryEndpoint = $"{issuer}/.well-known/openid-configuration";
         RegistrationEndpoint = $"{issuer}/connect/register";
         EndSessionEndpoint = $"{issuer}/connect/end-session";
         IntrospectionEndpoint = $"{issuer}/connect/introspection";

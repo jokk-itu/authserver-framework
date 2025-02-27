@@ -6,6 +6,7 @@ public interface IEndpointResolver
     string TokenEndpoint { get; }
     string UserinfoEndpoint { get; }
     string JwksEndpoint { get; }
+    string DiscoveryEndpoint { get; }
     string RegistrationEndpoint { get; }
     string EndSessionEndpoint { get; }
     string IntrospectionEndpoint { get; }
