@@ -1,11 +1,10 @@
 ﻿using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
-using AuthServer.Options;
 using AuthServer.RequestAccessors.PushedAuthorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 
 namespace AuthServer.PushedAuthorization;
 
@@ -13,16 +12,16 @@ internal class PushedAuthorizationEndpointHandler : IEndpointHandler
 {
     private readonly IRequestAccessor<PushedAuthorizationRequest> _requestAccessor;
     private readonly IRequestHandler<PushedAuthorizationRequest, PushedAuthorizationResponse> _requestHandler;
-    private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
+    private readonly IEndpointResolver _endpointResolver;
 
     public PushedAuthorizationEndpointHandler(
         IRequestAccessor<PushedAuthorizationRequest> requestAccessor,
         IRequestHandler<PushedAuthorizationRequest, PushedAuthorizationResponse> requestHandler,
-        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions)
+        IEndpointResolver endpointResolver)
     {
         _requestAccessor = requestAccessor;
         _requestHandler = requestHandler;
-        _discoveryDocumentOptions = discoveryDocumentOptions;
+        _endpointResolver = endpointResolver;
     }
 
     public async Task<IResult> Handle(HttpContext httpContext, CancellationToken cancellationToken)
@@ -33,7 +32,7 @@ internal class PushedAuthorizationEndpointHandler : IEndpointHandler
             result =>
             {
                 var uri =
-                    $"{_discoveryDocumentOptions.Value.AuthorizationEndpoint}?{Parameter.RequestUri}={result.RequestUri}&{Parameter.ClientId}={result.ClientId}";
+                    $"{_endpointResolver.AuthorizationEndpoint}?{Parameter.RequestUri}={result.RequestUri}&{Parameter.ClientId}={result.ClientId}";
 
                 var location = new Uri(uri, UriKind.Absolute);
                 return Results.Created(location,

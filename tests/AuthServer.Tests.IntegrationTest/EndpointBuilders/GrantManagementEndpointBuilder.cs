@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Options;
 using Xunit.Abstractions;
 
@@ -9,8 +10,13 @@ public class GrantManagementEndpointBuilder : EndpointBuilder
     private string? token;
     private string? grantId;
 
-    public GrantManagementEndpointBuilder(HttpClient httpClient, DiscoveryDocument discoveryDocument, JwksDocument jwksDocument, ITestOutputHelper testOutputHelper)
-        : base(httpClient, discoveryDocument, jwksDocument, testOutputHelper)
+    public GrantManagementEndpointBuilder(
+        HttpClient httpClient,
+        DiscoveryDocument discoveryDocument,
+        JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
+        ITestOutputHelper testOutputHelper)
+        : base(httpClient, discoveryDocument, jwksDocument, endpointResolver, testOutputHelper)
     {
     }
 

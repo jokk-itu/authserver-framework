@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using AuthServer.Core;
+using AuthServer.Endpoints.Abstractions;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
@@ -18,8 +19,9 @@ public class RevocationEndpointBuilder : EndpointBuilder
         HttpClient httpClient,
         DiscoveryDocument discoveryDocument,
         JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
         ITestOutputHelper testOutputHelper)
-        : base(httpClient, discoveryDocument, jwksDocument, testOutputHelper)
+        : base(httpClient, discoveryDocument, jwksDocument, endpointResolver, testOutputHelper)
     {
     }
 

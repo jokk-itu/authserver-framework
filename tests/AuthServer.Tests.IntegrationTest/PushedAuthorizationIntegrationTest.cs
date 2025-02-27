@@ -46,7 +46,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
         Assert.Null(pushedAuthorizationResponse.Error);
         Assert.NotNull(pushedAuthorizationResponse.Response);
         Assert.NotNull(pushedAuthorizationResponse.Location);
-        Assert.Equal(DiscoveryDocument.AuthorizationEndpoint, pushedAuthorizationResponse.Location.GetLeftPart(UriPartial.Path));
+        Assert.Equal(EndpointResolver.AuthorizationEndpoint, pushedAuthorizationResponse.Location.GetLeftPart(UriPartial.Path));
         Assert.Equal(registerResponse.RequestUriExpiration, pushedAuthorizationResponse.Response.ExpiresIn);
 
         var authorizeRequestQuery = HttpUtility.ParseQueryString(pushedAuthorizationResponse.Location.Query);
@@ -95,7 +95,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
         Assert.Null(pushedAuthorizationResponse.Error);
         Assert.NotNull(pushedAuthorizationResponse.Response);
         Assert.NotNull(pushedAuthorizationResponse.Location);
-        Assert.Equal(DiscoveryDocument.AuthorizationEndpoint, pushedAuthorizationResponse.Location.GetLeftPart(UriPartial.Path));
+        Assert.Equal(EndpointResolver.AuthorizationEndpoint, pushedAuthorizationResponse.Location.GetLeftPart(UriPartial.Path));
         Assert.Equal(registerResponse.RequestUriExpiration, pushedAuthorizationResponse.Response.ExpiresIn);
 
         var authorizeRequestQuery = HttpUtility.ParseQueryString(pushedAuthorizationResponse.Location.Query);

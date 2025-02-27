@@ -103,7 +103,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.CreatedAt.Ticks, response.ClientIdIssuedAt);
         Assert.True(CryptographyHelper.VerifyPassword(client.SecretHash!, response.ClientSecret!));
         Assert.Equal(client.SecretExpiresAt!.Value.Ticks, response.ClientSecretExpiresAt);
-        Assert.Equal($"{DiscoveryDocument.RegistrationEndpoint}?client_id={response.ClientId}",
+        Assert.Equal($"{EndpointResolver.RegistrationEndpoint}?client_id={response.ClientId}",
             response.RegistrationClientUri);
         Assert.Equal(client.ClientTokens.Single(x => x.RevokedAt is null).Reference, response.RegistrationAccessToken);
         Assert.Equal(request.ApplicationType, response.ApplicationType);
@@ -232,7 +232,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.CreatedAt.Ticks, response.ClientIdIssuedAt);
         Assert.True(CryptographyHelper.VerifyPassword(client.SecretHash!, response.ClientSecret!));
         Assert.Equal(client.SecretExpiresAt!.Value.Ticks, response.ClientSecretExpiresAt);
-        Assert.Equal($"{DiscoveryDocument.RegistrationEndpoint}?client_id={response.ClientId}",
+        Assert.Equal($"{EndpointResolver.RegistrationEndpoint}?client_id={response.ClientId}",
             response.RegistrationClientUri);
         Assert.Equal(client.ClientTokens.Single(x => x.RevokedAt is null).Reference, response.RegistrationAccessToken);
         Assert.Equal(client.ApplicationType, response.ApplicationType);

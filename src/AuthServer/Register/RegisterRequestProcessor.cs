@@ -2,6 +2,7 @@
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
@@ -19,20 +20,20 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
     private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenBuilder<RegistrationTokenArguments> _registrationTokenBuilder;
-    private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
+    private readonly IEndpointResolver _endpointResolver;
     private readonly IMetricService _metricService;
 
     public RegisterRequestProcessor(
         AuthorizationDbContext authorizationDbContext,
         IUnitOfWork unitOfWork,
         ITokenBuilder<RegistrationTokenArguments> registrationTokenBuilder,
-        IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
+        IEndpointResolver endpointResolver,
         IMetricService metricService)
     {
         _authorizationDbContext = authorizationDbContext;
         _unitOfWork = unitOfWork;
         _registrationTokenBuilder = registrationTokenBuilder;
-        _discoveryDocumentOptions = discoveryDocumentOptions;
+        _endpointResolver = endpointResolver;
         _metricService = metricService;
     }
 
@@ -116,7 +117,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             ClientIdIssuedAt = client.CreatedAt.Ticks,
             ClientSecret = plainSecret,
             ClientSecretExpiresAt = client.SecretExpiresAt?.Ticks ?? 0,
-            RegistrationClientUri = $"{_discoveryDocumentOptions.Value.RegistrationEndpoint}?client_id={client.Id}",
+            RegistrationClientUri = $"{_endpointResolver.RegistrationEndpoint}?client_id={client.Id}",
             RegistrationAccessToken = registrationToken,
             ApplicationType = client.ApplicationType,
             TokenEndpointAuthMethod = client.TokenEndpointAuthMethod,
