@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Web;
 using AuthServer.Core;
+using AuthServer.Endpoints.Abstractions;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
@@ -20,8 +21,9 @@ public class IntrospectionEndpointBuilder : EndpointBuilder
         HttpClient httpClient,
         DiscoveryDocument discoveryDocument,
         JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
         ITestOutputHelper testOutputHelper)
-        : base(httpClient, discoveryDocument, jwksDocument, testOutputHelper)
+        : base(httpClient, discoveryDocument, jwksDocument, endpointResolver, testOutputHelper)
     {
     }
 

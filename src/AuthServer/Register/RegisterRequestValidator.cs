@@ -333,7 +333,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         RegisterValidatedRequest validatedRequest)
     {
         if (!string.IsNullOrEmpty(request.TokenEndpointAuthMethod)
-            && !DiscoveryDocument.TokenEndpointAuthMethodsSupported.Contains(request.TokenEndpointAuthMethod))
+            && !TokenEndpointAuthMethodConstants.AuthMethods.Contains(request.TokenEndpointAuthMethod))
         {
             return RegisterError.InvalidTokenEndpointAuthMethod;
         }
@@ -385,7 +385,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     private ProcessError? ValidateGrantTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.GrantTypes.Count != 0
-            && request.GrantTypes.IsNotSubset(DiscoveryDocument.GrantTypesSupported))
+            && request.GrantTypes.IsNotSubset(GrantTypeConstants.GrantTypes))
         {
             return RegisterError.InvalidGrantTypes;
         }
@@ -438,7 +438,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     private ProcessError? ValidateResponseTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.ResponseTypes.Count != 0
-            && request.ResponseTypes.IsNotSubset(DiscoveryDocument.ResponseTypesSupported))
+            && request.ResponseTypes.IsNotSubset(ResponseTypeConstants.ResponseTypes))
         {
             return RegisterError.InvalidResponseTypes;
         }

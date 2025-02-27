@@ -4,6 +4,7 @@ using System.Text;
 using System.Web;
 using AuthServer.Constants;
 using AuthServer.Core;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Enums;
 using AuthServer.Options;
@@ -17,8 +18,13 @@ public class TokenEndpointBuilder : EndpointBuilder
 
     private List<KeyValuePair<string, string>> _parameters = [];
 
-    public TokenEndpointBuilder(HttpClient httpClient, DiscoveryDocument discoveryDocument, JwksDocument jwksDocument, ITestOutputHelper testOutputHelper)
-        : base(httpClient, discoveryDocument, jwksDocument, testOutputHelper)
+    public TokenEndpointBuilder(
+        HttpClient httpClient,
+        DiscoveryDocument discoveryDocument,
+        JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
+        ITestOutputHelper testOutputHelper)
+        : base(httpClient, discoveryDocument, jwksDocument, endpointResolver, testOutputHelper)
     {
     }
 

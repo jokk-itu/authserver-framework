@@ -1,6 +1,4 @@
-﻿using AuthServer.Enums;
-
-namespace AuthServer.Constants;
+﻿namespace AuthServer.Constants;
 
 /// <summary>
 /// Constants defined at IANA.

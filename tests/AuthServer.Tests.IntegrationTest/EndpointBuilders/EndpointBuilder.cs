@@ -1,4 +1,5 @@
-﻿using AuthServer.Options;
+﻿using AuthServer.Endpoints.Abstractions;
+using AuthServer.Options;
 using AuthServer.Tests.Core;
 using Xunit.Abstractions;
 
@@ -15,12 +16,13 @@ public abstract class EndpointBuilder
         HttpClient httpClient,
         DiscoveryDocument discoveryDocument,
         JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
         ITestOutputHelper testOutputHelper)
     {
         DiscoveryDocument = discoveryDocument;
         JwksDocument = jwksDocument;
         HttpClient = httpClient;
         TestOutputHelper = testOutputHelper;
-        JwtBuilder = new JwtBuilder(discoveryDocument, jwksDocument);
+        JwtBuilder = new JwtBuilder(discoveryDocument, jwksDocument, endpointResolver);
     }
 }

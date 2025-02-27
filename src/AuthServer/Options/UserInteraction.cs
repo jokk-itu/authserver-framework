@@ -2,8 +2,8 @@
 
 public class UserInteraction
 {
-    public required string LoginUri { get; set; }
-    public required string ConsentUri { get; set; }
-    public required string AccountSelectionUri { get; set; }
-    public required string EndSessionUri { get; set; }
+    public string? LoginUri { get; set; }
+    public string? ConsentUri { get; set; }
+    public string? AccountSelectionUri { get; set; }
+    public string? EndSessionUri { get; set; }
 }

@@ -25,6 +25,8 @@ builder.Services
     {
         var identitySection = builder.Configuration.GetSection("Identity");
         options.Issuer = identitySection.GetValue<string>("Issuer")!;
+        options.OpPolicyUri = identitySection.GetValue<string>("PolicyUri");
+        options.OpTosUri = identitySection.GetValue<string>("TosUri");
         options.ClaimsSupported = ClaimNameConstants.SupportedEndUserClaims;
         options.AcrValuesSupported =
         [
@@ -33,6 +35,7 @@ builder.Services
             AuthenticationContextReferenceConstants.LevelOfAssuranceStrict
         ];
         options.ScopesSupported = identitySection.GetSection("ScopesSupported").Get<ICollection<string>>() ?? [];
+        options.ProtectedResources = identitySection.GetSection("ProtectedResources").Get<ICollection<string>>() ?? [];
 
         ICollection<string> signingAlgorithms =
             [JwsAlgConstants.RsaSha256, JwsAlgConstants.EcdsaSha256, JwsAlgConstants.RsaSsaPssSha256];
@@ -50,10 +53,12 @@ builder.Services
         options.IdTokenEncryptionAlgValuesSupported = encryptionAlgorithms;
         options.RequestObjectEncryptionAlgValuesSupported = encryptionAlgorithms;
         options.UserinfoEncryptionAlgValuesSupported = encryptionAlgorithms;
+        options.TokenEndpointAuthEncryptionAlgValuesSupported = encryptionAlgorithms;
 
         options.IdTokenEncryptionEncValuesSupported = encoderAlgorithms;
         options.RequestObjectEncryptionEncValuesSupported = encoderAlgorithms;
         options.UserinfoEncryptionEncValuesSupported = encoderAlgorithms;
+        options.TokenEndpointAuthEncryptionEncValuesSupported = encoderAlgorithms;
     });
 
 var ecdsa = ECDsa.Create();

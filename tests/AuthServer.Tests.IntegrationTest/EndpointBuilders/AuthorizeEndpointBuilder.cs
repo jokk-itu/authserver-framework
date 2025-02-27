@@ -13,6 +13,7 @@ using Xunit.Abstractions;
 using AuthServer.Constants;
 using System.Web;
 using System.Text.RegularExpressions;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 using AuthServer.Endpoints.Responses;
@@ -34,8 +35,9 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         IDataProtectionProvider dataProtectionProvider,
         DiscoveryDocument discoveryDocument,
         JwksDocument jwksDocument,
+        IEndpointResolver endpointResolver,
         ITestOutputHelper testOutputHelper)
-        : base(httpClient, discoveryDocument, jwksDocument, testOutputHelper)
+        : base(httpClient, discoveryDocument, jwksDocument, endpointResolver, testOutputHelper)
     {
         _dataProtectionProvider = dataProtectionProvider;
     }
@@ -248,7 +250,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
             return;
         }
 
-        var requestObject = JwtBuilder.GetRequestObjectJwt(_parameters.ToDictionary(), _clientId, _privateJwks!, ClientTokenAudience.AuthorizeEndpoint);
+        var requestObject = JwtBuilder.GetRequestObjectJwt(_parameters.ToDictionary(), _clientId, _privateJwks!, ClientTokenAudience.AuthorizationEndpoint);
         _parameters.Clear();
         _parameters.Add(new(Parameter.Request, requestObject));
         _parameters.Add(new(Parameter.ClientId, _clientId));
