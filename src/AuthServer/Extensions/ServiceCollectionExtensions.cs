@@ -17,6 +17,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Discovery;
 using AuthServer.Endpoints;
+using AuthServer.Endpoints.Abstractions;
 using AuthServer.EndSession;
 using AuthServer.EndSession.Abstractions;
 using AuthServer.GrantManagement;
@@ -65,6 +66,7 @@ public static class ServiceCollectionExtensions
         services.AddScopedFeatureManagement();
         services.AddDataProtection();
         services.AddSingleton<IMetricService, MetricService>();
+        services.AddScoped<IEndpointResolver, EndpointResolver>();
         services.AddHttpContextAccessor();
         services.AddHttpClient(
             HttpClientNameConstants.Client, client =>
