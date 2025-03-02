@@ -38,7 +38,7 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
                 SubjectFromGrantToken = (x as GrantToken)!.AuthorizationGrant.Subject,
                 SubjectFromClientToken = (x as ClientAccessToken)!.Client.Id,
                 SubjectIdentifier = (x as GrantToken)!.AuthorizationGrant.Session.SubjectIdentifier.Id,
-                AuthTime = (x as GrantToken)!.AuthorizationGrant.AuthTime,
+                AuthTime = (x as GrantToken)!.AuthorizationGrant.UpdatedAuthTime,
                 Acr = (x as GrantAccessToken)!.AuthorizationGrant.AuthenticationContextReference.Name
             })
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);

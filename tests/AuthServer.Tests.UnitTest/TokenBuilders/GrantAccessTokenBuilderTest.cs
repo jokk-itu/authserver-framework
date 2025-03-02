@@ -95,7 +95,7 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         Assert.Equal(authorizationGrant.Id, validatedTokenResult.Claims[ClaimNameConstants.GrantId].ToString());
         Assert.Equal(authorizationGrant.Client.Id, validatedTokenResult.Claims[ClaimNameConstants.ClientId].ToString());
         Assert.Equal(authorizationGrant.AuthenticationContextReference.Name, validatedTokenResult.Claims[ClaimNameConstants.Acr].ToString());
-        Assert.Equal(authorizationGrant.AuthTime.ToUnixTimeSeconds().ToString(), validatedTokenResult.Claims[ClaimNameConstants.AuthTime].ToString());
+        Assert.Equal(authorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds().ToString(), validatedTokenResult.Claims[ClaimNameConstants.AuthTime].ToString());
 
         var accessControl = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.AccessControl].ToString()!);
         Assert.NotNull(accessControl);

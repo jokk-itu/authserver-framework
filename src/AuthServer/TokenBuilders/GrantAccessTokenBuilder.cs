@@ -83,7 +83,7 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             { ClaimNameConstants.Sub, grantQuery.Subject },
             { ClaimNameConstants.Sid, grantQuery.SessionId },
             { ClaimNameConstants.ClientId, grantQuery.Client.Id },
-            { ClaimNameConstants.AuthTime, grantQuery.AuthorizationGrant.AuthTime.ToUnixTimeSeconds() },
+            { ClaimNameConstants.AuthTime, grantQuery.AuthorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds() },
             { ClaimNameConstants.Acr, grantQuery.Acr },
             { ClaimNameConstants.AccessControl, accessControl }
         };

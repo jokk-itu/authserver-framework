@@ -177,7 +177,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         var hasMaxAge = int.TryParse(authorizeRequest.MaxAge, out var parsedMaxAge);
         var maxAge = hasMaxAge ? parsedMaxAge : authorizationGrant.Client.DefaultMaxAge;
 
-        if (maxAge is not null && authorizationGrant.AuthTime.AddSeconds(maxAge.Value) < DateTime.UtcNow)
+        if (maxAge is not null && authorizationGrant.UpdatedAuthTime.AddSeconds(maxAge.Value) < DateTime.UtcNow)
         {
             _logger.LogDebug("MaxAge {MaxAge} has been reached for grant {GrantId}, deducing prompt {Prompt}", maxAge, authorizationGrant.Id, PromptConstants.Login);
             return InteractionResult.LoginResult(authorizeRequest.Prompt);
