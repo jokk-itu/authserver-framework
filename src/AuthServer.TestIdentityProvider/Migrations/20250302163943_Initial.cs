@@ -429,7 +429,8 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AuthTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAuthTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAuthTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Subject = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     SessionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
