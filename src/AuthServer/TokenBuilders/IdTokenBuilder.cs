@@ -56,7 +56,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             .Where(x => x.Id == arguments.AuthorizationGrantId)
             .Select(x => new
             {
-                x.AuthTime,
+                AuthTime = x.UpdatedAuthTime,
                 ClientId = x.Client.Id,
                 x.Client.RequireConsent,
                 SessionId = x.Session.Id,

@@ -9,4 +9,10 @@ internal class GetGrantResponse
 
     [JsonPropertyName(Parameter.Claims)]
     public IEnumerable<string> Claims { get; set; } = [];
+
+    [JsonPropertyName(Parameter.CreatedAt)]
+    public DateTime CreatedAt { get; set; }
+
+    [JsonPropertyName(Parameter.UpdatedAt)]
+    public DateTime UpdatedAt { get; set; }
 }

@@ -74,7 +74,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         var originalAuthTime = DateTime.UtcNow.AddSeconds(-180);
         typeof(AuthorizationGrant)
-            .GetProperty(nameof(AuthorizationGrant.AuthTime))!
+            .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
             .SetValue(authorizationGrant, originalAuthTime);
 
         authorizationGrant.AuthenticationMethodReferences.Add(authenticationMethodReference);
@@ -89,7 +89,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
             CancellationToken.None);
 
         // Assert
-        Assert.True(authorizationGrant.AuthTime > originalAuthTime);
+        Assert.True(authorizationGrant.UpdatedAuthTime > originalAuthTime);
         Assert.Equal(LevelOfAssuranceSubstantial, authorizationGrant.AuthenticationContextReference.Name);
         Assert.Single(authorizationGrant.AuthenticationMethodReferences);
         Assert.Single(authorizationGrant.AuthenticationMethodReferences,

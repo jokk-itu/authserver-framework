@@ -178,7 +178,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(subjectIdentifier.Id, introspectionResponse.Subject);
         Assert.Equal(token.TokenType.GetDescription(), introspectionResponse.TokenType);
         Assert.Equal(UserConstants.Username, introspectionResponse.Username);
-        Assert.Equal(authorizationGrant.AuthTime.ToUnixTimeSeconds(), introspectionResponse.AuthTime);
+        Assert.Equal(authorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds(), introspectionResponse.AuthTime);
         Assert.Equal(lowAcr.Name, introspectionResponse.Acr);
 
         Assert.NotNull(introspectionResponse.AccessControl);

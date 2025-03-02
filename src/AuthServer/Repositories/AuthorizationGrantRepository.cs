@@ -48,7 +48,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
         var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
         var amr = await GetAuthenticationMethodReferences(authenticationMethodReferences, cancellationToken);
 
-        authorizationGrant.SetAuthTime();
+        authorizationGrant.UpdateAuthTime();
         authorizationGrant.AuthenticationContextReference = acr;
         authorizationGrant.AuthenticationMethodReferences.Clear();
 

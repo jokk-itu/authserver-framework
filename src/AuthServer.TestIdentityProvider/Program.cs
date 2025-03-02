@@ -3,14 +3,13 @@ using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Logging;
 using AuthServer.Options;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Authentication.Abstractions;
+using AuthServer.TestIdentityProvider;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,10 +37,16 @@ builder.Services
         options.ProtectedResources = identitySection.GetSection("ProtectedResources").Get<ICollection<string>>() ?? [];
 
         ICollection<string> signingAlgorithms =
-            [JwsAlgConstants.RsaSha256, JwsAlgConstants.EcdsaSha256, JwsAlgConstants.RsaSsaPssSha256];
+            [JwsAlgConstants.RsaSha256, JwsAlgConstants.RsaSha384, JwsAlgConstants.RsaSha512,
+                JwsAlgConstants.EcdsaSha256, JwsAlgConstants.EcdsaSha384, JwsAlgConstants.EcdsaSha512,
+                JwsAlgConstants.RsaSsaPssSha256, JwsAlgConstants.RsaSsaPssSha384, JwsAlgConstants.RsaSsaPssSha512];
+
         ICollection<string> encryptionAlgorithms =
-            [JweAlgConstants.EcdhEsA128KW, JweAlgConstants.RsaOAEP, JweAlgConstants.RsaPKCS1];
-        ICollection<string> encoderAlgorithms = [JweEncConstants.Aes128CbcHmacSha256];
+            [JweAlgConstants.EcdhEsA128KW, JweAlgConstants.EcdhEsA192KW, JweAlgConstants.EcdhEsA256KW,
+                JweAlgConstants.RsaOAEP, JweAlgConstants.RsaPKCS1];
+
+        ICollection<string> encoderAlgorithms =
+            [JweEncConstants.Aes128CbcHmacSha256, JweEncConstants.Aes192CbcHmacSha384, JweEncConstants.Aes256CbcHmacSha512];
 
         options.TokenEndpointAuthSigningAlgValuesSupported = signingAlgorithms;
         options.IdTokenSigningAlgValuesSupported = signingAlgorithms;
@@ -61,40 +66,29 @@ builder.Services
         options.TokenEndpointAuthEncryptionEncValuesSupported = encoderAlgorithms;
     });
 
-var ecdsa = ECDsa.Create();
-var rsa = RSA.Create(3072);
-
-var ecdsaSecurityKey = new ECDsaSecurityKey(ecdsa)
-{
-    KeyId = Guid.NewGuid().ToString()
-};
-var rsaSecurityKey = new RsaSecurityKey(rsa)
-{
-    KeyId = Guid.NewGuid().ToString()
-};
 builder.Services
     .AddOptions<JwksDocument>()
     .Configure(options =>
     {
         options.EncryptionKeys =
         [
-            new JwksDocument.EncryptionKey(ecdsaSecurityKey, EncryptionAlg.EcdhEsA128KW),
-            new JwksDocument.EncryptionKey(ecdsaSecurityKey, EncryptionAlg.EcdhEsA192KW),
-            new JwksDocument.EncryptionKey(ecdsaSecurityKey, EncryptionAlg.EcdhEsA256KW),
-            new JwksDocument.EncryptionKey(rsaSecurityKey, EncryptionAlg.RsaOAEP),
-            new JwksDocument.EncryptionKey(rsaSecurityKey, EncryptionAlg.RsaPKCS1),
+            new JwksDocument.EncryptionKey(SecurityKeyHelper.EcdhEs128, EncryptionAlg.EcdhEsA128KW),
+            new JwksDocument.EncryptionKey(SecurityKeyHelper.EcdhEs192, EncryptionAlg.EcdhEsA192KW),
+            new JwksDocument.EncryptionKey(SecurityKeyHelper.EcdhEs256, EncryptionAlg.EcdhEsA256KW),
+            new JwksDocument.EncryptionKey(SecurityKeyHelper.RsaOAep, EncryptionAlg.RsaOAEP),
+            new JwksDocument.EncryptionKey(SecurityKeyHelper.RsaPkcs1, EncryptionAlg.RsaPKCS1),
         ];
         options.SigningKeys =
         [
-            new JwksDocument.SigningKey(ecdsaSecurityKey, SigningAlg.EcdsaSha256),
-            new JwksDocument.SigningKey(ecdsaSecurityKey, SigningAlg.EcdsaSha384),
-            new JwksDocument.SigningKey(ecdsaSecurityKey, SigningAlg.EcdsaSha512),
-            new JwksDocument.SigningKey(rsaSecurityKey, SigningAlg.RsaSha256),
-            new JwksDocument.SigningKey(rsaSecurityKey, SigningAlg.RsaSha384),
-            new JwksDocument.SigningKey(rsaSecurityKey, SigningAlg.RsaSha512),
-            new JwksDocument.SigningKey(rsaSecurityKey, SigningAlg.RsaSsaPssSha256),
-            new JwksDocument.SigningKey(rsaSecurityKey, SigningAlg.RsaSsaPssSha384),
-            new JwksDocument.SigningKey(rsaSecurityKey, SigningAlg.RsaSsaPssSha512),
+            new JwksDocument.SigningKey(SecurityKeyHelper.Ecdsa256, SigningAlg.EcdsaSha256),
+            new JwksDocument.SigningKey(SecurityKeyHelper.Ecdsa384, SigningAlg.EcdsaSha384),
+            new JwksDocument.SigningKey(SecurityKeyHelper.Ecdsa512, SigningAlg.EcdsaSha512),
+            new JwksDocument.SigningKey(SecurityKeyHelper.CertificateRsa256, SigningAlg.RsaSha256),
+            new JwksDocument.SigningKey(SecurityKeyHelper.CertificateRsa384, SigningAlg.RsaSha384),
+            new JwksDocument.SigningKey(SecurityKeyHelper.CertificateRsa512, SigningAlg.RsaSha512),
+            new JwksDocument.SigningKey(SecurityKeyHelper.RsaSsaPss256, SigningAlg.RsaSsaPssSha256),
+            new JwksDocument.SigningKey(SecurityKeyHelper.RsaSsaPss384, SigningAlg.RsaSsaPssSha384),
+            new JwksDocument.SigningKey(SecurityKeyHelper.RsaSsaPss512, SigningAlg.RsaSsaPssSha512)
         ];
 
         options.GetTokenSigningKey =

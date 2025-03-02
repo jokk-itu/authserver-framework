@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250223170151_Initial")]
+    [Migration("20250302163943_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -209,15 +209,15 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("AuthTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("AuthenticationContextReferenceId")
                         .HasColumnType("int");
 
                     b.Property<string>("ClientId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAuthTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2");
@@ -230,6 +230,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UpdatedAuthTime")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

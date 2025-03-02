@@ -94,6 +94,8 @@ public static class Parameter
     public const string AuthTime = "auth_time";
     public const string Acr = "acr";
     public const string AccessControl = "access_control";
+    public const string CreatedAt = "created_at";
+    public const string UpdatedAt = "updated_at";
 
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";

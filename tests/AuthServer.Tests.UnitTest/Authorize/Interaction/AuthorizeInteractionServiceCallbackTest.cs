@@ -74,7 +74,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         typeof(AuthorizationGrant)
-            .GetProperty(nameof(AuthorizationGrant.AuthTime))!
+            .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
             .SetValue(authorizationGrant, DateTime.UtcNow.AddSeconds(-180));
 
         await AddEntity(authorizationGrant);
@@ -120,7 +120,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         typeof(AuthorizationGrant)
-            .GetProperty(nameof(AuthorizationGrant.AuthTime))!
+            .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
             .SetValue(authorizationGrant, DateTime.UtcNow.AddSeconds(-180));
 
         await AddEntity(authorizationGrant);

@@ -1,3 +1,4 @@
+using AuthServer.Authentication.OAuthToken;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
@@ -31,7 +32,7 @@ internal class GrantManagementRevokeEndpointHandler : IEndpointHandler
                 error.ResultCode switch
                 {
                     ResultCode.NotFound => Results.Extensions.OAuthNotFound(error),
-                    ResultCode.Forbidden => throw new NotImplementedException(),
+                    ResultCode.Forbidden => Results.Forbid(null, [OAuthTokenAuthenticationDefaults.AuthenticationScheme]),
                     _ => Results.Extensions.OAuthBadRequest(
                         new OAuthError(ErrorCode.ServerError, "unexpected error occurred"))
                 });

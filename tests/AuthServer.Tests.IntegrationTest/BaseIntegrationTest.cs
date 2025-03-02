@@ -25,16 +25,60 @@ namespace AuthServer.Tests.IntegrationTest;
 public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
+    private readonly IDataProtectionProvider _dataProtectionProvider;
 
     protected readonly ITestOutputHelper TestOutputHelper;
     protected readonly IServiceProvider ServiceProvider;
-    protected readonly AuthorizeEndpointBuilder AuthorizeEndpointBuilder;
-    protected readonly RegisterEndpointBuilder RegisterEndpointBuilder;
-    protected readonly IntrospectionEndpointBuilder IntrospectionEndpointBuilder;
-    protected readonly RevocationEndpointBuilder RevocationEndpointBuilder;
-    protected readonly UserinfoEndpointBuilder UserinfoEndpointBuilder;
-    protected readonly PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder;
-    protected readonly GrantManagementEndpointBuilder GrantManagementEndpointBuilder;
+
+    protected AuthorizeEndpointBuilder AuthorizeEndpointBuilder => new AuthorizeEndpointBuilder(
+        GetHttpClient(),
+        _dataProtectionProvider,
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected RegisterEndpointBuilder RegisterEndpointBuilder => new RegisterEndpointBuilder(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected IntrospectionEndpointBuilder IntrospectionEndpointBuilder => new IntrospectionEndpointBuilder(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected RevocationEndpointBuilder RevocationEndpointBuilder => new RevocationEndpointBuilder(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected UserinfoEndpointBuilder UserinfoEndpointBuilder => new UserinfoEndpointBuilder(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder => new PushedAuthorizationEndpointBuilder(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected GrantManagementEndpointBuilder GrantManagementEndpointBuilder => new GrantManagementEndpointBuilder(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
 
     protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, EndpointResolver, TestOutputHelper);
 
@@ -74,6 +118,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         TestOutputHelper = testOutputHelper;
         ServiceProvider = _factory.Services.CreateScope().ServiceProvider;
 
+        _dataProtectionProvider = ServiceProvider.GetRequiredService<IDataProtectionProvider>();
         _discoveryDocumentOptions = _factory.Services.GetRequiredService<IOptionsMonitor<DiscoveryDocument>>();
         _userInteractionOptions = _factory.Services.GetRequiredService<IOptionsMonitor<UserInteraction>>();
         _jwksDocumentOptions = _factory.Services.GetRequiredService<IOptionsMonitor<JwksDocument>>();
@@ -81,57 +126,6 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
 
         ServiceProvider.GetRequiredService<AuthorizationDbContext>().Database.EnsureDeleted();
         ServiceProvider.GetRequiredService<AuthorizationDbContext>().Database.Migrate();
-
-        var dataProtectionProvider = ServiceProvider.GetRequiredService<IDataProtectionProvider>();
-        AuthorizeEndpointBuilder = new AuthorizeEndpointBuilder(
-            GetHttpClient(),
-            dataProtectionProvider,
-            DiscoveryDocument,
-            JwksDocument,
-            EndpointResolver,
-            TestOutputHelper);
-
-        RegisterEndpointBuilder = new RegisterEndpointBuilder(
-            GetHttpClient(),
-            DiscoveryDocument,
-            JwksDocument,
-            EndpointResolver,
-            TestOutputHelper);
-
-        IntrospectionEndpointBuilder = new IntrospectionEndpointBuilder(
-            GetHttpClient(),
-            DiscoveryDocument,
-            JwksDocument,
-            EndpointResolver,
-            TestOutputHelper);
-
-        RevocationEndpointBuilder = new RevocationEndpointBuilder(
-            GetHttpClient(),
-            DiscoveryDocument,
-            JwksDocument,
-            EndpointResolver,
-            TestOutputHelper);
-
-        UserinfoEndpointBuilder = new UserinfoEndpointBuilder(
-            GetHttpClient(),
-            DiscoveryDocument,
-            JwksDocument,
-            EndpointResolver,
-            TestOutputHelper);
-
-        PushedAuthorizationEndpointBuilder = new PushedAuthorizationEndpointBuilder(
-            GetHttpClient(),
-            DiscoveryDocument,
-            JwksDocument,
-            EndpointResolver,
-            TestOutputHelper);
-
-        GrantManagementEndpointBuilder = new GrantManagementEndpointBuilder(
-            GetHttpClient(),
-            DiscoveryDocument,
-            JwksDocument,
-            EndpointResolver,
-            TestOutputHelper);
     }
 
     protected HttpClient GetHttpClient() => _factory.CreateClient(new WebApplicationFactoryClientOptions

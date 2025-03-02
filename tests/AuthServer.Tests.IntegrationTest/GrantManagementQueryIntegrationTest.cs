@@ -4,6 +4,9 @@ using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Text.Json;
+using AuthServer.Core;
+using AuthServer.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
@@ -82,6 +85,103 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Revoke_InvalidGrantId_ExpectNotFound()
+    {
+        var identityProviderClient = await AddIdentityProviderClient();
+
+        var registerResponse = await RegisterEndpointBuilder
+            .WithClientName("web-app")
+            .WithRedirectUris(["https://webapp.authserver.dk/callback"])
+            .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId])
+            .Post();
+
+        await AddUser();
+        await AddAuthenticationContextReferences();
+
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], []);
+
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var authorizeResponse = await AuthorizeEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithAuthorizeUser(grantId)
+            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId])
+            .WithResource([identityProviderClient.ClientUri!])
+            .Get();
+
+        var tokenResponse = await TokenEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithClientSecret(registerResponse.ClientSecret!)
+            .WithCode(authorizeResponse.Code!)
+            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithResource([identityProviderClient.ClientUri!])
+            .WithGrantType(GrantTypeConstants.AuthorizationCode)
+            .Post();
+
+        // Act
+        var grantResponse = await GrantManagementEndpointBuilder
+            .WithGrantId("invalid_grant_id")
+            .WithToken(tokenResponse.AccessToken)
+            .Get();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, grantResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Revoke_ClientDoesNotOwnGrant_ExpectForbidden()
+    {
+        var identityProviderClient = await AddIdentityProviderClient();
+
+        var registerResponse = await RegisterEndpointBuilder
+            .WithClientName("web-app")
+            .WithRedirectUris(["https://webapp.authserver.dk/callback"])
+            .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId])
+            .Post();
+
+        var otherRegisterResponse = await RegisterEndpointBuilder
+            .WithClientName("other-web-app")
+            .WithRedirectUris(["https://other-webapp.authserver.dk/callback"])
+            .WithScope([ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId])
+            .Post();
+
+        await AddUser();
+        await AddAuthenticationContextReferences();
+
+        var otherGrantId = await CreateAuthorizationGrant(otherRegisterResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], []);
+
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var authorizeResponse = await AuthorizeEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithAuthorizeUser(grantId)
+            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId])
+            .WithResource([identityProviderClient.ClientUri!])
+            .Get();
+
+        var tokenResponse = await TokenEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithClientSecret(registerResponse.ClientSecret!)
+            .WithCode(authorizeResponse.Code!)
+            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithResource([identityProviderClient.ClientUri!])
+            .WithGrantType(GrantTypeConstants.AuthorizationCode)
+            .Post();
+
+        // Act
+        var grantResponse = await GrantManagementEndpointBuilder
+            .WithGrantId(otherGrantId)
+            .WithToken(tokenResponse.AccessToken)
+            .Get();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Forbidden, grantResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task Query_GrantWithConsent_ExpectGrant()
     {
         // Arrange
@@ -97,7 +197,8 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile], [ClaimNameConstants.Name]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId,
+            [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile], [ClaimNameConstants.Name]);
 
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -128,6 +229,11 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
 
         var getGrantResponse = JsonSerializer.Deserialize<GetGrantResponse>(grantResponse.Content!);
         Assert.NotNull(getGrantResponse);
+
+        var grant = (await ServiceProvider.GetRequiredService<AuthorizationDbContext>().FindAsync<AuthorizationGrant>([grantId], CancellationToken.None))!;
+        Assert.Equal(grant.CreatedAuthTime, getGrantResponse.CreatedAt);
+        Assert.Equal(grant.UpdatedAuthTime, getGrantResponse.UpdatedAt);
+
         Assert.Single(getGrantResponse.Claims);
         Assert.Equal(ClaimNameConstants.Name, getGrantResponse.Claims.Single());
 

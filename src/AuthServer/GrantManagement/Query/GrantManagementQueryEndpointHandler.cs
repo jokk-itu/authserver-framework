@@ -1,4 +1,5 @@
-﻿using AuthServer.Core;
+﻿using AuthServer.Authentication.OAuthToken;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Endpoints.Responses;
@@ -33,13 +34,15 @@ internal class GrantManagementQueryEndpointHandler : IEndpointHandler
                     Scopes = x.Scopes,
                     Resources = x.Resources
                 }),
-                Claims = response.Claims
+                Claims = response.Claims,
+                CreatedAt = response.CreatedAt,
+                UpdatedAt = response.UpdatedAt
             }),
             error =>
                 error.ResultCode switch
                 {
                     ResultCode.NotFound => Results.Extensions.OAuthNotFound(error),
-                    ResultCode.Forbidden => throw new NotImplementedException(),
+                    ResultCode.Forbidden => Results.Forbid(null, [OAuthTokenAuthenticationDefaults.AuthenticationScheme]),
                     _ => Results.Extensions.OAuthBadRequest(
                         new OAuthError(ErrorCode.ServerError, "unexpected error occurred"))
                 });
