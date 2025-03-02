@@ -34,7 +34,9 @@ internal class GrantManagementQueryEndpointHandler : IEndpointHandler
                     Scopes = x.Scopes,
                     Resources = x.Resources
                 }),
-                Claims = response.Claims
+                Claims = response.Claims,
+                CreatedAt = response.CreatedAt,
+                UpdatedAt = response.UpdatedAt
             }),
             error =>
                 error.ResultCode switch
