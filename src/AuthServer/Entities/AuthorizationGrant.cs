@@ -7,7 +7,8 @@ public class AuthorizationGrant : Entity<string>
     public AuthorizationGrant(Session session, Client client, string subject, AuthenticationContextReference authenticationContextReference)
     {
         Id = Guid.NewGuid().ToString();
-        AuthTime = DateTime.UtcNow;
+        CreatedAuthTime = DateTime.UtcNow;
+        UpdatedAuthTime = DateTime.UtcNow;
         Session = session ?? throw new ArgumentNullException(nameof(session));
         Client = client ?? throw new ArgumentNullException(nameof(client));
         Subject = subject ?? throw new ArgumentNullException(nameof(subject));
@@ -19,7 +20,8 @@ public class AuthorizationGrant : Entity<string>
     private AuthorizationGrant(){}
 #pragma warning restore
 
-    public DateTime AuthTime { get; private set; }
+    public DateTime UpdatedAuthTime { get; private set; }
+    public DateTime CreatedAuthTime { get; private init; }
     public DateTime? RevokedAt { get; private set; }
     public string Subject { get; private init; }
     public Session Session { get; private init; }
@@ -36,9 +38,9 @@ public class AuthorizationGrant : Entity<string>
         RevokedAt ??= DateTime.UtcNow;
     }
 
-    public void SetAuthTime()
+    public void UpdateAuthTime()
     {
-        AuthTime = DateTime.UtcNow;
+        UpdatedAuthTime = DateTime.UtcNow;
     }
 
     public static readonly Expression<Func<AuthorizationGrant, bool>> IsActive = a => a.RevokedAt == null;
