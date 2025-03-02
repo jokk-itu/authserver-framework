@@ -4,6 +4,9 @@ using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Text.Json;
+using AuthServer.Core;
+using AuthServer.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
@@ -128,6 +131,11 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
 
         var getGrantResponse = JsonSerializer.Deserialize<GetGrantResponse>(grantResponse.Content!);
         Assert.NotNull(getGrantResponse);
+
+        var grant = (await ServiceProvider.GetRequiredService<AuthorizationDbContext>().FindAsync<AuthorizationGrant>([grantId], CancellationToken.None))!;
+        Assert.Equal(grant.CreatedAuthTime, getGrantResponse.CreatedAt);
+        Assert.Equal(grant.UpdatedAuthTime, getGrantResponse.UpdatedAt);
+
         Assert.Single(getGrantResponse.Claims);
         Assert.Equal(ClaimNameConstants.Name, getGrantResponse.Claims.Single());
 
