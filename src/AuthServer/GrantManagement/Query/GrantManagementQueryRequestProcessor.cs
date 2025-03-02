@@ -1,4 +1,5 @@
-﻿using AuthServer.Core.Abstractions;
+﻿using AuthServer.Core;
+using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
 
@@ -6,14 +7,17 @@ namespace AuthServer.GrantManagement.Query;
 internal class GrantManagementQueryRequestProcessor : IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>
 {
     private readonly IConsentRepository _consentRepository;
+    private readonly AuthorizationDbContext _authorizationDbContext;
 
-    public GrantManagementQueryRequestProcessor(IConsentRepository consentRepository)
+    public GrantManagementQueryRequestProcessor(IConsentRepository consentRepository, AuthorizationDbContext authorizationDbContext)
     {
         _consentRepository = consentRepository;
+        _authorizationDbContext = authorizationDbContext;
     }
 
     public async Task<GrantResponse> Process(GrantManagementValidatedRequest request, CancellationToken cancellationToken)
     {
+        var grant = (await _authorizationDbContext.FindAsync<AuthorizationGrant>([request.GrantId], cancellationToken))!;
         var consents = await _consentRepository.GetGrantConsents(request.GrantId, cancellationToken);
 
         var claims = consents
@@ -41,7 +45,9 @@ internal class GrantManagementQueryRequestProcessor : IRequestProcessor<GrantMan
         return new GrantResponse
         {
             Scopes = scopeDtos,
-            Claims = claims
+            Claims = claims,
+            CreatedAt = grant.CreatedAuthTime,
+            UpdatedAt = grant.UpdatedAuthTime
         };
     }
 }
