@@ -52,6 +52,9 @@ public class GrantManagementQueryRequestProcessorTest : BaseUnitTest
         var grantResponse = await processor.Process(request, CancellationToken.None);
 
         // Assert
+        Assert.Equal(authorizationGrant.CreatedAuthTime, grantResponse.CreatedAt);
+        Assert.Equal(authorizationGrant.UpdatedAuthTime, grantResponse.UpdatedAt);
+
         Assert.Single(grantResponse.Claims);
         Assert.Equal(nameClaim.Name, grantResponse.Claims.Single());
 
