@@ -8,6 +8,7 @@ using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
+using AuthServer.Authentication.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.Authorize.Interaction;
 
@@ -26,7 +27,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -61,7 +62,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
     public async Task GetInteractionResult_IdTokenMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizeUserAccessorMock);
@@ -104,7 +105,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
     public async Task GetInteractionResult_IdTokenDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -146,7 +147,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -185,7 +186,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -226,7 +227,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -261,7 +262,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -301,7 +302,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -337,7 +338,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 

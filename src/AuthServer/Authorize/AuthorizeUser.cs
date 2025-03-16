@@ -1,3 +1,3 @@
 ﻿namespace AuthServer.Authorize;
 
-public record AuthorizeUser(string SubjectIdentifier, bool IsFreshGrant, string AuthorizationGrantId);
+internal record AuthorizeUser(string SubjectIdentifier, bool IsFreshGrant, string AuthorizationGrantId);

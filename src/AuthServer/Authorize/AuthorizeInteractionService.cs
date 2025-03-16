@@ -15,7 +15,7 @@ namespace AuthServer.Authorize;
 internal class AuthorizeInteractionService : IAuthorizeInteractionService
 {
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _serverIssuedTokenDecoder;
-    private readonly IAuthorizeUserAccessor _userAccessor;
+    private readonly IUserAccessor<AuthorizeUser> _userAccessor;
     private readonly IAuthenticatedUserAccessor _authenticatedUserAccessor;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IConsentRepository _consentGrantRepository;
@@ -24,7 +24,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
 
     public AuthorizeInteractionService(
         ITokenDecoder<ServerIssuedTokenDecodeArguments> serverIssuedTokenDecoder,
-        IAuthorizeUserAccessor userAccessor,
+        IUserAccessor<AuthorizeUser> userAccessor,
         IAuthenticatedUserAccessor authenticatedUserAccessor,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IConsentRepository consentGrantRepository,

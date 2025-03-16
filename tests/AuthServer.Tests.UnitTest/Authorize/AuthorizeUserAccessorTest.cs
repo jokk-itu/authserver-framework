@@ -1,5 +1,5 @@
-﻿using AuthServer.Authorize;
-using AuthServer.Authorize.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorize;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -24,19 +24,15 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var dataProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
-            .CreateProtector("AuthorizeUserCookie");
+            .CreateProtector(AuthorizeUserAccessor.DataProtectorName);
 
-        var authorizeUserAccessor = serviceProvider.GetRequiredService<IAuthorizeUserAccessor>();
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
 
         var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
         var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
-        httpContextAccessor.HttpContext = new DefaultHttpContext();
-        httpContextAccessor.HttpContext.Request.Cookies = HttpContextHelper.GetRequestCookies(
-            new Dictionary<string, string>
-            {
-                { "AuthorizeUser", encryptedAuthorizeUser }
-            });
+        httpContextAccessor.HttpContext.Response.Cookies.Append(AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser);
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => authorizeUserAccessor.SetUser(authorizeUser));
@@ -48,12 +44,12 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var dataProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
-            .CreateProtector("AuthorizeUserCookie");
+            .CreateProtector(AuthorizeUserAccessor.DataProtectorName);
 
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
         httpContextAccessor.HttpContext = new DefaultHttpContext();
 
-        var authorizeUserAccessor = serviceProvider.GetRequiredService<IAuthorizeUserAccessor>();
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
         var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
 
         // Act
@@ -66,23 +62,74 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
     }
 
     [Fact]
-    public void GetUser_UserIsNotSet_ExpectInvalidOperationException()
+    public void TrySetUser_UserAlreadySet_ExpectUserIsNotSet()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var dataProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
-            .CreateProtector("AuthorizeUserCookie");
+            .CreateProtector(AuthorizeUserAccessor.DataProtectorName);
 
-        var authorizeUserAccessor = serviceProvider.GetRequiredService<IAuthorizeUserAccessor>();
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
 
         var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
         var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
+        httpContextAccessor.HttpContext.Response.Cookies.Append(AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser);
+
+        // Act
+        var otherUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
+        var hasBeenSet = authorizeUserAccessor.TrySetUser(otherUser);
+
+        // Assert
+        Assert.False(hasBeenSet);
+        var headers = httpContextAccessor.HttpContext!.Response.GetTypedHeaders();
+        var decryptedAuthorizeUser = GetDecryptedAuthorizeCookie(dataProtector, HttpUtility.UrlDecode(headers.SetCookie.First().Value.Value!));
+        Assert.Equal(authorizeUser.SubjectIdentifier, decryptedAuthorizeUser.SubjectIdentifier);
+    }
+
+    [Fact]
+    public void TrySetUser_UserNotSet_ExpectUserIsSet()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var dataProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
+            .CreateProtector(AuthorizeUserAccessor.DataProtectorName);
+
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
+        var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
         httpContextAccessor.HttpContext = new DefaultHttpContext();
+
+        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
+
+        // Act
+        var hasBeenSet = authorizeUserAccessor.TrySetUser(authorizeUser);
+
+        // Assert
+        Assert.True(hasBeenSet);
+        var headers = httpContextAccessor.HttpContext!.Response.GetTypedHeaders();
+        var decryptedAuthorizeUser = GetDecryptedAuthorizeCookie(dataProtector, HttpUtility.UrlDecode(headers.SetCookie.First().Value.Value!));
+        Assert.Equal(authorizeUser.SubjectIdentifier, decryptedAuthorizeUser.SubjectIdentifier);
+    }
+
+    [Fact]
+    public void GetUser_UserIsSet_ExpectUser()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var dataProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
+            .CreateProtector(AuthorizeUserAccessor.DataProtectorName);
+
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
+        var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
+
+        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
+        var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
         httpContextAccessor.HttpContext.Request.Cookies = HttpContextHelper.GetRequestCookies(
             new Dictionary<string, string>
             {
-                { "AuthorizeUser", encryptedAuthorizeUser }
+                { AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser }
             });
 
         // Act
@@ -93,17 +140,106 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
     }
 
     [Fact]
-    public void GetUser_UserIsSet_ExpectUser()
+    public void GetUser_UserIsNotSet_ExpectInvalidOperationException()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
 
-        var authorizeUserAccessor = serviceProvider.GetRequiredService<IAuthorizeUserAccessor>();
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
         httpContextAccessor.HttpContext = new DefaultHttpContext();
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(authorizeUserAccessor.GetUser);
+    }
+
+    [Fact]
+    public void TryGetUser_UserIsSet_ExpectUser()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var dataProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
+            .CreateProtector(AuthorizeUserAccessor.DataProtectorName);
+
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
+        var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
+
+        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
+        var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
+        httpContextAccessor.HttpContext.Request.Cookies = HttpContextHelper.GetRequestCookies(
+            new Dictionary<string, string>
+            {
+                { AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser }
+            });
+
+        // Act
+        var decryptedAuthorizeUser = authorizeUserAccessor.TryGetUser();
+
+        // Assert
+        Assert.NotNull(decryptedAuthorizeUser);
+        Assert.Equal(authorizeUser.SubjectIdentifier, decryptedAuthorizeUser.SubjectIdentifier);
+    }
+
+    [Fact]
+    public void TryGetUser_UserIsNotSet_ExpectNull()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
+        var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
+
+        // Act
+        var user = authorizeUserAccessor.TryGetUser();
+
+        // Assert
+        Assert.Null(user);
+    }
+
+    [Fact]
+    public void Clear_UserIsSet_ExpectCleared()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var dataProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
+            .CreateProtector(AuthorizeUserAccessor.DataProtectorName);
+
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
+        var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
+
+        var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
+        var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
+        httpContextAccessor.HttpContext.Request.Cookies = HttpContextHelper.GetRequestCookies(
+            new Dictionary<string, string>
+            {
+                { AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser }
+            });
+
+        // Act
+        var isCleared = authorizeUserAccessor.ClearUser();
+
+        // Assert
+        Assert.True(isCleared);
+    }
+
+    [Fact]
+    public void Clear_UserIsNotSet_ExpectNotCleared()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+
+        var authorizeUserAccessor = serviceProvider.GetRequiredService<IUserAccessor<AuthorizeUser>>();
+        var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
+
+        // Act
+        var isCleared = authorizeUserAccessor.ClearUser();
+
+        // Assert
+        Assert.False(isCleared);
     }
 
     private static string GetEncryptedAuthorizeCookie(IDataProtector dataProtector, AuthorizeUser authorizeUser)

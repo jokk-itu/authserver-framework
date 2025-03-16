@@ -1,4 +1,6 @@
-﻿using AuthServer.Authorize.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorize;
+using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.RequestAccessors.Authorize;
@@ -25,7 +27,7 @@ public class AuthorizeInteractionServiceTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 

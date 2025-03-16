@@ -8,6 +8,7 @@ using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
+using AuthServer.Authentication.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.Authorize.Interaction;
 
@@ -24,7 +25,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackExpiredGrant_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -64,7 +65,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -107,7 +108,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -150,7 +151,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackInsufficientAuthenticationMethodReferenceAgainstRequest_ExpectUnmetAuthenticationRequirementResult()
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -190,7 +191,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackInsufficientAuthenticationMethodReferenceAgainstDefault_ExpectUnmetAuthenticationRequirementResult()
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -232,7 +233,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackSubjectDoesNotOwnGrant_ExpectInvalidGrantId()
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -268,7 +269,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackConsentNotRequired_ExpectNone()
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -309,7 +310,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackConsentRequired_ExpectConsent(string? prompt)
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -345,7 +346,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
     public async Task GetInteractionResult_CallbackFromConsent_ExpectNone()
     {
         // Arrange
-        var authorizeUserAccessorMock = new Mock<IAuthorizeUserAccessor>();
+        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
         var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 

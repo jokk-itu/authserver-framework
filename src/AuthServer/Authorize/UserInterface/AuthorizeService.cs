@@ -26,7 +26,7 @@ internal class AuthorizeService : IAuthorizeService
     private readonly ISecureRequestService _secureRequestService;
     private readonly IAuthorizeResponseBuilder _authorizeResponseBuilder;
     private readonly IAuthenticatedUserAccessor _authenticatedUserAccessor;
-    private readonly IAuthorizeUserAccessor _authorizeUserAccessor;
+    private readonly IUserAccessor<AuthorizeUser> _authorizeUserAccessor;
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
 
     public AuthorizeService(
@@ -38,7 +38,7 @@ internal class AuthorizeService : IAuthorizeService
         ISecureRequestService secureRequestService,
         IAuthorizeResponseBuilder authorizeResponseBuilder,
         IAuthenticatedUserAccessor authenticatedUserAccessor,
-        IAuthorizeUserAccessor authorizeUserAccessor,
+        IUserAccessor<AuthorizeUser> authorizeUserAccessor,
         ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder)
     {
         _consentRepository = consentRepository;

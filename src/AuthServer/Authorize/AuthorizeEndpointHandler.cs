@@ -1,4 +1,5 @@
-﻿using AuthServer.Authorize.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorize.Abstractions;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
@@ -15,14 +16,14 @@ internal class AuthorizeEndpointHandler : IEndpointHandler
     private readonly IRequestHandler<AuthorizeRequest, string> _requestHandler;
     private readonly IAuthorizeResponseBuilder _authorizeResponseBuilder;
     private readonly IOptionsSnapshot<UserInteraction> _userInteractionOptions;
-    private readonly IAuthorizeUserAccessor _authorizeUserAccessor;
+    private readonly IUserAccessor<AuthorizeUser> _authorizeUserAccessor;
 
     public AuthorizeEndpointHandler(
         IRequestAccessor<AuthorizeRequest> requestAccessor,
         IRequestHandler<AuthorizeRequest, string> requestHandler,
         IAuthorizeResponseBuilder authorizeResponseBuilder,
         IOptionsSnapshot<UserInteraction> userInteractionOptions,
-        IAuthorizeUserAccessor authorizeUserAccessor)
+        IUserAccessor<AuthorizeUser> authorizeUserAccessor)
     {
         _requestAccessor = requestAccessor;
         _requestHandler = requestHandler;

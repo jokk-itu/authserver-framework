@@ -240,7 +240,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IAuthorizeService, AuthorizeService>()
             .AddScoped<IAuthorizeInteractionService, AuthorizeInteractionService>()
             .AddScoped<IAuthorizeResponseBuilder, AuthorizeResponseBuilder>()
-            .AddScoped<IAuthorizeUserAccessor, AuthorizeUserAccessor>()
+            .AddScoped<IUserAccessor<AuthorizeUser>, AuthorizeUserAccessor>()
             .AddScoped<ISecureRequestService, SecureRequestService>()
             .AddScoped<IRequestHandler<AuthorizeRequest, string>, AuthorizeRequestHandler>()
             .AddScoped<IRequestProcessor<AuthorizeValidatedRequest, string>, AuthorizeRequestProcessor>()
