@@ -518,6 +518,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<bool>("RequireConsent")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("RequireIdTokenClaims")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("RequirePushedAuthorizationRequests")
                         .HasColumnType("bit");
 

@@ -137,6 +137,11 @@ public class Client : Entity<string>
     public bool RequirePushedAuthorizationRequests { get; set; }
 
     /// <summary>
+    /// All id tokens must include claims about the end user.
+    /// </summary>
+    public bool RequireIdTokenClaims { get; set; }
+
+    /// <summary>
     /// Maximum age since last authentication by end user in epoch format
     /// Zero means it always requires authentication by end user.
     /// </summary>
