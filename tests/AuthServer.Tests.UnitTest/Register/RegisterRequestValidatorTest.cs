@@ -1507,6 +1507,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             RequireReferenceToken = false,
             RequireSignedRequestObject = true,
             RequirePushedAuthorizationRequests = true,
+            RequireIdTokenClaims = true,
             RequestUriExpiration = 500,
             RequestObjectEncryptionAlg = JweAlgConstants.RsaPKCS1,
             RequestObjectEncryptionEnc = JweEncConstants.Aes128CbcHmacSha256,
@@ -1556,6 +1557,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.RequireReferenceToken, validatedRequest.Value!.RequireReferenceToken);
         Assert.Equal(request.RequireSignedRequestObject, validatedRequest.Value!.RequireSignedRequestObject);
         Assert.Equal(request.RequirePushedAuthorizationRequests, validatedRequest.Value!.RequirePushedAuthorizationRequests);
+        Assert.Equal(request.RequireIdTokenClaims, validatedRequest.Value!.RequireIdTokenClaims);
         Assert.Equal(request.RequestUriExpiration, validatedRequest.Value!.RequestUriExpiration);
         Assert.Equal(request.RequestObjectEncryptionAlg, validatedRequest.Value!.RequestObjectEncryptionAlg!.GetDescription());
         Assert.Equal(request.RequestObjectEncryptionEnc, validatedRequest.Value!.RequestObjectEncryptionEnc!.GetDescription());
