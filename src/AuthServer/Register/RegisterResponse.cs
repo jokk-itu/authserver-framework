@@ -26,6 +26,7 @@ internal class RegisterResponse
 	public required bool RequireSignedRequestObject { get; init; }
 	public required bool RequireReferenceToken { get; init; }
 	public required bool RequirePushedAuthorizationRequests { get; init; }
+	public required bool RequireIdTokenClaims { get; init; }
 	public required EncryptionEnc? TokenEndpointAuthEncryptionEnc { get; init; }
 	public required EncryptionAlg? TokenEndpointAuthEncryptionAlg { get; init; }
     public required SigningAlg? TokenEndpointAuthSigningAlg { get; init; }

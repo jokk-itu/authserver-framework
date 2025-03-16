@@ -59,6 +59,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             RequireReferenceToken = false,
             RequireSignedRequestObject = true,
             RequirePushedAuthorizationRequests = true,
+            RequireIdTokenClaims = true,
             RequestUriExpiration = 500,
             RequestObjectEncryptionAlg = EncryptionAlg.RsaPKCS1,
             RequestObjectEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256,
@@ -126,6 +127,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(request.RequireSignedRequestObject, response.RequireSignedRequestObject);
         Assert.Equal(request.RequireReferenceToken, response.RequireReferenceToken);
         Assert.Equal(request.RequirePushedAuthorizationRequests, response.RequirePushedAuthorizationRequests);
+        Assert.Equal(request.RequireIdTokenClaims, response.RequireIdTokenClaims);
         Assert.Equal(request.SubjectType, response.SubjectType);
         Assert.Equal(request.DefaultMaxAge, response.DefaultMaxAge);
         Assert.Equal(request.DefaultAcrValues, response.DefaultAcrValues);
@@ -232,8 +234,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.CreatedAt.Ticks, response.ClientIdIssuedAt);
         Assert.True(CryptographyHelper.VerifyPassword(client.SecretHash!, response.ClientSecret!));
         Assert.Equal(client.SecretExpiresAt!.Value.Ticks, response.ClientSecretExpiresAt);
-        Assert.Equal($"{EndpointResolver.RegistrationEndpoint}?client_id={response.ClientId}",
-            response.RegistrationClientUri);
+        Assert.Equal($"{EndpointResolver.RegistrationEndpoint}?client_id={response.ClientId}", response.RegistrationClientUri);
         Assert.Equal(client.ClientTokens.Single(x => x.RevokedAt is null).Reference, response.RegistrationAccessToken);
         Assert.Equal(client.ApplicationType, response.ApplicationType);
         Assert.Equal(client.TokenEndpointAuthMethod, response.TokenEndpointAuthMethod);
@@ -255,6 +256,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.RequireSignedRequestObject, response.RequireSignedRequestObject);
         Assert.Equal(client.RequireReferenceToken, response.RequireReferenceToken);
         Assert.Equal(client.RequirePushedAuthorizationRequests, response.RequirePushedAuthorizationRequests);
+        Assert.Equal(client.RequireIdTokenClaims, response.RequireIdTokenClaims);
         Assert.Equal(client.SubjectType, response.SubjectType);
         Assert.Equal(client.DefaultMaxAge, response.DefaultMaxAge);
         Assert.Equal(client.ClientAuthenticationContextReferences.Select(x => x.AuthenticationContextReference.Name), response.DefaultAcrValues);
@@ -322,6 +324,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             RequireSignedRequestObject = true,
             RequireReferenceToken = false,
             RequirePushedAuthorizationRequests = true,
+            RequireIdTokenClaims = true,
             SubjectType = SubjectType.Pairwise,
             DefaultMaxAge = 86400,
             AuthorizationCodeExpiration = 500,

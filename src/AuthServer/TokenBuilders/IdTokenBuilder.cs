@@ -59,6 +59,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
                 AuthTime = x.UpdatedAuthTime,
                 ClientId = x.Client.Id,
                 x.Client.RequireConsent,
+                x.Client.RequireIdTokenClaims,
                 SessionId = x.Session.Id,
                 SubjectIdentifier = x.Session.SubjectIdentifier.Id,
                 GrantSubject = x.Subject,
@@ -86,9 +87,16 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             { ClaimNameConstants.Acr, query.AuthenticationContextReference }
         };
 
-        var userClaims = await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken);
+        var userClaims = query.RequireIdTokenClaims
+            ? await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken)
+            : [];
+
         IReadOnlyCollection<string> authorizedClaims;
-        if (query.RequireConsent)
+        if (!query.RequireIdTokenClaims)
+        {
+            authorizedClaims = [];
+        }
+        else if (query.RequireConsent)
         {
             authorizedClaims = await _consentGrantRepository.GetGrantConsentedClaims(arguments.AuthorizationGrantId, cancellationToken);
         }
@@ -96,7 +104,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
         {
             authorizedClaims = await _clientRepository.GetAuthorizedClaims(query.ClientId, cancellationToken);
         }
-        
+
         foreach (var userClaim in userClaims)
         {
             if (authorizedClaims.Contains(userClaim.Type))

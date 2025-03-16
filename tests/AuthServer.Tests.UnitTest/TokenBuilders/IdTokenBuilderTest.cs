@@ -101,7 +101,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
             TokenDecryptionKeys = JsonWebKeySet.Create(clientJwk.PrivateJwks).Keys,
             ValidAudience = authorizationGrant.Client.Id,
             ValidIssuer = DiscoveryDocument.Issuer,
-            ValidTypes = [TokenTypeHeaderConstants.IdToken],
+            ValidTypes = [TokenTypeHeaderConstants.IdToken]
         });
 
         Assert.NotNull(validatedTokenResult);
@@ -161,7 +161,8 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
             IdTokenSignedResponseAlg = signingAlg,
-            SubjectType = SubjectType.Pairwise
+            SubjectType = SubjectType.Pairwise,
+            RequireIdTokenClaims = true
         };
 
         client.Scopes.Add(openIdScope);
@@ -214,7 +215,9 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
             IdTokenEncryptedResponseAlg = encryptionAlg,
             IdTokenEncryptedResponseEnc = encryptionEnc,
             SubjectType = SubjectType.Pairwise,
-            Jwks = clientJwks
+            Jwks = clientJwks,
+            RequireIdTokenClaims = false,
+            RequireConsent = false
         };
 
         client.Scopes.Add(openIdScope);
@@ -232,19 +235,6 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         var value = CryptographyHelper.GetRandomString(32);
         var nonce = new Nonce(value, value.Sha256(), authorizationGrant);
         authorizationGrant.Nonces.Add(nonce);
-
-        var nameClaim = await IdentityContext.Set<Claim>().SingleAsync(x => x.Name == ClaimNameConstants.Name);
-        var nameClaimConsent = new ClaimConsent(subjectIdentifier, client, nameClaim);
-        var openIdScopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
-        var profileScopeConsent = new ScopeConsent(subjectIdentifier, client, profileScope);
-
-        var authorizationGrantNameClaimConsent = new AuthorizationGrantClaimConsent(nameClaimConsent, authorizationGrant);
-        var authorizationGrantOpenIdScopeConsent = new AuthorizationGrantScopeConsent(openIdScopeConsent, authorizationGrant, "https://weather.authserver.dk");
-        var authorizationGrantProfileScopeConsent = new AuthorizationGrantScopeConsent(profileScopeConsent, authorizationGrant, "https://weather.authserver.dk");
-
-        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantNameClaimConsent);
-        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantOpenIdScopeConsent);
-        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantProfileScopeConsent);
 
         await AddEntity(authorizationGrant);
 

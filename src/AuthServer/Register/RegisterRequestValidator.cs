@@ -130,6 +130,12 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return requirePushedAuthorizationRequestsError;
         }
 
+        var requireIdTokenClaims = ValidateRequireIdTokenClaims(request, validatedRequest);
+        if (requireIdTokenClaims is not null)
+        {
+            return requireIdTokenClaims;
+        }
+
         var defaultMaxAgeError = ValidateDefaultMaxAge(request, validatedRequest);
         if (defaultMaxAgeError is not null)
         {
@@ -820,6 +826,8 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <summary>
     /// RequirePushedAuthorizationRequests is OPTIONAL.
     /// </summary>
+    /// <param name="request"></param>
+    /// <param name="validatedRequest"></param>
     /// <returns></returns>
     private static ProcessError? ValidateRequirePushedAuthorizationRequests(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
@@ -829,6 +837,23 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         validatedRequest.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests.Value;
+        return null;
+    }
+
+    /// <summary>
+    /// RequireIdTokenClaims is OPTIONAL.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="validatedRequest"></param>
+    /// <returns></returns>
+    private static ProcessError? ValidateRequireIdTokenClaims(RegisterRequest request, RegisterValidatedRequest validatedRequest)
+    {
+        if (request.RequireIdTokenClaims is null)
+        {
+            return null;
+        }
+
+        validatedRequest.RequireIdTokenClaims = request.RequireIdTokenClaims.Value;
         return null;
     }
 

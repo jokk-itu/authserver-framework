@@ -55,6 +55,8 @@ internal class RegisterEndpointHandler : IEndpointHandler
                             JwksUri = client.JwksUri,
                             RequireSignedRequestObject = client.RequireSignedRequestObject,
                             RequireReferenceToken = client.RequireReferenceToken,
+                            RequirePushedAuthorizationRequests = client.RequirePushedAuthorizationRequests,
+                            RequireIdTokenClaims = client.RequireIdTokenClaims,
                             SubjectType = client.SubjectType?.GetDescription(),
                             DefaultMaxAge = client.DefaultMaxAge,
                             DefaultAcrValues = client.DefaultAcrValues,
