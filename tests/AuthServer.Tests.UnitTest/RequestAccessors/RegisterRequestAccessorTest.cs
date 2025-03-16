@@ -49,10 +49,6 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.BackchannelLogoutUri, value },
             { Parameter.SectorIdentifierUri, value },
 
-            { Parameter.RequireSignedRequestObject, value },
-            { Parameter.RequireReferenceToken, value },
-            { Parameter.RequirePushedAuthorizationRequests, value },
-
             { Parameter.TokenEndpointAuthEncryptionEnc, value },
             { Parameter.TokenEndpointAuthEncryptionAlg, value },
             { Parameter.TokenEndpointAuthSigningAlg, value },
@@ -217,7 +213,8 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         {
             { Parameter.RequireSignedRequestObject, value },
             { Parameter.RequireReferenceToken, value },
-            { Parameter.RequirePushedAuthorizationRequests, value }
+            { Parameter.RequirePushedAuthorizationRequests, value },
+            { Parameter.RequireIdTokenClaims, value }
         };
         var requestJson = JsonSerializer.SerializeToUtf8Bytes(requestContent);
         var requestStream = new MemoryStream(requestJson);
@@ -261,6 +258,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.RequireSignedRequestObject);
         Assert.Equal(expectedValue, request.RequireReferenceToken);
         Assert.Equal(expectedValue, request.RequirePushedAuthorizationRequests);
+        Assert.Equal(expectedValue, request.RequireIdTokenClaims);
     }
 
     [Theory]
