@@ -1,8 +1,8 @@
 ﻿using System.Web;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.EndSession.Abstractions;
 using AuthServer.Extensions;
 using AuthServer.Options;
 using AuthServer.RequestAccessors.EndSession;
@@ -15,13 +15,13 @@ internal class EndSessionEndpointHandler : IEndpointHandler
     private readonly IRequestAccessor<EndSessionRequest> _requestAccessor;
     private readonly IRequestHandler<EndSessionRequest, Unit> _requestHandler;
     private readonly IOptionsSnapshot<UserInteraction> _userInteractionOptions;
-    private readonly IEndSessionUserAccessor _endSessionUserAccessor;
+    private readonly IUserAccessor<EndSessionUser> _endSessionUserAccessor;
 
     public EndSessionEndpointHandler(
         IRequestAccessor<EndSessionRequest> requestAccessor,
         IRequestHandler<EndSessionRequest, Unit> requestHandler,
         IOptionsSnapshot<UserInteraction> userInteractionOptions,
-        IEndSessionUserAccessor endSessionUserAccessor)
+        IUserAccessor<EndSessionUser> endSessionUserAccessor)
     {
         _requestAccessor = requestAccessor;
         _requestHandler = requestHandler;
