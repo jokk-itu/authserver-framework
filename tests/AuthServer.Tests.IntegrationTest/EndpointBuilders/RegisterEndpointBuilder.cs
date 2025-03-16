@@ -92,6 +92,12 @@ public class RegisterEndpointBuilder : EndpointBuilder
         return this;
     }
 
+    public RegisterEndpointBuilder WithPostLogoutRedirectUris(IReadOnlyCollection<string> postLogoutRedirectUris)
+    {
+        _parameters.Add(Parameter.PostLogoutRedirectUris, postLogoutRedirectUris);
+        return this;
+    }
+
     internal async Task<RegisterResponse> Post()
     {
         var json = JsonSerializer.Serialize(_parameters);

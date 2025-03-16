@@ -1,6 +1,6 @@
-﻿using AuthServer.Core.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Core.Abstractions;
 using AuthServer.EndSession;
-using AuthServer.EndSession.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
@@ -245,7 +245,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(new Mock<IEndSessionUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<EndSessionUser>>());
         });
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>>();
@@ -263,7 +263,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
     public async Task Validate_InactiveSessionWithoutClientId_ExpectEndSessionValidatedRequest()
     {
         // Arrange
-        var endSessionUserAccessor = new Mock<IEndSessionUserAccessor>();
+        var endSessionUserAccessor = new Mock<IUserAccessor<EndSessionUser>>();
         var endSessionUser = new EndSessionUser("subject", true);
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -293,7 +293,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
     public async Task Validate_ClientIdClientIsNotRegisteredWithPostLogoutRedirectUri_ExpectUnauthorizedClientForPostLogoutRedirectUri()
     {
         // Arrange
-        var endSessionUserAccessor = new Mock<IEndSessionUserAccessor>();
+        var endSessionUserAccessor = new Mock<IUserAccessor<EndSessionUser>>();
         var endSessionUser = new EndSessionUser("subject", true);
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -328,7 +328,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
     public async Task Validate_ActiveSessionWithPostLogoutRedirectUri_ExpectEndSessionValidatedRequest()
     {
         // Arrange
-        var endSessionUserAccessor = new Mock<IEndSessionUserAccessor>();
+        var endSessionUserAccessor = new Mock<IUserAccessor<EndSessionUser>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(endSessionUserAccessor);
@@ -371,7 +371,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
     public async Task Validate_ActiveSessionWithoutPostLogoutRedirectUri_ExpectEndSessionValidatedRequest()
     {
         // Arrange
-        var endSessionUserAccessor = new Mock<IEndSessionUserAccessor>();
+        var endSessionUserAccessor = new Mock<IUserAccessor<EndSessionUser>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(endSessionUserAccessor);

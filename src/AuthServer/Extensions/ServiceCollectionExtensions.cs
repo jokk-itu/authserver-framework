@@ -19,7 +19,8 @@ using AuthServer.Discovery;
 using AuthServer.Endpoints;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.EndSession;
-using AuthServer.EndSession.Abstractions;
+using AuthServer.EndSession.UserInterface;
+using AuthServer.EndSession.UserInterface.Abstractions;
 using AuthServer.GrantManagement;
 using AuthServer.GrantManagement.Query;
 using AuthServer.GrantManagement.Revoke;
@@ -223,10 +224,11 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestAccessor<EndSessionRequest>, EndSessionRequestAccessor>()
             .AddKeyedScoped<IEndpointHandler, EndSessionEndpointHandler>(EndpointNameConstants.EndSession)
             .AddSingleton<IEndpointModule, EndSessionEndpointModule>()
-            .AddScoped<IEndSessionUserAccessor, EndSessionUserAccessor>()
+            .AddScoped<IUserAccessor<EndSessionUser>, EndSessionUserAccessor>()
             .AddScoped<IRequestHandler<EndSessionRequest, Unit>, EndSessionRequestHandler>()
             .AddScoped<IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>, EndSessionRequestValidator>()
-            .AddScoped<IRequestProcessor<EndSessionValidatedRequest, Unit>, EndSessionRequestProcessor>();
+            .AddScoped<IRequestProcessor<EndSessionValidatedRequest, Unit>, EndSessionRequestProcessor>()
+            .AddScoped<IEndSessionService, EndSessionService>();
     }
 
     private static void AddAuthorize(IServiceCollection services)
@@ -238,7 +240,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IAuthorizeService, AuthorizeService>()
             .AddScoped<IAuthorizeInteractionService, AuthorizeInteractionService>()
             .AddScoped<IAuthorizeResponseBuilder, AuthorizeResponseBuilder>()
-            .AddScoped<IAuthorizeUserAccessor, AuthorizeUserAccessor>()
+            .AddScoped<IUserAccessor<AuthorizeUser>, AuthorizeUserAccessor>()
             .AddScoped<ISecureRequestService, SecureRequestService>()
             .AddScoped<IRequestHandler<AuthorizeRequest, string>, AuthorizeRequestHandler>()
             .AddScoped<IRequestProcessor<AuthorizeValidatedRequest, string>, AuthorizeRequestProcessor>()

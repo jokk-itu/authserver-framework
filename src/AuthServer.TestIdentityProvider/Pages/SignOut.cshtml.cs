@@ -1,5 +1,4 @@
-using AuthServer.EndSession;
-using AuthServer.EndSession.Abstractions;
+using AuthServer.EndSession.UserInterface.Abstractions;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,11 +10,11 @@ namespace AuthServer.TestIdentityProvider.Pages;
 [ValidateAntiForgeryToken]
 public class SignOutModel : PageModel
 {
-    private readonly IEndSessionUserAccessor _endSessionUserAccessor;
+    private readonly IEndSessionService _endSessionService;
 
-    public SignOutModel(IEndSessionUserAccessor endSessionUserAccessor)
+    public SignOutModel(IEndSessionService endSessionService)
     {
-        _endSessionUserAccessor = endSessionUserAccessor;
+        _endSessionService = endSessionService;
     }
 
     [BindProperty(Name = "returnUrl", SupportsGet = true)]
@@ -31,7 +30,7 @@ public class SignOutModel : PageModel
         ReturnUrl = returnUrl ?? Url.Content("~/");
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        _endSessionUserAccessor.SetUser(new EndSessionUser(UserConstants.SubjectIdentifier, true));
+        _endSessionService.SetUser(UserConstants.SubjectIdentifier, true);
         return Redirect(ReturnUrl);
     }
 
@@ -40,7 +39,7 @@ public class SignOutModel : PageModel
         ReturnUrl = returnUrl ?? Url.Content("~/");
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        _endSessionUserAccessor.SetUser(new EndSessionUser(UserConstants.SubjectIdentifier, false));
+        _endSessionService.SetUser(UserConstants.SubjectIdentifier, false);
         return Redirect(ReturnUrl);
     }
 }

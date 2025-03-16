@@ -30,7 +30,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -62,7 +62,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -94,7 +94,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -140,7 +140,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -190,7 +190,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -240,7 +240,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -287,7 +287,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -336,7 +336,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -383,7 +383,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -430,7 +430,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 
@@ -474,7 +474,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IAuthorizeUserAccessor>());
+            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
         });
         var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
 

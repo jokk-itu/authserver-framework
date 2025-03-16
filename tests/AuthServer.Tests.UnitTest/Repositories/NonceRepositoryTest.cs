@@ -23,7 +23,7 @@ public class NonceRepositoryTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
         var value = CryptographyHelper.GetRandomString(32);

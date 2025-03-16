@@ -1,9 +1,9 @@
-﻿using AuthServer.Cache.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.EndSession.Abstractions;
 using AuthServer.Entities;
 using AuthServer.RequestAccessors.EndSession;
 using AuthServer.TokenDecoders;
@@ -14,13 +14,13 @@ namespace AuthServer.EndSession;
 internal class EndSessionRequestValidator : IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>
 {
     private readonly AuthorizationDbContext _authorizationDbContext;
-    private readonly IEndSessionUserAccessor _endSessionUserAccessor;
+    private readonly IUserAccessor<EndSessionUser> _endSessionUserAccessor;
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
     private readonly ICachedClientStore _cachedClientStore;
 
     public EndSessionRequestValidator(
         AuthorizationDbContext authorizationDbContext,
-        IEndSessionUserAccessor endSessionUserAccessor,
+        IUserAccessor<EndSessionUser> endSessionUserAccessor,
         ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
         ICachedClientStore cachedClientStore)
     {

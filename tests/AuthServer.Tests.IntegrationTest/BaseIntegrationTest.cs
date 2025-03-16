@@ -80,6 +80,14 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         EndpointResolver,
         TestOutputHelper);
 
+    protected EndSessionEndpointBuilder EndSessionEndpointBuilder => new EndSessionEndpointBuilder(
+        GetHttpClient(),
+        _dataProtectionProvider,
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
     protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, EndpointResolver, TestOutputHelper);
 
     private readonly IOptionsMonitor<DiscoveryDocument> _discoveryDocumentOptions;
