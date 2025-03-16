@@ -80,6 +80,12 @@ internal class RegisterResponse
 	[JsonPropertyName(Parameter.RequireReferenceToken)]
 	public required bool RequireReferenceToken { get; init; }
 
+	[JsonPropertyName(Parameter.RequirePushedAuthorizationRequests)]
+	public required bool RequirePushedAuthorizationRequests { get; init; }
+
+	[JsonPropertyName(Parameter.RequireIdTokenClaims)]
+	public required bool RequireIdTokenClaims { get; init; }
+
     [JsonPropertyName(Parameter.TokenEndpointAuthEncryptionEnc)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? TokenEndpointAuthEncryptionEnc { get; init; }
