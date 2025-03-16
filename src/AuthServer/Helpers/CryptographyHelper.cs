@@ -6,7 +6,7 @@ namespace AuthServer.Helpers;
 
 internal static class CryptographyHelper
 {
-    private const string Characters = "0123456789!$()[]{}%abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private const string Characters = "0123456789!?$()[]{}abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     public static string GetRandomString(int length)
     {
