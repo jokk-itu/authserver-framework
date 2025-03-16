@@ -17,6 +17,10 @@ using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 using AuthServer.Endpoints.Responses;
+using Castle.Components.DictionaryAdapter.Xml;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 public class AuthorizeEndpointBuilder : EndpointBuilder
@@ -27,7 +31,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
     private string? _privateJwks;
     private string _clientId;
 
-    private List<KeyValuePair<string, object>> _parameters = [];
+    private readonly List<KeyValuePair<string, object>> _parameters = [];
     private readonly List<CookieHeaderValue> _cookies = [];
 
     public AuthorizeEndpointBuilder(
@@ -111,12 +115,12 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
 
     public AuthorizeEndpointBuilder WithAuthorizeUser(string authorizationGrantId)
     {
-        var dataProtector = _dataProtectionProvider.CreateProtector(AuthorizeUserAccessor.DataProtectorPurpose);
+        var dataProtector = _dataProtectionProvider.CreateProtector(AuthorizeUserAccessor.DataProtectorName);
         var authorizeUser = new AuthorizeUser(UserConstants.SubjectIdentifier, true, authorizationGrantId);
         var authorizeUserBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(authorizeUser));
         var encryptedAuthorizeUser = dataProtector.Protect(authorizeUserBytes);
         var cookieValue = Convert.ToBase64String(encryptedAuthorizeUser);
-        _cookies.Add(new CookieHeaderValue(AuthorizeUserAccessor.AuthorizeUserCookieName, cookieValue));
+        _cookies.Add(new CookieHeaderValue(AuthorizeUserAccessor.Cookie, cookieValue));
         return this;
     }
 
@@ -133,29 +137,36 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    public async Task<AuthorizeResponse> Get()
+    public async Task<AuthorizeResponse> Get() => await Send(fields =>
+        new HttpRequestMessage(HttpMethod.Get, $"connect/authorize{new QueryBuilder(fields).ToQueryString()}"));
+
+    public async Task<AuthorizeResponse> Post() => await Send(fields =>
+        new HttpRequestMessage(HttpMethod.Post, "connect/authorize") { Content = new FormUrlEncodedContent(fields) });
+
+    private async Task<AuthorizeResponse> Send(Func<IEnumerable<KeyValuePair<string, string>>, HttpRequestMessage> requestGetter)
     {
         SetDefaultValues();
         OverwriteForRequestObject();
 
-        var query = new QueryBuilder(_parameters.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString()!))).ToQueryString();
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"connect/authorize{query}");
+        var fields = _parameters.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString()!));
+        var requestMessage = requestGetter.Invoke(fields);
         requestMessage.Headers.Add("Cookie", _cookies.Select(x => x.ToString()));
-        var authorizeResponseMessage = await HttpClient.SendAsync(requestMessage);
+        var response = await HttpClient.SendAsync(requestMessage);
 
         TestOutputHelper.WriteLine("Received Authorize response {0}, Location: {1}, Content: {2}",
-            authorizeResponseMessage.StatusCode,
-            authorizeResponseMessage.Headers.Location,
-            await authorizeResponseMessage.Content.ReadAsStringAsync());
+            response.StatusCode,
+            response.Headers.Location,
+            await response.Content.ReadAsStringAsync());
 
-        return await GetAuthorizeResponse(authorizeResponseMessage);
+
+        return await GetAuthorizeResponse(response);
     }
 
-    private async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage authorizeResponseMessage)
+    private static async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage response)
     {
-        if (authorizeResponseMessage.StatusCode == HttpStatusCode.SeeOther)
+        if (response.StatusCode == HttpStatusCode.SeeOther)
         {
-            var queryNameValues = HttpUtility.ParseQueryString(authorizeResponseMessage.Headers.Location!.Query);
+            var queryNameValues = HttpUtility.ParseQueryString(response.Headers.Location!.Query);
             return new AuthorizeResponse
             {
                 StatusCode = HttpStatusCode.SeeOther,
@@ -164,14 +175,14 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
                 Error = queryNameValues.Get(Parameter.Error),
                 ErrorDescription = queryNameValues.Get(Parameter.ErrorDescription),
                 ReturnUrl = queryNameValues.Get("returnUrl"),
-                LocationUri = authorizeResponseMessage.Headers.Location!.GetLeftPart(UriPartial.Path),
-                RequestUri = authorizeResponseMessage.RequestMessage!.RequestUri!.AbsoluteUri!
+                LocationUri = response.Headers.Location!.GetLeftPart(UriPartial.Path),
+                RequestUri = response.RequestMessage!.RequestUri!.AbsoluteUri!
             };
         }
 
-        if (authorizeResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+        if (response.StatusCode == HttpStatusCode.BadRequest)
         {
-            var content = await authorizeResponseMessage.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync();
             var oAuthError = JsonSerializer.Deserialize<OAuthError>(content)!;
             return new AuthorizeResponse
             {
@@ -181,9 +192,9 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
             };
         }
 
-        if (authorizeResponseMessage.StatusCode == HttpStatusCode.OK)
+        if (response.StatusCode == HttpStatusCode.OK)
         {
-            var content = await authorizeResponseMessage.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync();
 
             var codeInput = Regex.Match(content, @"<input type=""hidden"" name=""code"" value=""([^""]+)"" \/>");
             var code = codeInput.Groups[1].Captures[0].Value;

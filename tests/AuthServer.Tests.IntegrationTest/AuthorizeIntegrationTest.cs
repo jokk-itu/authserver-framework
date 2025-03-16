@@ -252,7 +252,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithScope(["invalid_scope"])
-            .Get();
+            .Post();
 
         // Assert
         Assert.Equal(HttpStatusCode.SeeOther, authorizeResponse.StatusCode);
