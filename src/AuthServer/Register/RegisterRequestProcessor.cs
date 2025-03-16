@@ -7,11 +7,9 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Metrics.Abstractions;
-using AuthServer.Options;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace AuthServer.Register;
 
@@ -139,6 +137,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             RequireSignedRequestObject = client.RequireSignedRequestObject,
             RequireReferenceToken = client.RequireReferenceToken,
             RequirePushedAuthorizationRequests = client.RequirePushedAuthorizationRequests,
+            RequireIdTokenClaims = client.RequireIdTokenClaims,
             SubjectType = client.SubjectType,
             DefaultMaxAge = client.DefaultMaxAge,
             DefaultAcrValues = client.ClientAuthenticationContextReferences
@@ -208,6 +207,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.RequireSignedRequestObject = request.RequireSignedRequestObject;
         client.RequireReferenceToken = request.RequireReferenceToken;
         client.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests;
+        client.RequireIdTokenClaims = request.RequireIdTokenClaims;
         client.SubjectType = request.SubjectType;
         client.DefaultMaxAge = request.DefaultMaxAge;
         client.AuthorizationCodeExpiration = request.AuthorizationCodeExpiration;
