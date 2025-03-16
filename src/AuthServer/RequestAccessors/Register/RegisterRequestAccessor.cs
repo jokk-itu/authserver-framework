@@ -51,6 +51,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 		var requireSignedRequestObject = json.GetBoolValue(Parameter.RequireSignedRequestObject);
 		var requireReferenceToken = json.GetBoolValue(Parameter.RequireReferenceToken);
         var requirePushedAuthorizationRequests = json.GetBoolValue(Parameter.RequirePushedAuthorizationRequests);
+        var requireIdTokenClaims = json.GetBoolValue(Parameter.RequireIdTokenClaims);
 
         var tokenEndpointAuthEncryptionEnc = json.GetStringValue(Parameter.TokenEndpointAuthEncryptionEnc);
         var tokenEndpointAuthEncryptionAlg = json.GetStringValue(Parameter.TokenEndpointAuthEncryptionAlg);
@@ -107,6 +108,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 			RequireSignedRequestObject = requireSignedRequestObject,
 			RequireReferenceToken = requireReferenceToken,
 			RequirePushedAuthorizationRequests = requirePushedAuthorizationRequests,
+			RequireIdTokenClaims = requireIdTokenClaims,
             TokenEndpointAuthEncryptionEnc = tokenEndpointAuthEncryptionEnc,
             TokenEndpointAuthEncryptionAlg = tokenEndpointAuthEncryptionAlg,
             TokenEndpointAuthSigningAlg = tokenEndpointAuthSigningAlg,

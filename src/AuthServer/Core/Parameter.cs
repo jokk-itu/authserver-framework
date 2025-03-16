@@ -73,6 +73,7 @@ public static class Parameter
     public const string RequestUris = "request_uris";
     public const string RequirePushedAuthorizationRequests = "require_pushed_authorization_requests";
     public const string RequireSignedRequestObject = "require_signed_request_object";
+    public const string RequireIdTokenClaims = "require_id_token_claims";
     public const string RequestObjectEncryptionEnc = "request_object_encryption_enc";
     public const string RequestObjectEncryptionAlg = "request_object_encryption_alg";
     public const string RequestObjectSigningAlg = "request_object_signing_alg";
