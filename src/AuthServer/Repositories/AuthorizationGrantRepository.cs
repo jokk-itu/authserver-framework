@@ -70,7 +70,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
         IReadOnlyCollection<string> authenticationMethodReferences,
         CancellationToken cancellationToken)
     {
-        var session = await GetSession(subjectIdentifier, clientId, cancellationToken);
+        var session = await GetSession(subjectIdentifier, cancellationToken);
         var client = (await _identityContext.FindAsync<Client>([clientId], cancellationToken))!;
         var subject = await GetSubject(subjectIdentifier, clientId, cancellationToken);
         var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
@@ -142,8 +142,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             .SingleAsync(cancellationToken);
     }
 
-    private async Task<Session> GetSession(string subjectIdentifier, string clientId,
-        CancellationToken cancellationToken)
+    private async Task<Session> GetSession(string subjectIdentifier, CancellationToken cancellationToken)
     {
         var session = await _identityContext
             .Set<Session>()
