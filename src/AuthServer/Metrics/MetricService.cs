@@ -4,9 +4,10 @@ using AuthServer.Extensions;
 using AuthServer.Metrics.Abstractions;
 
 namespace AuthServer.Metrics;
-internal class MetricService : IMetricService, IDisposable
 internal sealed class MetricService : IMetricService, IDisposable
 {
+    private const string ClientId = "client_id";
+
     private readonly Meter _meter;
 
     private readonly Counter<int> _tokenBuiltAmount;
@@ -85,14 +86,14 @@ internal sealed class MetricService : IMetricService, IDisposable
 
     public void AddClientAuthenticated(long durationMilliseconds, string? clientId)
     {
-        _clientAuthenticationTime.Record(durationMilliseconds, new KeyValuePair<string, object?>("client_id", clientId));
+        _clientAuthenticationTime.Record(durationMilliseconds, new KeyValuePair<string, object?>(ClientId, clientId));
     }
 
     public void AddAuthorizeInteraction(long durationMilliseconds, string clientId, string prompt, AuthenticationKind authenticationKind)
     {
         _authorizeInteractionTime.Record(
             durationMilliseconds,
-            new KeyValuePair<string, object?>("client_id", clientId),
+            new KeyValuePair<string, object?>(ClientId, clientId),
             new KeyValuePair<string, object?>("prompt", prompt),
             new KeyValuePair<string, object?>("authentication_kind", authenticationKind));
     }
@@ -104,12 +105,12 @@ internal sealed class MetricService : IMetricService, IDisposable
 
     public void AddClientUpdate(long durationMilliseconds, string clientId)
     {
-        _registerUpdateClientTime.Record(durationMilliseconds, new KeyValuePair<string, object?>("client_id", clientId));
+        _registerUpdateClientTime.Record(durationMilliseconds, new KeyValuePair<string, object?>(ClientId, clientId));
     }
 
     public void AddClientGet(long durationMilliseconds, string clientId)
     {
-        _registerGetClientTime.Record(durationMilliseconds, new KeyValuePair<string, object?>("client_id", clientId));
+        _registerGetClientTime.Record(durationMilliseconds, new KeyValuePair<string, object?>(ClientId, clientId));
     }
 
     public void Dispose()
