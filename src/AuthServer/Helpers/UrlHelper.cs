@@ -1,17 +1,21 @@
 ﻿namespace AuthServer.Helpers;
 internal static class UrlHelper
 {
-    private static Uri? GetAbsoluteUrl(string url)
+    private static Uri? GetAbsoluteUrl(string? url)
         => Uri.TryCreate(url, UriKind.Absolute, out var parsedUrl) ? parsedUrl : null;
 
     /// <summary>
     /// The URL is valid if
     /// * It does not contain a query or fragment part
     /// * The scheme is https or private or the host is loopback
+    ///
+    /// Private uri is explained in https://datatracker.ietf.org/doc/html/rfc8252#section-7.1
+    /// Https is explained in https://datatracker.ietf.org/doc/html/rfc8252#section-7.2
+    /// Loopback is explained in https://datatracker.ietf.org/doc/html/rfc8252#section-7.3
     /// </summary>
     /// <param name="url"></param>
     /// <returns></returns>
-    public static bool IsUrlValidForNativeClient(string url)
+    public static bool IsUrlValidForNativeClient(string? url)
     {
         var parsedUrl = GetAbsoluteUrl(url);
         if (parsedUrl is null)
@@ -36,7 +40,7 @@ internal static class UrlHelper
     /// </summary>
     /// <param name="url"></param>
     /// <returns></returns>
-    public static bool IsUrlValidForWebClient(string url)
+    public static bool IsUrlValidForWebClient(string? url)
     {
         var parsedUrl = GetAbsoluteUrl(url);
         if (parsedUrl is null)

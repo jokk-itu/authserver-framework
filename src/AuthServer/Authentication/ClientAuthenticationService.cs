@@ -14,13 +14,13 @@ using Microsoft.Extensions.Logging;
 namespace AuthServer.Authentication;
 internal class ClientAuthenticationService : IClientAuthenticationService
 {
-    private readonly ILogger<ClientAuthentication> _logger;
+    private readonly ILogger<ClientAuthenticationService> _logger;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly ITokenDecoder<ClientIssuedTokenDecodeArguments> _clientIssuedTokenDecoder;
     private readonly IMetricService _metricService;
 
     public ClientAuthenticationService(
-        ILogger<ClientAuthentication> logger,
+        ILogger<ClientAuthenticationService> logger,
         ICachedClientStore cachedClientStore,
         ITokenDecoder<ClientIssuedTokenDecodeArguments> clientIssuedTokenDecoder,
         IMetricService metricService)

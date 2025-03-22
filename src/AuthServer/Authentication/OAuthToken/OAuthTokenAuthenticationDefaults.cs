@@ -1,5 +1,5 @@
 ﻿namespace AuthServer.Authentication.OAuthToken;
-internal class OAuthTokenAuthenticationDefaults
+internal static class OAuthTokenAuthenticationDefaults
 {
     public const string AuthenticationScheme = "OAuthToken";
 }

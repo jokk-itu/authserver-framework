@@ -2,7 +2,7 @@
 using AuthServer.Core.Request;
 
 namespace AuthServer.Register;
-internal class RegisterError
+internal static class RegisterError
 {
     public static readonly ProcessError InvalidClientId =
         new(ErrorCode.InvalidClientMetadata, "invalid client_id", ResultCode.BadRequest);
