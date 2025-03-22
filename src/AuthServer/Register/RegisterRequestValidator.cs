@@ -547,7 +547,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return RegisterError.InvalidSectorIdentifierUri;
         }
 
-        if (!hasSectorIdentifierUri && hasOneRedirectUri)
+        if (!hasSectorIdentifierUri)
         {
             validatedRequest.SectorIdentifierUri = validatedRequest.RedirectUris.Single();
             return null;
@@ -1067,7 +1067,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
+        if (hasEmptyEncryptionAlg)
         {
             return RegisterError.InvalidTokenEndpointAuthEncryptionEnc;
         }
@@ -1121,7 +1121,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
+        if (hasEmptyEncryptionAlg)
         {
             return RegisterError.InvalidRequestObjectEncryptionEnc;
         }
@@ -1176,7 +1176,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
+        if (hasEmptyEncryptionAlg)
         {
             return RegisterError.InvalidUserinfoEncryptedResponseEnc;
         }
@@ -1236,7 +1236,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyIdTokenEncryptedResponseAlg && !hasEmptyIdTokenEncryptedResponseEnc)
+        if (hasEmptyIdTokenEncryptedResponseAlg)
         {
             return RegisterError.InvalidIdTokenEncryptedResponseEnc;
         }
