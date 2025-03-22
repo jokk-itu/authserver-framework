@@ -5,6 +5,7 @@ using AuthServer.Metrics.Abstractions;
 
 namespace AuthServer.Metrics;
 internal class MetricService : IMetricService, IDisposable
+internal sealed class MetricService : IMetricService, IDisposable
 {
     private readonly Meter _meter;
 
