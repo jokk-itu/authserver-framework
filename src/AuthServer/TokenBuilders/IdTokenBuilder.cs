@@ -105,12 +105,9 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             authorizedClaims = await _clientRepository.GetAuthorizedClaims(query.ClientId, cancellationToken);
         }
 
-        foreach (var userClaim in userClaims)
+        foreach (var userClaim in userClaims.Where(x => authorizedClaims.Contains(x.Type)))
         {
-            if (authorizedClaims.Contains(userClaim.Type))
-            {
-                claims.Add(userClaim.Type, userClaim.Value);
-            }
+            claims.Add(userClaim.Type, userClaim.Value);
         }
 
         var now = DateTime.UtcNow;
