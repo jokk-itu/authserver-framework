@@ -22,6 +22,6 @@ public static class QueryCollectionExtensions
     {
         queryCollection.TryGetValue(key, out var value);
         var hasValue = !StringValues.IsNullOrEmpty(value);
-        return !hasValue ? [] : value.ToArray() as string[];
+        return (!hasValue ? [] : value.ToArray())!;
     }
 }

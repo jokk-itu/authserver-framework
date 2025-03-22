@@ -330,7 +330,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_EmptyRedirectUris_ExpectInvalidRedirectUris()
+    public async Task Validate_InvalidSubjectType_ExpectInvalidSubjectType()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -341,7 +341,28 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         {
             Method = HttpMethod.Post,
             ClientName = "web-app",
-            RedirectUris = ["invalid_redirect_uris"]
+            SubjectType = "invalid_subject_type"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidSubjectType, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_EmptyRedirectUris_ExpectInvalidRedirectUris()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app"
         };
 
         // Act
@@ -721,11 +742,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     public async Task Validate_InvalidJwksUri_ExpectInvalidJwksUri()
     {
         // Arrange
-        var clientJwkService = new Mock<IClientJwkService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(clientJwkService);
-        });
+        var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
 
@@ -735,24 +752,20 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             ClientName = "web-app",
             RedirectUris = ["https://webapp.authserver.dk/callback"],
             SubjectType = SubjectType.Pairwise.GetDescription(),
-            JwksUri = "https://webapp.authserver.dk/jwks"
+            JwksUri = "invalid_jwks_uri"
         };
-
-        clientJwkService
-            .Setup(x => x.GetJwks(request.JwksUri, CancellationToken.None))
-            .ReturnsAsync((string?)null)
-            .Verifiable();
 
         // Act
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
         Assert.Equal(RegisterError.InvalidJwksUri, processResult);
-        clientJwkService.Verify();
     }
 
-    [Fact]
-    public async Task Validate_InvalidJwksFromJwksUri_ExpectInvalidJwksUri()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("invalid_jwks")]
+    public async Task Validate_InvalidJwksFromJwksUri_ExpectInvalidJwksUri(string? jwks)
     {
         // Arrange
         var clientJwkService = new Mock<IClientJwkService>();
@@ -774,7 +787,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
 
         clientJwkService
             .Setup(x => x.GetJwks(request.JwksUri, CancellationToken.None))
-            .ReturnsAsync("invalid_jwks")
+            .ReturnsAsync(jwks)
             .Verifiable();
 
         // Act
@@ -1385,7 +1398,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_MinimumRequest_ExpectRegisterValidatedRequest()
+    public async Task Validate_MinimumRequestWithClientCredentials_ExpectRegisterValidatedRequest()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -1402,6 +1415,33 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         // Act
         var validatedRequest = await validator.Validate(request, CancellationToken.None);
         
+        // Assert
+        Assert.True(validatedRequest.IsSuccess);
+        Assert.Equal(request.Method, validatedRequest.Value!.Method);
+        Assert.Equal(request.ClientName, validatedRequest.Value!.ClientName);
+        Assert.Equal(request.GrantTypes, validatedRequest.Value!.GrantTypes);
+    }
+
+    [Fact]
+    public async Task Validate_MinimumRequestWithAuthorizationCode_ExpectRegisterValidatedRequest()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "native-app",
+            ApplicationType = ApplicationTypeConstants.Native,
+            RedirectUris = ["app.oidc://callback"],
+            GrantTypes = [GrantTypeConstants.AuthorizationCode]
+        };
+
+        // Act
+        var validatedRequest = await validator.Validate(request, CancellationToken.None);
+
         // Assert
         Assert.True(validatedRequest.IsSuccess);
         Assert.Equal(request.Method, validatedRequest.Value!.Method);

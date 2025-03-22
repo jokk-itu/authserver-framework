@@ -112,34 +112,15 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return urisError;
         }
 
-        var requireSignedRequestObjectError = ValidateRequireSignedRequestObject(request, validatedRequest);
-        if (requireSignedRequestObjectError is not null)
-        {
-            return requireSignedRequestObjectError;
-        }
-
-        var requireReferenceTokenError = ValidateRequireReferenceToken(request, validatedRequest);
-        if (requireReferenceTokenError is not null)
-        {
-            return requireReferenceTokenError;
-        }
-
-        var requirePushedAuthorizationRequestsError = ValidateRequirePushedAuthorizationRequests(request, validatedRequest);
-        if (requirePushedAuthorizationRequestsError is not null)
-        {
-            return requirePushedAuthorizationRequestsError;
-        }
-
-        var requireIdTokenClaims = ValidateRequireIdTokenClaims(request, validatedRequest);
-        if (requireIdTokenClaims is not null)
-        {
-            return requireIdTokenClaims;
-        }
+        validatedRequest.RequireSignedRequestObject = request.RequireSignedRequestObject ?? false;
+        validatedRequest.RequireReferenceToken = request.RequireReferenceToken ?? false;
+        validatedRequest.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests ?? false;
+        validatedRequest.RequireIdTokenClaims = request.RequireIdTokenClaims ?? false;
 
         var defaultMaxAgeError = ValidateDefaultMaxAge(request, validatedRequest);
         if (defaultMaxAgeError is not null)
         {
-            return RegisterError.InvalidDefaultMaxAge;
+            return defaultMaxAgeError;
         }
 
         var defaultAcrValuesError = ValidateDefaultAcrValues(request, validatedRequest);
@@ -335,7 +316,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private ProcessError? ValidateTokenEndpointAuthMethod(RegisterRequest request,
+    private static ProcessError? ValidateTokenEndpointAuthMethod(RegisterRequest request,
         RegisterValidatedRequest validatedRequest)
     {
         if (!string.IsNullOrEmpty(request.TokenEndpointAuthMethod)
@@ -388,7 +369,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private ProcessError? ValidateGrantTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
+    private static ProcessError? ValidateGrantTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.GrantTypes.Count != 0
             && request.GrantTypes.IsNotSubset(GrantTypeConstants.GrantTypes))
@@ -441,7 +422,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private ProcessError? ValidateResponseTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
+    private static ProcessError? ValidateResponseTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.ResponseTypes.Count != 0
             && request.ResponseTypes.IsNotSubset(ResponseTypeConstants.ResponseTypes))
@@ -549,6 +530,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// </summary>
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     private async Task<ProcessError?> ValidateSectorIdentifierUri(RegisterRequest request, RegisterValidatedRequest validatedRequest, CancellationToken cancellationToken)
     {
@@ -565,7 +547,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return RegisterError.InvalidSectorIdentifierUri;
         }
 
-        if (!hasSectorIdentifierUri && hasOneRedirectUri)
+        if (!hasSectorIdentifierUri)
         {
             validatedRequest.SectorIdentifierUri = validatedRequest.RedirectUris.Single();
             return null;
@@ -785,76 +767,6 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             _logger.LogInformation(e, "JwksUri is invalid");
             return RegisterError.InvalidJwksUri;
         }
-    }
-
-    /// <summary>
-    /// RequireSignedRequestObject is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequireSignedRequestObject(RegisterRequest request,
-        RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequireSignedRequestObject is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequireSignedRequestObject = request.RequireSignedRequestObject.Value;
-        return null;
-    }
-
-    /// <summary>
-    /// RequireReferenceToken is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequireReferenceToken(RegisterRequest request,
-        RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequireReferenceToken is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequireReferenceToken = request.RequireReferenceToken.Value;
-        return null;
-    }
-
-    /// <summary>
-    /// RequirePushedAuthorizationRequests is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequirePushedAuthorizationRequests(RegisterRequest request, RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequirePushedAuthorizationRequests is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests.Value;
-        return null;
-    }
-
-    /// <summary>
-    /// RequireIdTokenClaims is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequireIdTokenClaims(RegisterRequest request, RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequireIdTokenClaims is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequireIdTokenClaims = request.RequireIdTokenClaims.Value;
-        return null;
     }
 
     /// <summary>
@@ -1155,7 +1067,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
+        if (hasEmptyEncryptionAlg)
         {
             return RegisterError.InvalidTokenEndpointAuthEncryptionEnc;
         }
@@ -1209,7 +1121,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
+        if (hasEmptyEncryptionAlg)
         {
             return RegisterError.InvalidRequestObjectEncryptionEnc;
         }
@@ -1264,7 +1176,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyEncryptionAlg && !hasEmptyEncryptionEnc)
+        if (hasEmptyEncryptionAlg)
         {
             return RegisterError.InvalidUserinfoEncryptedResponseEnc;
         }
@@ -1324,7 +1236,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        if (hasEmptyIdTokenEncryptedResponseAlg && !hasEmptyIdTokenEncryptedResponseEnc)
+        if (hasEmptyIdTokenEncryptedResponseAlg)
         {
             return RegisterError.InvalidIdTokenEncryptedResponseEnc;
         }

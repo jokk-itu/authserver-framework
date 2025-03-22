@@ -8,18 +8,15 @@ namespace AuthServer.TokenByGrant.RefreshTokenGrant;
 internal class RefreshTokenRequestProcessor : IRequestProcessor<RefreshTokenValidatedRequest, TokenResponse>
 {
     private readonly ITokenBuilder<GrantAccessTokenArguments> _accessTokenBuilder;
-    private readonly ITokenBuilder<RefreshTokenArguments> _refreshTokenBuilder;
     private readonly ITokenBuilder<IdTokenArguments> _idTokenBuilder;
     private readonly ICachedClientStore _cachedEntityStore;
 
     public RefreshTokenRequestProcessor(
         ITokenBuilder<GrantAccessTokenArguments> accessTokenBuilder,
-        ITokenBuilder<RefreshTokenArguments> refreshTokenBuilder,
         ITokenBuilder<IdTokenArguments> idTokenBuilder,
         ICachedClientStore cachedEntityStore)
     {
         _accessTokenBuilder = accessTokenBuilder;
-        _refreshTokenBuilder = refreshTokenBuilder;
         _idTokenBuilder = idTokenBuilder;
         _cachedEntityStore = cachedEntityStore;
     }

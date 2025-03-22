@@ -19,7 +19,7 @@ public class Session : Entity<string>
     public SubjectIdentifier SubjectIdentifier { get; private init; }
     public ICollection<AuthorizationGrant> AuthorizationGrants { get; private init; } = [];
 
-    public static Expression<Func<Session, bool>> IsActive = s => s.RevokedAt == null;
+    public static readonly Expression<Func<Session, bool>> IsActive = s => s.RevokedAt == null;
 
     public void Revoke()
     {

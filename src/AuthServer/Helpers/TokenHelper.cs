@@ -89,7 +89,7 @@ internal static class TokenHelper
             JsonWebKeyECTypes.P256 => ECCurve.NamedCurves.nistP256,
             JsonWebKeyECTypes.P384 => ECCurve.NamedCurves.nistP384,
             JsonWebKeyECTypes.P521 => ECCurve.NamedCurves.nistP521,
-            _ => throw new ArgumentException("unknown curve", nameof(curveId))
+            _ => throw new ArgumentException("Unknown curve", nameof(curveId))
         };
     }
 }

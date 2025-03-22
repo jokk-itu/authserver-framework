@@ -2,8 +2,7 @@ using AuthServer.Core;
 using AuthServer.Core.Request;
 
 namespace AuthServer.GrantManagement;
-
-public class GrantManagementError
+internal static class GrantManagementError
 {
     public static readonly ProcessError InvalidGrantId =
         new(ErrorCode.InvalidRequest, "grant_id is required", ResultCode.NotFound);
