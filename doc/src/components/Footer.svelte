@@ -8,7 +8,7 @@
     </svg>
     <div class="bg-gray-800 text-white py-4">
         <div class="container mx-auto text-center">
-            <p>{year} Authserver. All rights reserved.</p>
+            <p>{year} AuthServer. All rights reserved.</p>
         </div>
     </div>
 </footer>
