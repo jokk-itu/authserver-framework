@@ -330,6 +330,28 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_InvalidSubjectType_ExpectInvalidSubjectType()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            SubjectType = "invalid_subject_type"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidSubjectType, processResult);
+    }
+
+    [Fact]
     public async Task Validate_EmptyRedirectUris_ExpectInvalidRedirectUris()
     {
         // Arrange
