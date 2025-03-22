@@ -77,9 +77,9 @@ internal class MetricService : IMetricService, IDisposable
         _tokenIntrospectedAmount.Add(1, new KeyValuePair<string, object?>("typ", tokenTypeTag.GetDescription()));
     }
 
-    public void AddRevokedToken(TokenTypeTag tokenTypeTape)
+    public void AddRevokedToken(TokenTypeTag tokenTypeTag)
     {
-        _tokenRevokedAmount.Add(1, new KeyValuePair<string, object?>("typ", tokenTypeTape.GetDescription()));
+        _tokenRevokedAmount.Add(1, new KeyValuePair<string, object?>("typ", tokenTypeTag.GetDescription()));
     }
 
     public void AddClientAuthenticated(long durationMilliseconds, string? clientId)
