@@ -245,10 +245,8 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         Assert.Null(encryptionKey);
     }
 
-    [Theory]
-    [InlineData(JsonWebKeyUseNames.Sig)]
-    [InlineData(JsonWebKeyUseNames.Enc)]
-    public async Task GetJwks_RefreshKeysWithValidJwksUri_ExpectKeys(string use)
+    [Fact]
+    public async Task GetJwks_RefreshKeysWithValidJwksUri_ExpectKeys()
     {
         // Arrange
         var httpClientFactory = new Mock<IHttpClientFactory>();
