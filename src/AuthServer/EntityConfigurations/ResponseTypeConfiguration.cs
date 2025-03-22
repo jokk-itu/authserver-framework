@@ -20,9 +20,6 @@ internal sealed class ResponseTypeConfiguration : IEntityTypeConfiguration<Respo
             .HasIndex(x => x.Name)
             .IsUnique();
 
-        builder.HasData(
-        [
-            new ResponseTypeSeed(1, ResponseTypeConstants.Code)
-        ]);
+        builder.HasData(new ResponseTypeSeed(1, ResponseTypeConstants.Code));
     }
 }

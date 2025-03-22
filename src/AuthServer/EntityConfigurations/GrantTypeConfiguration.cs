@@ -20,11 +20,8 @@ internal sealed class GrantTypeConfiguration : IEntityTypeConfiguration<GrantTyp
             .HasIndex(x => x.Name)
             .IsUnique();
 
-        builder.HasData(
-        [
-            new GrantTypeSeed(1, GrantTypeConstants.AuthorizationCode),
+        builder.HasData(new GrantTypeSeed(1, GrantTypeConstants.AuthorizationCode),
             new GrantTypeSeed(2, GrantTypeConstants.ClientCredentials),
-            new GrantTypeSeed(3, GrantTypeConstants.RefreshToken)
-        ]);
+            new GrantTypeSeed(3, GrantTypeConstants.RefreshToken));
     }
 }
