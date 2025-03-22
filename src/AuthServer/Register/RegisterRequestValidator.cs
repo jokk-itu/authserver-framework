@@ -112,34 +112,15 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return urisError;
         }
 
-        var requireSignedRequestObjectError = ValidateRequireSignedRequestObject(request, validatedRequest);
-        if (requireSignedRequestObjectError is not null)
-        {
-            return requireSignedRequestObjectError;
-        }
-
-        var requireReferenceTokenError = ValidateRequireReferenceToken(request, validatedRequest);
-        if (requireReferenceTokenError is not null)
-        {
-            return requireReferenceTokenError;
-        }
-
-        var requirePushedAuthorizationRequestsError = ValidateRequirePushedAuthorizationRequests(request, validatedRequest);
-        if (requirePushedAuthorizationRequestsError is not null)
-        {
-            return requirePushedAuthorizationRequestsError;
-        }
-
-        var requireIdTokenClaims = ValidateRequireIdTokenClaims(request, validatedRequest);
-        if (requireIdTokenClaims is not null)
-        {
-            return requireIdTokenClaims;
-        }
+        validatedRequest.RequireSignedRequestObject = request.RequireSignedRequestObject ?? false;
+        validatedRequest.RequireReferenceToken = request.RequireReferenceToken ?? false;
+        validatedRequest.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests ?? false;
+        validatedRequest.RequireIdTokenClaims = request.RequireIdTokenClaims ?? false;
 
         var defaultMaxAgeError = ValidateDefaultMaxAge(request, validatedRequest);
         if (defaultMaxAgeError is not null)
         {
-            return RegisterError.InvalidDefaultMaxAge;
+            return defaultMaxAgeError;
         }
 
         var defaultAcrValuesError = ValidateDefaultAcrValues(request, validatedRequest);
@@ -785,76 +766,6 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             _logger.LogInformation(e, "JwksUri is invalid");
             return RegisterError.InvalidJwksUri;
         }
-    }
-
-    /// <summary>
-    /// RequireSignedRequestObject is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequireSignedRequestObject(RegisterRequest request,
-        RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequireSignedRequestObject is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequireSignedRequestObject = request.RequireSignedRequestObject.Value;
-        return null;
-    }
-
-    /// <summary>
-    /// RequireReferenceToken is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequireReferenceToken(RegisterRequest request,
-        RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequireReferenceToken is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequireReferenceToken = request.RequireReferenceToken.Value;
-        return null;
-    }
-
-    /// <summary>
-    /// RequirePushedAuthorizationRequests is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequirePushedAuthorizationRequests(RegisterRequest request, RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequirePushedAuthorizationRequests is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests.Value;
-        return null;
-    }
-
-    /// <summary>
-    /// RequireIdTokenClaims is OPTIONAL.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="validatedRequest"></param>
-    /// <returns></returns>
-    private static ProcessError? ValidateRequireIdTokenClaims(RegisterRequest request, RegisterValidatedRequest validatedRequest)
-    {
-        if (request.RequireIdTokenClaims is null)
-        {
-            return null;
-        }
-
-        validatedRequest.RequireIdTokenClaims = request.RequireIdTokenClaims.Value;
-        return null;
     }
 
     /// <summary>
