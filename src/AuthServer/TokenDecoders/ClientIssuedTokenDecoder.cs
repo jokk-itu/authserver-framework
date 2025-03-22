@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace AuthServer.TokenDecoders;
 internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeArguments>
 {
-    private readonly ILogger<ServerIssuedTokenDecoder> _logger;
+    private readonly ILogger<ClientIssuedTokenDecoder> _logger;
     private readonly ITokenReplayCache _tokenReplayCache;
     private readonly IClientJwkService _clientJwkService;
     private readonly IOptionsSnapshot<JwksDocument> _jwkDocumentOptions;
@@ -20,7 +20,7 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
     public ClientIssuedTokenDecoder(
         IOptionsSnapshot<JwksDocument> jwkDocumentOptions,
         IEndpointResolver endpointResolver,
-        ILogger<ServerIssuedTokenDecoder> logger,
+        ILogger<ClientIssuedTokenDecoder> logger,
         ITokenReplayCache tokenReplayCache,
         IClientJwkService clientJwkService)
     {
