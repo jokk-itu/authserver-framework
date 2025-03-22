@@ -3,7 +3,7 @@ using AuthServer.Core.Request;
 
 namespace AuthServer.Authorize;
 
-internal class AuthorizeError
+internal static class AuthorizeError
 {
     public static readonly ProcessError InvalidState =
         new(ErrorCode.InvalidRequest, "state must not be null or empty", ResultCode.BadRequest);

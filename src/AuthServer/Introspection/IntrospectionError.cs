@@ -2,7 +2,7 @@
 using AuthServer.Core.Request;
 
 namespace AuthServer.Introspection;
-internal class IntrospectionError
+internal static class IntrospectionError
 {
     public static readonly ProcessError UnsupportedTokenType =
         new(ErrorCode.UnsupportedTokenType, "provided token_type_hint is unsupported", ResultCode.BadRequest);
