@@ -316,7 +316,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private ProcessError? ValidateTokenEndpointAuthMethod(RegisterRequest request,
+    private static ProcessError? ValidateTokenEndpointAuthMethod(RegisterRequest request,
         RegisterValidatedRequest validatedRequest)
     {
         if (!string.IsNullOrEmpty(request.TokenEndpointAuthMethod)
@@ -369,7 +369,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private ProcessError? ValidateGrantTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
+    private static ProcessError? ValidateGrantTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.GrantTypes.Count != 0
             && request.GrantTypes.IsNotSubset(GrantTypeConstants.GrantTypes))
@@ -422,7 +422,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private ProcessError? ValidateResponseTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
+    private static ProcessError? ValidateResponseTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (request.ResponseTypes.Count != 0
             && request.ResponseTypes.IsNotSubset(ResponseTypeConstants.ResponseTypes))
@@ -530,6 +530,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// </summary>
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     private async Task<ProcessError?> ValidateSectorIdentifierUri(RegisterRequest request, RegisterValidatedRequest validatedRequest, CancellationToken cancellationToken)
     {
