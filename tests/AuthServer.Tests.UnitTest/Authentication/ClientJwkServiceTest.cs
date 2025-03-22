@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Runtime.Intrinsics.X86;
 using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
@@ -15,7 +16,7 @@ namespace AuthServer.Tests.UnitTest.Authentication;
 public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest(outputHelper)
 {
     [Fact]
-    public async Task GetKeys_NoJwks_NoKeys()
+    public async Task GetKeys_NoJwks_ExpectNoKeys()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -33,7 +34,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
     [Theory]
     [InlineData(JsonWebKeyUseNames.Sig)]
     [InlineData(JsonWebKeyUseNames.Enc)]
-    public async Task GetKeys_JwksWithNoExpiration_CachedKeys(string use)
+    public async Task GetKeys_JwksWithNoExpiration_ExpectCachedKeys(string use)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -56,7 +57,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
     [Theory]
     [InlineData(JsonWebKeyUseNames.Sig)]
     [InlineData(JsonWebKeyUseNames.Enc)]
-    public async Task GetKeys_JwksWithinExpiration_CachedKeys(string use)
+    public async Task GetKeys_JwksWithinExpiration_ExpectCachedKeys(string use)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -80,7 +81,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
     [Theory]
     [InlineData(JsonWebKeyUseNames.Sig)]
     [InlineData(JsonWebKeyUseNames.Enc)]
-    public async Task GetKeys_JwksNotWithinExpiration_NoKeys(string use)
+    public async Task GetKeys_JwksNotWithinExpiration_ExpectNoKeys(string use)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -103,7 +104,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
     [Theory]
     [InlineData(JsonWebKeyUseNames.Sig)]
     [InlineData(JsonWebKeyUseNames.Enc)]
-    public async Task GetKeys_JwksUriWithinExpiration_CachedKeys(string use)
+    public async Task GetKeys_JwksUriWithinExpiration_ExpectCachedKeys(string use)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -111,13 +112,12 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var clientJwks = ClientJwkBuilder.GetClientJwks();
         var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
         {
-            Jwks = clientJwks.PublicJwks
+            Jwks = clientJwks.PublicJwks,
+            JwksUri = "https://localhost:5000/.well-known/jwks",
+            JwksExpiration = 60,
+            JwksExpiresAt = DateTime.UtcNow.AddSeconds(60)
         };
         await AddEntity(client);
-        client.JwksUri = "https://localhost:5000/.well-known/jwks";
-        client.JwksExpiration = 60;
-        client.JwksExpiresAt = DateTime.UtcNow.AddSeconds(60);
-        await SaveChangesAsync();
 
         // Act
         var keys = await clientJwkService.GetKeys(client.Id, use, CancellationToken.None);
@@ -130,13 +130,17 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
     [Theory]
     [InlineData(JsonWebKeyUseNames.Sig)]
     [InlineData(JsonWebKeyUseNames.Enc)]
-    public async Task GetKeys_JwksUriNotWithinExpiration_RefreshKeys(string use)
+    public async Task GetKeys_JwksUriNotWithinExpirationRefreshPrivateKeys_ExpectNoKeys(string use)
     {
         // Arrange
         var httpClientFactory = new Mock<IHttpClientFactory>();
         var serviceProvider = BuildServiceProvider(services =>
         {
-            var requestHandler = new DelegatingHandlerStub(ClientJwkBuilder.GetClientJwks().PublicJwks, MimeTypeConstants.Json, HttpStatusCode.OK);
+            var requestHandler = new DelegatingHandlerStub(
+                ClientJwkBuilder.GetClientJwks().PrivateJwks,
+                MimeTypeConstants.Json,
+                HttpStatusCode.OK);
+
             httpClientFactory
                 .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
                 .Returns(new HttpClient(requestHandler))
@@ -148,13 +152,52 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var clientJwks = ClientJwkBuilder.GetClientJwks();
         var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
         {
-            Jwks = clientJwks.PublicJwks
+            Jwks = clientJwks.PublicJwks,
+            JwksUri = "https://localhost:5000/.well-known/jwks",
+            JwksExpiration = 60,
+            JwksExpiresAt = DateTime.UtcNow.AddSeconds(-60)
         };
         await AddEntity(client);
-        client.JwksUri = "https://localhost:5000/.well-known/jwks";
-        client.JwksExpiration = 60;
-        client.JwksExpiresAt = DateTime.UtcNow.AddSeconds(-60);
-        await SaveChangesAsync();
+
+        // Act
+        var keys = await clientJwkService.GetKeys(client.Id, use, CancellationToken.None);
+
+        // Assert
+        Assert.Empty(keys);
+        httpClientFactory.Verify();
+    }
+
+    [Theory]
+    [InlineData(JsonWebKeyUseNames.Sig)]
+    [InlineData(JsonWebKeyUseNames.Enc)]
+    public async Task GetKeys_JwksUriNotWithinExpirationRefreshNewKeys_ExpectKeys(string use)
+    {
+        // Arrange
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            var requestHandler = new DelegatingHandlerStub(
+                ClientJwkBuilder.GetClientJwks().PublicJwks,
+                MimeTypeConstants.Json,
+                HttpStatusCode.OK);
+
+            httpClientFactory
+                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Returns(new HttpClient(requestHandler))
+                .Verifiable();
+
+            services.AddSingletonMock(httpClientFactory);
+        });
+        var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        {
+            Jwks = clientJwks.PublicJwks,
+            JwksUri = "https://localhost:5000/.well-known/jwks",
+            JwksExpiration = 60,
+            JwksExpiresAt = DateTime.UtcNow.AddSeconds(-60)
+        };
+        await AddEntity(client);
 
         // Act
         var keys = await clientJwkService.GetKeys(client.Id, use, CancellationToken.None);
@@ -200,5 +243,84 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
 
         // Assert
         Assert.Null(encryptionKey);
+    }
+
+    [Theory]
+    [InlineData(JsonWebKeyUseNames.Sig)]
+    [InlineData(JsonWebKeyUseNames.Enc)]
+    public async Task GetJwks_RefreshKeysWithValidJwksUri_ExpectKeys(string use)
+    {
+        // Arrange
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        var response = ClientJwkBuilder.GetClientJwks().PublicJwks;
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            var requestHandler = new DelegatingHandlerStub(
+                response,
+                MimeTypeConstants.Json,
+                HttpStatusCode.OK);
+
+            httpClientFactory
+                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Returns(new HttpClient(requestHandler))
+                .Verifiable();
+
+            services.AddSingletonMock(httpClientFactory);
+        });
+        var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        {
+            Jwks = clientJwks.PublicJwks,
+            JwksUri = "https://localhost:5000/.well-known/jwks",
+            JwksExpiration = 60,
+            JwksExpiresAt = DateTime.UtcNow.AddSeconds(-60)
+        };
+        await AddEntity(client);
+
+        // Act
+        var jwksRaw = await clientJwkService.GetJwks(client.JwksUri, CancellationToken.None);
+
+        // Assert
+        httpClientFactory.Verify();
+        Assert.Equal(response, jwksRaw);
+    }
+
+    [Fact]
+    public async Task GetJwks_RefreshKeysWithInvalidJwksUri_ExpectNull()
+    {
+        // Arrange
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            var requestHandler = new DelegatingHandlerStub(
+                "Unexpected error occurred",
+                MimeTypeConstants.Text,
+                HttpStatusCode.InternalServerError);
+
+            httpClientFactory
+                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Returns(new HttpClient(requestHandler))
+                .Verifiable();
+
+            services.AddSingletonMock(httpClientFactory);
+        });
+        var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        {
+            Jwks = clientJwks.PublicJwks,
+            JwksUri = "https://localhost:5000/.well-known/jwks",
+            JwksExpiration = 60,
+            JwksExpiresAt = DateTime.UtcNow.AddSeconds(-60)
+        };
+        await AddEntity(client);
+
+        // Act
+        var jwksRaw = await clientJwkService.GetJwks(client.JwksUri, CancellationToken.None);
+
+        // Assert
+        httpClientFactory.Verify();
+        Assert.Null(jwksRaw);
     }
 }
