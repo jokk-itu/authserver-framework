@@ -11,11 +11,11 @@ namespace AuthServer.Repositories;
 internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
 {
     private readonly AuthorizationDbContext _identityContext;
-    private readonly ILogger<AuthorizationDbContext> _logger;
+    private readonly ILogger<AuthorizationGrantRepository> _logger;
 
     public AuthorizationGrantRepository(
         AuthorizationDbContext identityContext,
-        ILogger<AuthorizationDbContext> logger)
+        ILogger<AuthorizationGrantRepository> logger)
     {
         _identityContext = identityContext;
         _logger = logger;
