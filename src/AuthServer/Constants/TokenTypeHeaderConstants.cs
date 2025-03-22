@@ -3,7 +3,7 @@
 /// <summary>
 /// https://www.iana.org/assignments/media-types/media-types.xhtml
 /// </summary>
-public class TokenTypeHeaderConstants
+internal static class TokenTypeHeaderConstants
 {
     public const string PrivateKeyToken = "pk+jwt";
     public const string AccessToken = "at+jwt";
