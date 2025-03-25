@@ -5,7 +5,7 @@
 </script>
 
 <Navbar />
-<main class="container mx-4 sm:mx-auto mt-8">
+<main class="container px-4 sm:mx-auto mt-8"> 
     <slot />
 </main>
 <Footer />
