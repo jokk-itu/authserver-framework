@@ -7,8 +7,7 @@
 <PageTitle title="Architecture" />
 <Section title="Introduction">
     <p>
-        The AuthServer framework has been built as a single NuGet package. It
-        offers modularity through features.
+        The AuthServer framework has been built as a single NuGet package.
     </p>
 </Section>
 <Section title="Endpoints">
@@ -17,7 +16,12 @@
         to parse the request, and a handler to validate and process the request.
         <br />
     </p>
-    <img src="{base}/endpoint-architecture.png" alt="endpoint architecture" />
+    <br/>
+    <figure>
+        <img src="{base}/endpoint-architecture.png" alt="endpoint architecture" />
+        <figCaption class="text-center">Image 1: Class diagram of request handling</figCaption>
+    </figure>
+    <br/>
     <p>
         <b>IRequestAccessor</b> is responsible for parsing the request into a
         single request. It can for example contain parsed headers, query
