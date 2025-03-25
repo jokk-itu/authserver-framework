@@ -12,6 +12,9 @@
                 <a href="{base}/developer/datamodel">Datamodel</a>
             </li>
             <li class="hover:underline">
+                <a href="{base}/developer/setup">Setup</a>
+            </li>
+            <li class="hover:underline">
                 <a href="{base}/developer/client-authentication">Client Authentication</a>
             </li>
         </ul>
