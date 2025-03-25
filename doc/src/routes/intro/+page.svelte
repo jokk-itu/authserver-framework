@@ -18,7 +18,7 @@
 
 <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     <!-- Token -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -41,7 +41,7 @@
     </div>
 
     <!-- Client -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Entity Framework Core -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -87,7 +87,7 @@
     </div>
 
     <!-- Distributed -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -110,7 +110,7 @@
     </div>
 
     <!-- Dependency Injection -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -134,7 +134,7 @@
     </div>
 
     <!-- Identity -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -158,7 +158,7 @@
     </div>
 
     <!-- Discovery -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -183,7 +183,7 @@
     </div>
 
     <!-- Open Telemetry -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -206,7 +206,7 @@
     </div>
 
     <!-- OAuth 2.1 -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="#000000"
