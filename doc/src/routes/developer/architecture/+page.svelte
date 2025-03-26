@@ -18,7 +18,7 @@
     </p>
     <br/>
     <figure>
-        <img src="{base}/endpoint-architecture.png" alt="endpoint architecture" />
+        <img class="object-center" src="{base}/endpoint-architecture.png" alt="endpoint architecture" />
         <figCaption class="text-center">Image 1: Class diagram of request handling</figCaption>
     </figure>
     <br/>
@@ -55,6 +55,21 @@
         <br /><br />
         Managing features is implemented through the Microsoft.FeatureManagement
         library.
+    </p>
+    <br/>
+    <figure>
+        <img class="mx-auto" src="{base}/module-architecture.png" alt="module architecture"/>
+        <figcaption class="text-center">Image 2: State machine diagram of module handling</figcaption>
+    </figure>
+    <br/>
+    <p>
+        The feature flag filter is responsible for checking all incoming HTTP requests,
+        whether the endpoint it reaches has been enabled through FeatureManagement.
+        If it has been enabled, the execution flow continues normally,
+        if it has not, then the request is cancelled immediately and the HTTP status code 404 is returned.
+        <br/>
+        The feature flag check is also handled in the Discovery endpoint,
+        to make sure metadata about disabled features is not exposed.
     </p>
 </Section>
 <Section title="Cache">
