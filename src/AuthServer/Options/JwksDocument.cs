@@ -24,7 +24,4 @@ public class JwksDocument
             .Where(x => x.Alg == encryptionAlg)
             .Select(x => x.Key)
             .Single();
-
-    public sealed record SigningKey(AsymmetricSecurityKey Key, SigningAlg Alg);
-    public sealed record EncryptionKey(AsymmetricSecurityKey Key, EncryptionAlg Alg);
 }

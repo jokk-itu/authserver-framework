@@ -25,6 +25,7 @@ internal class ClientLogoutService : IClientLogoutService
         _authorizationDbContext = authorizationDbContext;
     }
 
+    /// <inheritdoc/>
     public async Task Logout(IReadOnlyCollection<string> clientIds, string? sessionId, string? subjectIdentifier, CancellationToken cancellationToken)
     {
         var logoutRequests = new List<LogoutRequest>();
