@@ -1,48 +1,127 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { base } from "$app/paths";
+  import NavbarLogo from "./NavbarLogo.svelte";
+
+  let isMobileMenuOpen = false;
+
+  function openMobileMenu() {
+    isMobileMenuOpen = true;
+  }
+
+  function closeMobileMenu() {
+    isMobileMenuOpen = false;
+  }
 </script>
 
-<nav class="bg-gray-100">
-  <div class="max-w-6xl mx-auto px-4">
-    <div class="flex justify-between">
-      <!-- logo -->
-      <div class="flex space-x-4">
-        <a
-          href="{base}/"
-          class="flex items-center py-5 px-2 text-gray-700 hover:text-gray-900"
+<nav
+  class:hidden={!isMobileMenuOpen}
+  class="backdrop-saturate-200 backdrop-blur-md z-50 flex fixed top-0 bottom-0 left-0 right-0 overflow-y-auto"
+>
+  <div class="w-full min-h-full max-w-80 bg-zinc-200">
+    <div class="px-4 pt-6">
+      <button onclick={closeMobileMenu} aria-label="Close mobile menu">
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          /></svg
         >
-          <svg
-            class="h-6 w-6 mr-1 fill-openid"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
+      </button>
+    </div>
+    <div>
+      <ul class="rounded-md [&>li]:px-4 py-4 space-y-4 text-lg">
+        <li class="hover:underline">
+          <a href="{base}/intro">Intro</a>
+        </li>
+        <li class="hover:underline">
+          <a href="{base}/demo">Demo</a>
+        </li>
+        <li class="hover:underline">
+          <a href="{base}/developer">Developer</a>
+        </li>
+        <li class="hover:underline">
+          <a href="{base}/developer/architecture">Architecture</a>
+        </li>
+        <li class="hover:underline">
+          <a href="{base}/developer/datamodel">Datamodel</a>
+        </li>
+        <li class="hover:underline">
+          <a href="{base}/developer/setup">Setup</a>
+        </li>
+        <li class="hover:underline">
+          <a href="{base}/developer/client-authentication"
+            >Client Authentication</a
           >
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<nav class="bg-gray-100 py-5">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="items-center flex justify-between">
+      <!-- leftside -->
+      <div class="flex space-x-4">
+        <!-- mobile menu -->
+        <button
+          class="lg:hidden"
+          onclick={openMobileMenu}
+          aria-label="Open mobile menu"
+        >
+          <svg viewBox="0 0 24 24" class="w-4 h-4">
             <path
+              fill="none"
+              stroke="currentColor"
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M14.54 .887L10.91 2.66V20.83C6.76 20.31 3.64 18.05 3.64 15.33C3.64 12.75 6.44 10.58 10.27 9.92V7.61C4.42 8.32 0 11.5 0 15.33C0 19.29 4.74 22.57 10.91 23.11L14.54 21.4V.886M15.18 7.61V9.92C16.61 10.17 17.89 10.62 18.94 11.23L16.97 12.34L24 13.87L23.5 8.66L21.63 9.72C19.89 8.66 17.67 7.91 15.18 7.61Z"
+              d="M4 6h16M4 12h16M4 18h16"
             />
           </svg>
-          <span class="font-bold hidden md:block">AuthServer</span>
-        </a>
+        </button>
+
+        <!-- logo (shown on large screens) -->
+        <div class="hidden lg:block">
+          <NavbarLogo />
+        </div>
       </div>
 
-      <!-- primary nav -->
+      <!-- middle -->
       <div class="flex items-center space-x-1">
-        <a href="{base}/intro" class="py-5 px-3 text-gray-700 hover:text-gray-900"
-          >Intro</a
-        >
-        <a href="{base}/demo" class="py-5 px-3 text-gray-700 hover:text-gray-900"
-          >Demo</a
-        >
-        <a href="{base}/developer" class="py-5 px-3 text-gray-700 hover:text-gray-900"
-          >Developer</a>
+        <!-- logo -->
+        <div class="block lg:hidden">
+          <NavbarLogo />
+        </div>
+
+        <!-- primary nav -->
+        <div class="hidden lg:block">
+          <a href="{base}/intro" class="px-3 text-gray-700 hover:text-gray-900"
+            >Intro</a
+          >
+          <a href="{base}/demo" class="px-3 text-gray-700 hover:text-gray-900"
+            >Demo</a
+          >
+          <a
+            href="{base}/developer"
+            class="px-3 text-gray-700 hover:text-gray-900">Developer</a
+          >
+        </div>
       </div>
 
-      <!-- secondary nav -->
+      <!-- right side -->
       <div class="flex items-center space-x-1">
-        <a href="https://github.com/jokk-itu/authserver" target="_blank" class="py-5 px-3">
-          <img src="{base}/github.svg" alt="Github" height="20px" width="20px" />
+        <a href="https://github.com/jokk-itu/authserver" target="_blank">
+          <img
+            src="{base}/github.svg"
+            alt="Github"
+            height="20px"
+            width="20px"
+          />
         </a>
       </div>
     </div>
