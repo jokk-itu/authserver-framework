@@ -3,7 +3,8 @@
 </script>
 
 <div class="flex">
-    <nav class="flex-none mx-4 w-56 rounded-md outline-8">
+    <!-- leftside nav, only shown on larger screens -->
+    <nav class="hidden lg:block sm:flex-none mx-4 w-56 rounded-md outline-8">
         <ul class="rounded-md [&>li]:px-4 py-4 space-y-4 text-lg bg-zinc-200">
             <li class="hover:underline">
                 <a href="{base}/developer/architecture">Architecture</a>
