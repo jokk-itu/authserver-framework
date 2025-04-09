@@ -51,7 +51,6 @@ POST /token HTTP/1.1
 Host: idp.authserver.com
 Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 Content-Type: application/x-www-form-urlencoded
-
 grant_type=client_credentials&scope=weather:read
         `}
     </CodeBlock>
