@@ -22,5 +22,7 @@
             </li>
         </ul>
     </nav>
-    <div class="flex-auto"><slot /></div>
+
+    <!-- documentation page -->
+    <div class="flex-auto w-full"><slot /></div>
 </div>
