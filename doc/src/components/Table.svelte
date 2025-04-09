@@ -7,7 +7,7 @@
 </script>
 
 <div class="w-full overflow-x-auto">
-    <table class="border-collapse table-fixed w-full text-sm">
+    <table class="border-collapse table-fixed sm:table-auto w-full text-sm">
         <caption class="caption-bottom">
             Table {tableNumber}: {title}
         </caption>
