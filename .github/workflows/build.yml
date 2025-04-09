@@ -46,9 +46,9 @@ jobs:
       env:
         ConnectionStrings__Default: ${{ secrets.DATABASE_CONNECTION }}
       run: |
-        dotnet-sonarscanner begin /k:"jokk-itu_authserver-framework" /o:"jokk-itu" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html /d:sonar.scanner.skipJreProvisioning=true
+        dotnet-sonarscanner begin /k:"jokk-itu_authserver-framework" /o:"jokk-itu" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml /d:sonar.scanner.skipJreProvisioning=true
         dotnet build authserver.sln --no-restore
-        dotnet dotcover test --dcReportType=HTML
+        dotnet-coverage collect 'dotnet test authserver.sln --no-build' -f xml  -o 'coverage.xml'
         dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
   
   build_documentation:
