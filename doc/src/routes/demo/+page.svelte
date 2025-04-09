@@ -12,7 +12,7 @@
 
 <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     <!-- IdentityProvider -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <div class="font-bold text-xl mb-2">IdentityProvider</div>
         <p class="text-gray-800 text-base">
             WebApp using the AuthServer framework, to behave as an IdentityProvider.
@@ -22,7 +22,7 @@
     </div>
 
     <!-- WebClient -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <div class="font-bold text-xl mb-2">WebClient</div>
         <p class="text-gray-800 text-base">
             WebApp using FAPI features to enable high security.
@@ -30,7 +30,7 @@
     </div>
 
     <!-- BFF Client -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <div class="font-bold text-xl mb-2">BFF Client</div>
         <p class="text-gray-800 text-base">
             Blazor WebAssembly app, using the BackEnd for FrontEnd pattern,
@@ -39,7 +39,7 @@
     </div>
 
     <!-- Worker Client -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <div class="font-bold text-xl mb-2">Worker Client</div>
         <p class="text-gray-800 text-base">
             Worker app without user interface, and only uses the client_credentials grant.
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Browser Client -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <div class="font-bold text-xl mb-2">Browser Client</div>
         <p class="text-gray-800 text-base">
             Browser app behaving as a SPA without a backend responsible for authentication.
@@ -56,7 +56,7 @@
     </div>
 
     <!-- Weather Client -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <div class="font-bold text-xl mb-2">Weather Client</div>
         <p class="text-gray-800 text-base">
             API behaving as a protected resource.

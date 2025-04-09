@@ -1,4 +1,4 @@
-<h1 class="text-4xl mb-2">What is Authserver?</h1>
+<h1 class="text-4xl mb-2">What is AuthServer?</h1>
 <p class="mb-4">
     An IdentityProvider implementing the core OAuth 2.1 specification, with the
     OpenId Connect specification on top.
@@ -9,7 +9,7 @@
     Everything else has already been made to make auth(orization) and auth(entication)
     easy.
     <br /><br />
-    Authserver has been designed to be distributed with caching, configurable without
+    AuthServer has been designed to be distributed with caching, configurable without
     sacrificing security and implements strict security by default, so that recommendations
     become requirements.
 </p>
@@ -18,7 +18,7 @@
 
 <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     <!-- Token -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -41,7 +41,7 @@
     </div>
 
     <!-- Client -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Entity Framework Core -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -81,13 +81,13 @@
         </svg>
         <div class="font-bold text-xl mb-2">Entity Framework Core</div>
         <p class="text-gray-800 text-base">
-            Authserver uses EF Core for persistance and uses distributed caching
+            AuthServer uses EF Core for persistance and uses distributed caching
             for fast retrieval of common entities without stale entries.
         </p>
     </div>
 
     <!-- Distributed -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -110,7 +110,7 @@
     </div>
 
     <!-- Dependency Injection -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -128,13 +128,13 @@
 
         <div class="font-bold text-xl mb-2">Dependency Injection</div>
         <p class="text-gray-800 text-base">
-            Easily setup your custom Authserver using depdency injection in your
+            Easily setup your custom AuthServer using depdency injection in your
             AspNet Core application.
         </p>
     </div>
 
     <!-- Identity -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -158,7 +158,7 @@
     </div>
 
     <!-- Discovery -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -183,7 +183,7 @@
     </div>
 
     <!-- Open Telemetry -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -206,7 +206,7 @@
     </div>
 
     <!-- OAuth 2.1 -->
-    <div class="max-w-sm rounded overflow-hidden shadow-lg px-6 py-4">
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="#000000"

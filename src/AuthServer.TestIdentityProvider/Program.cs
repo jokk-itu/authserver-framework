@@ -72,23 +72,23 @@ builder.Services
     {
         options.EncryptionKeys =
         [
-            new JwksDocument.EncryptionKey(SecurityKeyHelper.EcdhEs128, EncryptionAlg.EcdhEsA128KW),
-            new JwksDocument.EncryptionKey(SecurityKeyHelper.EcdhEs192, EncryptionAlg.EcdhEsA192KW),
-            new JwksDocument.EncryptionKey(SecurityKeyHelper.EcdhEs256, EncryptionAlg.EcdhEsA256KW),
-            new JwksDocument.EncryptionKey(SecurityKeyHelper.RsaOAep, EncryptionAlg.RsaOAEP),
-            new JwksDocument.EncryptionKey(SecurityKeyHelper.RsaPkcs1, EncryptionAlg.RsaPKCS1),
+            new EncryptionKey(SecurityKeyHelper.EcdhEs128, EncryptionAlg.EcdhEsA128KW),
+            new EncryptionKey(SecurityKeyHelper.EcdhEs192, EncryptionAlg.EcdhEsA192KW),
+            new EncryptionKey(SecurityKeyHelper.EcdhEs256, EncryptionAlg.EcdhEsA256KW),
+            new EncryptionKey(SecurityKeyHelper.RsaOAep, EncryptionAlg.RsaOAEP),
+            new EncryptionKey(SecurityKeyHelper.RsaPkcs1, EncryptionAlg.RsaPKCS1),
         ];
         options.SigningKeys =
         [
-            new JwksDocument.SigningKey(SecurityKeyHelper.Ecdsa256, SigningAlg.EcdsaSha256),
-            new JwksDocument.SigningKey(SecurityKeyHelper.Ecdsa384, SigningAlg.EcdsaSha384),
-            new JwksDocument.SigningKey(SecurityKeyHelper.Ecdsa512, SigningAlg.EcdsaSha512),
-            new JwksDocument.SigningKey(SecurityKeyHelper.CertificateRsa256, SigningAlg.RsaSha256),
-            new JwksDocument.SigningKey(SecurityKeyHelper.CertificateRsa384, SigningAlg.RsaSha384),
-            new JwksDocument.SigningKey(SecurityKeyHelper.CertificateRsa512, SigningAlg.RsaSha512),
-            new JwksDocument.SigningKey(SecurityKeyHelper.RsaSsaPss256, SigningAlg.RsaSsaPssSha256),
-            new JwksDocument.SigningKey(SecurityKeyHelper.RsaSsaPss384, SigningAlg.RsaSsaPssSha384),
-            new JwksDocument.SigningKey(SecurityKeyHelper.RsaSsaPss512, SigningAlg.RsaSsaPssSha512)
+            new SigningKey(SecurityKeyHelper.Ecdsa256, SigningAlg.EcdsaSha256),
+            new SigningKey(SecurityKeyHelper.Ecdsa384, SigningAlg.EcdsaSha384),
+            new SigningKey(SecurityKeyHelper.Ecdsa512, SigningAlg.EcdsaSha512),
+            new SigningKey(SecurityKeyHelper.CertificateRsa256, SigningAlg.RsaSha256),
+            new SigningKey(SecurityKeyHelper.CertificateRsa384, SigningAlg.RsaSha384),
+            new SigningKey(SecurityKeyHelper.CertificateRsa512, SigningAlg.RsaSha512),
+            new SigningKey(SecurityKeyHelper.RsaSsaPss256, SigningAlg.RsaSsaPssSha256),
+            new SigningKey(SecurityKeyHelper.RsaSsaPss384, SigningAlg.RsaSsaPssSha384),
+            new SigningKey(SecurityKeyHelper.RsaSsaPss512, SigningAlg.RsaSsaPssSha512)
         ];
 
         options.GetTokenSigningKey =
