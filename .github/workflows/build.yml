@@ -33,7 +33,7 @@ jobs:
         dotnet-version: 8.0.x
     - name: Install tools
       run: |
-        dotnet tool install --global JetBrains.dotCover.GlobalTool
+        dotnet tool install --global JetBrains.dotCover.CommandLineTools
         dotnet tool install --global dotnet-sonarscanner
     - name: Set up JDK 17
       uses: actions/setup-java@v3
