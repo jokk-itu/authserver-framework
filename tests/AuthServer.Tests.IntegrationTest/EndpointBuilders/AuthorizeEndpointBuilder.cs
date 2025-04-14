@@ -17,10 +17,6 @@ using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 using AuthServer.Endpoints.Responses;
-using Castle.Components.DictionaryAdapter.Xml;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 public class AuthorizeEndpointBuilder : EndpointBuilder
@@ -162,11 +158,15 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return await GetAuthorizeResponse(response);
     }
 
-    private static async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage response)
+    private async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage response)
     {
         if (response.StatusCode == HttpStatusCode.SeeOther)
         {
-            var queryNameValues = HttpUtility.ParseQueryString(response.Headers.Location!.Query);
+            var queryNameValues = HttpUtility.ParseQueryString(
+                string.IsNullOrEmpty(response.Headers.Location!.Query)
+                    ? response.Headers.Location!.Fragment[1..]
+                    : response.Headers.Location!.Query[1..]);
+
             return new AuthorizeResponse
             {
                 StatusCode = HttpStatusCode.SeeOther,
@@ -196,25 +196,34 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         {
             var content = await response.Content.ReadAsStringAsync();
 
+            var actionForm = Regex.Match(content, @"<form method=""post"" action=""([^""]+)"">");
+            var action = actionForm.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
+            
             var codeInput = Regex.Match(content, @"<input type=""hidden"" name=""code"" value=""([^""]+)"" \/>");
-            var code = codeInput.Groups[1].Captures[0].Value;
+            var code = codeInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
 
             var stateInput = Regex.Match(content, @"<input type=""hidden"" name=""state"" value=""([^""]+)"" \/>");
-            var state = stateInput.Groups[1].Captures[0].Value;
+            var state = stateInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
+
+            var issuerInput = Regex.Match(content, @"<input type=""hidden"" name=""iss"" value=""([^""]+)"" \/>");
+            var issuer = issuerInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
 
             var errorInput = Regex.Match(content, @"<input type=""hidden"" name=""error"" value=""([^""]+)"" \/>");
-            var error = errorInput.Groups[1].Captures[0].Value;
+            var error = errorInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
 
             var errorDescriptionInput = Regex.Match(content, @"<input type=""hidden"" name=""error_description"" value=""([^""]+)"" \/>");
-            var errorDescription = errorDescriptionInput.Groups[1].Captures[0].Value;
+            var errorDescription = errorDescriptionInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
 
             return new AuthorizeResponse
             {
                 StatusCode = HttpStatusCode.OK,
                 Code = code,
                 State = state,
+                Issuer = issuer,
                 Error = error,
-                ErrorDescription = errorDescription
+                ErrorDescription = errorDescription,
+                LocationUri = action,
+                RequestUri = response.RequestMessage!.RequestUri!.AbsoluteUri!
             };
         }
 
