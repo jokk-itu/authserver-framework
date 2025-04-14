@@ -14,8 +14,10 @@
 		<Product>AuthServer</Product>
 		<PackageProjectUrl>https://github.com/jokk-itu/authserver-framework</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/jokk-itu/authserver-framework</RepositoryUrl>
-		<VersionSuffix>alpha</VersionSuffix>
-		<VersionPrefix>0.0.15</VersionPrefix>
+		<VersionSuffix Condition="'$(CI)' != 'true'">alpha</VersionSuffix>
+		<VersionPrefix Condition="'$(CI)' != 'true'">0.0.15</VersionPrefix>
+		<VersionSuffix Condition="'$(CI)' == 'true' And '$(VersionSuffix)' != ''">$(VersionSuffix)</VersionSuffix>
+		<VersionPrefix Condition="'$(CI)' == 'true'">$(VersionPrefix)</VersionPrefix>
 		<IncludeSymbols>true</IncludeSymbols>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
