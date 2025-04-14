@@ -1,12 +1,22 @@
 name: Deploy NuGet
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      versionSuffix:
+        description: 'Optional suffix of package, to indicate it is not a final release'
+        required: false
+        type: choice
+        options:
+          - alpha
+          - beta
+      versionPrefix:
+        description: 'Required version of a package, in format MAJOR.MINOR.HOTFIX'
+        required: true
 
 env:
-  DOTNET_NOLOGO: true      
+  DOTNET_NOLOGO: true     
+  CI: true 
 
 jobs:
   push_to_nuget_registry:
@@ -18,6 +28,17 @@ jobs:
         run: |
           GithubToken=${{ secrets.GITHUB_TOKEN }}
           echo "GithubToken=$GithubToken" >> $GITHUB_ENV
+
+      - name: Setup VersionPrefix
+        run: |
+          VersionPrefix=${{ github.event.inputs.versionPrefix }}
+          echo "VersionPrefix=$VersionPrefix" >> $GITHUB_ENV
+
+      - name: Setup VersionSuffix
+        if: ${{ github.event.inputs.versionSuffix != '' }}
+        run: |
+          VersionSuffix=${{ github.event.inputs.versionSuffix }}
+          echo "VersionSuffix=$VersionSuffix" >> $GITHUB_ENV
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
