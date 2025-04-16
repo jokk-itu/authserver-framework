@@ -12,6 +12,6 @@ update RedirectUri
 set Uri = 'https://localhost:7226/signin-oidc'
 where ClientId = @ClientId
 
-update
+update PostLogoutRedirectUri
 set Uri = 'https://localhost:7226/signout-callback-oidc'
 where ClientId = @ClientId

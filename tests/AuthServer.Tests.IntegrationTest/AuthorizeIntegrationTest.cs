@@ -18,8 +18,11 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     {
     }
 
-    [Fact]
-    public async Task Authorize_NoPromptWithLoginAndConsentWithRequestObject_ExpectRedirectWithAuthorizationCode()
+    [Theory]
+    [InlineData("form_post", HttpStatusCode.OK, "https://localhost:7254")]
+    [InlineData("query", HttpStatusCode.SeeOther, null)]
+    [InlineData("fragment", HttpStatusCode.SeeOther, null)]
+    public async Task Authorize_NoPromptWithLoginAndConsentWithRequestObject_ExpectAuthorizationCode(string responseMode, HttpStatusCode statusCode, string? issuer)
     {
         // Arrange
         var identityProvider = await AddIdentityProviderClient();
@@ -46,11 +49,13 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
             .WithAuthorizeUser(grantId)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
             .WithResource([identityProvider.ClientUri!])
+            .WithResponseMode(responseMode)
             .Get();
 
         // Assert
-        Assert.Equal(HttpStatusCode.SeeOther, authorizeResponse.StatusCode);
+        Assert.Equal(statusCode, authorizeResponse.StatusCode);
         Assert.Equal(registerResponse.RedirectUris!.Single(), authorizeResponse.LocationUri);
+        Assert.Equal(issuer, authorizeResponse.Issuer);
         Assert.NotNull(authorizeResponse.Code);
     }
 

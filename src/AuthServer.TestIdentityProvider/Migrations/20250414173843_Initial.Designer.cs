@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250311204554_Initial")]
+    [Migration("20250414173843_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

@@ -19,21 +19,23 @@
         encrypting tokens. There must only be registered one key per algorithm.
     </p>
     <CodeBlock>
-        {`// Inside Program.cs
-        using AuthServer.Options;
-        using AuthServer.Enums;
-                 
-        var builder = WebApplication.CreateBuilder(args);
-        var rsa = RSA.Create(3072);
-        var rsaSecurityKey = new RsaSecurityKey(rsa)
-        {
-          KeyId = Guid.NewGuid().ToString();
-        };
-        builder.Services.AddOptions<JwksDocument>(options =>
-        {
-          options.SigningKeys = [rsaSecurityKey, new SigningKey(SigningAlg.RsaSha256)];
-          options.GetTokenSigningKey = () => options.SigningKeys.Single();
-        });`}
+        {`
+            // Inside Program.cs
+            using AuthServer.Options;
+            using AuthServer.Enums;
+                            
+            var builder = WebApplication.CreateBuilder(args);
+            var rsa = RSA.Create(3072);
+            var rsaSecurityKey = new RsaSecurityKey(rsa)
+            {
+            KeyId = Guid.NewGuid().ToString();
+            };
+            builder.Services.AddOptions<JwksDocument>(options =>
+            {
+            options.SigningKeys = [rsaSecurityKey, new SigningKey(SigningAlg.RsaSha256)];
+            options.GetTokenSigningKey = () => options.SigningKeys.Single();
+            });
+        `}
     </CodeBlock>
     <p>
         The DiscoveryDocument is responsible for defining metadata about your

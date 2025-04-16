@@ -92,8 +92,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             .Where(x => x.AuthorizationCodes
                 .AsQueryable()
                 .Where(y => y.Id == authorizationCode.AuthorizationCodeId)
-                .Where(y => y.RedeemedAt == null)
-                .Any(y => y.ExpiresAt > DateTime.UtcNow))
+                .Any(AuthorizationCode.IsActive))
             .Select(x => x.Session.SubjectIdentifier.Id)
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 

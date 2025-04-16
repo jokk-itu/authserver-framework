@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import NavbarLogo from "./NavbarLogo.svelte";
+  import {developerLinks, navLinks} from '../links'
 
   let isMobileMenuOpen = false;
 
@@ -34,29 +35,16 @@
     </div>
     <div>
       <ul class="rounded-md [&>li]:px-4 py-4 space-y-4 text-lg">
-        <li class="hover:underline">
-          <a href="{base}/intro">Intro</a>
-        </li>
-        <li class="hover:underline">
-          <a href="{base}/demo">Demo</a>
-        </li>
-        <li class="hover:underline">
-          <a href="{base}/developer">Developer</a>
-        </li>
-        <li class="hover:underline">
-          <a href="{base}/developer/architecture">Architecture</a>
-        </li>
-        <li class="hover:underline">
-          <a href="{base}/developer/datamodel">Datamodel</a>
-        </li>
-        <li class="hover:underline">
-          <a href="{base}/developer/setup">Setup</a>
-        </li>
-        <li class="hover:underline">
-          <a href="{base}/developer/client-authentication"
-            >Client Authentication</a
-          >
-        </li>
+        {#each navLinks as navLink}
+          <li class="hover:underline">
+            <a href="{navLink.Href}">{navLink.Name}</a>
+          </li>
+        {/each}
+        {#each developerLinks as developerLink}
+          <li class="hover:underline">
+            <a href="{developerLink.Href}">{developerLink.Name}</a>
+          </li>
+        {/each}
       </ul>
     </div>
   </div>
@@ -100,16 +88,9 @@
 
         <!-- primary nav -->
         <div class="hidden lg:block">
-          <a href="{base}/intro" class="px-3 text-gray-700 hover:text-gray-900"
-            >Intro</a
-          >
-          <a href="{base}/demo" class="px-3 text-gray-700 hover:text-gray-900"
-            >Demo</a
-          >
-          <a
-            href="{base}/developer"
-            class="px-3 text-gray-700 hover:text-gray-900">Developer</a
-          >
+          {#each navLinks as navLink}
+          <a href="{navLink.Href}" class="px-3 text-gray-700 hover:text-gray-900">{navLink.Name}</a>
+          {/each}
         </div>
       </div>
 

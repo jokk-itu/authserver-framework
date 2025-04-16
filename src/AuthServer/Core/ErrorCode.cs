@@ -95,21 +95,6 @@ public static class ErrorCode
     public const string InvalidRequestObject = "invalid_request_object";
 
     /// <summary>
-    /// The OP does not support the request parameter
-    /// </summary>
-    public const string RequestNotSupported = "request_not_supported";
-
-    /// <summary>
-    /// The OP does not support the request_uri parameter
-    /// </summary>
-    public const string RequestUriNotSupported = "request_uri_not_supported";
-
-    /// <summary>
-    /// The OP does not support the registration parameter
-    /// </summary>
-    public const string RegistrationNotSupported = "registration_not_supported";
-
-    /// <summary>
     /// The OP does not recognize the token type.
     /// Used in revocation and introspection.
     /// </summary>
