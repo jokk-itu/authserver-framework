@@ -1,4 +1,4 @@
-import{a as o,t as p,b as d}from"../chunks/disclose-version.CqEGrFDF.js";import"../chunks/legacy.C2BF3i6C.js";import{f as g,s as n,n as l}from"../chunks/runtime.D1yy3Suv.js";import{C as u}from"../chunks/CodeBlock.BD-ABjh4.js";import{P as y,S as c}from"../chunks/Section.ATEzHP2z.js";var P=p(`<p>The following sections describe how to setup AuthServer framework in
+import{t as p,a as o,b as d}from"../chunks/BhbEvs11.js";import"../chunks/Cp21wPu0.js";import{f as g,s as n,n as l}from"../chunks/ANGeck7g.js";import{C as u}from"../chunks/D2PrUHZR.js";import{P as y,S as c}from"../chunks/Wq4Bs5Lt.js";var P=p(`<p>The following sections describe how to setup AuthServer framework in
         your solution. <br> The example code is written for an AspNetCore WebApp in .NET 8.</p>`),E=p(`<p>The JwksDocument is responsible for defining keys for signing and
         encrypting tokens. There must only be registered one key per algorithm.</p> <!> <p>The DiscoveryDocument is responsible for defining metadata about your
         AuthServer instance. It is only customizable properties that are
@@ -10,21 +10,23 @@ import{a as o,t as p,b as d}from"../chunks/disclose-version.CqEGrFDF.js";import"
         IUserClaimService Implement interface IAuthenticatedUserAccessor
         Implement interface IAuthenticationContextReferenceResolver</p>`),x=p(`<p>The following example shows how to add services for AuthServer, and how
         to setup AuthServer in the AspNetCore HTTP request pipeline.</p> <!>`,1),N=p(`<p>Once migrations have been created and applied to the database, the
-        initial data must be added.</p> <br> <p>AuthenticationContextReferences must be added.</p> <!> <p>The IdentityProvider must be added.</p> <!> <p>Custom Scopes must be added.</p> <!>`,1),U=p("<!> <!> <!> <!> <!> <!> <!>",1);function K(T){var f=U(),$=g(f);y($,{title:"Setup"});var S=n($,2);c(S,{title:"Introduction",children:(i,h)=>{var r=P();o(i,r)},$$slots:{default:!0}});var A=n(S,2);c(A,{title:"Options",children:(i,h)=>{var r=E(),s=n(g(r),2);u(s,{children:(e,m)=>{l();var t=d();t.nodeValue=`// Inside Program.cs
-        using AuthServer.Options;
-        using AuthServer.Enums;
-                 
-        var builder = WebApplication.CreateBuilder(args);
-        var rsa = RSA.Create(3072);
-        var rsaSecurityKey = new RsaSecurityKey(rsa)
-        {
-          KeyId = Guid.NewGuid().ToString();
-        };
-        builder.Services.AddOptions<JwksDocument>(options =>
-        {
-          options.SigningKeys = [rsaSecurityKey, new SigningKey(SigningAlg.RsaSha256)];
-          options.GetTokenSigningKey = () => options.SigningKeys.Single();
-        });`,o(e,t)},$$slots:{default:!0}});var a=n(s,4);u(a,{children:(e,m)=>{l();var t=d();t.nodeValue=`
+        initial data must be added.</p> <br> <p>AuthenticationContextReferences must be added.</p> <!> <p>The IdentityProvider must be added.</p> <!> <p>Custom Scopes must be added.</p> <!>`,1),U=p("<!> <!> <!> <!> <!> <!> <!>",1);function K(T){var f=U(),$=g(f);y($,{title:"Setup"});var S=n($,2);c(S,{title:"Introduction",children:(i,h)=>{var r=P();o(i,r)},$$slots:{default:!0}});var A=n(S,2);c(A,{title:"Options",children:(i,h)=>{var r=E(),s=n(g(r),2);u(s,{children:(e,m)=>{l();var t=d();t.nodeValue=`
+            // Inside Program.cs
+            using AuthServer.Options;
+            using AuthServer.Enums;
+                            
+            var builder = WebApplication.CreateBuilder(args);
+            var rsa = RSA.Create(3072);
+            var rsaSecurityKey = new RsaSecurityKey(rsa)
+            {
+            KeyId = Guid.NewGuid().ToString();
+            };
+            builder.Services.AddOptions<JwksDocument>(options =>
+            {
+            options.SigningKeys = [rsaSecurityKey, new SigningKey(SigningAlg.RsaSha256)];
+            options.GetTokenSigningKey = () => options.SigningKeys.Single();
+            });
+        `,o(e,t)},$$slots:{default:!0}});var a=n(s,4);u(a,{children:(e,m)=>{l();var t=d();t.nodeValue=`
             // Inside Program.cs
             using AuthServer.Options;
             
