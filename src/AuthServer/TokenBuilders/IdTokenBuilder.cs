@@ -82,7 +82,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             { ClaimNameConstants.Nonce, query.Nonce.Value },
             { ClaimNameConstants.ClientId, query.ClientId },
             { ClaimNameConstants.Azp, query.ClientId },
-            { ClaimNameConstants.AuthTime, query.AuthTime },
+            { ClaimNameConstants.AuthTime, query.AuthTime.ToUnixTimeSeconds() },
             { ClaimNameConstants.Amr, JsonSerializer.SerializeToElement(query.AuthenticationMethodReferences) },
             { ClaimNameConstants.Acr, query.AuthenticationContextReference }
         };
