@@ -53,5 +53,5 @@ jobs:
 
       - name: Push package to nuget registry
         run: |
-          package=$(ls src/AuthServer/bin/Release/*nupkg)
-          dotnet nuget push "$package" --source "github" --skip-duplicate
+          cd src/AuthServer/bin/Release/
+          dotnet nuget push "*.nupkg" -s "https://nuget.pkg.github.com/jokk-itu/index.json" -k ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
