@@ -73,7 +73,7 @@ public static class ServiceCollectionExtensions
             HttpClientNameConstants.Client, client =>
             {
                 client.Timeout = TimeSpan.FromSeconds(2);
-                client.MaxResponseContentBufferSize = 8192;
+                client.MaxResponseContentBufferSize = 1024 * 32;
             });
 
         services
