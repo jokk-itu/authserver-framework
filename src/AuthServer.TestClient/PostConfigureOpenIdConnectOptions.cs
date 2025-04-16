@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
@@ -38,16 +39,29 @@ public class PostConfigureOpenIdConnectOptions : IPostConfigureOptions<OpenIdCon
             SameSite = SameSiteMode.Strict,
             MaxAge = TimeSpan.FromMinutes(15)
         };
+
+        options.ProtocolValidator = new OpenIdConnectProtocolValidator
+        {
+            NonceLifetime = TimeSpan.FromMinutes(15),
+            RequireAcr = true,
+            RequireAmr = true,
+            RequireAuthTime = true,
+            RequireAzp = true,
+            RequireNonce = true,
+            RequireState = true,
+            RequireSub = true,
+            RequireStateValidation = false, // This is handled manually 
+            RequireTimeStampInNonce = true
+        };
         
-        options.CallbackPath = "signin-oidc";
+        options.CallbackPath = "/signin-oidc";
         options.SaveTokens = true;
-        options.BackchannelTimeout = TimeSpan.FromSeconds(2);
         
         options.Backchannel = new HttpClient
         {
             BaseAddress = new Uri(options.Authority),
             Timeout = options.BackchannelTimeout,
-            MaxResponseContentBufferSize = 1024 * 8
+            MaxResponseContentBufferSize = 1024 * 32
         };
 
         options.StateDataFormat = new PropertiesDataFormat(
@@ -58,13 +72,23 @@ public class PostConfigureOpenIdConnectOptions : IPostConfigureOptions<OpenIdCon
             _dataProtectionProvider.CreateProtector("OpenIdConnect.StringDataFormat"));
         
         options.DataProtectionProvider = _dataProtectionProvider.CreateProtector("OpenIdConnect");
-        options.TokenValidationParameters = new TokenValidationParameters();
         options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
             options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
             new HttpDocumentRetriever(options.Backchannel) { RequireHttps = true })
         {
             RefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval,
             AutomaticRefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval
+        };
+
+        options.ClaimActions.Add(new MapAllClaimsAction());
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidAudience = options.ClientId,
+            ValidIssuer = options.Authority,
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = "name",
+            RoleClaimType = "roles"
         };
     }
     

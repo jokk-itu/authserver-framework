@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -16,4 +17,6 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     public TokenValidationParameters TokenValidationParameters { get; set; } = null!;
     public SecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = null!;
     public SecureDataFormat<string> StringDataFormat { get; set; } = null!;
+    public OpenIdConnectProtocolValidator ProtocolValidator { get; set; } = null!;
+    public ClaimActionCollection ClaimActions { get; } = [];
 }

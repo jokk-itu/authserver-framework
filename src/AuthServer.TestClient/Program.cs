@@ -1,6 +1,9 @@
 using AuthServer.TestClient;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +21,11 @@ builder.Services
     })
     .AddScheme<OpenIdConnectOptions, OpenIdConnectHandler>(OpenIdConnectDefaults.AuthenticationScheme, null);
 
-builder.Services.ConfigureOptions<OpenIdConnectOptions>();
+builder.Services.AddSingleton<ITokenReplayCache, DefaultTokenReplayCache>();
+
+builder.Services.AddOptions();
+builder.Services.ConfigureOptions<ConfigureOpenIdConnectOptions>();
+builder.Services.ConfigureOptions<PostConfigureOpenIdConnectOptions>();
 
 var app = builder.Build();
 
@@ -33,7 +40,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
-app.MapGet("/api/login", (HttpContext httpContext, string? prompt, string? responseMode, int? maxAge) =>
+app.MapGet("/api/login", (HttpContext httpContext, [FromServices] IOptionsMonitor<OpenIdConnectOptions> openIdConnectOptions, string? prompt, string? responseMode, int? maxAge) =>
 {
     if (httpContext.User.Identity?.IsAuthenticated == true)
     {
@@ -56,6 +63,9 @@ app.MapGet("/api/login", (HttpContext httpContext, string? prompt, string? respo
         properties.Parameters.Add("max_age", maxAge.Value);
     }
 
+    properties.Parameters.Add("resource", new[] {openIdConnectOptions.CurrentValue.Authority});
+    properties.Parameters.Add("scope", new[] {"openid", "authserver:userinfo", "profile"});
+
     return Results.Challenge(properties, [OpenIdConnectDefaults.AuthenticationScheme]);
 });
 app.MapGet("/api/logout/silent", async httpContext =>
@@ -70,7 +80,10 @@ app.MapGet("/api/logout/interactive", async httpContext =>
     {
         { "interactive", true }
     };
-    var authenticationProperties = new AuthenticationProperties(null, parameters);
+    var authenticationProperties = new AuthenticationProperties(null, parameters)
+    {
+        RedirectUri = "https://localhost:7226/"
+    };
     await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, authenticationProperties);
 });
 
