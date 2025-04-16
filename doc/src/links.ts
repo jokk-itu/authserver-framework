@@ -22,7 +22,8 @@ export const developerLinks = [
     new DeveloperLink('Setup', '/setup'),
     new DeveloperLink('Client Authentication', '/client-authentication'),
     new DeveloperLink('Discovery', '/discovery'),
-    new DeveloperLink('Client Credentials', '/client-credentials'),
+    new DeveloperLink("JWKS", "/jwks"),
+    new DeveloperLink('Client Credentials', '/client-credentials')
 ];
 
 export const navLinks = [
