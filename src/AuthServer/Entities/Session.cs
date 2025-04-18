@@ -20,6 +20,7 @@ public class Session : Entity<string>
     public ICollection<AuthorizationGrant> AuthorizationGrants { get; private init; } = [];
 
     public static readonly Expression<Func<Session, bool>> IsActive = s => s.RevokedAt == null;
+    public static readonly Expression<Func<Session, bool>> IsExpired = s => s.RevokedAt != null;
 
     public void Revoke()
     {

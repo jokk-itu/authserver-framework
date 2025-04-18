@@ -44,4 +44,7 @@ public abstract class Token : Entity<Guid>
         t => t.RevokedAt == null
              && t.NotBefore < DateTime.UtcNow
              && (t.ExpiresAt == null || t.ExpiresAt > DateTime.UtcNow);
+
+    public static readonly Expression<Func<Token, bool>> IsExpired =
+        t => t.RevokedAt != null || t.ExpiresAt < DateTime.UtcNow;
 }
