@@ -331,4 +331,32 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
 
         Assert.NotNull(activeTokenRevocationDate);
     }
+
+    [Fact]
+    public async Task RevokeExpiredGrants_ExpiredAndActiveGrants_ExpectDeletedExpiredGrants()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var activeAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+
+        var expiredAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        expiredAuthorizationGrant.Revoke();
+
+        await AddEntity(activeAuthorizationGrant);
+        await AddEntity(expiredAuthorizationGrant);
+
+        // Act
+        await authorizationGrantRepository.RevokeExpiredGrants(2, CancellationToken.None);
+        await SaveChangesAsync();
+
+        // Assert
+        Assert.Null(await IdentityContext.Set<AuthorizationGrant>().FirstOrDefaultAsync(x => x.Id == expiredAuthorizationGrant.Id));
+        Assert.NotNull(await IdentityContext.Set<AuthorizationGrant>().FirstOrDefaultAsync(x => x.Id == activeAuthorizationGrant.Id));
+    }
 }

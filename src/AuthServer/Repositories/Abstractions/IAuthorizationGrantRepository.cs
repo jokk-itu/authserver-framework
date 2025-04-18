@@ -49,4 +49,12 @@ internal interface IAuthorizationGrantRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task RevokeGrant(string authorizationGrantId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Revoke inactive grants, based on <paramref name="batchSize"/>.
+    /// </summary>
+    /// <param name="batchSize"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task RevokeExpiredGrants(int batchSize, CancellationToken cancellationToken);
 }
