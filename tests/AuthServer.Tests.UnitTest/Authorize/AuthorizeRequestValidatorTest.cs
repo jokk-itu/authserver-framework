@@ -11,6 +11,7 @@ using AuthServer.Repositories.Abstractions;
 using AuthServer.RequestAccessors.Authorize;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -73,17 +74,22 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(AuthorizeError.InvalidRequestAndRequestUri, processResult);
     }
 
-    [Fact]
-    public async Task Validate_RequireSignedRequestWithEmptyRequestAndRequestUri_ExpectRequestOrRequestUriRequiredAsRequestObject()
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Validate_RequireSignedRequestWithEmptyRequestAndRequestUri_ExpectRequestOrRequestUriRequiredAsRequestObject(bool clientRequires, bool serverRequires)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
+        DiscoveryDocument.RequireSignedRequestObject = serverRequires;
+
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
-            RequireSignedRequestObject = true
+            RequireSignedRequestObject = clientRequires
         };
         await AddEntity(client);
 
@@ -99,23 +105,29 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(AuthorizeError.RequestOrRequestUriRequiredAsRequestObject, processResult);
     }
 
-    [Fact]
-    public async Task Validate_RequirePushedAuthorizationWithEmptyRequestUri_ExpectRequestUriRequiredAsPushedAuthorizationRequest()
+    [Theory]
+    [InlineData(true, false,  null)]
+    [InlineData(false, true, "")]
+    [InlineData(true, true, "value")]
+    public async Task Validate_RequirePushedAuthorizationWithEmptyRequestUri_ExpectRequestUriRequiredAsPushedAuthorizationRequest(bool clientRequires, bool serverRequires, string? requestUri)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
+        DiscoveryDocument.RequirePushedAuthorizationRequests = serverRequires;
+
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
         {
-            RequirePushedAuthorizationRequests = true
+            RequirePushedAuthorizationRequests = clientRequires
         };
         await AddEntity(client);
 
         var request = new AuthorizeRequest
         {
-            ClientId = client.Id
+            ClientId = client.Id,
+            RequestUri = requestUri
         };
 
         // Act
