@@ -4,6 +4,10 @@
     import Section from "../../../components/Section.svelte";
 </script>
 
+<svelte:head>
+    <title>IdentityProvider setup page of AuthServer</title>
+</svelte:head>
+
 <PageTitle title="Setup" />
 <Section title="Introduction">
     <p>

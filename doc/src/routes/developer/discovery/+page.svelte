@@ -70,6 +70,10 @@
     ];
 </script>
 
+<svelte:head>
+	<title>Discovery endpoint page of AuthServer</title>
+</svelte:head>
+
 <PageTitle title="Discovery" />
 <Section title="Introduction">
     <p>The discovery endpoint returns a JSON document containing metadata about AuthServer, such as endpoints and supported functionality.</p>

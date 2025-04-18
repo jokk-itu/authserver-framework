@@ -26,6 +26,10 @@
     ];
 </script>
 
+<svelte:head>
+	<title>Client authentication page of AuthServer</title>
+</svelte:head>
+
 <PageTitle title="Client Authentication" />
 <Section title="Introduction">
     <p>

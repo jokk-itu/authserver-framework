@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>Demo documentation page of AuthServer</title>
+</svelte:head>
+
 <h1 class="text-4xl mb-2">Demo</h1>
 <p class="mb-4">
     Illustrating the capabilities of AuthServer is best done through examples.
