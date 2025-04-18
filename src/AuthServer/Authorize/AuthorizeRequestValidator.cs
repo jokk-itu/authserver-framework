@@ -109,6 +109,36 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         return await ValidateForInteraction(request, cancellationToken);
     }
 
+    private static ProcessError? ValidateResponseParameters(AuthorizeRequest request, CachedClient cachedClient)
+    {
+        if (!HasValidState(request.State))
+        {
+            return AuthorizeError.InvalidState;
+        }
+
+        if (!HasValidEmptyRedirectUri(request.RedirectUri, cachedClient))
+        {
+            return AuthorizeError.InvalidRedirectUri;
+        }
+
+        if (!HasValidRedirectUri(request.RedirectUri, cachedClient))
+        {
+            return AuthorizeError.UnauthorizedRedirectUri;
+        }
+
+        if (!HasValidResponseMode(request.ResponseMode))
+        {
+            return AuthorizeError.InvalidResponseMode;
+        }
+
+        if (!HasValidResponseType(request.ResponseType))
+        {
+            return AuthorizeError.InvalidResponseType;
+        }
+
+        return null;
+    }
+
     private async Task<ProcessResult<AuthorizeRequest, ProcessError>> SubstituteRequestObject(AuthorizeRequest request, CancellationToken cancellationToken)
     {
         var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, request.ClientId!, ClientTokenAudience.AuthorizationEndpoint, cancellationToken);
@@ -155,29 +185,10 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
 
     private async Task<ProcessError?> ValidateParameters(AuthorizeRequest request, CachedClient cachedClient, CancellationToken cancellationToken)
     {
-        if (!HasValidState(request.State))
+        var responseParametersValidationResult = ValidateResponseParameters(request, cachedClient);
+        if (responseParametersValidationResult is not null)
         {
-            return AuthorizeError.InvalidState;
-        }
-
-        if (!HasValidEmptyRedirectUri(request.RedirectUri, cachedClient))
-        {
-            return AuthorizeError.InvalidRedirectUri;
-        }
-
-        if (!HasValidRedirectUri(request.RedirectUri, cachedClient))
-        {
-            return AuthorizeError.UnauthorizedRedirectUri;
-        }
-
-        if (!HasValidResponseMode(request.ResponseMode))
-        {
-            return AuthorizeError.InvalidResponseMode;
-        }
-
-        if (!HasValidResponseType(request.ResponseType))
-        {
-            return AuthorizeError.InvalidResponseType;
+            return responseParametersValidationResult;
         }
 
         if (!HasValidGrantType(cachedClient))
