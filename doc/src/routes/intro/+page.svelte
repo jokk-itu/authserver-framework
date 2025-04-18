@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>Introduction to AuthServer</title>
+</svelte:head>
+
 <h1 class="text-4xl mb-2">What is AuthServer?</h1>
 <p class="mb-4">
     An IdentityProvider implementing the core OAuth 2.1 specification, with the

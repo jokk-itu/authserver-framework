@@ -27,6 +27,10 @@
     ];
 </script>
 
+<svelte:head>
+	<title>Client credentials page of AuthServer</title>
+</svelte:head>
+
 <PageTitle title="Client Credentials" />
 <Section title="Introduction">
     <p>The grant type "client credentials" is used at the token endpoint, in exchange for an access_token.</p>

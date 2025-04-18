@@ -44,4 +44,5 @@ public class AuthorizationGrant : Entity<string>
     }
 
     public static readonly Expression<Func<AuthorizationGrant, bool>> IsActive = a => a.RevokedAt == null;
+    public static readonly Expression<Func<AuthorizationGrant, bool>> IsExpired = a => a.RevokedAt != null;
 }

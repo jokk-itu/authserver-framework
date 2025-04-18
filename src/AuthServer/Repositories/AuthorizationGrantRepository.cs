@@ -5,6 +5,7 @@ using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace AuthServer.Repositories;
 
@@ -112,6 +113,25 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             "Revoked AuthorizationGrant {AuthorizationGrantId} and Tokens {AffectedTokens}",
             authorizationGrantId,
             affectedTokens);
+    }
+
+    /// <inheritdoc/>
+    public async Task RevokeExpiredGrants(int batchSize, CancellationToken cancellationToken)
+    {
+        var timer = Stopwatch.StartNew();
+
+        var affectedGrants = await _identityContext
+            .Set<AuthorizationGrant>()
+            .Where(AuthorizationGrant.IsExpired)
+            .Take(batchSize)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        timer.Stop();
+
+        _logger.LogInformation(
+            "Revoked {Amount} grants in {ElapsedTime} milliseconds",
+            affectedGrants,
+            timer.ElapsedMilliseconds);
     }
 
     private async Task<int> RevokeTokens(string authorizationGrantId, CancellationToken cancellationToken)

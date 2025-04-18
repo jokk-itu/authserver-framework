@@ -158,7 +158,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return await GetAuthorizeResponse(response);
     }
 
-    private async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage response)
+    private static async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage response)
     {
         if (response.StatusCode == HttpStatusCode.SeeOther)
         {
@@ -195,24 +195,12 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         if (response.StatusCode == HttpStatusCode.OK)
         {
             var content = await response.Content.ReadAsStringAsync();
-
-            var actionForm = Regex.Match(content, @"<form method=""post"" action=""([^""]+)"">");
-            var action = actionForm.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
-            
-            var codeInput = Regex.Match(content, @"<input type=""hidden"" name=""code"" value=""([^""]+)"" \/>");
-            var code = codeInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
-
-            var stateInput = Regex.Match(content, @"<input type=""hidden"" name=""state"" value=""([^""]+)"" \/>");
-            var state = stateInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
-
-            var issuerInput = Regex.Match(content, @"<input type=""hidden"" name=""iss"" value=""([^""]+)"" \/>");
-            var issuer = issuerInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
-
-            var errorInput = Regex.Match(content, @"<input type=""hidden"" name=""error"" value=""([^""]+)"" \/>");
-            var error = errorInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
-
-            var errorDescriptionInput = Regex.Match(content, @"<input type=""hidden"" name=""error_description"" value=""([^""]+)"" \/>");
-            var errorDescription = errorDescriptionInput.Groups.ElementAtOrDefault<Group>(1)?.Captures.ElementAtOrDefault(0)?.Value;
+            var action = AuthorizeEndpointRegex.GetFormAction(content);
+            var code = AuthorizeEndpointRegex.GetCodeField(content);
+            var state = AuthorizeEndpointRegex.GetStateField(content);
+            var issuer = AuthorizeEndpointRegex.GetIssuerField(content);
+            var error = AuthorizeEndpointRegex.GetErrorField(content);
+            var errorDescription = AuthorizeEndpointRegex.GetErrorDescription(content);
 
             return new AuthorizeResponse
             {

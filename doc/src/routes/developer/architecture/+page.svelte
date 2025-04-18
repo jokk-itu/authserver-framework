@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>Software architecture page of AuthServer</title>
+</svelte:head>
+
 <script>
     import PageTitle from "../../../components/PageTitle.svelte";
     import Section from "../../../components/Section.svelte";

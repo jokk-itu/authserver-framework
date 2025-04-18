@@ -32,6 +32,10 @@
     ];
 </script>
 
+<svelte:head>
+	<title>JWKS endpoint page of AuthServer</title>
+</svelte:head>
+
 <PageTitle title="Discovery" />
 <Section title="Introduction">
     <p>The JWKS endpoint returns a JSON document containing public keys used for verifying signatures in tokens, and encrypting tokens.</p>

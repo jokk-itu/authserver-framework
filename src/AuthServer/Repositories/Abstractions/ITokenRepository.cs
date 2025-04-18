@@ -11,4 +11,10 @@ internal interface ITokenRepository
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
 	Task<RegistrationToken?> GetActiveRegistrationToken(string registrationAccessToken, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Revokes inactive tokens, based on <paramref name="batchSize"/>.
+    /// </summary>
+    /// <returns></returns>
+    Task RevokeExpiredTokens(int batchSize, CancellationToken cancellationToken);
 }

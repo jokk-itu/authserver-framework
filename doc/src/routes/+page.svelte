@@ -2,6 +2,10 @@
     import Terminal from "../components/Terminal.svelte";
 </script>
 
+<svelte:head>
+	<title>Home page of AuthServer</title>
+</svelte:head>
+
 <div class="flex flex-col sm:flex-row sm:justify-evenly">
     <div>
         <h1 class="text-4xl mb-2">Authorization made easy</h1>

@@ -7,6 +7,7 @@ using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Authorize.UserInterface;
 using AuthServer.Authorize.UserInterface.Abstractions;
+using AuthServer.BackgroundServices;
 using AuthServer.Cache;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Codes;
@@ -73,7 +74,7 @@ public static class ServiceCollectionExtensions
             HttpClientNameConstants.Client, client =>
             {
                 client.Timeout = TimeSpan.FromSeconds(2);
-                client.MaxResponseContentBufferSize = 8192;
+                client.MaxResponseContentBufferSize = 1024 * 32;
             });
 
         services
@@ -87,6 +88,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
             .AddScoped<IAuthorizationCodeEncoder, AuthorizationCodeEncoder>();
 
+        AddBackgroundServices(services);
         AddClientServices(services);
         AddAuthServerAuthentication(services);
         AddAuthServerAuthorization(services);
@@ -106,6 +108,14 @@ public static class ServiceCollectionExtensions
         AddJwks(services);
 
         return services;
+    }
+
+    private static void AddBackgroundServices(IServiceCollection services)
+    {
+        services
+            .AddHostedService<SessionCleanupBackgroundService>()
+            .AddHostedService<AuthorizationGrantCleanupBackgroundService>()
+            .AddHostedService<TokenCleanupBackgroundService>();
     }
 
     private static void AddClientServices(IServiceCollection services)
