@@ -1,0 +1,2 @@
+import{t as r,h as o,a}from"../chunks/BdD32qd5.js";import"../chunks/BOyCDzPS.js";import{$ as n,n as i}from"../chunks/Db0b_LWK.js";var s=r(`<h1 class="text-4xl mb-2">Developer Documentation</h1> <p class="mb-4">Describes how to implement your own custom IdentityProvider using
+    AuthServer. <br> How AuthServer functions and its architectural principles. <br> The features supported by AuthServer, with integration design.</p>`,1);function h(e){var t=s();o(p=>{n.title="Developer documentation page of AuthServer"}),i(2),a(e,t)}export{h as component};
