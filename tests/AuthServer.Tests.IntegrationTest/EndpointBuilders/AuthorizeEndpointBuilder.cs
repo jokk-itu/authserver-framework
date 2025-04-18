@@ -158,7 +158,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return await GetAuthorizeResponse(response);
     }
 
-    private async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage response)
+    private static async Task<AuthorizeResponse> GetAuthorizeResponse(HttpResponseMessage response)
     {
         if (response.StatusCode == HttpStatusCode.SeeOther)
         {
