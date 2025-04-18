@@ -1,4 +1,5 @@
-﻿using AuthServer.Core;
+﻿using System.Diagnostics;
+using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -48,5 +49,24 @@ internal class SessionRepository : ISessionRepository
             sessionId,
             affectedGrants,
             affectedTokens);
+    }
+
+    /// <inheritdoc/>
+    public async Task RevokeExpiredSessions(int batchSize, CancellationToken cancellationToken)
+    {
+        var timer = Stopwatch.StartNew();
+
+        var affectedSessions = await _authorizationDbContext
+            .Set<Session>()
+            .Where(Session.IsExpired)
+            .Take(batchSize)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        timer.Stop();
+
+        _logger.LogInformation(
+            "Revoked {Amount} sessions in {ElapsedTime} milliseconds",
+            affectedSessions,
+            timer.ElapsedMilliseconds);
     }
 }

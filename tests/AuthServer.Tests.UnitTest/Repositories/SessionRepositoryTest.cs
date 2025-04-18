@@ -104,4 +104,29 @@ public class SessionRepositoryTest : BaseUnitTest
 
         Assert.NotNull(activeTokenRevocationDate);
     }
+
+    [Fact]
+    public async Task RevokeExpiredSessions_ExpiredAndActiveSessions_ExpectDeletedExpiredSessions()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var sessionRepository = serviceProvider.GetRequiredService<ISessionRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var activeSession = new Session(subjectIdentifier);
+
+        var expiredSession = new Session(subjectIdentifier);
+        expiredSession.Revoke();
+
+        await AddEntity(activeSession);
+        await AddEntity(expiredSession);
+
+        // Act
+        await sessionRepository.RevokeExpiredSessions(2, CancellationToken.None);
+        await SaveChangesAsync();
+
+        // Assert
+        Assert.Null(await IdentityContext.Set<Session>().FirstOrDefaultAsync(x => x.Id == expiredSession.Id));
+        Assert.NotNull(await IdentityContext.Set<Session>().FirstOrDefaultAsync(x => x.Id == activeSession.Id));
+    }
 }
