@@ -66,17 +66,22 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(PushedAuthorizationError.InvalidClient, processResult.Error);
     }
 
-    [Fact]
-    public async Task Validate_RequireRequestObjectWithEmptyRequestObject_ExpectRequestRequiredAsRequestObject()
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Validate_RequireRequestObjectWithEmptyRequestObject_ExpectRequestRequiredAsRequestObject(bool clientRequires, bool serverRequires)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
 
+        DiscoveryDocument.RequireSignedRequestObject = serverRequires;
+
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        client.RequireSignedRequestObject = true;
+        client.RequireSignedRequestObject = clientRequires;
         await SaveChangesAsync();
 
         var request = new PushedAuthorizationRequest
