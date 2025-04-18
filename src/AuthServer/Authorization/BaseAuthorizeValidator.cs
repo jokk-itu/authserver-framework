@@ -82,10 +82,10 @@ internal class BaseAuthorizeValidator
         => resources.Count != 0 && await _clientRepository.DoesResourcesExist(resources, scopes, cancellationToken);
 
     protected bool HasValidEmptyRequest(string? requestObject, string? requestUri, bool isRequiredByClient)
-        => string.IsNullOrEmpty(requestObject) && string.IsNullOrEmpty(requestUri) && !isRequiredByClient && !_discoveryDocumentOptions.Value.RequireSignedRequestObject;
+        => !string.IsNullOrEmpty(requestObject) || !string.IsNullOrEmpty(requestUri) || (!isRequiredByClient && !_discoveryDocumentOptions.Value.RequireSignedRequestObject);
 
     protected bool HasValidRequestUriForPushedAuthorization(string? requestUri, bool isRequiredByClient)
-        => (string.IsNullOrEmpty(requestUri) || !requestUri.StartsWith(RequestUriConstants.RequestUriPrefix)) && !isRequiredByClient && !_discoveryDocumentOptions.Value.RequirePushedAuthorizationRequests;
+        => requestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true || (!isRequiredByClient && !_discoveryDocumentOptions.Value.RequirePushedAuthorizationRequests);
 
     protected async Task<bool> HasValidIdTokenHint(string? idTokenHint, string clientId, CancellationToken cancellationToken)
     {

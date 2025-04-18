@@ -60,12 +60,12 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidRequestAndRequestUri;
         }
 
-        if (isRequestUriEmpty && isRequestObjectEmpty && cachedClient.RequireSignedRequestObject)
+        if (!HasValidEmptyRequest(request.RequestObject, request.RequestUri, cachedClient.RequireSignedRequestObject))
         {
             return AuthorizeError.RequestOrRequestUriRequiredAsRequestObject;
         }
 
-        if (isRequestUriEmpty && cachedClient.RequirePushedAuthorizationRequests)
+        if (!HasValidRequestUriForPushedAuthorization(request.RequestUri, cachedClient.RequirePushedAuthorizationRequests))
         {
             return AuthorizeError.RequestUriRequiredAsPushedAuthorizationRequest;
         }

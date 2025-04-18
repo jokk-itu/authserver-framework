@@ -50,12 +50,12 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         }
 
         var cachedClient = await _cachedClientStore.Get(clientAuthenticationResult.ClientId, cancellationToken);
-        var isRequestObjectEmpty = string.IsNullOrEmpty(request.RequestObject);
-        if (isRequestObjectEmpty && cachedClient.RequireSignedRequestObject)
+        if (!HasValidEmptyRequest(request.RequestObject, null, cachedClient.RequireSignedRequestObject))
         {
             return PushedAuthorizationError.RequestRequiredAsRequestObject;
         }
 
+        var isRequestObjectEmpty = string.IsNullOrEmpty(request.RequestObject);
         if (!isRequestObjectEmpty)
         {
             var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, clientAuthenticationResult.ClientId, ClientTokenAudience.PushedAuthorizationEndpoint, cancellationToken);
