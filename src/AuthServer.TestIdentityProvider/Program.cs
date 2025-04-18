@@ -96,6 +96,23 @@ builder.Services
     });
 
 builder.Services
+    .AddOptions<CleanupOptions>()
+    .Configure(options =>
+    {
+        options.RunSessionCleanup = true;
+        options.SessionCleanupIntervalInSeconds = 5;
+        options.SessionCleanupBatchSize = 100;
+
+        options.RunAuthorizationGrantCleanup = true;
+        options.AuthorizationGrantCleanupIntervalInSeconds = 5;
+        options.AuthorizationGrantCleanupBatchSize = 100;
+
+        options.RunTokenCleanup = true;
+        options.RunTokenCleanupIntervalInSeconds = 5;
+        options.RunTokenCleanupBatchSize = 100;
+    });
+
+builder.Services
     .AddOptions<UserInteraction>()
     .Configure(options =>
     {
