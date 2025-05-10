@@ -24,6 +24,7 @@ internal class CachedClient
     public required bool RequireSignedRequestObject { get; init; }
     public required bool RequirePushedAuthorizationRequests { get; init; }
     public required bool RequireIdTokensClaims { get; init; }
+    public required bool RequireDPoPBoundAccessTokens { get; init; }
     public required int? DefaultMaxAge { get; init; }
     public required ApplicationType ApplicationType { get; init; }
     public required TokenEndpointAuthMethod TokenEndpointAuthMethod { get; init; }

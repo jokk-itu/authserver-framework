@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250414173843_Initial")]
+    [Migration("20250510163935_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -519,6 +519,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("RequireConsent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequireDPoPBoundAccessTokens")
                         .HasColumnType("bit");
 
                     b.Property<bool>("RequireIdTokenClaims")

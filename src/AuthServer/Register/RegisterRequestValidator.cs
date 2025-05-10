@@ -116,6 +116,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         validatedRequest.RequireReferenceToken = request.RequireReferenceToken ?? false;
         validatedRequest.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests ?? false;
         validatedRequest.RequireIdTokenClaims = request.RequireIdTokenClaims ?? false;
+        validatedRequest.RequireDPoPBoundAccessTokens = request.RequireDPoPBoundAccessTokens ?? false;
 
         var defaultMaxAgeError = ValidateDefaultMaxAge(request, validatedRequest);
         if (defaultMaxAgeError is not null)

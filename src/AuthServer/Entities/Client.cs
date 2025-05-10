@@ -140,6 +140,11 @@ public class Client : Entity<string>
     /// All id tokens must include claims about the end user.
     /// </summary>
     public bool RequireIdTokenClaims { get; set; }
+    
+    /// <summary>
+    /// All access tokens must be DPoP bound.
+    /// </summary>
+    public bool RequireDPoPBoundAccessTokens { get; set; }
 
     /// <summary>
     /// Maximum age since last authentication by end user in epoch format

@@ -214,7 +214,8 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.RequireSignedRequestObject, value },
             { Parameter.RequireReferenceToken, value },
             { Parameter.RequirePushedAuthorizationRequests, value },
-            { Parameter.RequireIdTokenClaims, value }
+            { Parameter.RequireIdTokenClaims, value },
+            { Parameter.DPoPBoundAccessTokens, value }
         };
         var requestJson = JsonSerializer.SerializeToUtf8Bytes(requestContent);
         var requestStream = new MemoryStream(requestJson);
@@ -259,6 +260,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.RequireReferenceToken);
         Assert.Equal(expectedValue, request.RequirePushedAuthorizationRequests);
         Assert.Equal(expectedValue, request.RequireIdTokenClaims);
+        Assert.Equal(expectedValue, request.RequireDPoPBoundAccessTokens);
     }
 
     [Theory]

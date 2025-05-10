@@ -25,6 +25,7 @@ internal class RegisterValidatedRequest
 	public bool RequireReferenceToken { get; set; }
 	public bool RequirePushedAuthorizationRequests { get; set; }
 	public bool RequireIdTokenClaims { get; set; }
+	public bool RequireDPoPBoundAccessTokens { get; set; }
     public EncryptionEnc? TokenEndpointAuthEncryptionEnc { get; set; }
     public EncryptionAlg? TokenEndpointAuthEncryptionAlg { get; set; }
     public SigningAlg? TokenEndpointAuthSigningAlg { get; set; }
