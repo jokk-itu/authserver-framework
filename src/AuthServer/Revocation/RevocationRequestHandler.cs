@@ -1,7 +1,6 @@
 ﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
-using AuthServer.RequestAccessors.Revocation;
 
 namespace AuthServer.Revocation;
 internal class RevocationRequestHandler : RequestHandler<RevocationRequest, RevocationValidatedRequest, Unit>

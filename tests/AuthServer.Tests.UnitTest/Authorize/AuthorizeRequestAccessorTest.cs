@@ -1,6 +1,6 @@
-﻿using AuthServer.Core;
+﻿using AuthServer.Authorize;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.RequestAccessors.Authorize;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;

@@ -10,7 +10,6 @@ using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Repositories.Models;
-using AuthServer.RequestAccessors.Token;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.AuthorizationCodeGrant;

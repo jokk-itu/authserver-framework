@@ -7,7 +7,6 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
-using AuthServer.RequestAccessors.Revocation;
 using AuthServer.Revocation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;

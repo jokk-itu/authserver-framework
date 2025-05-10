@@ -4,7 +4,7 @@ using AuthServer.Authentication.OAuthToken;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.RequestAccessors.Register;
+using AuthServer.Register;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;

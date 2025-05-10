@@ -7,7 +7,6 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Introspection;
-using AuthServer.RequestAccessors.Introspection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;

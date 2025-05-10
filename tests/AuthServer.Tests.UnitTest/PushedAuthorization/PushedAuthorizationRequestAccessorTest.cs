@@ -1,7 +1,6 @@
 ﻿using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Extensions;
-using AuthServer.RequestAccessors.PushedAuthorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
@@ -10,6 +9,7 @@ using AuthServer.Authentication.Models;
 using AuthServer.Enums;
 using AuthServer.TokenDecoders;
 using Xunit.Abstractions;
+using AuthServer.PushedAuthorization;
 
 namespace AuthServer.Tests.UnitTest.PushedAuthorization;
 

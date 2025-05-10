@@ -4,7 +4,6 @@ using AuthServer.EndSession;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
-using AuthServer.RequestAccessors.EndSession;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

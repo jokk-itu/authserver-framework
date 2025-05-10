@@ -1,4 +1,4 @@
-﻿using AuthServer.RequestAccessors.Authorize;
+﻿using AuthServer.Authorize;
 
 namespace AuthServer.Authorization;
 public class AuthorizeRequestDto

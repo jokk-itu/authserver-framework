@@ -4,7 +4,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
-using AuthServer.RequestAccessors.Token;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.RefreshTokenGrant;
 using Microsoft.Extensions.DependencyInjection;

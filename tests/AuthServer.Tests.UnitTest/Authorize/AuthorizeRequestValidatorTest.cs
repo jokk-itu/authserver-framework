@@ -8,7 +8,6 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.RequestAccessors.Authorize;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
 using Microsoft.AspNetCore.Components.Web;

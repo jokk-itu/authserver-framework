@@ -4,7 +4,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
-using AuthServer.RequestAccessors.GrantManagement;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.GrantManagement.Query;

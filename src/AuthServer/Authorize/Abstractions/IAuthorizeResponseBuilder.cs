@@ -1,5 +1,4 @@
-﻿using AuthServer.RequestAccessors.Authorize;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthServer.Authorize.Abstractions;

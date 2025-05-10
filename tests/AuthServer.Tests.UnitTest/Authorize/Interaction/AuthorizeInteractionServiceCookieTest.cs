@@ -5,7 +5,6 @@ using AuthServer.Authorize;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
-using AuthServer.RequestAccessors.Authorize;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

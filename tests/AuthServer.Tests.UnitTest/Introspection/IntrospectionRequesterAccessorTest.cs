@@ -4,7 +4,7 @@ using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Enums;
 using AuthServer.Extensions;
-using AuthServer.RequestAccessors.Introspection;
+using AuthServer.Introspection;
 using AuthServer.TokenDecoders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,4 @@
-﻿using AuthServer.RequestAccessors.Register;
-using AuthServer.Core.Abstractions;
+﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 

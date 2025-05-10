@@ -3,7 +3,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
-using AuthServer.RequestAccessors.PushedAuthorization;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.PushedAuthorization;

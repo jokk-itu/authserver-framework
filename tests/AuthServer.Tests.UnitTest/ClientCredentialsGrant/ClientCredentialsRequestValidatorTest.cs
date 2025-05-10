@@ -5,7 +5,6 @@ using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
-using AuthServer.RequestAccessors.Token;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.ClientCredentialsGrant;
 using Microsoft.Extensions.DependencyInjection;

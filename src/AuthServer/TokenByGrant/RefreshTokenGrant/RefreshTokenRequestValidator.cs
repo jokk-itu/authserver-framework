@@ -9,7 +9,6 @@ using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Repositories.Models;
-using AuthServer.RequestAccessors.Token;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.EntityFrameworkCore;

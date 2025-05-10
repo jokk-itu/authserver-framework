@@ -5,7 +5,6 @@ using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.RequestAccessors.Authorize;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.Extensions.Logging;

@@ -5,7 +5,6 @@ using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
-using AuthServer.RequestAccessors.EndSession;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.EntityFrameworkCore;

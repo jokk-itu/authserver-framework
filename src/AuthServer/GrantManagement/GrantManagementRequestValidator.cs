@@ -4,7 +4,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Helpers;
-using AuthServer.RequestAccessors.GrantManagement;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.EntityFrameworkCore;

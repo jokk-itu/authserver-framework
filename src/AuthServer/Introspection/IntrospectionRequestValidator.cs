@@ -4,7 +4,6 @@ using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Extensions;
-using AuthServer.RequestAccessors.Introspection;
 
 namespace AuthServer.Introspection;
 internal class IntrospectionRequestValidator : IRequestValidator<IntrospectionRequest, IntrospectionValidatedRequest>
