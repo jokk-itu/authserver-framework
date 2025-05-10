@@ -145,6 +145,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     RequireSignedRequestObject = table.Column<bool>(type: "bit", nullable: false),
                     RequirePushedAuthorizationRequests = table.Column<bool>(type: "bit", nullable: false),
                     RequireIdTokenClaims = table.Column<bool>(type: "bit", nullable: false),
+                    RequireDPoPBoundAccessTokens = table.Column<bool>(type: "bit", nullable: false),
                     DefaultMaxAge = table.Column<int>(type: "int", nullable: true),
                     ApplicationType = table.Column<int>(type: "int", nullable: false),
                     TokenEndpointAuthMethod = table.Column<int>(type: "int", nullable: false),
