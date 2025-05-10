@@ -138,6 +138,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             RequireReferenceToken = client.RequireReferenceToken,
             RequirePushedAuthorizationRequests = client.RequirePushedAuthorizationRequests,
             RequireIdTokenClaims = client.RequireIdTokenClaims,
+            RequireDPoPBoundAccessTokens = client.RequireDPoPBoundAccessTokens,
             SubjectType = client.SubjectType,
             DefaultMaxAge = client.DefaultMaxAge,
             DefaultAcrValues = client.ClientAuthenticationContextReferences
@@ -208,6 +209,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.RequireReferenceToken = request.RequireReferenceToken;
         client.RequirePushedAuthorizationRequests = request.RequirePushedAuthorizationRequests;
         client.RequireIdTokenClaims = request.RequireIdTokenClaims;
+        client.RequireDPoPBoundAccessTokens = request.RequireDPoPBoundAccessTokens;
         client.SubjectType = request.SubjectType;
         client.DefaultMaxAge = request.DefaultMaxAge;
         client.AuthorizationCodeExpiration = request.AuthorizationCodeExpiration;

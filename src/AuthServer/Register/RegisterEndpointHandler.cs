@@ -57,6 +57,7 @@ internal class RegisterEndpointHandler : IEndpointHandler
                             RequireReferenceToken = client.RequireReferenceToken,
                             RequirePushedAuthorizationRequests = client.RequirePushedAuthorizationRequests,
                             RequireIdTokenClaims = client.RequireIdTokenClaims,
+                            RequireDPoPBoundAccessTokens = client.RequireDPoPBoundAccessTokens,
                             SubjectType = client.SubjectType?.GetDescription(),
                             DefaultMaxAge = client.DefaultMaxAge,
                             DefaultAcrValues = client.DefaultAcrValues,

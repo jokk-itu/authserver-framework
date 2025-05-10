@@ -85,6 +85,9 @@ internal class RegisterResponse
 
 	[JsonPropertyName(Parameter.RequireIdTokenClaims)]
 	public required bool RequireIdTokenClaims { get; init; }
+	
+	[JsonPropertyName(Parameter.DPoPBoundAccessTokens)]
+	public required bool RequireDPoPBoundAccessTokens { get; init; }
 
     [JsonPropertyName(Parameter.TokenEndpointAuthEncryptionEnc)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
