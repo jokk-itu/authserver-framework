@@ -13,7 +13,7 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.RequestAccessors;
+namespace AuthServer.Tests.UnitTest.Register;
 
 public class RegisterRequestAccessorTest : BaseUnitTest
 {

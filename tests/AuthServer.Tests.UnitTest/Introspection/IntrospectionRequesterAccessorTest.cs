@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.RequestAccessors;
+namespace AuthServer.Tests.UnitTest.Introspection;
 
 public class IntrospectionRequesterAccessorTest(ITestOutputHelper outputHelper) : BaseUnitTest(outputHelper)
 {

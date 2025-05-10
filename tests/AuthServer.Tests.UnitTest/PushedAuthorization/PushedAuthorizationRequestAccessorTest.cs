@@ -11,7 +11,7 @@ using AuthServer.Enums;
 using AuthServer.TokenDecoders;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.RequestAccessors;
+namespace AuthServer.Tests.UnitTest.PushedAuthorization;
 
 public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
 {
