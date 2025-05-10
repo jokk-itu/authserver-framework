@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.AuthorizationCodeGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.AuthorizationCodeGrant;
 
 public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
 {

@@ -14,7 +14,7 @@ using Moq;
 using Xunit.Abstractions;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
-namespace AuthServer.Tests.UnitTest.AuthorizationCodeGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.AuthorizationCodeGrant;
 
 public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 {

@@ -10,7 +10,7 @@ using AuthServer.TokenByGrant.ClientCredentialsGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.ClientCredentialsGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.ClientCredentialsGrant;
 
 public class ClientCredentialsRequestValidatorTest : BaseUnitTest
 {

@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.RefreshTokenGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.RefreshTokenGrant;
 
 public class RefreshTokenRequestProcessorTest : BaseUnitTest
 {

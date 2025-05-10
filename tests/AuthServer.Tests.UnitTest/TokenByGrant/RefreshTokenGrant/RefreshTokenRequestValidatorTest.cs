@@ -9,7 +9,7 @@ using AuthServer.TokenByGrant.RefreshTokenGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.RefreshTokenGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.RefreshTokenGrant;
 
 public class RefreshTokenRequestValidatorTest : BaseUnitTest
 {
