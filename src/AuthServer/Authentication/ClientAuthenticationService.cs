@@ -31,6 +31,7 @@ internal class ClientAuthenticationService : IClientAuthenticationService
         _metricService = metricService;
     }
 
+    /// inheritdoc/>
     public async Task<ClientAuthenticationResult> AuthenticateClient(ClientAuthentication clientAuthentication, CancellationToken cancellationToken)
     {
         var stopWatch = Stopwatch.StartNew();
