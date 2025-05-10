@@ -1,7 +1,7 @@
 ﻿using AuthServer.Authentication.Models;
 using AuthServer.Authorization;
 
-namespace AuthServer.RequestAccessors.PushedAuthorization;
+namespace AuthServer.PushedAuthorization;
 internal class PushedAuthorizationRequest
 {
     public PushedAuthorizationRequest()

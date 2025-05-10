@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using AuthServer.Authentication.OAuthToken;
 using AuthServer.Constants;
 
-namespace AuthServer.RequestAccessors.Register;
+namespace AuthServer.Register;
 
 internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 {

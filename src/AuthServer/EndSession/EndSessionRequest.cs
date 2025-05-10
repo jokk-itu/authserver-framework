@@ -1,4 +1,4 @@
-﻿namespace AuthServer.RequestAccessors.EndSession;
+﻿namespace AuthServer.EndSession;
 
 internal class EndSessionRequest
 {

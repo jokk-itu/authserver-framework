@@ -5,7 +5,7 @@ using AuthServer.Core.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace AuthServer.RequestAccessors.GrantManagement;
+namespace AuthServer.GrantManagement;
 
 internal class GrantManagementRequestAccessor : IRequestAccessor<GrantManagementRequest>
 {

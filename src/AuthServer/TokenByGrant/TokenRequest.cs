@@ -1,6 +1,6 @@
 ﻿using AuthServer.Authentication.Models;
 
-namespace AuthServer.RequestAccessors.Token;
+namespace AuthServer.TokenByGrant;
 
 internal class TokenRequest
 {

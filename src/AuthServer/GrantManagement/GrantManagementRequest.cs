@@ -1,4 +1,4 @@
-namespace AuthServer.RequestAccessors.GrantManagement;
+namespace AuthServer.GrantManagement;
 
 internal class GrantManagementRequest
 {

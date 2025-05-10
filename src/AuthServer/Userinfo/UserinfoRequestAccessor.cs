@@ -4,7 +4,7 @@ using AuthServer.Core.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace AuthServer.RequestAccessors.Userinfo;
+namespace AuthServer.Userinfo;
 internal class UserinfoRequestAccessor : IRequestAccessor<UserinfoRequest>
 {
     public async Task<UserinfoRequest> GetRequest(HttpRequest httpRequest)

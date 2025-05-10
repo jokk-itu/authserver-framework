@@ -1,6 +1,6 @@
 ﻿using AuthServer.Authorization;
 
-namespace AuthServer.RequestAccessors.Authorize;
+namespace AuthServer.Authorize;
 
 internal class AuthorizeRequest
 {

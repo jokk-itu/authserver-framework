@@ -3,7 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Extensions;
 using Microsoft.AspNetCore.Http;
 
-namespace AuthServer.RequestAccessors.Authorize;
+namespace AuthServer.Authorize;
 internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
 {
     public async Task<AuthorizeRequest> GetRequest(HttpRequest httpRequest)

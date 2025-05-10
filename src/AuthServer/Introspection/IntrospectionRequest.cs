@@ -1,6 +1,6 @@
 ﻿using AuthServer.Authentication.Models;
 
-namespace AuthServer.RequestAccessors.Introspection;
+namespace AuthServer.Introspection;
 
 internal class IntrospectionRequest
 {

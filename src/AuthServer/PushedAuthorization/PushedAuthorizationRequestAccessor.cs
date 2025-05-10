@@ -5,7 +5,7 @@ using AuthServer.Extensions;
 using AuthServer.TokenDecoders;
 using Microsoft.AspNetCore.Http;
 
-namespace AuthServer.RequestAccessors.PushedAuthorization;
+namespace AuthServer.PushedAuthorization;
 internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAuthorizationRequest >
 {
     public async Task<PushedAuthorizationRequest> GetRequest(HttpRequest httpRequest)

@@ -1,6 +1,6 @@
 ﻿using AuthServer.Authentication.Models;
 
-namespace AuthServer.RequestAccessors.Revocation;
+namespace AuthServer.Revocation;
 
 internal record RevocationRequest
 {

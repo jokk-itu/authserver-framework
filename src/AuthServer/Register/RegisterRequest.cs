@@ -1,4 +1,4 @@
-﻿namespace AuthServer.RequestAccessors.Register;
+﻿namespace AuthServer.Register;
 
 internal class RegisterRequest
 {

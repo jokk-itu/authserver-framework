@@ -5,7 +5,7 @@ using AuthServer.Extensions;
 using AuthServer.TokenDecoders;
 using AuthServer.Core.Abstractions;
 
-namespace AuthServer.RequestAccessors.Token;
+namespace AuthServer.TokenByGrant;
 
 internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
 {

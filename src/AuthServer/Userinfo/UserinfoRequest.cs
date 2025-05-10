@@ -1,4 +1,4 @@
-﻿namespace AuthServer.RequestAccessors.Userinfo;
+﻿namespace AuthServer.Userinfo;
 internal class UserinfoRequest
 {
     public required string AccessToken { get; init; }
