@@ -78,6 +78,12 @@ public class ValidateDiscoveryDocumentOptions : IValidateOptions<DiscoveryDocume
             return ValidateOptionsResult.Fail($"{nameof(options.IntrospectionEndpointAuthSigningAlgValuesSupported)} have unrecognized values: {string.Join(',', invalidIntrospectionSigningAlgValues)}");
         }
 
+        var invalidDPoPSigningAlgValues = options.DPopSigningAlgValuesSupported.Where(x => !JwsAlgConstants.AlgValues.Contains(x)).ToList();
+        if (invalidDPoPSigningAlgValues.Count != 0)
+        {
+            return ValidateOptionsResult.Fail($"{nameof(options.DPopSigningAlgValuesSupported)} have unrecognized values {string.Join(',', invalidDPoPSigningAlgValues)}");
+        }
+
 		return ValidateOptionsResult.Success;
     }
 
