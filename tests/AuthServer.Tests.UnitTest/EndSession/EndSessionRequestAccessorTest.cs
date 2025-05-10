@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.RequestAccessors;
+namespace AuthServer.Tests.UnitTest.EndSession;
 
 public class EndSessionRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnitTest(outputHelper)
 {
