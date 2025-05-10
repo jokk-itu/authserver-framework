@@ -60,6 +60,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             RequireSignedRequestObject = true,
             RequirePushedAuthorizationRequests = true,
             RequireIdTokenClaims = true,
+            RequireDPoPBoundAccessTokens = true,
             RequestUriExpiration = 500,
             RequestObjectEncryptionAlg = EncryptionAlg.RsaPKCS1,
             RequestObjectEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256,
@@ -128,6 +129,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(request.RequireReferenceToken, response.RequireReferenceToken);
         Assert.Equal(request.RequirePushedAuthorizationRequests, response.RequirePushedAuthorizationRequests);
         Assert.Equal(request.RequireIdTokenClaims, response.RequireIdTokenClaims);
+        Assert.Equal(request.RequireDPoPBoundAccessTokens, response.RequireDPoPBoundAccessTokens);
         Assert.Equal(request.SubjectType, response.SubjectType);
         Assert.Equal(request.DefaultMaxAge, response.DefaultMaxAge);
         Assert.Equal(request.DefaultAcrValues, response.DefaultAcrValues);
@@ -257,6 +259,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.RequireReferenceToken, response.RequireReferenceToken);
         Assert.Equal(client.RequirePushedAuthorizationRequests, response.RequirePushedAuthorizationRequests);
         Assert.Equal(client.RequireIdTokenClaims, response.RequireIdTokenClaims);
+        Assert.Equal(client.RequireDPoPBoundAccessTokens, response.RequireDPoPBoundAccessTokens);
         Assert.Equal(client.SubjectType, response.SubjectType);
         Assert.Equal(client.DefaultMaxAge, response.DefaultMaxAge);
         Assert.Equal(client.ClientAuthenticationContextReferences.Select(x => x.AuthenticationContextReference.Name), response.DefaultAcrValues);
@@ -325,6 +328,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             RequireReferenceToken = false,
             RequirePushedAuthorizationRequests = true,
             RequireIdTokenClaims = true,
+            RequireDPoPBoundAccessTokens = true,
             SubjectType = SubjectType.Pairwise,
             DefaultMaxAge = 86400,
             AuthorizationCodeExpiration = 500,

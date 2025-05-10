@@ -23,6 +23,7 @@ internal class RegisterRequest
     public bool? RequireReferenceToken { get; init; }
     public bool? RequirePushedAuthorizationRequests { get; init; }
     public bool? RequireIdTokenClaims { get; init; }
+    public bool? RequireDPoPBoundAccessTokens { get; init; }
     public string? TokenEndpointAuthEncryptionEnc { get; init; }
     public string? TokenEndpointAuthEncryptionAlg { get; init; }
     public string? TokenEndpointAuthSigningAlg { get; init; }

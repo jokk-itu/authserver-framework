@@ -103,6 +103,7 @@ internal class CachedClientStore : ICachedClientStore
             RequireSignedRequestObject = client.RequireSignedRequestObject,
             RequirePushedAuthorizationRequests = client.RequirePushedAuthorizationRequests,
             RequireIdTokensClaims = client.RequireIdTokenClaims,
+            RequireDPoPBoundAccessTokens = client.RequireDPoPBoundAccessTokens,
             DefaultMaxAge = client.DefaultMaxAge,
             ApplicationType = client.ApplicationType,
             TokenEndpointAuthMethod = client.TokenEndpointAuthMethod,
