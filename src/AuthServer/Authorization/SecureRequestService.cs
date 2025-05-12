@@ -93,6 +93,7 @@ internal class SecureRequestService : ISecureRequestService
         var stateClaim = claims.SingleOrDefault(x => x.Type == Parameter.State);
         var grantIdClaim = claims.SingleOrDefault(x => x.Type == Parameter.GrantId);
         var grantManagementActionClaim = claims.SingleOrDefault(x => x.Type == Parameter.GrantManagementAction);
+        var dPoPJkt = claims.SingleOrDefault(x => x.Type == Parameter.DPoPJkt);
         var scopeClaim = claims.SingleOrDefault(x => x.Type == Parameter.Scope);
         var acrValuesClaim = claims.SingleOrDefault(x => x.Type == Parameter.AcrValues);
         var resourceClaims = claims.Where(x => x.Type == Parameter.Resource).ToList();
@@ -114,6 +115,7 @@ internal class SecureRequestService : ISecureRequestService
             State = stateClaim?.Value,
             GrantId = grantIdClaim?.Value,
             GrantManagementAction = grantManagementActionClaim?.Value,
+            DPoPJkt = dPoPJkt?.Value,
             Scope = scopeClaim?.Value.Split(' ') ?? [],
             AcrValues = acrValuesClaim?.Value.Split(' ') ?? [],
             Resource = resourceClaims.Select(x => x.Value).ToList()

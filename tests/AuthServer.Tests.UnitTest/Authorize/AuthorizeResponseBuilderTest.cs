@@ -1,6 +1,7 @@
 ﻿using System.Web;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Entities;
