@@ -51,6 +51,7 @@ builder.Services
         options.TokenEndpointAuthSigningAlgValuesSupported = signingAlgorithms;
         options.IdTokenSigningAlgValuesSupported = signingAlgorithms;
         options.IntrospectionEndpointAuthSigningAlgValuesSupported = signingAlgorithms;
+        options.DPopSigningAlgValuesSupported = signingAlgorithms;
         options.RequestObjectSigningAlgValuesSupported = signingAlgorithms;
         options.RevocationEndpointAuthSigningAlgValuesSupported = signingAlgorithms;
         options.UserinfoSigningAlgValuesSupported = signingAlgorithms;

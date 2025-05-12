@@ -1,7 +1,6 @@
 ﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Extensions;
-using AuthServer.RequestAccessors.Revocation;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.Revocation;

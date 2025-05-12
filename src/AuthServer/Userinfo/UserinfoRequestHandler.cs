@@ -1,7 +1,6 @@
 ﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
-using AuthServer.RequestAccessors.Userinfo;
 
 namespace AuthServer.Userinfo;
 internal class UserinfoRequestHandler : RequestHandler<UserinfoRequest, UserinfoValidatedRequest, string>

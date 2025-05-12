@@ -6,7 +6,6 @@ using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Register;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.RequestAccessors.Register;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

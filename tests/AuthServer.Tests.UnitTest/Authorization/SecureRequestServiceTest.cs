@@ -128,6 +128,9 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.ResponseMode);
         Assert.Equal(value, requestObject.ResponseType);
         Assert.Equal(value, requestObject.State);
+        Assert.Equal(value, requestObject.GrantId);
+        Assert.Equal(value, requestObject.GrantManagementAction);
+        Assert.Equal(value, requestObject.DPoPJkt);
         Assert.Single(requestObject.Scope);
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
@@ -192,6 +195,9 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Null(requestObject.ResponseMode);
         Assert.Null(requestObject.ResponseType);
         Assert.Null(requestObject.State);
+        Assert.Null(requestObject.GrantId);
+        Assert.Null(requestObject.GrantManagementAction);
+        Assert.Null(requestObject.DPoPJkt);
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
         Assert.Empty(requestObject.Resource);
@@ -293,6 +299,9 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.ResponseMode);
         Assert.Equal(value, requestObject.ResponseType);
         Assert.Equal(value, requestObject.State);
+        Assert.Equal(value, requestObject.GrantId);
+        Assert.Equal(value, requestObject.GrantManagementAction);
+        Assert.Equal(value, requestObject.DPoPJkt);
         Assert.Single(requestObject.Scope);
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
@@ -364,6 +373,9 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Null(requestObject.ResponseMode);
         Assert.Null(requestObject.ResponseType);
         Assert.Null(requestObject.State);
+        Assert.Null(requestObject.GrantId);
+        Assert.Null(requestObject.GrantManagementAction);
+        Assert.Null(requestObject.DPoPJkt);
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
         Assert.Empty(requestObject.Resource);
@@ -440,6 +452,9 @@ public class SecureRequestServiceTest : BaseUnitTest
             { Parameter.ResponseMode, value },
             { Parameter.ResponseType, value },
             { Parameter.State, value },
+            { Parameter.GrantId, value },
+            { Parameter.GrantManagementAction, value },
+            { Parameter.DPoPJkt, value },
             { Parameter.Scope, value },
             { Parameter.AcrValues, value },
             { Parameter.Resource, new List<string> { value } }

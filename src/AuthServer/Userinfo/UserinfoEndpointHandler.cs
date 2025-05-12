@@ -4,7 +4,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
-using AuthServer.RequestAccessors.Userinfo;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.Userinfo;

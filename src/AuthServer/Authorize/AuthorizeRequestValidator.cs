@@ -8,7 +8,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.RequestAccessors.Authorize;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.Extensions.Options;

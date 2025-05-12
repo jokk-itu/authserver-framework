@@ -5,7 +5,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Extensions;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.RequestAccessors.Token;
 
 namespace AuthServer.TokenByGrant.ClientCredentialsGrant;
 

@@ -2,7 +2,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.GrantManagement;
-using AuthServer.RequestAccessors.GrantManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 

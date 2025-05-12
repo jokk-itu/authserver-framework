@@ -1,5 +1,4 @@
 ﻿using AuthServer.Constants;
-using AuthServer.RequestAccessors.Authorize;
 
 namespace AuthServer.Authorize.Abstractions;
 

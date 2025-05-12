@@ -76,6 +76,12 @@ public class DiscoveryIntegrationTest : BaseIntegrationTest
         Assert.Equal(DiscoveryDocument.TokenEndpointAuthEncryptionAlgValuesSupported, getDiscoveryResponse.TokenEndpointAuthEncryptionAlgValuesSupported);
         Assert.Equal(DiscoveryDocument.TokenEndpointAuthEncryptionEncValuesSupported, getDiscoveryResponse.TokenEndpointAuthEncryptionEncValuesSupported);
 
+        Assert.Equal(DiscoveryDocument.IntrospectionEndpointAuthSigningAlgValuesSupported, getDiscoveryResponse.IntrospectionEndpointAuthSigningAlgValuesSupported);
+
+        Assert.Equal(DiscoveryDocument.RevocationEndpointAuthSigningAlgValuesSupported, getDiscoveryResponse.RevocationEndpointAuthSigningAlgValuesSupported);
+
+        Assert.Equal(DiscoveryDocument.DPopSigningAlgValuesSupported, getDiscoveryResponse.DPopSigningAlgValuesSupported);
+
         Assert.True(getDiscoveryResponse.AuthorizationResponseIssParameterSupported);
         Assert.True(getDiscoveryResponse.BackchannelLogoutSupported);
         Assert.True(getDiscoveryResponse.RequireRequestUriRegistration);

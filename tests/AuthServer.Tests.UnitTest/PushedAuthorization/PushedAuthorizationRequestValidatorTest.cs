@@ -7,7 +7,6 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.PushedAuthorization;
-using AuthServer.RequestAccessors.PushedAuthorization;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
 using Microsoft.Extensions.DependencyInjection;

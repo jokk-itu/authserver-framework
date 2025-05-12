@@ -9,7 +9,6 @@ using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.RequestAccessors.Authorize;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.AspNetCore.Http;

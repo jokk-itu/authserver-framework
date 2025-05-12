@@ -3,7 +3,6 @@ using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
-using AuthServer.RequestAccessors.Authorize;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

@@ -171,6 +171,10 @@ internal class GetDiscoveryResponse
     [JsonPropertyName("revocation_endpoint_auth_signing_alg_values_supported")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<string>? RevocationEndpointAuthSigningAlgValuesSupported { get; init; }
+    
+    [JsonPropertyName("dpop_signing_alg_values_supported")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ICollection<string>? DPopSigningAlgValuesSupported { get; init; }
 
     [JsonPropertyName("authorization_response_iss_parameter_supported")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

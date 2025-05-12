@@ -1,12 +1,12 @@
 ﻿using System.Web;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
-using AuthServer.RequestAccessors.Authorize;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;

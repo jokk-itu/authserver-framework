@@ -1,4 +1,4 @@
-﻿using AuthServer.RequestAccessors.Authorize;
+﻿using AuthServer.Authorize;
 
 namespace AuthServer.Authorization;
 public class AuthorizeRequestDto
@@ -24,6 +24,7 @@ public class AuthorizeRequestDto
         ResponseMode = authorizeRequest.ResponseMode;
         GrantId = authorizeRequest.GrantId;
         GrantManagementAction = authorizeRequest.GrantManagementAction;
+        DPoPJkt = authorizeRequest.DPoPJkt;
         Scope = authorizeRequest.Scope;
         AcrValues = authorizeRequest.AcrValues;
         Resource = authorizeRequest.Resource;
@@ -44,6 +45,7 @@ public class AuthorizeRequestDto
     public string? ResponseMode { get; init; }
     public string? GrantId { get; init; }
     public string? GrantManagementAction { get; init; }
+    public string? DPoPJkt { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];

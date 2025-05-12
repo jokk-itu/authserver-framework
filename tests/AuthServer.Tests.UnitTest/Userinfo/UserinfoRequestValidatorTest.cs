@@ -3,7 +3,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
-using AuthServer.RequestAccessors.Userinfo;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using AuthServer.Userinfo;

@@ -81,6 +81,10 @@ public abstract class BaseUnitTest
             var supportedEncryptionAlgorithms = new[] { JweAlgConstants.RsaPKCS1, JweAlgConstants.EcdhEsA128KW };
             var supportedEncryptionEncoding = new[] { JweEncConstants.Aes128CbcHmacSha256 };
 
+            discoveryDocument.IntrospectionEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
+            discoveryDocument.RevocationEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
+            discoveryDocument.DPopSigningAlgValuesSupported = supportedSigningAlgorithms;
+            
             discoveryDocument.TokenEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
             discoveryDocument.TokenEndpointAuthEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
             discoveryDocument.TokenEndpointAuthEncryptionEncValuesSupported = supportedEncryptionEncoding;

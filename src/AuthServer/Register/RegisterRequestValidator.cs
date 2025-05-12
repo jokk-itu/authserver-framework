@@ -9,7 +9,6 @@ using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.RequestAccessors.Register;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -6,7 +6,6 @@ using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Extensions;
 using AuthServer.Options;
-using AuthServer.RequestAccessors.Authorize;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
