@@ -24,6 +24,7 @@ internal class PushedAuthorizationRequest
         ResponseMode = authorizeRequestDto.ResponseMode;
         GrantId = authorizeRequestDto.GrantId;
         GrantManagementAction = authorizeRequestDto.GrantManagementAction;
+        DPoPJkt = authorizeRequestDto.DPoPJkt;
         Scope = authorizeRequestDto.Scope;
         AcrValues = authorizeRequestDto.AcrValues;
         Resource = authorizeRequestDto.Resource;
@@ -44,6 +45,7 @@ internal class PushedAuthorizationRequest
     public string? ResponseMode { get; init; }
     public string? GrantId { get; init; }
     public string? GrantManagementAction { get; init; }
+    public string? DPoPJkt { get; init; }
     public string? RequestObject { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];

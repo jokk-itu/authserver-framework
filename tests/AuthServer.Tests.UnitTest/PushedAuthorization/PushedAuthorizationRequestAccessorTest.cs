@@ -49,6 +49,7 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.State, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
+                    { Parameter.DPoPJkt, value },
                     { Parameter.Request, value },
                     { Parameter.ClientId, value },
                     { Parameter.ClientSecret, value },
@@ -80,6 +81,7 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.State);
         Assert.Equal(expectedValue, request.GrantId);
         Assert.Equal(expectedValue, request.GrantManagementAction);
+        Assert.Equal(expectedValue, request.DPoPJkt);
         Assert.Equal(expectedValue, request.RequestObject);
         Assert.Empty(request.ClientAuthentications);
     }

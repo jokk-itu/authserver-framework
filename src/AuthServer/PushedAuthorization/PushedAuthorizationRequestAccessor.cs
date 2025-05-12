@@ -26,6 +26,7 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
         var state = body.GetValue(Parameter.State);
         var grantId = body.GetValue(Parameter.GrantId);
         var grantManagementAction = body.GetValue(Parameter.GrantManagementAction);
+        var dPoPJkt = body.GetValue(Parameter.DPoPJkt);
         var requestObject = body.GetValue(Parameter.Request);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
@@ -57,6 +58,7 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
             ResponseMode = responseMode,
             GrantId = grantId,
             GrantManagementAction = grantManagementAction,
+            DPoPJkt = dPoPJkt,
             RequestObject = requestObject,
             Scope = scope,
             AcrValues = acrValues,
