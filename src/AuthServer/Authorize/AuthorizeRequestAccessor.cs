@@ -37,6 +37,7 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var requestUri = query.GetValue(Parameter.RequestUri);
         var grantId = query.GetValue(Parameter.GrantId);
         var grantManagementAction = query.GetValue(Parameter.GrantId);
+        var dPoPJkt = query.GetValue(Parameter.DPoPJkt);
 
         var scope = query.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = query.GetSpaceDelimitedValue(Parameter.AcrValues);
@@ -62,6 +63,7 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             RequestUri = requestUri,
             GrantId = grantId,
             GrantManagementAction = grantManagementAction,
+            DPoPJkt = dPoPJkt,
             Scope = scope,
             AcrValues = acrValues,
             Resource = resource
@@ -89,6 +91,7 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var requestUri = body.GetValue(Parameter.RequestUri);
         var grantId = body.GetValue(Parameter.GrantId);
         var grantManagementAction = body.GetValue(Parameter.GrantId);
+        var dPoPJkt = body.GetValue(Parameter.DPoPJkt);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
@@ -114,6 +117,7 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             RequestUri = requestUri,
             GrantId = grantId,
             GrantManagementAction = grantManagementAction,
+            DPoPJkt = dPoPJkt,
             Scope = scope,
             AcrValues = acrValues,
             Resource = resource

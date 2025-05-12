@@ -25,6 +25,7 @@ internal class AuthorizeRequest
         ResponseMode = authorizeRequestDto.ResponseMode;
         GrantId = authorizeRequestDto.GrantId;
         GrantManagementAction = authorizeRequestDto.GrantManagementAction;
+        DPoPJkt = authorizeRequestDto.DPoPJkt;
         RequestUri = requestUri;
         Scope = authorizeRequestDto.Scope;
         AcrValues = authorizeRequestDto.AcrValues;
@@ -48,6 +49,7 @@ internal class AuthorizeRequest
     public string? RequestUri { get ; init; }
     public string? GrantId { get; init; }
     public string? GrantManagementAction { get; init; }
+    public string? DPoPJkt { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];

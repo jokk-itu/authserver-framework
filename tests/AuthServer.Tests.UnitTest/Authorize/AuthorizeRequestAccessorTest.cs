@@ -42,7 +42,8 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                     { Parameter.RequestUri, value},
                     { Parameter.Request, value },
                     { Parameter.GrantId, value },
-                    { Parameter.GrantManagementAction, value }
+                    { Parameter.GrantManagementAction, value },
+                    { Parameter.DPoPJkt, value }
                 })
             }
         };
@@ -68,6 +69,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(expectedValue, request.RequestUri);
         Assert.Equal(expectedValue, request.GrantId);
         Assert.Equal(expectedValue, request.GrantManagementAction);
+        Assert.Equal(expectedValue, request.DPoPJkt);
     }
 
     [Theory]
@@ -102,7 +104,8 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                     { Parameter.RequestUri, value},
                     { Parameter.Request, value },
                     { Parameter.GrantId, value },
-                    { Parameter.GrantManagementAction, value }
+                    { Parameter.GrantManagementAction, value },
+                    { Parameter.DPoPJkt, value }
                 })
             }
         };
@@ -128,6 +131,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(expectedValue, request.RequestUri);
         Assert.Equal(expectedValue, request.GrantId);
         Assert.Equal(expectedValue, request.GrantManagementAction);
+        Assert.Equal(expectedValue, request.DPoPJkt);
     }
 
     [Fact]
