@@ -56,13 +56,13 @@ internal class ClientAuthenticationService : IClientAuthenticationService
 
         if (client is null)
         {
-            _logger.LogDebug("ClientId {ClientId} does not exist", clientIdAuthentication.ClientId);
+            _logger.LogWarning("ClientId {ClientId} does not exist", clientIdAuthentication.ClientId);
             return new ClientAuthenticationResult(null, false);
         }
 
         if (client.TokenEndpointAuthMethod != TokenEndpointAuthMethod.None)
         {
-            _logger.LogDebug("Client {ClientId} is not registered for None", client.Id);
+            _logger.LogWarning("Client {ClientId} is not registered for None", client.Id);
             return new ClientAuthenticationResult(null, false);
         }
 
@@ -75,27 +75,27 @@ internal class ClientAuthenticationService : IClientAuthenticationService
 
         if (client is null)
         {
-            _logger.LogDebug("ClientId {ClientId} does not exist", clientSecretAuthentication.ClientId);
+            _logger.LogWarning("ClientId {ClientId} does not exist", clientSecretAuthentication.ClientId);
             return new ClientAuthenticationResult(null, false);
         }
 
         if (client.TokenEndpointAuthMethod != clientSecretAuthentication.Method)
         {
-            _logger.LogDebug("Client {ClientId} is not registered for {TokenEndpointAuthMethod}", client.Id, clientSecretAuthentication.Method);
+            _logger.LogWarning("Client {ClientId} is not registered for {TokenEndpointAuthMethod}", client.Id, clientSecretAuthentication.Method);
             return new ClientAuthenticationResult(null, false);
         }
 
         if (client.SecretExpiresAt is not null
             && client.SecretExpiresAt < DateTime.UtcNow)
         {
-            _logger.LogDebug("ClientSecret has expired at {Expiration}", client.SecretExpiresAt);
+            _logger.LogWarning("ClientSecret has expired at {Expiration}", client.SecretExpiresAt);
             return new ClientAuthenticationResult(null, false);
         }
 
         var isPasswordVerified = CryptographyHelper.VerifyPassword(client.SecretHash!, clientSecretAuthentication.ClientSecret);
         if (!isPasswordVerified)
         {
-            _logger.LogDebug("ClientSecret is invalid");
+            _logger.LogWarning("ClientSecret is invalid");
             return new ClientAuthenticationResult(null, false);
         }
 
@@ -124,13 +124,13 @@ internal class ClientAuthenticationService : IClientAuthenticationService
 
         if (client is null)
         {
-            _logger.LogDebug("ClientId {ClientId} does not exist", clientId);
+            _logger.LogWarning("ClientId {ClientId} does not exist", clientId);
             return new ClientAuthenticationResult(null, false);
         }
 
         if (client.TokenEndpointAuthMethod != TokenEndpointAuthMethod.PrivateKeyJwt)
         {
-            _logger.LogDebug("Client {ClientId} is not registered for PrivateKeyJwt", clientId);
+            _logger.LogWarning("Client {ClientId} is not registered for PrivateKeyJwt", clientId);
             return new ClientAuthenticationResult(null, false);
         }
 
