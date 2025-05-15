@@ -6,4 +6,5 @@ internal class EncodedAuthorizationCode
     public required IReadOnlyCollection<string> Scope { get; init; }
     public required string CodeChallenge { get; init; }
     public string? RedirectUri { get; init; }
+    public string? DPoPJkt { get; init; }
 }

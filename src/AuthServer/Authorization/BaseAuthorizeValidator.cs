@@ -87,6 +87,9 @@ internal class BaseAuthorizeValidator
     protected bool HasValidRequestUriForPushedAuthorization(string? requestUri, bool isRequiredByClient)
         => requestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true || (!isRequiredByClient && !_discoveryDocumentOptions.Value.RequirePushedAuthorizationRequests);
 
+    protected static bool HasValidDPoPJkt(string? dPoPJkt, bool clientRequiresDPoP)
+        => !string.IsNullOrEmpty(dPoPJkt) || !clientRequiresDPoP;
+
     protected async Task<bool> HasValidIdTokenHint(string? idTokenHint, string clientId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(idTokenHint))

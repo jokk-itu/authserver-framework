@@ -100,7 +100,8 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId],
             Resource = ["https://weather.authserver.dk"],
-            GrantManagementAction = grantManagementAction
+            GrantManagementAction = grantManagementAction,
+            DPoPJkt = CryptographyHelper.GetRandomString(16)
         };
 
         // Act
