@@ -10,7 +10,6 @@ using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -1041,6 +1040,38 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_InvalidDPoPJkt_ExpectInvalidDPoPJkt()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+        client.RequireDPoPBoundAccessTokens = true;
+        await SaveChangesAsync();
+        var resource = await GetResource();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.InvalidDPoPJkt, processResult);
+    }
+
+    [Fact]
     public async Task Validate_RequiresInteractionWithoutRedirectToInteraction_ExpectInteraction()
     {
         // Arrange
@@ -1217,6 +1248,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             Prompt = PromptConstants.None,
             RedirectUri = client.RedirectUris.Single().Uri,
             ResponseMode = ResponseModeConstants.FormPost,
+            DPoPJkt = CryptographyHelper.GetRandomString(16),
             Resource = [resource.ClientUri!]
         };
 
@@ -1241,6 +1273,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(request.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Null(processResult.Value!.RequestUri);
     }
 
@@ -1280,6 +1313,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             State = CryptographyHelper.GetRandomString(16),
             RedirectUri = client.RedirectUris.Single().Uri,
+            DPoPJkt = CryptographyHelper.GetRandomString(16),
             Resource = [resource.ClientUri!]
         };
 
@@ -1307,6 +1341,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.CodeChallengeMethod == authorizeRequestDto.CodeChallengeMethod &&
                     y.State == authorizeRequestDto.State &&
                     y.ResponseType == authorizeRequestDto.ResponseType &&
+                    y.DPoPJkt == authorizeRequestDto.DPoPJkt &&
                     y.Resource == authorizeRequestDto.Resource &&
                     y.RequestUri == null), CancellationToken.None))
             .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
@@ -1333,6 +1368,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
         Assert.Null(processResult.Value!.RequestUri);
     }
@@ -1370,6 +1406,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             State = CryptographyHelper.GetRandomString(16),
             RedirectUri = client.RedirectUris.Single().Uri,
+            DPoPJkt = CryptographyHelper.GetRandomString(16),
             Resource = [resource.ClientUri!]
         };
 
@@ -1397,6 +1434,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.CodeChallengeMethod == authorizeRequestDto.CodeChallengeMethod &&
                     y.State == authorizeRequestDto.State &&
                     y.ResponseType == authorizeRequestDto.ResponseType &&
+                    y.DPoPJkt == authorizeRequestDto.DPoPJkt &&
                     y.Resource == authorizeRequestDto.Resource &&
                     y.RequestUri == null), CancellationToken.None))
             .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
@@ -1423,6 +1461,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
         Assert.Null(processResult.Value!.RequestUri);
     }
