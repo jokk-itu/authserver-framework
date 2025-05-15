@@ -30,7 +30,7 @@ public class DiscoveryDocument
 
     public ICollection<string> IntrospectionEndpointAuthSigningAlgValuesSupported { get; set; } = [];
     public ICollection<string> RevocationEndpointAuthSigningAlgValuesSupported { get; set; } = [];
-    public ICollection<string> DPopSigningAlgValuesSupported { get; set; } = [];
+    public ICollection<string> DPoPSigningAlgValuesSupported { get; set; } = [];
 
     public bool RequireSignedRequestObject { get; set; }
     public bool RequirePushedAuthorizationRequests { get; set; }

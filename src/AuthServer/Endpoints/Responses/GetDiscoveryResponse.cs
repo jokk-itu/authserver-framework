@@ -148,12 +148,15 @@ internal class GetDiscoveryResponse
     public ICollection<string>? RequestObjectSigningAlgValuesSupported { get; init; }
 
     [JsonPropertyName("request_object_encryption_alg_values_supported")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<string>? RequestObjectEncryptionAlgValuesSupported { get; init; }
 
     [JsonPropertyName("request_object_encryption_enc_values_supported")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<string>? RequestObjectEncryptionEncValuesSupported { get; init; }
 
     [JsonPropertyName("token_endpoint_auth_signing_alg_values_supported")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<string>? TokenEndpointAuthSigningAlgValuesSupported { get; init; }
 
     [JsonPropertyName("token_endpoint_auth_encryption_alg_values_supported")]
@@ -174,7 +177,7 @@ internal class GetDiscoveryResponse
     
     [JsonPropertyName("dpop_signing_alg_values_supported")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ICollection<string>? DPopSigningAlgValuesSupported { get; init; }
+    public ICollection<string>? DPoPSigningAlgValuesSupported { get; init; }
 
     [JsonPropertyName("authorization_response_iss_parameter_supported")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
