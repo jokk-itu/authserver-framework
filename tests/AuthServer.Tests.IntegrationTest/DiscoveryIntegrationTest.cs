@@ -80,7 +80,7 @@ public class DiscoveryIntegrationTest : BaseIntegrationTest
 
         Assert.Equal(DiscoveryDocument.RevocationEndpointAuthSigningAlgValuesSupported, getDiscoveryResponse.RevocationEndpointAuthSigningAlgValuesSupported);
 
-        Assert.Equal(DiscoveryDocument.DPopSigningAlgValuesSupported, getDiscoveryResponse.DPopSigningAlgValuesSupported);
+        Assert.Equal(DiscoveryDocument.DPoPSigningAlgValuesSupported, getDiscoveryResponse.DPoPSigningAlgValuesSupported);
 
         Assert.True(getDiscoveryResponse.AuthorizationResponseIssParameterSupported);
         Assert.True(getDiscoveryResponse.BackchannelLogoutSupported);

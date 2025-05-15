@@ -18,7 +18,7 @@ public class RevocationRequestAccessorTest(ITestOutputHelper outputHelper) : Bas
 	[Theory]
 	[InlineData("", "")]
 	[InlineData(null, null)]
-	public async Task GetRequest_NormalStringParameters_ExpectNoValues(string? value, string expectedValue)
+	public async Task GetRequest_NormalStringParameters_ExpectNoValues(string? value, string? expectedValue)
 	{
 		// Arrange
 		var serviceProvider = BuildServiceProvider();

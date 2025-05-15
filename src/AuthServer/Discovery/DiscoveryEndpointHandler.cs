@@ -76,7 +76,7 @@ internal class DiscoveryEndpointHandler : IEndpointHandler
             TokenEndpointAuthEncryptionEncValuesSupported = DiscoveryDocument.TokenEndpointAuthEncryptionEncValuesSupported,
             IntrospectionEndpointAuthSigningAlgValuesSupported = DiscoveryDocument.IntrospectionEndpointAuthSigningAlgValuesSupported,
             RevocationEndpointAuthSigningAlgValuesSupported = DiscoveryDocument.RevocationEndpointAuthSigningAlgValuesSupported,
-            DPopSigningAlgValuesSupported = DiscoveryDocument.DPopSigningAlgValuesSupported,
+            DPoPSigningAlgValuesSupported = DiscoveryDocument.DPoPSigningAlgValuesSupported,
             AuthorizationResponseIssParameterSupported = true,
             BackchannelLogoutSupported = true,
             RequireRequestUriRegistration = true,

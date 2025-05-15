@@ -83,7 +83,7 @@ public abstract class BaseUnitTest
 
             discoveryDocument.IntrospectionEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
             discoveryDocument.RevocationEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
-            discoveryDocument.DPopSigningAlgValuesSupported = supportedSigningAlgorithms;
+            discoveryDocument.DPoPSigningAlgValuesSupported = supportedSigningAlgorithms;
             
             discoveryDocument.TokenEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
             discoveryDocument.TokenEndpointAuthEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;

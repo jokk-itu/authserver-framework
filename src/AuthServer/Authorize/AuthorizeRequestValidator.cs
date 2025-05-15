@@ -265,6 +265,11 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidGrantId;
         }
 
+        if (!HasValidDPoPJkt(request.DPoPJkt, cachedClient.RequireDPoPBoundAccessTokens))
+        {
+            return AuthorizeError.InvalidDPoPJkt;
+        }
+
         return null;
     }
 
@@ -319,7 +324,8 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             ClientId = request.ClientId!,
             Nonce = request.Nonce!,
             RedirectUri = request.RedirectUri,
-            RequestUri = request.RequestUri
+            RequestUri = request.RequestUri,
+            DPoPJkt = request.DPoPJkt
         };
     }
 }

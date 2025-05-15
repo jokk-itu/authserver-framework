@@ -10,6 +10,7 @@ internal class AuthorizeValidatedRequest
     public required string Nonce { get; init; }
     public string? ResponseMode { get; init; }
     public string? RequestUri { get; init; }
+    public string? DPoPJkt { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
