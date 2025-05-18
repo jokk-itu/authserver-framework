@@ -1,4 +1,6 @@
-﻿using AuthServer.Authentication.Abstractions;
+﻿using System.Runtime.CompilerServices;
+using AuthServer.Authentication.Abstractions;
+using AuthServer.Constants;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Helpers;
 using AuthServer.Options;
@@ -60,20 +62,45 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
 
     public async Task<JsonWebToken?> Validate(string token, ClientIssuedTokenDecodeArguments arguments, CancellationToken cancellationToken)
     {
+        IEnumerable<JsonWebKey> issuerSigningKeys;
+        if (arguments.UseJwkHeaderSignatureValidation)
+        {
+            var jwk = await GetJwkHeaderValue(token);
+            if (jwk is null)
+            {
+                return null;
+            }
+
+            issuerSigningKeys = new List<JsonWebKey>
+            {
+                jwk
+            };
+        }
+        else
+        {
+            issuerSigningKeys = await _clientJwkService.GetSigningKeys(arguments.ClientId, cancellationToken);
+        }
+
+        return await Validate(token, arguments, issuerSigningKeys);
+    }
+
+    private async Task<JsonWebToken?> Validate(string token, ClientIssuedTokenDecodeArguments arguments,
+        IEnumerable<JsonWebKey> issuerSigningKeys)
+    {
         var tokenValidationParameters = new TokenValidationParameters
         {
             ClockSkew = new TimeSpan(0),
             ValidTypes = [arguments.TokenType],
             ValidIssuer = arguments.ClientId,
-            ValidAudiences = [ GetAudience(arguments.Audience) ],
+            ValidAudiences = [GetAudience(arguments.Audience)],
             ValidAlgorithms = arguments.Algorithms,
-            IssuerSigningKeys = await _clientJwkService.GetSigningKeys(arguments.ClientId, cancellationToken),
+            IssuerSigningKeys = issuerSigningKeys,
             TokenDecryptionKeys = _jwkDocumentOptions.Value.EncryptionKeys.Select(x => x.Key),
             TokenReplayCache = _tokenReplayCache,
             ValidateTokenReplay = true,
             ValidateLifetime = arguments.ValidateLifetime,
             ValidateAudience = true,
-            ValidateIssuer = true,
+            ValidateIssuer = true
         };
 
         var handler = new JsonWebTokenHandler();
@@ -81,7 +108,7 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
 
         if (!validationResult.IsValid)
         {
-            _logger.LogInformation(validationResult.Exception, "Token validation failed");
+            _logger.LogWarning(validationResult.Exception, "Token validation failed");
             return null;
         }
 
@@ -91,11 +118,37 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
         var isSubjectValid = arguments.SubjectId == jsonWebToken.Subject;
         if (isSubjectValidationRequired && !isSubjectValid)
         {
-            _logger.LogInformation("Subject {ActualSubject} mismatch. Expected {ExpectedSubject}", jsonWebToken.Subject, arguments.SubjectId);
+            _logger.LogWarning("Subject {ActualSubject} mismatch. Expected {ExpectedSubject}", jsonWebToken.Subject, arguments.SubjectId);
             return null;
         }
 
         return jsonWebToken;
+    }
+
+    private async Task<JsonWebKey?> GetJwkHeaderValue(string token)
+    {
+        try
+        {
+            var jsonWebToken = await Read(token);
+            var jwkHeaderValue = jsonWebToken.GetHeaderValue<string>(ClaimNameConstants.Jwk);
+            var jsonWebKey = new JsonWebKey(jwkHeaderValue);
+            if (jsonWebKey.HasPrivateKey)
+            {
+                throw new SecurityTokenValidationException("jwk header contains private key");
+            }
+
+            return jsonWebKey;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogInformation(ex, "Token does not contain a valid jwk header");
+            return null;
+        }
+        catch (SecurityTokenValidationException e)
+        {
+            _logger.LogInformation(e, "Jwk header validation failed");
+            return null;
+        }
     }
 
     private string GetAudience(ClientTokenAudience audience)
@@ -107,7 +160,7 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             ClientTokenAudience.IntrospectionEndpoint => _endpointResolver.IntrospectionEndpoint,
             ClientTokenAudience.RevocationEndpoint => _endpointResolver.RevocationEndpoint,
             ClientTokenAudience.PushedAuthorizationEndpoint => _endpointResolver.PushedAuthorizationEndpoint,
-            _ => throw new ArgumentOutOfRangeException(nameof(audience), audience, "does not map to a valid enum")
+            _ => throw new SwitchExpressionException(audience)
         };
     }
 }

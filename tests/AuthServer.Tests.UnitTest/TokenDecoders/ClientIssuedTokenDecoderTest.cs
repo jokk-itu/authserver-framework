@@ -1,4 +1,5 @@
-﻿using AuthServer.Authentication.Abstractions;
+﻿using System.Text.Json;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Enums;
@@ -58,14 +59,166 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_JwksWithoutHeader_ExpectNull()
+    {
+        // Arrange
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
+        var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var privateJwks = new JsonWebKeySet(clientJwks.PrivateJwks);
+        var publicJwks = new JsonWebKeySet(clientJwks.PublicJwks);
+        const string clientId = "client_id";
+        clientJwkService
+            .Setup(x => x.GetSigningKeys(clientId, CancellationToken.None))
+            .ReturnsAsync(publicJwks.Keys)
+            .Verifiable();
+
+        var signingKey = privateJwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+        var signingCredentials = new SigningCredentials(signingKey, signingKey.Alg);
+        var now = DateTime.UtcNow;
+        var clientJwt = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = clientId,
+            NotBefore = now,
+            Expires = now.AddSeconds(60),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = EndpointResolver.TokenEndpoint,
+            TokenType = TokenTypeHeaderConstants.PrivateKeyToken
+        });
+
+        // Act
+        var jsonWebToken = await tokenDecoder.Validate(
+            clientJwt,
+            new ClientIssuedTokenDecodeArguments
+            {
+                TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+                Algorithms = [signingKey.Alg],
+                ClientId = clientId,
+                Audience = ClientTokenAudience.TokenEndpoint,
+                ValidateLifetime = true,
+                UseJwkHeaderSignatureValidation = true
+            },
+            CancellationToken.None);
+
+        // Assert
+        Assert.Null(jsonWebToken);
+    }
+
+    [Fact]
+    public async Task Validate_JwsWithInvalidJwkHeader_ExpectNull()
+    {
+        // Arrange
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
+        var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var privateJwks = new JsonWebKeySet(clientJwks.PrivateJwks);
+        var publicJwks = new JsonWebKeySet(clientJwks.PublicJwks);
+        const string clientId = "client_id";
+        clientJwkService
+            .Setup(x => x.GetSigningKeys(clientId, CancellationToken.None))
+            .ReturnsAsync(publicJwks.Keys)
+            .Verifiable();
+
+        var signingKey = privateJwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+        var signingCredentials = new SigningCredentials(signingKey, signingKey.Alg);
+        var now = DateTime.UtcNow;
+        var clientJwt = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = clientId,
+            NotBefore = now,
+            Expires = now.AddSeconds(60),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = EndpointResolver.TokenEndpoint,
+            TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+            AdditionalHeaderClaims = new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Jwk, "invalid_jwk" }
+            }
+        });
+
+        // Act
+        var jsonWebToken = await tokenDecoder.Validate(
+            clientJwt,
+            new ClientIssuedTokenDecodeArguments
+            {
+                TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+                Algorithms = [signingKey.Alg],
+                ClientId = clientId,
+                Audience = ClientTokenAudience.TokenEndpoint,
+                ValidateLifetime = true,
+                UseJwkHeaderSignatureValidation = true
+            },
+            CancellationToken.None);
+
+        // Assert
+        Assert.Null(jsonWebToken);
+    }
+
+    [Fact]
+    public async Task Validate_JwsWithPrivateJwkHeader_ExpectNull()
+    {
+        // Arrange
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
+        var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var privateJwks = new JsonWebKeySet(clientJwks.PrivateJwks);
+        var publicJwks = new JsonWebKeySet(clientJwks.PublicJwks);
+        const string clientId = "client_id";
+        clientJwkService
+            .Setup(x => x.GetSigningKeys(clientId, CancellationToken.None))
+            .ReturnsAsync(publicJwks.Keys)
+            .Verifiable();
+
+        var signingKey = privateJwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+        var signingCredentials = new SigningCredentials(signingKey, signingKey.Alg);
+        var now = DateTime.UtcNow;
+        var clientJwt = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = clientId,
+            NotBefore = now,
+            Expires = now.AddSeconds(60),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = EndpointResolver.TokenEndpoint,
+            TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+            AdditionalHeaderClaims = new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Jwk, JsonSerializer.Serialize(signingKey) }
+            }
+        });
+
+        // Act
+        var jsonWebToken = await tokenDecoder.Validate(
+            clientJwt,
+            new ClientIssuedTokenDecodeArguments
+            {
+                TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+                Algorithms = [signingKey.Alg],
+                ClientId = clientId,
+                Audience = ClientTokenAudience.TokenEndpoint,
+                ValidateLifetime = true,
+                UseJwkHeaderSignatureValidation = true
+            },
+            CancellationToken.None);
+
+        // Assert
+        Assert.Null(jsonWebToken);
+    }
+
+    [Fact]
     public async Task Validate_JwsWithLifetimeExceeded_ExpectNull()
     {
         // Arrange
         var clientJwkService = new Mock<IClientJwkService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(clientJwkService);
-        });
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
         var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
 
         var clientJwks = ClientJwkBuilder.GetClientJwks();
@@ -97,7 +250,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
             new ClientIssuedTokenDecodeArguments
             {
                 TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
-                Algorithms = [ signingKey.Alg ],
+                Algorithms = [signingKey.Alg],
                 ClientId = clientId,
                 Audience = ClientTokenAudience.TokenEndpoint,
                 ValidateLifetime = true,
@@ -113,10 +266,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
     {
         // Arrange
         var clientJwkService = new Mock<IClientJwkService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(clientJwkService);
-        });
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
         var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
 
         var clientJwks = ClientJwkBuilder.GetClientJwks();
@@ -164,10 +314,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
     {
         // Arrange
         var clientJwkService = new Mock<IClientJwkService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(clientJwkService);
-        });
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
         var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
 
         var clientJwks = ClientJwkBuilder.GetClientJwks();
@@ -215,10 +362,7 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
     {
         // Arrange
         var clientJwkService = new Mock<IClientJwkService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(clientJwkService);
-        });
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
         var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
 
         var clientJwks = ClientJwkBuilder.GetClientJwks();
@@ -253,6 +397,112 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
                 Algorithms = [signingKey.Alg],
                 ClientId = clientId,
                 Audience = ClientTokenAudience.TokenEndpoint,
+                ValidateLifetime = true
+            },
+            CancellationToken.None);
+
+        // Assert
+        Assert.Null(jsonWebToken);
+    }
+
+    [Fact]
+    public async Task Validate_JwsWithInvalidAlgorithmForVerifyingSignature_ExpectNull()
+    {
+        // Arrange
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(clientJwkService); });
+        var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var privateJwks = new JsonWebKeySet(clientJwks.PrivateJwks);
+        var publicJwks = new JsonWebKeySet(clientJwks.PublicJwks);
+        const string clientId = "client_id";
+        clientJwkService
+            .Setup(x => x.GetSigningKeys(clientId, CancellationToken.None))
+            .ReturnsAsync(publicJwks.Keys)
+            .Verifiable();
+
+        var signingKey = privateJwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+        var signingCredentials = new SigningCredentials(signingKey, signingKey.Alg);
+        var now = DateTime.UtcNow;
+        var clientJwt = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = clientId,
+            NotBefore = now,
+            Expires = now.AddSeconds(60),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = EndpointResolver.TokenEndpoint,
+            TokenType = TokenTypeHeaderConstants.PrivateKeyToken
+        });
+
+        // Act
+        var jsonWebToken = await tokenDecoder.Validate(
+            clientJwt,
+            new ClientIssuedTokenDecodeArguments
+            {
+                TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+                Algorithms = ["different-sig-algorithm"],
+                ClientId = clientId,
+                Audience = ClientTokenAudience.TokenEndpoint,
+                ValidateLifetime = true,
+            },
+            CancellationToken.None);
+
+        // Assert
+        Assert.Null(jsonWebToken);
+    }
+
+    [Fact]
+    public async Task Validate_JweWithInvalidAlgorithmForDecryption_ExpectNull()
+    {
+        // Arrange
+        var clientJwkService = new Mock<IClientJwkService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(clientJwkService);
+        });
+        var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+
+        var clientJwks = ClientJwkBuilder.GetClientJwks();
+        var privateJwks = new JsonWebKeySet(clientJwks.PrivateJwks);
+        var publicJwks = new JsonWebKeySet(clientJwks.PublicJwks);
+        const string clientId = "client_id";
+        clientJwkService
+            .Setup(x => x.GetSigningKeys(clientId, CancellationToken.None))
+            .ReturnsAsync(publicJwks.Keys)
+            .Verifiable();
+
+        var signingKey = privateJwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+        var signingCredentials = new SigningCredentials(signingKey, signingKey.Alg);
+
+        var encryptingKey = JwksDocument.GetEncryptionKey(EncryptionAlg.RsaPKCS1);
+        var encryptingCredentials = new EncryptingCredentials(encryptingKey, JweAlgConstants.RsaPKCS1, JweEncConstants.Aes128CbcHmacSha256);
+
+        var now = DateTime.UtcNow;
+        var clientJwt = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Claims = new Dictionary<string, object> { { Parameter.Subject, clientId } },
+            Issuer = clientId,
+            NotBefore = now,
+            Expires = now.AddSeconds(60),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            EncryptingCredentials = encryptingCredentials,
+            Audience = EndpointResolver.TokenEndpoint,
+            TokenType = TokenTypeHeaderConstants.PrivateKeyToken
+        });
+
+        // Act
+        var jsonWebToken = await tokenDecoder.Validate(
+            clientJwt,
+            new ClientIssuedTokenDecodeArguments
+            {
+                TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
+                Algorithms = [signingKey.Alg, "different-enc-algorithm"],
+                ClientId = clientId,
+                SubjectId = clientId,
+                Audience = ClientTokenAudience.TokenEndpoint,
                 ValidateLifetime = true,
             },
             CancellationToken.None);
@@ -273,7 +523,6 @@ public class ClientIssuedTokenDecoderTest : BaseUnitTest
         var tokenDecoder = serviceProvider.GetRequiredService<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
 
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var privateJwks = new JsonWebKeySet(clientJwks.PrivateJwks);
         var publicJwks = new JsonWebKeySet(clientJwks.PublicJwks);
         const string clientId = "client_id";
         clientJwkService
