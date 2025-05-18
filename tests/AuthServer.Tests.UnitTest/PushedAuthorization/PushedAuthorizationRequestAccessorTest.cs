@@ -63,6 +63,8 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
             }
         };
 
+        httpContext.Request.Headers[Parameter.DPoP] = value;
+
         // Act
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
@@ -82,6 +84,7 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.GrantId);
         Assert.Equal(expectedValue, request.GrantManagementAction);
         Assert.Equal(expectedValue, request.DPoPJkt);
+        Assert.Equal(expectedValue, request.DPoP);
         Assert.Equal(expectedValue, request.RequestObject);
         Assert.Empty(request.ClientAuthentications);
     }
@@ -114,10 +117,13 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.State, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
+                    { Parameter.DPoPJkt, value },
                     { Parameter.Request, value }
                 })
             }
         };
+
+        httpContext.Request.Headers[Parameter.DPoP] = value;
 
         // Act
         var request = await requestAccessor.GetRequest(httpContext.Request);
@@ -137,6 +143,8 @@ public class PushedAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(value, request.State);
         Assert.Equal(value, request.GrantId);
         Assert.Equal(value, request.GrantManagementAction);
+        Assert.Equal(value, request.DPoPJkt);
+        Assert.Equal(value, request.DPoP);
         Assert.Equal(value, request.RequestObject);
         Assert.Empty(request.ClientAuthentications);
     }

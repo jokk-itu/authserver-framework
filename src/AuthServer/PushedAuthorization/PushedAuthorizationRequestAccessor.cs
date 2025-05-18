@@ -10,6 +10,8 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
 {
     public async Task<PushedAuthorizationRequest> GetRequest(HttpRequest httpRequest)
     {
+        var dPoP = httpRequest.Headers.GetValue(Parameter.DPoP);
+
         var body = await httpRequest.ReadFormAsync();
 
         var loginHint = body.GetValue(Parameter.LoginHint);
@@ -59,6 +61,7 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
             GrantId = grantId,
             GrantManagementAction = grantManagementAction,
             DPoPJkt = dPoPJkt,
+            DPoP = dPoP,
             RequestObject = requestObject,
             Scope = scope,
             AcrValues = acrValues,
