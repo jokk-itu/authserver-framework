@@ -42,7 +42,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         Client client;
         if (request.Method == HttpMethod.Post)
         {
-            client = new Client(request.ClientName, request.ApplicationType, request.TokenEndpointAuthMethod);
+            client = new Client(request.ClientName, request.ApplicationType, request.TokenEndpointAuthMethod, 300, 60);
             _authorizationDbContext.Add(client);
         }
         else if (request.Method == HttpMethod.Delete)
@@ -153,6 +153,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             ClientSecretExpiration = client.SecretExpiration,
             JwksExpiration = client.JwksExpiration,
             RequestUriExpiration = client.RequestUriExpiration,
+            DPoPNonceExpiration = client.DPoPNonceExpiration,
             TokenEndpointAuthSigningAlg = client.TokenEndpointAuthSigningAlg,
             TokenEndpointAuthEncryptionAlg = client.TokenEndpointAuthEncryptionAlg,
             TokenEndpointAuthEncryptionEnc = client.TokenEndpointAuthEncryptionEnc,
@@ -218,6 +219,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.SecretExpiration = request.ClientSecretExpiration;
         client.JwksExpiration = request.JwksExpiration;
         client.RequestUriExpiration = request.RequestUriExpiration;
+        client.DPoPNonceExpiration = request.DPoPNonceExpiration;
         client.TokenEndpointAuthSigningAlg = request.TokenEndpointAuthSigningAlg;
         client.TokenEndpointAuthEncryptionAlg = request.TokenEndpointAuthEncryptionAlg;
         client.TokenEndpointAuthEncryptionEnc = request.TokenEndpointAuthEncryptionEnc;

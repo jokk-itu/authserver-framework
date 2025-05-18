@@ -46,6 +46,7 @@ internal class RegisterResponse
 	public required int? ClientSecretExpiration { get; init; }
 	public required int? JwksExpiration { get; init; }
 	public required int? RequestUriExpiration { get; init; }
+	public required int DPoPNonceExpiration { get; init; }
 	public required IReadOnlyCollection<string> DefaultAcrValues { get; init; }
 	public required IReadOnlyCollection<string> Scope { get; init; }
 	public required IReadOnlyCollection<string> RedirectUris { get; init; }

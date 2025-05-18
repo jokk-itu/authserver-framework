@@ -48,12 +48,12 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             PolicyUri = "https://webapp.authserver.dk/policy",
             LogoUri = "https://webapp.authserver.dk/logo",
             TosUri = "https://webapp.authserver.dk/tos",
-            AccessTokenExpiration = 500,
+            AccessTokenExpiration = 600,
             AuthorizationCodeExpiration = 60,
             BackchannelLogoutUri = "https://webapp.authserver.dk/remote-logout",
             ClientSecretExpiration = 86400,
             DefaultAcrValues = [LevelOfAssuranceStrict],
-            DefaultMaxAge = 500,
+            DefaultMaxAge = 600,
             InitiateLoginUri = "https://webapp.authserver.dk/remote-login",
             RefreshTokenExpiration = 86400,
             RequireReferenceToken = false,
@@ -61,7 +61,8 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             RequirePushedAuthorizationRequests = true,
             RequireIdTokenClaims = true,
             RequireDPoPBoundAccessTokens = true,
-            RequestUriExpiration = 500,
+            RequestUriExpiration = 300,
+            DPoPNonceExpiration = 300,
             RequestObjectEncryptionAlg = EncryptionAlg.RsaPKCS1,
             RequestObjectEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256,
             RequestObjectSigningAlg = SigningAlg.RsaSha256,
@@ -139,6 +140,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(request.RefreshTokenExpiration, response.RefreshTokenExpiration);
         Assert.Equal(request.JwksExpiration, response.JwksExpiration);
         Assert.Equal(request.RequestUriExpiration, response.RequestUriExpiration);
+        Assert.Equal(request.DPoPNonceExpiration, response.DPoPNonceExpiration);
         Assert.Equal(request.TokenEndpointAuthEncryptionAlg, response.TokenEndpointAuthEncryptionAlg);
         Assert.Equal(request.TokenEndpointAuthEncryptionEnc, response.TokenEndpointAuthEncryptionEnc);
         Assert.Equal(request.TokenEndpointAuthSigningAlg, response.TokenEndpointAuthSigningAlg);
@@ -267,6 +269,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.AuthorizationCodeExpiration, response.AuthorizationCodeExpiration);
         Assert.Equal(client.AccessTokenExpiration, response.AccessTokenExpiration);
         Assert.Equal(client.RefreshTokenExpiration, response.RefreshTokenExpiration);
+        Assert.Equal(client.DPoPNonceExpiration, response.DPoPNonceExpiration);
         Assert.Equal(client.JwksExpiration, response.JwksExpiration);
         Assert.Equal(client.RequestUriExpiration, response.RequestUriExpiration);
         Assert.Equal(client.TokenEndpointAuthEncryptionAlg, response.TokenEndpointAuthEncryptionAlg);
@@ -316,7 +319,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
     private async Task<Client> GetClient()
     {
         var jwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             BackchannelLogoutUri = "https://webapp.authserver.dk/remote-logout",
             ClientUri = "https://webapp.authserver.dk",
@@ -331,12 +334,13 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             RequireDPoPBoundAccessTokens = true,
             SubjectType = SubjectType.Pairwise,
             DefaultMaxAge = 86400,
-            AuthorizationCodeExpiration = 500,
-            AccessTokenExpiration = 500,
+            AuthorizationCodeExpiration = 300,
+            AccessTokenExpiration = 600,
             RefreshTokenExpiration = 86400,
             SecretExpiration = 86400 * 30,
             JwksExpiration = 86400 * 30,
             RequestUriExpiration = 60,
+            DPoPNonceExpiration = 300,
             TokenEndpointAuthEncryptionAlg = EncryptionAlg.RsaPKCS1,
             TokenEndpointAuthEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256,
             TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256,
@@ -384,7 +388,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             new GrantAccessToken(authorizationGrant, "aud", "iss", ScopeConstants.OpenId, 500));
 
         var nonce = CryptographyHelper.GetRandomString(16);
-        authorizationGrant.Nonces.Add(new Nonce(nonce, nonce.Sha256(), authorizationGrant));
+        authorizationGrant.Nonces.Add(new AuthorizationGrantNonce(nonce, nonce.Sha256(), authorizationGrant));
 
         var authorizationCode = new AuthorizationCode(authorizationGrant, 60);
         authorizationCode.SetValue(CryptographyHelper.GetRandomString(16));
