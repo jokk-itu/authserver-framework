@@ -28,7 +28,7 @@ public class AuthorizationGrant : Entity<string>
     public Client Client { get; private init; }
     public AuthenticationContextReference AuthenticationContextReference { get; set; }
     public ICollection<AuthorizationCode> AuthorizationCodes { get; init; } = [];
-    public ICollection<Nonce> Nonces { get; init; } = [];
+    public ICollection<AuthorizationGrantNonce> Nonces { get; init; } = [];
     public ICollection<GrantToken> GrantTokens { get; init; } = [];
     public ICollection<AuthenticationMethodReference> AuthenticationMethodReferences { get; init; } = [];
     public ICollection<AuthorizationGrantConsent> AuthorizationGrantConsents { get; init; } = [];
