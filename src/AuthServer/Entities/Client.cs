@@ -70,6 +70,11 @@ public class Client : Entity<string>
     public int? JwksExpiration { get; set; }
 
     /// <summary>
+    /// DPoPNonce lifetime in seconds.
+    /// </summary>
+    public int DPoPNonceExpiration { get; set; }
+
+    /// <summary>
     /// Uri to terms of service page.
     /// </summary>
     public string? TosUri { get; set; }
