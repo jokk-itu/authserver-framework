@@ -57,7 +57,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
-        var client = new Client("PinguNativeApp", ApplicationType.Native, TokenEndpointAuthMethod.None);
+        var client = new Client("PinguNativeApp", ApplicationType.Native, TokenEndpointAuthMethod.None, 300, 60);
         await AddEntity(client);
         var clientAuthentication = new ClientAssertionAuthentication(ClientTokenAudience.TokenEndpoint, client.Id,
             ClientAssertionTypeConstants.PrivateKeyJwt, "");
@@ -88,7 +88,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
         });
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256
@@ -118,7 +118,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
         });
 
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256
@@ -166,7 +166,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
         });
 
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             TokenEndpointAuthSigningAlg = SigningAlg.RsaSha256,

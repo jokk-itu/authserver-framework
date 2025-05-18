@@ -24,7 +24,7 @@ public class PushedAuthorizationRequestProcessorTest : BaseUnitTest
         var processor = serviceProvider
             .GetRequiredService<IRequestProcessor<PushedAuthorizationValidatedRequest, PushedAuthorizationResponse>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestUriExpiration = 60
         };

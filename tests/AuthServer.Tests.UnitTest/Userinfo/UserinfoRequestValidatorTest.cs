@@ -27,7 +27,7 @@ public class UserinfoRequestValidatorTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };
@@ -68,7 +68,7 @@ public class UserinfoRequestValidatorTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };

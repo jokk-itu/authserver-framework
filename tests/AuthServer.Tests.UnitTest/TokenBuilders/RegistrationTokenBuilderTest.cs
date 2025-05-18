@@ -17,7 +17,7 @@ public class RegistrationTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var registrationTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<RegistrationTokenArguments>>();
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         // Act

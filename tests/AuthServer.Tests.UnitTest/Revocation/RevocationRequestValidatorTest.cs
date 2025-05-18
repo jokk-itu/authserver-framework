@@ -138,13 +138,13 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<RevocationRequest, RevocationValidatedRequest>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
         await AddEntity(client);
 
-        var secondClient = new Client("webapp2", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var secondClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
@@ -173,13 +173,13 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<RevocationRequest, RevocationValidatedRequest>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
         await AddEntity(client);
 
-        var secondClient = new Client("webapp2", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var secondClient = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
@@ -224,7 +224,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<RevocationRequest, RevocationValidatedRequest>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
@@ -257,7 +257,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<RevocationRequest, RevocationValidatedRequest>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);

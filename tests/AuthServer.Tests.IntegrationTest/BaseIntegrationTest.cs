@@ -194,7 +194,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
 
         var weatherScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == "weather:read");
-        var client = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             Scopes = [weatherScope],
             ClientUri = "https://weather.authserver.dk"
@@ -223,7 +223,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var profile = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.Profile);
         var offlineAccess = await dbContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OfflineAccess);
 
-        var client = new Client("identity-provider", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("identity-provider", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic,300, 60)
         {
             Scopes = [openId, email, address, phone, profile, offlineAccess, userinfoScope, grantManagementRevokeScope, grantManagementQueryScope],
             ClientUri = "https://localhost:7254"

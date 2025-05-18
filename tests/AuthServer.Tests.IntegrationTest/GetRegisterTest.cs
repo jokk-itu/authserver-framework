@@ -24,7 +24,7 @@ public class GetRegisterTest : BaseIntegrationTest
     {
         // Arrange
         var databaseContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         databaseContext.Add(client);
         await databaseContext.SaveChangesAsync();
 

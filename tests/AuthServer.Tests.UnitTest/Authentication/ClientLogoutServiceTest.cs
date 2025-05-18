@@ -33,7 +33,7 @@ public class ClientLogoutServiceTest : BaseUnitTest
 
         var clientLogoutService = serviceProvider.GetRequiredService<IClientLogoutService>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             BackchannelLogoutUri = "https://webapp.authserver.dk/logout",
             IdTokenSignedResponseAlg = SigningAlg.RsaSha256
@@ -67,7 +67,7 @@ public class ClientLogoutServiceTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             BackchannelLogoutUri = "https://webapp.authserver.dk/logout",
             IdTokenSignedResponseAlg = SigningAlg.RsaSha256

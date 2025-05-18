@@ -839,7 +839,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
 
@@ -871,7 +871,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetWeatherClient()
     {
-        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };

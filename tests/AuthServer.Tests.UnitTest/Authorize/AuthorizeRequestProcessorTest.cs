@@ -26,7 +26,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             AuthorizationCodeExpiration = 60,
             RequireConsent = false
@@ -73,7 +73,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             AuthorizationCodeExpiration = 60
         };
@@ -85,7 +85,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
         await AddEntity(scopeConsent);
 
-        var weatherClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };

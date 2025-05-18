@@ -445,7 +445,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new ClientAccessToken(client, "aud", "iss", null, 3600);
         await AddEntity(token);
 
@@ -473,7 +473,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600);
         token.Revoke();
         await AddEntity(token);
@@ -502,7 +502,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600);
         typeof(Token)
             .GetProperty(nameof(Token.IssuedAt))!
@@ -534,7 +534,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600);
         typeof(Token)
             .GetProperty(nameof(Token.ExpiresAt))!
@@ -566,7 +566,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", "scope", 3600);
         await AddEntity(token);
 

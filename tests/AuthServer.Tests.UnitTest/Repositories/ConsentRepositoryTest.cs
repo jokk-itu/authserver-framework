@@ -175,7 +175,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
         var subjectIdentifier = new SubjectIdentifier();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(subjectIdentifier);
         await AddEntity(client);
 
@@ -215,7 +215,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
         var subjectIdentifier = new SubjectIdentifier();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(new ScopeConsent(subjectIdentifier, client, await GetScope(ScopeConstants.Profile)));
         await AddEntity(new ClaimConsent(subjectIdentifier, client, await GetClaim(ClaimNameConstants.Birthdate)));
 
@@ -259,7 +259,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         authorizationGrant.AuthorizationGrantConsents.Clear();
 
-        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://idp.authserver.dk"
         };
@@ -317,7 +317,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         await AddEntity(claimConsent);
 
-        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://idp.authserver.dk"
         };
@@ -325,7 +325,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         idpClient.Scopes.Add(await GetScope(ScopeConstants.Profile));
         await AddEntity(idpClient);
 
-        var weatherClient = new Client("weather", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("weather", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };
@@ -379,7 +379,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         await AddEntity(scopeConsent);
 
-        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://idp.authserver.dk"
         };
@@ -417,7 +417,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
     private async Task<(string SubjectIdentifier, string ClientId)> GetClientConsent(string scope, string claim)
     {
         var subjectIdentifier = new SubjectIdentifier();
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, await GetScope(scope));
         var claimConsent = new ClaimConsent(subjectIdentifier, client, await GetClaim(claim));
 
@@ -431,7 +431,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
     {
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
 

@@ -25,7 +25,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var processor = serviceProvider.GetRequiredService<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };
@@ -51,7 +51,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var processor = serviceProvider.GetRequiredService<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };
@@ -81,7 +81,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var processor = serviceProvider.GetRequiredService<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };
@@ -111,7 +111,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var processor = serviceProvider.GetRequiredService<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };
@@ -141,7 +141,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };
@@ -192,7 +192,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var processor = serviceProvider.GetRequiredService<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>>();
 
-        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };
@@ -200,7 +200,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         weatherClient.Scopes.Add(weatherReadScope);
         await AddEntity(weatherClient);
 
-        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         client.Scopes.Add(weatherReadScope);
 
         var token = new ClientAccessToken(client, weatherClient.ClientUri!, DiscoveryDocument.Issuer, weatherReadScope.Name, 3600);

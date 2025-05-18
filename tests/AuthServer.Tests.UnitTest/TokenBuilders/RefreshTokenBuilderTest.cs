@@ -102,7 +102,7 @@ public class RefreshTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitT
             .Set<Scope>()
             .SingleAsync(x => x.Name == ScopeConstants.OpenId);
 
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequireReferenceToken = requireReferenceToken,
             RefreshTokenExpiration = 86400,
