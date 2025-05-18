@@ -115,7 +115,9 @@ public static class ServiceCollectionExtensions
             .AddScoped<IClientAuthenticationService, ClientAuthenticationService>()
             .AddScoped<IClientJwkService, ClientJwkService>()
             .AddScoped<IClientSectorService, ClientSectorService>()
-            .AddScoped<IClientLogoutService, ClientLogoutService>();
+            .AddScoped<IClientLogoutService, ClientLogoutService>()
+            .AddScoped<ISecureRequestService, SecureRequestService>()
+            .AddScoped<IDPoPService, DPoPService>();
     }
 
     private static void AddRepositories(IServiceCollection services)
@@ -242,7 +244,6 @@ public static class ServiceCollectionExtensions
             .AddScoped<IAuthorizeInteractionService, AuthorizeInteractionService>()
             .AddScoped<IAuthorizeResponseBuilder, AuthorizeResponseBuilder>()
             .AddScoped<IUserAccessor<AuthorizeUser>, AuthorizeUserAccessor>()
-            .AddScoped<ISecureRequestService, SecureRequestService>()
             .AddScoped<IRequestHandler<AuthorizeRequest, string>, AuthorizeRequestHandler>()
             .AddScoped<IRequestProcessor<AuthorizeValidatedRequest, string>, AuthorizeRequestProcessor>()
             .AddScoped<IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>, AuthorizeRequestValidator>();
