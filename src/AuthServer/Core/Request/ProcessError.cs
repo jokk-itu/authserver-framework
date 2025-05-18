@@ -1,5 +1,6 @@
 ﻿namespace AuthServer.Core.Request;
-public class ProcessError(string Error, string ErrorDescription, ResultCode ResultCode)
+
+public record ProcessError(string Error, string ErrorDescription, ResultCode ResultCode)
 {
     public string Error { get; } = Error;
     public string ErrorDescription { get; } = ErrorDescription;
