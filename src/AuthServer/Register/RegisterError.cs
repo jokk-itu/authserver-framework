@@ -100,6 +100,9 @@ internal static class RegisterError
     public static readonly ProcessError InvalidRequestUriExpiration =
         new(ErrorCode.InvalidClientMetadata, "invalid request_uri_expiration", ResultCode.BadRequest);
 
+    public static readonly ProcessError InvalidDPoPNonceExpiration =
+        new(ErrorCode.InvalidClientMetadata, "invalid dpop_nonce_expiration", ResultCode.BadRequest);
+
     public static readonly ProcessError InvalidTokenEndpointAuthSigningAlg =
         new(ErrorCode.InvalidClientMetadata, "invalid token_endpoint_auth_signing_alg", ResultCode.BadRequest);
 
