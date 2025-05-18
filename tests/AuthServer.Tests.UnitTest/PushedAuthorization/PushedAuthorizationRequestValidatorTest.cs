@@ -1,6 +1,7 @@
 ﻿using AuthServer.Authentication.Models;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
@@ -389,7 +390,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceStrict);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         var nonceValue = Guid.NewGuid().ToString();
-        var nonce = new Nonce(nonceValue, nonceValue.Sha256(), authorizationGrant);
+        var nonce = new AuthorizationGrantNonce(nonceValue, nonceValue.Sha256(), authorizationGrant);
         await AddEntity(nonce);
 
         var request = new PushedAuthorizationRequest
@@ -727,7 +728,6 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-
     public async Task Validate_InvalidAcrValues_ExpectInvalidAcrValues()
     {
         // Arrange
@@ -856,6 +856,198 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_MissingDPoPAndClientRequiresDPoP_ExpectDPoPRequired()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        client.RequireDPoPBoundAccessTokens = true;
+        await SaveChangesAsync();
+
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.DPoPRequired, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidDPoP_ExpectInvalidDPoP()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        const string dPoP = "invalid_dpop";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult { IsValid = false })
+            .Verifiable();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            DPoP = dPoP
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        dPoPService.Verify();
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidDPoP, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidNonceClaimInDPoP_ExpectUseDPoPNonce()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        const string dPoP = "dpop";
+        const string dPoPNonce = "dpop_nonce";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult { IsValid = false, DPoPNonce = dPoPNonce })
+            .Verifiable();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            DPoP = dPoP
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        dPoPService.Verify();
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.UseDPoPNonce(dPoPNonce), processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_MismatchingDPoPJkt_ExpectInvalidDPoPMatch()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        const string dPoP = "dpop_token";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult { IsValid = true, DPoPJkt = "dpop_jkt"})
+            .Verifiable();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            DPoP = dPoP,
+            DPoPJkt = "invalid_dpop_jkt"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        dPoPService.Verify();
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidDPoPJktMatch, processResult.Error);
+    }
+
+    [Fact]
     public async Task Validate_MinimalRequest_ExpectValidatedRequest()
     {
         // Arrange
@@ -892,6 +1084,10 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Null(processResult.Value!.LoginHint);
         Assert.Null(processResult.Value!.IdTokenHint);
         Assert.Null(processResult.Value!.Display);
+        Assert.Null(processResult.Value!.Prompt);
+        Assert.Null(processResult.Value!.GrantId);
+        Assert.Null(processResult.Value!.GrantManagementAction);
+        Assert.Null(processResult.Value!.DPoPJkt);
         Assert.Equal(request.ResponseType, processResult.Value!.ResponseType);
         Assert.Null(processResult.Value!.ResponseMode);
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
@@ -903,6 +1099,95 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.State, processResult.Value!.State);
         Assert.Null(request.RedirectUri);
+        Assert.Equal(request.Resource, processResult.Value!.Resource);
+    }
+
+    [Fact]
+    public async Task Validate_FullRequest_ExpectValidatedRequest()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var authorizationGrant = await GetAuthorizationGrant(client);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        const string dPoP = "dpop_token";
+        const string dPoPJkt = "dpop_jkt";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult { IsValid = true, DPoPJkt = dPoPJkt })
+            .Verifiable();
+
+        var idToken = JwtBuilder.GetIdToken(
+            client.Id, authorizationGrant.Id, authorizationGrant.Subject,
+            authorizationGrant.Session.Id,
+            [AuthenticationMethodReferenceConstants.Password],
+            authorizationGrant.AuthenticationContextReference.Name);
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            Display = DisplayConstants.Page,
+            AcrValues = [LevelOfAssuranceLow],
+            MaxAge = "86400",
+            ResponseMode = ResponseModeConstants.FormPost,
+            LoginHint = UserConstants.Email,
+            IdTokenHint = idToken,
+            Prompt = PromptConstants.Login,
+            RedirectUri = client.RedirectUris.Single().Uri,
+            GrantId = authorizationGrant.Id,
+            GrantManagementAction = GrantManagementActionConstants.Replace,
+            DPoP = dPoP,
+            DPoPJkt = dPoPJkt 
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        dPoPService.Verify();
+
+        Assert.True(processResult.IsSuccess);
+        Assert.Equal(client.Id, processResult.Value!.ClientId);
+
+        Assert.Equal(request.LoginHint, processResult.Value!.LoginHint);
+        Assert.Equal(request.IdTokenHint, processResult.Value!.IdTokenHint);
+        Assert.Equal(request.Nonce, processResult.Value!.Nonce);
+        Assert.Equal(request.State, processResult.Value!.State);
+        Assert.Equal(request.Display, processResult.Value!.Display);
+        Assert.Equal(request.ResponseType, processResult.Value!.ResponseType);
+        Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
+        Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
+        Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
+        Assert.Equal(request.Scope, processResult.Value!.Scope);
+        Assert.Equal(request.AcrValues, processResult.Value!.AcrValues);
+        Assert.Equal(request.Prompt, processResult.Value!.Prompt);
+        Assert.Equal(request.MaxAge, processResult.Value!.MaxAge);
+        Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Equal(request.GrantId, processResult.Value!.GrantId);
+        Assert.Equal(request.GrantManagementAction, processResult.Value!.GrantManagementAction);
+        Assert.Equal(request.DPoPJkt, processResult.Value!.DPoPJkt);
     }
 
     [Fact]
@@ -961,6 +1246,10 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Null(processResult.Value!.LoginHint);
         Assert.Null(processResult.Value!.IdTokenHint);
         Assert.Null(processResult.Value!.Display);
+        Assert.Null(processResult.Value!.Prompt);
+        Assert.Null(processResult.Value!.GrantId);
+        Assert.Null(processResult.Value!.GrantManagementAction);
+        Assert.Null(processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.ResponseType, processResult.Value!.ResponseType);
         Assert.Null(processResult.Value!.ResponseMode);
         Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
@@ -972,11 +1261,116 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.State, processResult.Value!.State);
         Assert.Null(authorizeRequestDto.RedirectUri);
+        Assert.Equal(request.Resource, processResult.Value!.Resource);
+    }
+
+    [Fact]
+    public async Task Validate_FullRequestObject_ExpectValidatedRequest()
+    {
+        // Arrange
+        var secureRequestService = new Mock<ISecureRequestService>();
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(secureRequestService);
+            services.AddScopedMock(dPoPService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var authorizationGrant = await GetAuthorizationGrant(client);
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+
+        const string dPoP = "dpop_token";
+        const string dPoPJkt = "dpop_jkt";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult { IsValid = true, DPoPJkt = dPoPJkt })
+            .Verifiable();
+
+        var idToken = JwtBuilder.GetIdToken(
+            client.Id, authorizationGrant.Id, authorizationGrant.Subject,
+            authorizationGrant.Session.Id,
+            [AuthenticationMethodReferenceConstants.Password],
+            authorizationGrant.AuthenticationContextReference.Name);
+
+        var resource = await GetResource();
+
+        const string requestObject = "requestObject";
+        var authorizeRequestDto = new AuthorizeRequestDto
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            Display = DisplayConstants.Page,
+            AcrValues = [LevelOfAssuranceLow],
+            MaxAge = "86400",
+            ResponseMode = ResponseModeConstants.FormPost,
+            LoginHint = UserConstants.Email,
+            IdTokenHint = idToken,
+            Prompt = PromptConstants.Login,
+            RedirectUri = client.RedirectUris.Single().Uri,
+            GrantId = authorizationGrant.Id,
+            GrantManagementAction = GrantManagementActionConstants.Replace,
+            DPoPJkt = dPoPJkt
+        };
+
+        secureRequestService
+            .Setup(x =>
+                x.GetRequestByObject(requestObject, client.Id, ClientTokenAudience.PushedAuthorizationEndpoint, CancellationToken.None))
+            .ReturnsAsync(authorizeRequestDto)
+            .Verifiable();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            DPoP = dPoP,
+            RequestObject = requestObject
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        secureRequestService.Verify();
+        dPoPService.Verify();
+
+        Assert.True(processResult.IsSuccess);
+        Assert.Equal(client.Id, processResult.Value!.ClientId);
+
+        Assert.Equal(authorizeRequestDto.LoginHint, processResult.Value!.LoginHint);
+        Assert.Equal(authorizeRequestDto.IdTokenHint, processResult.Value!.IdTokenHint);
+        Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
+        Assert.Equal(authorizeRequestDto.State, processResult.Value!.State);
+        Assert.Equal(authorizeRequestDto.Display, processResult.Value!.Display);
+        Assert.Equal(authorizeRequestDto.ResponseType, processResult.Value!.ResponseType);
+        Assert.Equal(authorizeRequestDto.ResponseMode, processResult.Value!.ResponseMode);
+        Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
+        Assert.Equal(authorizeRequestDto.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
+        Assert.Equal(authorizeRequestDto.Scope, processResult.Value!.Scope);
+        Assert.Equal(authorizeRequestDto.AcrValues, processResult.Value!.AcrValues);
+        Assert.Equal(authorizeRequestDto.Prompt, processResult.Value!.Prompt);
+        Assert.Equal(authorizeRequestDto.MaxAge, processResult.Value!.MaxAge);
+        Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
+        Assert.Equal(authorizeRequestDto.GrantId, processResult.Value!.GrantId);
+        Assert.Equal(authorizeRequestDto.GrantManagementAction, processResult.Value!.GrantManagementAction);
+        Assert.Equal(authorizeRequestDto.DPoPJkt, processResult.Value!.DPoPJkt);
     }
 
     private async Task<Client> GetClient(string plainSecret)
     {
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         client.RedirectUris.Add(new RedirectUri("https://webapp.authserver.dk/callback", client));
         client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.AuthorizationCode));
         client.Scopes.Add(await GetScope(ScopeConstants.OpenId));
@@ -986,9 +1380,23 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         return client;
     }
 
+    private async Task<AuthorizationGrant> GetAuthorizationGrant(Client client)
+    {
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+
+        var passwordMethod = await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password);
+        authorizationGrant.AuthenticationMethodReferences.Add(passwordMethod);
+
+        await AddEntity(authorizationGrant);
+        return authorizationGrant;
+    }
+
     private async Task<Client> GetResource()
     {
-        var resource = new Client("weather-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var resource = new Client("weather-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };

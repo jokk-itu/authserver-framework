@@ -16,6 +16,7 @@ internal class PushedAuthorizationValidatedRequest
     public string? ResponseMode { get; init; }
     public string? GrantId { get; init; }
     public string? GrantManagementAction { get; init; }
+    public string? DPoPJkt { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];

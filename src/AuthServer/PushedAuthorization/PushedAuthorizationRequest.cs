@@ -8,7 +8,7 @@ internal class PushedAuthorizationRequest
     {
     }
 
-    public PushedAuthorizationRequest(AuthorizeRequestDto authorizeRequestDto, IReadOnlyCollection<ClientAuthentication> clientAuthentications)
+    public PushedAuthorizationRequest(AuthorizeRequestDto authorizeRequestDto, IReadOnlyCollection<ClientAuthentication> clientAuthentications, string? dPoP)
     {
         IdTokenHint = authorizeRequestDto.IdTokenHint;
         LoginHint = authorizeRequestDto.LoginHint;
@@ -29,6 +29,7 @@ internal class PushedAuthorizationRequest
         AcrValues = authorizeRequestDto.AcrValues;
         Resource = authorizeRequestDto.Resource;
         ClientAuthentications = clientAuthentications;
+        DPoP = dPoP;
     }
 
     public string? IdTokenHint { get; init; }

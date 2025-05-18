@@ -1,6 +1,7 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
@@ -16,6 +17,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly ISecureRequestService _secureRequestService;
+    private readonly IDPoPService _dPoPService;
 
     public PushedAuthorizationRequestValidator(
         ICachedClientStore cachedClientStore,
@@ -25,12 +27,14 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         ISecureRequestService secureRequestService,
         IAuthorizationGrantRepository authorizationGrantRepository,
-        IClientRepository clientRepository)
+        IClientRepository clientRepository,
+        IDPoPService dPoPService)
         : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
     {
         _cachedClientStore = cachedClientStore;
         _clientAuthenticationService = clientAuthenticationService;
         _secureRequestService = secureRequestService;
+        _dPoPService = dPoPService;
     }
 
     public async Task<ProcessResult<PushedAuthorizationValidatedRequest, ProcessError>> Validate(PushedAuthorizationRequest request, CancellationToken cancellationToken)
@@ -63,7 +67,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
                 return PushedAuthorizationError.InvalidRequest;
             }
 
-            request = new PushedAuthorizationRequest(newRequest, request.ClientAuthentications);
+            request = new PushedAuthorizationRequest(newRequest, request.ClientAuthentications, request.DPoP);
         }
 
         if (!HasValidState(request.State))
@@ -166,6 +170,36 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return PushedAuthorizationError.InvalidGrantId;
         }
 
+        if (!HasValidDPoP(request.DPoPJkt, request.DPoP, cachedClient.RequireDPoPBoundAccessTokens))
+        {
+            return PushedAuthorizationError.DPoPRequired;
+        }
+
+        var dPoPValidationResult = new DPoPValidationResult
+        {
+            IsValid = !cachedClient.RequireDPoPBoundAccessTokens
+        };
+        if (!string.IsNullOrEmpty(request.DPoP))
+        {
+            dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, cachedClient.Id, cancellationToken);
+            var isJktValid = string.IsNullOrEmpty(request.DPoPJkt) || request.DPoPJkt == dPoPValidationResult.DPoPJkt;
+
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null })
+            {
+                return PushedAuthorizationError.InvalidDPoP;
+            }
+
+            if (dPoPValidationResult is { IsValid: false })
+            {
+                return PushedAuthorizationError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
+            }
+
+            if (!isJktValid)
+            {
+                return PushedAuthorizationError.InvalidDPoPJktMatch;
+            }
+        }
+
         return new PushedAuthorizationValidatedRequest
         {
             LoginHint = request.LoginHint,
@@ -185,7 +219,8 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             State = request.State!,
             RedirectUri = request.RedirectUri,
             GrantId = request.GrantId,
-            GrantManagementAction = request.GrantManagementAction
+            GrantManagementAction = request.GrantManagementAction,
+            DPoPJkt = dPoPValidationResult.DPoPJkt ?? request.DPoPJkt
         };
     }
 }
