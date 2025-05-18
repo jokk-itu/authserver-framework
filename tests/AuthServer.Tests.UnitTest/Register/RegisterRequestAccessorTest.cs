@@ -206,10 +206,12 @@ public class RegisterRequestAccessorTest : BaseUnitTest
     [InlineData("PUT", true, true)]
     [InlineData("POST", false, false)]
     [InlineData("PUT", false, false)]
-    public async Task GetRequest_ValidBoolParametersPostAndPut_ExpectValues(string method, bool value, bool? expectedValue)
+    [InlineData("POST", null, null)]
+    [InlineData("PUT", null, null)]
+    public async Task GetRequest_BoolParametersPostAndPut_ExpectValues(string method, bool? value, bool? expectedValue)
     {
         // Arrange
-        var requestContent = new Dictionary<string, object>
+        var requestContent = new Dictionary<string, bool?>
         {
             { Parameter.RequireSignedRequestObject, value },
             { Parameter.RequireReferenceToken, value },
@@ -270,7 +272,9 @@ public class RegisterRequestAccessorTest : BaseUnitTest
     [InlineData("PUT", 10, 10)]
     [InlineData("POST", -10, -10)]
     [InlineData("PUT", -10, -10)]
-    public async Task GetRequest_IntParametersPostAndPut_ExpectValues(string method, int value, int? expectedValue)
+    [InlineData("POST", null, null)]
+    [InlineData("PUT", null, null)]
+    public async Task GetRequest_IntParametersPostAndPut_ExpectValues(string method, int? value, int? expectedValue)
     {
         // Arrange
         var requestContent = new Dictionary<string, int?>
@@ -280,7 +284,8 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.RefreshTokenExpiration, value },
             { Parameter.ClientSecretExpiration, value },
             { Parameter.JwksExpiration, value },
-            { Parameter.RequestUriExpiration, value }
+            { Parameter.RequestUriExpiration, value },
+            { Parameter.DPoPNonceExpiration, value }
         };
         var requestJson = JsonSerializer.SerializeToUtf8Bytes(requestContent);
         var requestStream = new MemoryStream(requestJson);
@@ -327,6 +332,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.ClientSecretExpiration);
         Assert.Equal(expectedValue, request.JwksExpiration);
         Assert.Equal(expectedValue, request.RequestUriExpiration);
+        Assert.Equal(expectedValue, request.DPoPNonceExpiration);
     }
 
     [Theory]

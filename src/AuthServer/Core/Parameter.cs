@@ -89,6 +89,7 @@ public static class Parameter
     public const string DPoPNonce = "dpop-nonce";
     public const string DPoPJkt = "dpop_jkt";
     public const string DPoPBoundAccessTokens = "dpop_bound_access_tokens";
+    public const string DPoPNonceExpiration = "dpop_nonce_expiration";
     public const string GrantId = "grant_id";
     public const string GrantManagementAction = "grant_management_action";
     public const string Scopes = "scopes";
