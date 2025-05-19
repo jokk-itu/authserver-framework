@@ -3,6 +3,7 @@ using AuthServer.Authorization.Models;
 using AuthServer.Constants;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Extensions;
+using AuthServer.Helpers;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
@@ -148,8 +149,7 @@ internal class DPoPService : IDPoPService
         }
 
         var jwkHeaderClaim = validatedDPoPToken.GetHeaderValue<string>(ClaimNameConstants.Jwk);
-        var jsonWebKey = new JsonWebKey(jwkHeaderClaim);
-        var jkt = Base64UrlEncoder.Encode(jsonWebKey.ComputeJwkThumbprint());
+        var jkt = CryptographyHelper.ComputeJwkThumbprint(jwkHeaderClaim);
 
         return new DPoPValidationResult
         {
