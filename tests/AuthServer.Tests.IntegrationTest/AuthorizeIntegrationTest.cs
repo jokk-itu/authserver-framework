@@ -19,7 +19,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     }
 
     [Theory]
-    [InlineData("form_post", HttpStatusCode.OK, "https://localhost:7254")]
+    [InlineData("form_post", HttpStatusCode.OK, "http://localhost")]
     [InlineData("query", HttpStatusCode.SeeOther, null)]
     [InlineData("fragment", HttpStatusCode.SeeOther, null)]
     public async Task Authorize_NoPromptWithLoginAndConsentWithRequestObject_ExpectAuthorizationCode(string responseMode, HttpStatusCode statusCode, string? issuer)

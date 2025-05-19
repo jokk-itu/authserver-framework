@@ -226,7 +226,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var client = new Client("identity-provider", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic,300, 60)
         {
             Scopes = [openId, email, address, phone, profile, offlineAccess, userinfoScope, grantManagementRevokeScope, grantManagementQueryScope],
-            ClientUri = "https://localhost:7254"
+            ClientUri = "http://localhost"
         };
 
         await dbContext.AddAsync(client);
