@@ -1261,7 +1261,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.State, processResult.Value!.State);
         Assert.Null(authorizeRequestDto.RedirectUri);
-        Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
     }
 
     [Fact]
