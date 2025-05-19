@@ -112,7 +112,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
             var claims = new Dictionary<string, object>
             {
                 { ClaimNameConstants.Htm, HttpMethod.Post.Method },
-                { ClaimNameConstants.Htu, $"{HttpClient.BaseAddress}/connect/par" }
+                { ClaimNameConstants.Htu, $"{HttpClient.BaseAddress}connect/par" }
             };
             if (_dPoPNonce is not null)
             {
@@ -217,11 +217,12 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
             };
         }
 
+        httpResponseMessage.Headers.TryGetValues(Parameter.DPoPNonce, out var dPoPNonce);
         return new PushedAuthorizationResponse
         {
             StatusCode = httpResponseMessage.StatusCode,
             Error = JsonSerializer.Deserialize<OAuthError>(content),
-            DPoPNonce = httpResponseMessage.Headers.GetValues(Parameter.DPoPNonce).SingleOrDefault()
+            DPoPNonce = dPoPNonce?.ToString()
         };
     }
 
