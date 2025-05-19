@@ -76,6 +76,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 		var clientSecretExpiration = json.GetIntValue(Parameter.ClientSecretExpiration);
 		var jwksExpiration = json.GetIntValue(Parameter.JwksExpiration);
         var requestUriExpiration = json.GetIntValue(Parameter.RequestUriExpiration);
+        var dPoPNonceExpiration = json.GetIntValue(Parameter.DPoPNonceExpiration);
 
 		var defaultAcrValues = json.GetSpaceDelimitedValue(Parameter.DefaultAcrValues);
 		var scope = json.GetSpaceDelimitedValue(Parameter.Scope);
@@ -129,6 +130,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 			ClientSecretExpiration = clientSecretExpiration,
 			JwksExpiration = jwksExpiration,
 			RequestUriExpiration = requestUriExpiration,
+			DPoPNonceExpiration = dPoPNonceExpiration,
 			DefaultAcrValues = defaultAcrValues,
 			Scope = scope,
 			RedirectUris = redirectUris,

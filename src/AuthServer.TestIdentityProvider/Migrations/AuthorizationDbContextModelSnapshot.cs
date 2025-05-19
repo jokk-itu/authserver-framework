@@ -457,6 +457,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("DPoPNonceExpiration")
+                        .HasColumnType("int");
+
                     b.Property<int?>("DefaultMaxAge")
                         .HasColumnType("int");
 
@@ -700,10 +703,6 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("AuthorizationGrantId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("HashedValue")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -712,6 +711,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("NonceType")
+                        .HasColumnType("int");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasMaxLength(2147483647)
@@ -719,9 +721,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorizationGrantId");
-
                     b.ToTable("Nonce");
+
+                    b.HasDiscriminator<int>("NonceType");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("AuthServer.Entities.PostLogoutRedirectUri", b =>
@@ -1107,6 +1111,35 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.HasDiscriminator().HasValue(1);
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantNonce", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.Nonce");
+
+                    b.Property<string>("AuthorizationGrantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasIndex("AuthorizationGrantId");
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.DPoPNonce", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.Nonce");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
             modelBuilder.Entity("AuthServer.Entities.ClientToken", b =>
                 {
                     b.HasBaseType("AuthServer.Entities.Token");
@@ -1283,17 +1316,6 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("AuthServer.Entities.Nonce", b =>
-                {
-                    b.HasOne("AuthServer.Entities.AuthorizationGrant", "AuthorizationGrant")
-                        .WithMany("Nonces")
-                        .HasForeignKey("AuthorizationGrantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AuthorizationGrant");
-                });
-
             modelBuilder.Entity("AuthServer.Entities.PostLogoutRedirectUri", b =>
                 {
                     b.HasOne("AuthServer.Entities.Client", "Client")
@@ -1420,6 +1442,28 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("Scope");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantNonce", b =>
+                {
+                    b.HasOne("AuthServer.Entities.AuthorizationGrant", "AuthorizationGrant")
+                        .WithMany("Nonces")
+                        .HasForeignKey("AuthorizationGrantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorizationGrant");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.DPoPNonce", b =>
+                {
+                    b.HasOne("AuthServer.Entities.Client", "Client")
+                        .WithMany("Nonces")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
             modelBuilder.Entity("AuthServer.Entities.ClientToken", b =>
                 {
                     b.HasOne("AuthServer.Entities.Client", "Client")
@@ -1478,6 +1522,8 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("Consents");
 
                     b.Navigation("Contacts");
+
+                    b.Navigation("Nonces");
 
                     b.Navigation("PostLogoutRedirectUris");
 

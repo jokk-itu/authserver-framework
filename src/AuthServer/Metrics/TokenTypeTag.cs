@@ -26,4 +26,7 @@ internal enum TokenTypeTag
 
     [Description("request_object")]
     RequestObject,
+
+    [Description("dpop_token")]
+    DPoPToken
 }

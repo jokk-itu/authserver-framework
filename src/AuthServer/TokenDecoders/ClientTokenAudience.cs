@@ -5,5 +5,7 @@ public enum ClientTokenAudience
     AuthorizationEndpoint,
     IntrospectionEndpoint,
     RevocationEndpoint,
-    PushedAuthorizationEndpoint
+    PushedAuthorizationEndpoint,
+    UserinfoEndpoint,
+    GrantManagementEndpoint,
 }

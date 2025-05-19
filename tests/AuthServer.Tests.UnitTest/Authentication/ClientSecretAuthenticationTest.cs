@@ -34,7 +34,7 @@ public class ClientSecretAuthenticationTest(ITestOutputHelper outputHelper) : Ba
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
-        var client = new Client("PinguApp", ApplicationType.Native, TokenEndpointAuthMethod.None);
+        var client = new Client("PinguApp", ApplicationType.Native, TokenEndpointAuthMethod.None, 300, 60);
         var clientSecret = CryptographyHelper.GetRandomString(32);
         await AddEntity(client);
         var clientAuthentication = new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, clientSecret);
@@ -53,7 +53,7 @@ public class ClientSecretAuthenticationTest(ITestOutputHelper outputHelper) : Ba
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             SecretExpiration = -1
         };
@@ -79,7 +79,7 @@ public class ClientSecretAuthenticationTest(ITestOutputHelper outputHelper) : Ba
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainTextSecret = CryptographyHelper.GetRandomString(32);
         var hashedSecret = CryptographyHelper.HashPassword(plainTextSecret);
         client.SetSecret(hashedSecret);
@@ -102,7 +102,7 @@ public class ClientSecretAuthenticationTest(ITestOutputHelper outputHelper) : Ba
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
-        var client = new Client("PinguApp", ApplicationType.Web, tokenEndpointAuthMethod)
+        var client = new Client("PinguApp", ApplicationType.Web, tokenEndpointAuthMethod, 300, 60)
         {
             SecretExpiration = secretExpiration
         };

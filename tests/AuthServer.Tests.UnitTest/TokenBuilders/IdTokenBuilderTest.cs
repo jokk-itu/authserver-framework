@@ -158,7 +158,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
             .Set<Scope>()
             .SingleAsync(x => x.Name == ScopeConstants.Profile);
 
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             IdTokenSignedResponseAlg = signingAlg,
             SubjectType = SubjectType.Pairwise,
@@ -178,7 +178,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         };
 
         var value = CryptographyHelper.GetRandomString(32);
-        var nonce = new Nonce(value, value.Sha256(), authorizationGrant);
+        var nonce = new AuthorizationGrantNonce(value, value.Sha256(), authorizationGrant);
         authorizationGrant.Nonces.Add(nonce);
 
         var nameClaim = await IdentityContext.Set<Claim>().SingleAsync(x => x.Name == ClaimNameConstants.Name);
@@ -209,7 +209,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
             .Set<Scope>()
             .SingleAsync(x => x.Name == ScopeConstants.Profile);
 
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             IdTokenSignedResponseAlg = signingAlg,
             IdTokenEncryptedResponseAlg = encryptionAlg,
@@ -233,7 +233,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         };
 
         var value = CryptographyHelper.GetRandomString(32);
-        var nonce = new Nonce(value, value.Sha256(), authorizationGrant);
+        var nonce = new AuthorizationGrantNonce(value, value.Sha256(), authorizationGrant);
         authorizationGrant.Nonces.Add(nonce);
 
         await AddEntity(authorizationGrant);

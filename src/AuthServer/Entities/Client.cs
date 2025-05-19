@@ -4,7 +4,7 @@ using AuthServer.Enums;
 namespace AuthServer.Entities;
 public class Client : Entity<string>
 {
-    public Client(string name, ApplicationType applicationType, TokenEndpointAuthMethod tokenEndpointAuthMethod)
+    public Client(string name, ApplicationType applicationType, TokenEndpointAuthMethod tokenEndpointAuthMethod, int accessTokenExpiration, int dPoPNonceExpiration)
     {
         Id = Guid.NewGuid().ToString();
         Name = string.IsNullOrWhiteSpace(name) ? throw new ArgumentNullException(nameof(name)) : name;
@@ -12,6 +12,8 @@ public class Client : Entity<string>
         TokenEndpointAuthMethod = tokenEndpointAuthMethod;
         CreatedAt = DateTime.UtcNow;
         RequireConsent = true;
+        AccessTokenExpiration = accessTokenExpiration > 0 ? accessTokenExpiration : throw new ArgumentException("must be larger than zero", nameof(accessTokenExpiration));
+        DPoPNonceExpiration = dPoPNonceExpiration > 0 ? dPoPNonceExpiration : throw new ArgumentException("must be larger than zero", nameof(dPoPNonceExpiration));
     }
 
 #pragma warning disable CS8618
@@ -68,6 +70,11 @@ public class Client : Entity<string>
     /// Lifetime of jwks in seconds.
     /// </summary>
     public int? JwksExpiration { get; set; }
+
+    /// <summary>
+    /// DPoPNonce lifetime in seconds.
+    /// </summary>
+    public int DPoPNonceExpiration { get; set; }
 
     /// <summary>
     /// Uri to terms of service page.
@@ -240,6 +247,7 @@ public class Client : Entity<string>
     public ICollection<ClientToken> ClientTokens { get; set; } = [];
     public ICollection<AuthorizeMessage> AuthorizeMessages { get; set; } = [];
     public ICollection<ClientAuthenticationContextReference> ClientAuthenticationContextReferences { get; set; } = [];
+    public ICollection<DPoPNonce> Nonces { get; set; } = [];
 
     public void SetSecret(string secretHash)
     {

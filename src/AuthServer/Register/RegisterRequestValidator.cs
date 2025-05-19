@@ -171,6 +171,12 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return requestUriExpirationError;
         }
 
+        var dPoPNonceExpirationError = ValidateDPoPNonceExpiration(request, validatedRequest);
+        if (dPoPNonceExpirationError is not null)
+        {
+            return dPoPNonceExpirationError;
+        }
+
         var tokenEndpointAuthSigningAlgError = ValidateTokenEndpointAuth(request, validatedRequest);
         if (tokenEndpointAuthSigningAlgError is not null)
         {
@@ -1028,6 +1034,24 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         validatedRequest.RequestUriExpiration = request.RequestUriExpiration;
+        return null;
+    }
+
+    /// <summary>
+    /// DPoPNonceExpiration is OPTIONAL.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="validatedRequest"></param>
+    /// <returns></returns>
+    public static ProcessError? ValidateDPoPNonceExpiration(RegisterRequest request,
+        RegisterValidatedRequest validatedRequest)
+    {
+        if (request.DPoPNonceExpiration is < 5 or > 600)
+        {
+            return RegisterError.InvalidDPoPNonceExpiration;
+        }
+
+        validatedRequest.DPoPNonceExpiration = request.DPoPNonceExpiration ?? 300;
         return null;
     }
 

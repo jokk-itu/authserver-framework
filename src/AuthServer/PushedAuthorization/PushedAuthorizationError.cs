@@ -1,4 +1,5 @@
-﻿using AuthServer.Core.Request;
+﻿using AuthServer.Authorization.Models;
+using AuthServer.Core.Request;
 using AuthServer.Core;
 
 namespace AuthServer.PushedAuthorization;
@@ -67,6 +68,18 @@ internal static class PushedAuthorizationError
     
     public static readonly ProcessError InvalidGrantId =
         new(ErrorCode.InvalidGrantId, "grant_id is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidDPoPJktMatch =
+        new(ErrorCode.InvalidRequest, "dpop_jkt does not match jkt of dpop", ResultCode.BadRequest);
+
+    public static readonly ProcessError DPoPRequired =
+        new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
+
+    public static ProcessError UseDPoPNonce(string dPoPNonce)
+        => new DPoPNonceProcessError(dPoPNonce, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidDPoP =
+        new(ErrorCode.InvalidRequest, "dpop is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidRequest =
         new(ErrorCode.InvalidRequestObject, "request is invalid", ResultCode.BadRequest);

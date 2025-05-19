@@ -80,7 +80,7 @@ public class UserinfoTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnit
         var serviceProvider = BuildServiceProvider();
         var userinfoTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<UserinfoTokenArguments>>();
         var clientJwk = ClientJwkBuilder.GetClientJwks(SigningAlg.RsaSha256, encryptionAlg);
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwk.PublicJwks
         };
@@ -122,7 +122,7 @@ public class UserinfoTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnit
         var serviceProvider = BuildServiceProvider();
         var userinfoTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<UserinfoTokenArguments>>();
         var clientJwk = ClientJwkBuilder.GetClientJwks(SigningAlg.RsaSha256, encryptionAlg);
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwk.PublicJwks
         };

@@ -34,7 +34,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         });
         var authorizationCodeProcessor = serviceProvider.GetRequiredService<IRequestProcessor<AuthorizationCodeValidatedRequest, TokenResponse>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             AccessTokenExpiration = 3600
         };
@@ -103,7 +103,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         });
         var authorizationCodeProcessor = serviceProvider.GetRequiredService<IRequestProcessor<AuthorizationCodeValidatedRequest, TokenResponse>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             AccessTokenExpiration = 3600
         };
@@ -152,7 +152,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
 
     private async Task<Client> GetWeatherClient()
     {
-        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };

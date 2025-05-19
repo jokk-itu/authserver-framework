@@ -1,4 +1,5 @@
 ﻿using AuthServer.Entities;
+using AuthServer.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,6 +10,11 @@ internal sealed class NonceConfiguration : IEntityTypeConfiguration<Nonce>
     public void Configure(EntityTypeBuilder<Nonce> builder)
     {
         builder
+            .HasDiscriminator(x => x.NonceType)
+            .HasValue<AuthorizationGrantNonce>(NonceType.AuthorizationGrantNonce)
+            .HasValue<DPoPNonce>(NonceType.DPoPNonce);
+
+        builder
             .Property(x => x.Value)
             .HasMaxLength(int.MaxValue)
             .IsRequired();
@@ -17,11 +23,5 @@ internal sealed class NonceConfiguration : IEntityTypeConfiguration<Nonce>
             .Property(x => x.HashedValue)
             .HasMaxLength(256)
             .IsRequired();
-
-        builder
-            .HasOne(x => x.AuthorizationGrant)
-            .WithMany(x => x.Nonces)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

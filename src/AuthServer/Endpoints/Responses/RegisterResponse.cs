@@ -159,6 +159,9 @@ internal class RegisterResponse
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? RequestUriExpiration { get; init; }
 
+	[JsonPropertyName(Parameter.DPoPNonceExpiration)]
+	public required int DPoPNonceExpiration { get; init; }
+
 	[JsonPropertyName(Parameter.DefaultAcrValues)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public IReadOnlyCollection<string>? DefaultAcrValues { get; init; }

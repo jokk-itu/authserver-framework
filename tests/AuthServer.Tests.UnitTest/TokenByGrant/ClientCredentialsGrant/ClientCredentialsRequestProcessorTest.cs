@@ -24,7 +24,7 @@ public class ClientCredentialsRequestProcessorTest : BaseUnitTest
         var processor = serviceProvider
             .GetRequiredService<IRequestProcessor<ClientCredentialsValidatedRequest, TokenResponse>>();
 
-        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             AccessTokenExpiration = 3600
         };
@@ -40,7 +40,7 @@ public class ClientCredentialsRequestProcessorTest : BaseUnitTest
 
         await AddEntity(client);
 
-        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };

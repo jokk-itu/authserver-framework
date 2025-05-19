@@ -92,6 +92,7 @@ internal class CachedClientStore : ICachedClientStore
             AuthorizationCodeExpiration = client.AuthorizationCodeExpiration,
             JwksExpiration = client.JwksExpiration,
             RequestUriExpiration = client.RequestUriExpiration,
+            DPoPNonceExpiration = client.DPoPNonceExpiration,
             TosUri = client.TosUri,
             PolicyUri = client.PolicyUri,
             ClientUri = client.ClientUri,

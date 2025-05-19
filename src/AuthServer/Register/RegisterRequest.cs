@@ -42,6 +42,7 @@ internal class RegisterRequest
     public int? ClientSecretExpiration { get; init; }
     public int? JwksExpiration { get; init; }
     public int? RequestUriExpiration { get; init; }
+    public int? DPoPNonceExpiration { get; init; }
     public IReadOnlyCollection<string> DefaultAcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> RedirectUris { get; init; } = [];

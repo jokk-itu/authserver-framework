@@ -265,7 +265,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidGrantId;
         }
 
-        if (!HasValidDPoPJkt(request.DPoPJkt, cachedClient.RequireDPoPBoundAccessTokens))
+        if (!HasValidDPoP(request.DPoPJkt, null, cachedClient.RequireDPoPBoundAccessTokens))
         {
             return AuthorizeError.InvalidDPoPJkt;
         }

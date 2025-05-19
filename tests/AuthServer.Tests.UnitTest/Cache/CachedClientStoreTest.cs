@@ -25,7 +25,7 @@ public class CachedClientStoreTest(ITestOutputHelper outputHelper) : BaseUnitTes
         });
 
         var cachedClientStore = serviceProvider.GetRequiredService<ICachedClientStore>();
-        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         await ((CachedClientStore)cachedClientStore).Add(client.Id, CancellationToken.None);
@@ -48,7 +48,7 @@ public class CachedClientStoreTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var distributedCacheMock = new Mock<IDistributedCache>();
         var serviceProvider = BuildServiceProvider(services => { services.AddSingletonMock(distributedCacheMock); });
         var cachedClientStore = serviceProvider.GetRequiredService<ICachedClientStore>();
-        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var tempCachedClient = await ((CachedClientStore)cachedClientStore).Add(client.Id, CancellationToken.None);
@@ -78,7 +78,7 @@ public class CachedClientStoreTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var distributedCacheMock = new Mock<IDistributedCache>();
         var serviceProvider = BuildServiceProvider(services => { services.AddSingletonMock(distributedCacheMock); });
         var cachedClientStore = serviceProvider.GetRequiredService<ICachedClientStore>();
-        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         // Act
@@ -120,7 +120,7 @@ public class CachedClientStoreTest(ITestOutputHelper outputHelper) : BaseUnitTes
         });
 
         var cachedClientStore = serviceProvider.GetRequiredService<ICachedClientStore>();
-        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         await ((CachedClientStore)cachedClientStore).Add(client.Id, CancellationToken.None);

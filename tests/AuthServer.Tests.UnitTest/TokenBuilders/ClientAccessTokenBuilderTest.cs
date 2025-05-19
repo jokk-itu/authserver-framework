@@ -96,7 +96,7 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
             .Set<Scope>()
             .SingleAsync(x => x.Name == ScopeConstants.OpenId);
 
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequireReferenceToken = requireReferenceToken,
             AccessTokenExpiration = 300,

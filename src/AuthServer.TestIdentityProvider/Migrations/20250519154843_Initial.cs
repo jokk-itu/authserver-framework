@@ -131,6 +131,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     AuthorizationCodeExpiration = table.Column<int>(type: "int", nullable: true),
                     RequestUriExpiration = table.Column<int>(type: "int", nullable: true),
                     JwksExpiration = table.Column<int>(type: "int", nullable: true),
+                    DPoPNonceExpiration = table.Column<int>(type: "int", nullable: false),
                     TosUri = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     PolicyUri = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     ClientUri = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -541,7 +542,10 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     Value = table.Column<string>(type: "nvarchar(max)", maxLength: 2147483647, nullable: false),
                     HashedValue = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     IssuedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AuthorizationGrantId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    NonceType = table.Column<int>(type: "int", nullable: false),
+                    AuthorizationGrantId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -550,6 +554,12 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         name: "FK_Nonce_AuthorizationGrant_AuthorizationGrantId",
                         column: x => x.AuthorizationGrantId,
                         principalTable: "AuthorizationGrant",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Nonce_Client_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Client",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -802,6 +812,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 name: "IX_Nonce_AuthorizationGrantId",
                 table: "Nonce",
                 column: "AuthorizationGrantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Nonce_ClientId",
+                table: "Nonce",
+                column: "ClientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PostLogoutRedirectUri_ClientId",

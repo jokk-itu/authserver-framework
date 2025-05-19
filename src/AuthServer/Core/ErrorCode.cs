@@ -110,4 +110,9 @@ public static class ErrorCode
     /// The OP is unable to meet the requirements of the Relying Party for the authentication of the End-User.
     /// </summary>
     public const string UnmetAuthenticationRequirements = "unmet_authentication_requirements";
+
+    /// <summary>
+    /// The DPoP token does not contain a valid nonce.
+    /// </summary>
+    public const string UseDPoPNonce = "use_dpop_nonce";
 }

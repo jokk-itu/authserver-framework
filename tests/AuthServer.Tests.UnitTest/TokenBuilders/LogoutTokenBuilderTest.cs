@@ -154,7 +154,7 @@ public class LogoutTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTe
             .Set<Scope>()
             .SingleAsync(x => x.Name == ScopeConstants.OpenId);
 
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             IdTokenSignedResponseAlg = signingAlg,
             SubjectType = SubjectType.Pairwise
@@ -177,7 +177,7 @@ public class LogoutTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTe
             .Set<Scope>()
             .SingleAsync(x => x.Name == ScopeConstants.OpenId);
 
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             IdTokenSignedResponseAlg = signingAlg,
             IdTokenEncryptedResponseAlg = encryptionAlg,

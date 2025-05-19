@@ -1,4 +1,6 @@
-﻿namespace AuthServer.Endpoints.Abstractions;
+﻿using AuthServer.TokenDecoders;
+
+namespace AuthServer.Endpoints.Abstractions;
 
 public interface IEndpointResolver
 {
@@ -13,4 +15,7 @@ public interface IEndpointResolver
     string RevocationEndpoint { get; }
     string PushedAuthorizationEndpoint { get; }
     string GrantManagementEndpoint { get; }
+
+    string Convert(ClientTokenAudience clientTokenAudience);
+    ClientTokenAudience Convert(string endpoint);
 }

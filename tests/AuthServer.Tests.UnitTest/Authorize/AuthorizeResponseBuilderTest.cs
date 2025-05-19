@@ -132,7 +132,7 @@ public class AuthorizeResponseBuilderTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var responseBuilder = serviceProvider.GetRequiredService<IAuthorizeResponseBuilder>();
 
-        var client = new Client("PinguWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var redirectUri = new RedirectUri("https://demo.authserver.dk/callback", client);
         await AddEntity(redirectUri);
 
@@ -174,7 +174,7 @@ public class AuthorizeResponseBuilderTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var responseBuilder = serviceProvider.GetRequiredService<IAuthorizeResponseBuilder>();
 
-        var client = new Client("PinguWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var redirectUri = new RedirectUri("https://demo.authserver.dk/callback", client);
         await AddEntity(redirectUri);
 

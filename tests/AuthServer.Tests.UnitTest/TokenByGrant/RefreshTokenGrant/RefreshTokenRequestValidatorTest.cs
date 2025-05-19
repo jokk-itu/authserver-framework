@@ -584,7 +584,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetClient(string plainSecret)
     {
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
 
@@ -601,7 +601,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetWeatherClient()
     {
-        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };

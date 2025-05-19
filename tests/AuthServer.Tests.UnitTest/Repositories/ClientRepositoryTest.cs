@@ -22,15 +22,15 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
 
         var scope = await GetScope(ScopeConstants.OpenId);
 
-        var clientUnauthorizedForScopeWithUri = new Client("web-app-one", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var clientUnauthorizedForScopeWithUri = new Client("web-app-one", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webappone.authserver.dk"
         };
 
-        var clientAuthorizedForScopeWithoutUri = new Client("web-app-two", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var clientAuthorizedForScopeWithoutUri = new Client("web-app-two", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         clientAuthorizedForScopeWithoutUri.Scopes.Add(scope);
 
-        var client = new Client("web-app-three", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app-three", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };
@@ -54,7 +54,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
-        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://localhost:5000"
         };
@@ -89,7 +89,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
 
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var dto = new AuthorizeRequestDto
@@ -132,7 +132,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
 
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var dto = new AuthorizeRequestDto
@@ -192,7 +192,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
 
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestUriExpiration = 300
         };
@@ -230,7 +230,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
 
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var dto = new AuthorizeRequestDto

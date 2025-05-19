@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AuthServer.Helpers;
 
@@ -11,6 +12,33 @@ internal static class CryptographyHelper
     public static string GetRandomString(int length)
     {
         return RandomNumberGenerator.GetString(Characters, length);
+    }
+
+    /// <summary>
+    /// Get the hash of a token as defined in openid-connect-core-1_0.
+    /// <remarks>https://openid.net/specs/openid-connect-core-1_0.html#ImplicitTokenValidation</remarks>
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public static string HashToken(string token)
+    {
+        var asciiToken = Encoding.ASCII.GetBytes(token);
+        var hashedToken = SHA256.HashData(asciiToken);
+        var halfToken = hashedToken.Take(hashedToken.Length / 2).ToArray();
+        return Base64UrlEncoder.Encode(halfToken);
+    }
+
+    /// <summary>
+    /// Compute the thumbprint of a JWK as defined in rfc7638.
+    /// <remarks>https://datatracker.ietf.org/doc/html/rfc7638</remarks>
+    /// </summary>
+    /// <param name="jwkJson"></param>
+    /// <returns></returns>
+    public static string ComputeJwkThumbprint(string jwkJson)
+    {
+        var securityKey = new JsonWebKey(jwkJson);
+        var thumbprintBytes = securityKey.ComputeJwkThumbprint();
+        return Base64UrlEncoder.Encode(thumbprintBytes);
     }
 
     public static string Sha256(this string data)

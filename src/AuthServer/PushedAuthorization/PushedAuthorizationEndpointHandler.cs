@@ -1,4 +1,5 @@
-﻿using AuthServer.Core;
+﻿using AuthServer.Authorization.Models;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Endpoints.Responses;
@@ -41,6 +42,14 @@ internal class PushedAuthorizationEndpointHandler : IEndpointHandler
                         ExpiresIn = result.ExpiresIn
                     });
             },
-            error => Results.Extensions.OAuthBadRequest(error));
+            error =>
+            {
+                if (error is DPoPNonceProcessError dPoPNonceProcessError)
+                {
+                    httpContext.Response.Headers[Parameter.DPoPNonce] = dPoPNonceProcessError.DPoPNonce;
+                }
+
+                return Results.Extensions.OAuthBadRequest(error);
+            });
     }
 }

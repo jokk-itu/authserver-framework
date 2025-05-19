@@ -166,6 +166,34 @@ public class JwtBuilder
         });
     }
 
+    public string GetDPoPToken(Dictionary<string, object> claims, string clientId, ClientJwkBuilder.ClientJwks jwks, ClientTokenAudience audience)
+    {
+        var privateJwks = new JsonWebKeySet(jwks.PrivateJwks);
+        var publicJwks = new JsonWebKeySet(jwks.PublicJwks);
+
+        var privateJsonWebKey = privateJwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+        var publicJsonWebKey = publicJwks.Keys.First(k => k.Use == JsonWebKeyUseNames.Sig);
+
+        var signingCredentials = new SigningCredentials(privateJsonWebKey, privateJsonWebKey.Alg);
+        var now = DateTime.UtcNow;
+        claims.Add(ClaimNameConstants.Sub, clientId);
+        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = clientId,
+            NotBefore = now,
+            Expires = now.AddSeconds(30),
+            IssuedAt = now,
+            SigningCredentials = signingCredentials,
+            Audience = MapToAudience(audience),
+            TokenType = TokenTypeHeaderConstants.DPoPToken,
+            Claims = claims,
+            AdditionalHeaderClaims = new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Jwk, JsonSerializer.Serialize(publicJsonWebKey) }
+            }
+        });
+    }
+
     private string MapToAudience(ClientTokenAudience audience)
         => audience switch
         {

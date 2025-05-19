@@ -42,7 +42,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
         var authorizationGrant = (await _authorizationGrantRepository.GetActiveAuthorizationGrant(request.AuthorizationGrantId, cancellationToken))!;
 
         var authorizationCode = new AuthorizationCode(authorizationGrant, authorizationGrant.Client.AuthorizationCodeExpiration!.Value);
-        var nonce = new Nonce(request.Nonce, request.Nonce.Sha256(), authorizationGrant);
+        var nonce = new AuthorizationGrantNonce(request.Nonce, request.Nonce.Sha256(), authorizationGrant);
 
         authorizationGrant.AuthorizationCodes.Add(authorizationCode);
         authorizationGrant.Nonces.Add(nonce);

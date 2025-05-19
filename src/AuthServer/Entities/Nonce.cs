@@ -1,24 +1,25 @@
 ﻿using AuthServer.Core;
+using AuthServer.Enums;
 
 namespace AuthServer.Entities;
-public class Nonce : Entity<string>
+public abstract class Nonce : Entity<string>
 {
-    public Nonce(string value, string hashedValue, AuthorizationGrant authorizationGrant)
+    protected Nonce(string value, string hashedValue, NonceType nonceType)
     {
         Id = Guid.NewGuid().ToString();
         Value = string.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(value)) : value;
         HashedValue = string.IsNullOrWhiteSpace(hashedValue) ? throw new ArgumentNullException(nameof(hashedValue)) : hashedValue;
         IssuedAt = DateTime.UtcNow;
-        AuthorizationGrant = authorizationGrant ?? throw new ArgumentNullException(nameof(authorizationGrant));
+        NonceType = nonceType;
     }
 
 #pragma warning disable CS8618
     // Used to hydrate EF Core model
-    private Nonce() { }
+    protected Nonce() { }
 #pragma warning restore
 
     public string Value { get; private init; }
     public string HashedValue { get; private init; }
     public DateTime IssuedAt { get; private init; }
-    public AuthorizationGrant AuthorizationGrant { get; private init; }
+    public NonceType NonceType { get; private init; }
 }

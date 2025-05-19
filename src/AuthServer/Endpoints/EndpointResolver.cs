@@ -1,5 +1,6 @@
 ﻿using AuthServer.Endpoints.Abstractions;
 using AuthServer.Options;
+using AuthServer.TokenDecoders;
 using Microsoft.Extensions.Options;
 
 namespace AuthServer.Endpoints;
@@ -32,5 +33,60 @@ internal class EndpointResolver : IEndpointResolver
         RevocationEndpoint = $"{issuer}/connect/revoke";
         PushedAuthorizationEndpoint = $"{issuer}/connect/par";
         GrantManagementEndpoint = $"{issuer}/connect/grants";
+    }
+
+    public string Convert(ClientTokenAudience clientTokenAudience)
+    {
+        return clientTokenAudience switch
+        {
+            ClientTokenAudience.AuthorizationEndpoint => AuthorizationEndpoint,
+            ClientTokenAudience.TokenEndpoint => TokenEndpoint,
+            ClientTokenAudience.UserinfoEndpoint => UserinfoEndpoint,
+            ClientTokenAudience.IntrospectionEndpoint => IntrospectionEndpoint,
+            ClientTokenAudience.RevocationEndpoint => RevocationEndpoint,
+            ClientTokenAudience.PushedAuthorizationEndpoint => PushedAuthorizationEndpoint,
+            ClientTokenAudience.GrantManagementEndpoint => GrantManagementEndpoint,
+            _ => throw new ArgumentException("is not mappable to an endpoint", nameof(clientTokenAudience))
+        };
+    }
+
+    public ClientTokenAudience Convert(string endpoint)
+    {
+        if (endpoint == AuthorizationEndpoint)
+        {
+            return ClientTokenAudience.AuthorizationEndpoint;
+        }
+
+        if (endpoint == TokenEndpoint)
+        {
+            return ClientTokenAudience.TokenEndpoint;
+        }
+
+        if (endpoint == UserinfoEndpoint)
+        {
+            return ClientTokenAudience.UserinfoEndpoint;
+        }
+
+        if (endpoint == IntrospectionEndpoint)
+        {
+            return ClientTokenAudience.IntrospectionEndpoint;
+        }
+
+        if (endpoint == RevocationEndpoint)
+        {
+            return ClientTokenAudience.RevocationEndpoint;
+        }
+
+        if (endpoint == PushedAuthorizationEndpoint)
+        {
+            return ClientTokenAudience.PushedAuthorizationEndpoint;
+        }
+
+        if (endpoint == GrantManagementEndpoint)
+        {
+            return ClientTokenAudience.GrantManagementEndpoint;
+        }
+
+        throw new InvalidOperationException($"Endpoint {endpoint} is unrecognizable");
     }
 }

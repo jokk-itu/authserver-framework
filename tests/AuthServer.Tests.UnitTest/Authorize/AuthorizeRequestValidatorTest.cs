@@ -55,7 +55,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService <
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new AuthorizeRequest
@@ -85,7 +85,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         DiscoveryDocument.RequireSignedRequestObject = serverRequires;
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequireSignedRequestObject = clientRequires
         };
@@ -116,7 +116,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         DiscoveryDocument.RequirePushedAuthorizationRequests = serverRequires;
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequirePushedAuthorizationRequests = clientRequires
         };
@@ -143,7 +143,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new AuthorizeRequest
@@ -228,7 +228,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var resource = await GetResource();
@@ -302,7 +302,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new AuthorizeRequest
@@ -326,7 +326,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new AuthorizeRequest
@@ -353,7 +353,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var requestUri = new RequestUri("https://webapp.authserver.dk/request", client);
         await AddEntity(requestUri);
 
@@ -381,7 +381,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new AuthorizeRequest
@@ -405,7 +405,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new AuthorizeRequest
@@ -428,7 +428,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var redirectUriOne = new RedirectUri("https://webapp.authserver.dk/callback-one", client);
         var redirectUriTwo = new RedirectUri("https://webapp.authserver.dk/callback-two", client);
         await AddEntity(redirectUriOne);
@@ -1468,7 +1468,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetClient()
     {
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestUriExpiration = 60
         };
@@ -1484,7 +1484,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetResource()
     {
-        var resource = new Client("weather-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var resource = new Client("weather-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };
@@ -1497,7 +1497,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetClientWithoutScope()
     {
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var redirectUri = new RedirectUri("https://webapp.authserver.dk/callback", client);
         var grantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);
         client.GrantTypes.Add(grantType);
@@ -1508,7 +1508,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetClientWithoutGrantType()
     {
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var redirectUri = new RedirectUri("https://webapp.authserver.dk/callback", client);
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
@@ -1519,7 +1519,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
     private async Task<Client> GetClientWithoutRedirectUri()
     {
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
         var grantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);

@@ -21,7 +21,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
-        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         // Act
@@ -40,7 +40,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks
         };
@@ -63,7 +63,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             JwksExpiresAt = DateTime.Now.AddSeconds(60)
@@ -87,7 +87,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             JwksExpiresAt = DateTime.UtcNow.AddSeconds(-60)
@@ -110,7 +110,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             JwksUri = "https://localhost:5000/.well-known/jwks",
@@ -150,7 +150,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         });
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             JwksUri = "https://localhost:5000/.well-known/jwks",
@@ -190,7 +190,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         });
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             JwksUri = "https://localhost:5000/.well-known/jwks",
@@ -215,7 +215,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks
         };
@@ -235,7 +235,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
-        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         // Act
@@ -267,7 +267,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         });
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             JwksUri = "https://localhost:5000/.well-known/jwks",
@@ -305,7 +305,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
         });
         var clientJwkService = serviceProvider.GetRequiredService<IClientJwkService>();
         var clientJwks = ClientJwkBuilder.GetClientJwks();
-        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt)
+        var client = new Client("PinguPrivateKeyJwtWebApp", ApplicationType.Web, TokenEndpointAuthMethod.PrivateKeyJwt, 300, 60)
         {
             Jwks = clientJwks.PublicJwks,
             JwksUri = "https://localhost:5000/.well-known/jwks",

@@ -47,7 +47,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         });
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestObjectSigningAlg = SigningAlg.RsaSha256
         };
@@ -85,7 +85,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddScopedMock(tokenDecoderMock);
         });
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestObjectSigningAlg = SigningAlg.RsaSha256
         };
@@ -151,7 +151,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddScopedMock(tokenDecoderMock);
         });
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestObjectSigningAlg = SigningAlg.RsaSha256,
             RequestObjectEncryptionEnc = EncryptionEnc.Aes128CbcHmacSha256
@@ -223,7 +223,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         var authorizeRequestParameterService = serviceProvider.GetRequiredService<ISecureRequestService>();
 
         var requestUri = new Uri($"https://demo.authserver.dk/request-object/{Guid.NewGuid()}");
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestObjectSigningAlg = SigningAlg.RsaSha256
         };
@@ -249,7 +249,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddSingletonMock(httpClientFactory);
         });
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestObjectSigningAlg = SigningAlg.RsaSha256
         };
@@ -324,7 +324,7 @@ public class SecureRequestServiceTest : BaseUnitTest
             services.AddSingletonMock(httpClientFactory);
         });
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestObjectSigningAlg = SigningAlg.RsaSha256
         };
@@ -409,7 +409,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
 
-        var client = new Client("PinguWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("PinguWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequestUriExpiration = 30
         };

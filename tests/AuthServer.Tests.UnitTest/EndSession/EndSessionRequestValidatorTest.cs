@@ -140,7 +140,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var idToken = JwtBuilder.GetIdToken(
@@ -174,7 +174,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var postLogoutRedirectUri = new PostLogoutRedirectUri("https://webapp.authserver.dk", client);
         await AddEntity(postLogoutRedirectUri);
 
@@ -212,7 +212,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var idToken = JwtBuilder.GetIdToken(
@@ -306,7 +306,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new EndSessionRequest
@@ -339,7 +339,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         await AddEntity(session);
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var postLogoutRedirectUri = new PostLogoutRedirectUri("https://webapp.authserver.dk", client);
         await AddEntity(postLogoutRedirectUri);
 
@@ -382,7 +382,7 @@ public class EndSessionRequestValidatorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         await AddEntity(session);
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var endSessionUser = new EndSessionUser(subjectIdentifier.Id, true);

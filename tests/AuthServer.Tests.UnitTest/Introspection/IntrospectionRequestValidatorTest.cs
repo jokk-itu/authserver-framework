@@ -136,7 +136,7 @@ public class IntrospectionRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<IntrospectionRequest, IntrospectionValidatedRequest>>();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://webapp.authserver.dk"
         };

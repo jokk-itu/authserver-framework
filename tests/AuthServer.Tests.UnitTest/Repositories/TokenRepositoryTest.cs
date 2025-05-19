@@ -20,7 +20,7 @@ public class TokenRepositoryTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new RegistrationToken(client, "webapp", DiscoveryDocument.Issuer, ScopeConstants.Register);
         await AddEntity(token);
 
@@ -55,7 +55,7 @@ public class TokenRepositoryTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var token = new RegistrationToken(client, "webapp", DiscoveryDocument.Issuer, ScopeConstants.Register);
         token.Revoke();
         await AddEntity(token);
@@ -75,7 +75,7 @@ public class TokenRepositoryTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var expiredToken = new RegistrationToken(client, "webapp", DiscoveryDocument.Issuer, ScopeConstants.Register);
         expiredToken.Revoke();
 

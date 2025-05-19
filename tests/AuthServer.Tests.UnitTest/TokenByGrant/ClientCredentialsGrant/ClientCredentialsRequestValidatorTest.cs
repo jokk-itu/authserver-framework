@@ -129,7 +129,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>>();
 
-        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
@@ -162,7 +162,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>>();
 
-        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
@@ -197,7 +197,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>>();
 
-        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
@@ -237,7 +237,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>>();
 
-        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
@@ -250,7 +250,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
 
         await AddEntity(client);
 
-        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic)
+        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };

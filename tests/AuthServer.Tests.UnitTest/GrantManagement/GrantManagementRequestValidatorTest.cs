@@ -66,7 +66,7 @@ public class GrantManagementRequestValidatorTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceStrict);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         await AddEntity(authorizationGrant);
@@ -98,11 +98,11 @@ public class GrantManagementRequestValidatorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceStrict);
         
-        var clientOne = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var clientOne = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authorizationGrantOne = new AuthorizationGrant(session, clientOne, subjectIdentifier.Id, authenticationContextReference);
         await AddEntity(authorizationGrantOne);
         
-        var clientTwo = new Client("mobile-app", ApplicationType.Native, TokenEndpointAuthMethod.None);
+        var clientTwo = new Client("mobile-app", ApplicationType.Native, TokenEndpointAuthMethod.None, 300, 60);
         var authorizationGrantTwo = new AuthorizationGrant(session, clientTwo, subjectIdentifier.Id, authenticationContextReference);
         var accessToken = new GrantAccessToken(authorizationGrantTwo, "aud", "iss", "scope", 3600);
         await AddEntity(accessToken);
@@ -130,7 +130,7 @@ public class GrantManagementRequestValidatorTest : BaseUnitTest
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceStrict);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         await AddEntity(authorizationGrant);
@@ -161,7 +161,7 @@ public class GrantManagementRequestValidatorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceStrict);
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         var accessToken = new GrantAccessToken(authorizationGrant, "aud", "iss", "scope", 3600);
         await AddEntity(accessToken);

@@ -30,7 +30,7 @@ public class ClientIdAuthenticationTest(ITestOutputHelper outputHelper) : BaseUn
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
-        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("PinguBasicWebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
         var clientAuthentication = new ClientIdAuthentication(client.Id);
 
@@ -48,7 +48,7 @@ public class ClientIdAuthenticationTest(ITestOutputHelper outputHelper) : BaseUn
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientAuthenticationService = serviceProvider.GetRequiredService<IClientAuthenticationService>();
-        var client = new Client("PinguNativeApp", ApplicationType.Native, TokenEndpointAuthMethod.None);
+        var client = new Client("PinguNativeApp", ApplicationType.Native, TokenEndpointAuthMethod.None, 300, 60);
         await AddEntity(client);
         var clientAuthentication = new ClientIdAuthentication(client.Id);
 

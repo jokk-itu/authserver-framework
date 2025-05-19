@@ -107,7 +107,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         var validator =
             serviceProvider.GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var registrationToken = new RegistrationToken(client, "aud", "iss", ScopeConstants.Register);
         await AddEntity(registrationToken);
 
@@ -145,7 +145,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         var validator =
             serviceProvider.GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
 
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var registrationToken = new RegistrationToken(client, "aud", "iss", ScopeConstants.Register);
         await AddEntity(registrationToken);
 
@@ -224,7 +224,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
 
-        var client = new Client("duplicate", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic);
+        var client = new Client("duplicate", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(client);
 
         var request = new RegisterRequest
@@ -1012,6 +1012,31 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(RegisterError.InvalidRequestUriExpiration, processResult);
     }
 
+    [Theory]
+    [InlineData(4)]
+    [InlineData(601)]
+    public async Task Validate_InvalidDPoPNonceExpiration_ExpectInvalidDPoPNonceExpiration(int expiration)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            DPoPNonceExpiration = expiration
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidDPoPNonceExpiration, processResult);
+    }
+
     [Fact]
     public async Task Validate_InvalidTokenEndpointAuthSigningAlg_ExpectInvalidTokenEndpointAuthSigningAlg()
     {
@@ -1446,6 +1471,8 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.Method, validatedRequest.Value!.Method);
         Assert.Equal(request.ClientName, validatedRequest.Value!.ClientName);
         Assert.Equal(request.GrantTypes, validatedRequest.Value!.GrantTypes);
+        Assert.Equal(3600, validatedRequest.Value!.AccessTokenExpiration);
+        Assert.Equal(300, validatedRequest.Value!.DPoPNonceExpiration);
     }
 
     [Fact]
@@ -1549,6 +1576,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             RequireIdTokenClaims = true,
             RequireDPoPBoundAccessTokens = true,
             RequestUriExpiration = 500,
+            DPoPNonceExpiration = 60,
             RequestObjectEncryptionAlg = JweAlgConstants.RsaPKCS1,
             RequestObjectEncryptionEnc = JweEncConstants.Aes128CbcHmacSha256,
             RequestObjectSigningAlg = JwsAlgConstants.RsaSha256,
@@ -1600,6 +1628,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.RequireIdTokenClaims, validatedRequest.Value!.RequireIdTokenClaims);
         Assert.Equal(request.RequireDPoPBoundAccessTokens, validatedRequest.Value!.RequireDPoPBoundAccessTokens);
         Assert.Equal(request.RequestUriExpiration, validatedRequest.Value!.RequestUriExpiration);
+        Assert.Equal(request.DPoPNonceExpiration, validatedRequest.Value!.DPoPNonceExpiration);
         Assert.Equal(request.RequestObjectEncryptionAlg, validatedRequest.Value!.RequestObjectEncryptionAlg!.GetDescription());
         Assert.Equal(request.RequestObjectEncryptionEnc, validatedRequest.Value!.RequestObjectEncryptionEnc!.GetDescription());
         Assert.Equal(request.RequestObjectSigningAlg, validatedRequest.Value!.RequestObjectSigningAlg!.GetDescription());

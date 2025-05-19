@@ -44,6 +44,7 @@ internal class RegisterValidatedRequest
 	public int? ClientSecretExpiration { get; set; }
 	public int? JwksExpiration { get; set; }
 	public int? RequestUriExpiration { get; set; }
+	public int DPoPNonceExpiration { get; set; }
 	public IReadOnlyCollection<string> DefaultAcrValues { get; set; } = [];
     public IReadOnlyCollection<string> Scope { get; set; } = [];
     public IReadOnlyCollection<string> RedirectUris { get; set; } = [];
