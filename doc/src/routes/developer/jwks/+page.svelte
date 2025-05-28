@@ -50,7 +50,13 @@
         {`
 GET /.well-known/jwks HTTP/1.1
 Host: idp.authserver.dk
-Content-Type: application/json
+        `}
+    </CodeBlock>
+    <p>The following example is a GET response to the jwks endpoint.</p>
+    <CodeBlock>
+        {`
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
 
 {
   "keys": [

@@ -208,12 +208,12 @@
             INSERT INTO Client (
                 Id, [Name], ClientUri, ApplicationType, 
                 TokenEndpointAuthMethod, TokenEndpointAuthSigningAlg,
-                CreatedAt, AccessTokenExpiration, RequireConsent,
+                CreatedAt, AccessTokenExpiration, DPoPNonceExpiration, RequireConsent,
                 RequirePushedAuthorizationRequests, RequireReferenceToken,
-                RequireSignedRequestObject, RequireIdTokenClaims)
+                RequireSignedRequestObject, RequireIdTokenClaims, RequireDPoPBoundAccessTokens)
             VALUES (
                 NEWID(), 'authserver', 'https://idp.authserver.dk',
-                0, 0, 0, GETUTCDATE(), 0, 0, 0, 0, 0, 0)
+                0, 0, 0, GETUTCDATE(), 0, 0, 0, 0, 0, 0, 0, 0)
             
             DECLARE @ClientId UNIQUEIDENTIFIER = SCOPE_IDENTITY()
             
