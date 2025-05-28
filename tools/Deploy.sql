@@ -1,8 +1,8 @@
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM Client WHERE [Name] = 'authserver')
 	BEGIN
-		INSERT INTO Client (Id, [Name], ClientUri, ApplicationType, TokenEndpointAuthMethod, TokenEndpointAuthSigningAlg, CreatedAt, AccessTokenExpiration, RequireConsent, RequirePushedAuthorizationRequests, RequireReferenceToken, RequireSignedRequestObject, RequireIdTokenClaims)
-		VALUES (NEWID(), 'authserver', 'https://localhost:7254', 0, 0, 0, GETUTCDATE(), 0, 0, 0, 0, 0, 0)
+		INSERT INTO Client (Id, [Name], ClientUri, ApplicationType, TokenEndpointAuthMethod, TokenEndpointAuthSigningAlg, CreatedAt, AccessTokenExpiration, DPoPNonceExpiration, RequireConsent, RequirePushedAuthorizationRequests, RequireReferenceToken, RequireSignedRequestObject, RequireIdTokenClaims, RequireDPoPBoundAccessTokens)
+		VALUES (NEWID(), 'authserver', 'https://localhost:7254', 0, 0, 0, GETUTCDATE(), 0, 0, 0, 0, 0, 0, 0, 0)
 	END
 	
 	DECLARE @ClientId UNIQUEIDENTIFIER = (SELECT Id FROM Client WHERE [Name] = 'authserver')
