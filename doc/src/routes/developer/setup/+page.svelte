@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-    <title>IdentityProvider setup page of AuthServer</title>
+    <title>IdentityProvider setup overview</title>
 </svelte:head>
 
 <PageTitle title="Setup" />

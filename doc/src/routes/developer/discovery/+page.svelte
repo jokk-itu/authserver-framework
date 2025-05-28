@@ -71,7 +71,7 @@
 </script>
 
 <svelte:head>
-	<title>Discovery endpoint page of AuthServer</title>
+	<title>Discovery Metadata Endpoint</title>
 </svelte:head>
 
 <PageTitle title="Discovery" />

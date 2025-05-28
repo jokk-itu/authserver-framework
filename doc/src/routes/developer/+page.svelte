@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Developer documentation page of AuthServer</title>
+	<title>Developer Documentation</title>
 </svelte:head>
 
 <h1 class="text-4xl mb-2">Developer Documentation</h1>
