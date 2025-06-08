@@ -57,6 +57,7 @@
         [ new RowCellDefinition('token_endpoint_auth_signing_alg_values'), new RowCellDefinition('Token endpoint auth signing alg values that are supported by authserver') ],
         [ new RowCellDefinition('token_endpoint_auth_encryption_alg_values'), new RowCellDefinition('Token endpoint auth encryption alg values that are supported by authserver') ],
         [ new RowCellDefinition('token_endpoint_auth_encryption_enc_values'), new RowCellDefinition('Token endpoint auth encryption enc values that are supported by authserver') ],
+        [ new RowCellDefinition('dpop_signing_alg_values_supported'), new RowCellDefinition('DPoP token signing alg values that are supported by authserver') ],
 
         [ new RowCellDefinition('authorization_response_iss_parameter_supported'), new RowCellDefinition('Is the iss parameter in authorization responses supported by authserver') ],
         [ new RowCellDefinition('backchannel_logout_supported'), new RowCellDefinition('Is backchannel logout supported by authserver') ],
@@ -66,12 +67,12 @@
         [ new RowCellDefinition('request_uri_parameter_supported'), new RowCellDefinition('Is request uri parameter supported by authserver') ],
         [ new RowCellDefinition('require_signed_request_object'), new RowCellDefinition('Is request parameter required by authserver') ],
         [ new RowCellDefinition('require_pushed_authorization_requests'), new RowCellDefinition('Is pushed authorization requests required by authserver') ],
-        [ new RowCellDefinition('grant_management_action_required'), new RowCellDefinition('Is grant management action required by authserver') ],
+        [ new RowCellDefinition('grant_management_action_required'), new RowCellDefinition('Is grant management action required by authserver') ]
     ];
 </script>
 
 <svelte:head>
-	<title>Discovery endpoint page of AuthServer</title>
+	<title>Discovery Metadata Endpoint</title>
 </svelte:head>
 
 <PageTitle title="Discovery" />
@@ -88,11 +89,19 @@
         {`
 GET /.well-known/openid-configuration HTTP/1.1
 Host: idp.authserver.dk
-Content-Type: application/json
+        `}
+    </CodeBlock>
+    <p>The following example is a GET response from the discovery endpoint.
+        The response is not complete, but contains an example of each type that is returned.</p>
+    <CodeBlock>
+        {`
+HTTP/1.1 200 OK
+Content-Type: appication/json;charset=UTF-8
+Cache-Control: max-age=86400, public, must-revalidate
 
 {
   "issuer": "https://idp.authserver.dk",
-  "scopes_suppoted": ["openid", "profile"],
+  "scopes_supported": ["openid", "profile"],
   "token_endpoint_auth_signing_alg_values": ["RS256"],
   "backchannel_logout_supported": true
 }

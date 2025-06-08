@@ -28,7 +28,7 @@
 </script>
 
 <svelte:head>
-	<title>Client credentials page of AuthServer</title>
+	<title>Client Credentials Grant</title>
 </svelte:head>
 
 <PageTitle title="Client Credentials" />

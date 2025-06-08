@@ -1,11 +1,11 @@
 <svelte:head>
-	<title>Demo documentation page of AuthServer</title>
+	<title>Demo Documentation</title>
 </svelte:head>
 
 <h1 class="text-4xl mb-2">Demo</h1>
 <p class="mb-4">
     Illustrating the capabilities of AuthServer is best done through examples.
-    <br/><br/>
+    <br><br>
     AuthServer has therefore been implemented and deployed for everyone to use.
     Different clients and protected resources are also deployed,
     which interact with AuthServer, and illustrate the features possible with AuthServer.
@@ -20,7 +20,7 @@
         <div class="font-bold text-xl mb-2">IdentityProvider</div>
         <p class="text-gray-800 text-base">
             WebApp using the AuthServer framework, to behave as an IdentityProvider.
-            <br/>
+            <br>
             It uses AspNetCore.Identity for user management.
         </p>
     </div>

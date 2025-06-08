@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Software architecture page of AuthServer</title>
+	<title>Software Architecture in AuthServer</title>
 </svelte:head>
 
 <script>
@@ -20,12 +20,12 @@
         to parse the request, and a handler to validate and process the request.
         <br />
     </p>
-    <br/>
+    <br>
     <figure>
-        <img class="object-center" src="{base}/endpoint-architecture.png" alt="endpoint architecture" />
+        <img src="{base}/endpoint-architecture.png" alt="endpoint architecture" />
         <figCaption class="text-center">Image 1: Class diagram of request handling</figCaption>
     </figure>
-    <br/>
+    <br>
     <p>
         <b>IRequestAccessor</b> is responsible for parsing the request into a
         single request. It can for example contain parsed headers, query
@@ -60,18 +60,18 @@
         Managing features is implemented through the Microsoft.FeatureManagement
         library.
     </p>
-    <br/>
+    <br>
     <figure>
         <img class="mx-auto" src="{base}/module-architecture.png" alt="module architecture"/>
         <figcaption class="text-center">Image 2: State machine diagram of module handling</figcaption>
     </figure>
-    <br/>
+    <br>
     <p>
         The feature flag filter is responsible for checking all incoming HTTP requests,
         whether the endpoint it reaches has been enabled through FeatureManagement.
         If it has been enabled, the execution flow continues normally,
         if it has not, then the request is cancelled immediately and the HTTP status code 404 is returned.
-        <br/>
+        <br>
         The feature flag check is also handled in the Discovery endpoint,
         to make sure metadata about disabled features is not exposed.
     </p>

@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>Home page of AuthServer</title>
+	<title>AuthServer Home Page</title>
 </svelte:head>
 
 <div class="flex flex-col sm:flex-row sm:justify-evenly">
@@ -19,7 +19,7 @@
             <li class="py-2">Fast, reliable and scalable</li>
             <li class="py-2">Monitor capability using Open Telemetry</li>
         </ul>
-        <br/>
+        <br>
         <div class="my-12">
             <a href="https://github.com/jokk-itu/authserver-framework" class="rounded bg-openid px-8 py-3">Learn more</a>
         </div>

@@ -33,10 +33,10 @@
 </script>
 
 <svelte:head>
-	<title>JWKS endpoint page of AuthServer</title>
+	<title>JWKS Metadata Endpoint</title>
 </svelte:head>
 
-<PageTitle title="Discovery" />
+<PageTitle title="JWKS" />
 <Section title="Introduction">
     <p>The JWKS endpoint returns a JSON document containing public keys used for verifying signatures in tokens, and encrypting tokens.</p>
 </Section>
@@ -50,7 +50,13 @@
         {`
 GET /.well-known/jwks HTTP/1.1
 Host: idp.authserver.dk
-Content-Type: application/json
+        `}
+    </CodeBlock>
+    <p>The following example is a GET response to the jwks endpoint.</p>
+    <CodeBlock>
+        {`
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
 
 {
   "keys": [

@@ -27,7 +27,7 @@
 </script>
 
 <svelte:head>
-	<title>Client authentication page of AuthServer</title>
+	<title>Client Authentication</title>
 </svelte:head>
 
 <PageTitle title="Client Authentication" />
@@ -52,9 +52,10 @@
     <CodeBlock>
         {`
 POST /token HTTP/1.1
-Host: idp.authserver.com
+Host: idp.authserver.dk
 Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 Content-Type: application/x-www-form-urlencoded
+
 grant_type=client_credentials&scope=weather:read
         `}
     </CodeBlock>
@@ -65,7 +66,7 @@ grant_type=client_credentials&scope=weather:read
     <CodeBlock>
         {`
 POST /token HTTP/1.1
-Host: idp.authserver.com
+Host: idp.authserver.dk
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&scope=weather:read&
