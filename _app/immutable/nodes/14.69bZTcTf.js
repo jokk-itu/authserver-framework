@@ -1,4 +1,4 @@
-import{t as p,h as R,a as n,b as d}from"../chunks/BdD32qd5.js";import"../chunks/BOyCDzPS.js";import{f as m,$ as k,s as o,n as u}from"../chunks/Db0b_LWK.js";import{C as l}from"../chunks/BZQAvLTj.js";import{P as w,S as c}from"../chunks/DcIxqC40.js";var P=p(`<p>The following sections describe how to setup AuthServer framework in
+import{t as p,h as R,a as n,b as d}from"../chunks/BdD32qd5.js";import"../chunks/BOyCDzPS.js";import{f as m,$ as k,s as o,n as u}from"../chunks/Db0b_LWK.js";import{C as l}from"../chunks/Dg6GzD5d.js";import{P,S as c}from"../chunks/DcIxqC40.js";var w=p(`<p>The following sections describe how to setup AuthServer framework in
         your solution. <br> The example code is written for an AspNetCore WebApp in .NET 8.</p>`),x=p(`<p>The JwksDocument is responsible for defining keys for signing and
         encrypting tokens. There must only be registered one key per algorithm.</p> <!> <p>The DiscoveryDocument is responsible for defining metadata about your
         AuthServer instance. It is only customizable properties that are
@@ -19,12 +19,12 @@ import{t as p,h as R,a as n,b as d}from"../chunks/BdD32qd5.js";import"../chunks/
         This is needed to determine if SSO can be performed, or if the user must choose which identity to login with.
         This can be implemented using the cookie authentication handler provided through AspNet.Core.</p> <p>The interface IAuthenticationContextReferenceResolver in namespace AuthServer.Authorize.Abstractions must be implemented.
         Its purpose is to return a AuthenticationContextReference from an AuthenticationMethodReference.</p>`,1),U=p(`<p>The following example shows how to add services for AuthServer, and how
-        to setup AuthServer in the AspNetCore HTTP request pipeline.</p> <!>`,1),z=p(`<p>Once migrations have been created and applied to the database, the
+        to setup AuthServer in the AspNetCore HTTP request pipeline.</p> <!>`,1),D=p(`<p>Once migrations have been created and applied to the database, the
         initial data must be added.</p> <br> <p>AuthenticationContextReferences must be added. The following example
         inserts a single row in the AuthenticationContextReference table.</p> <!> <p>The IdentityProvider must be added. The following example inserts
         AuthServer as a client, and authorizes AuthServer to receive tokens with
         scopes.</p> <!> <p>Custom Scopes must be added. The following example inserts a single row
-        in the Scope table.</p> <!>`,1),D=p("<!> <!> <!> <!> <!> <!> <!> <!>",1);function L(y){var f=D();R(i=>{k.title="IdentityProvider setup page of AuthServer"});var S=m(f);w(S,{title:"Setup"});var A=o(S,2);c(A,{title:"Introduction",children:(i,h)=>{var t=P();n(i,t)},$$slots:{default:!0}});var $=o(A,2);c($,{title:"Options",children:(i,h)=>{var t=x(),s=o(m(t),2);l(s,{children:(e,g)=>{u();var r=d();r.nodeValue=`
+        in the Scope table.</p> <!>`,1),z=p("<!> <!> <!> <!> <!> <!> <!> <!>",1);function L(y){var f=z();R(i=>{k.title="IdentityProvider setup overview"});var S=m(f);P(S,{title:"Setup"});var A=o(S,2);c(A,{title:"Introduction",children:(i,h)=>{var t=w();n(i,t)},$$slots:{default:!0}});var $=o(A,2);c($,{title:"Options",children:(i,h)=>{var t=x(),s=o(m(t),2);l(s,{children:(e,g)=>{u();var r=d();r.nodeValue=`
             // Inside Program.cs
             using AuthServer.Options;
             using AuthServer.Enums;
@@ -116,19 +116,19 @@ import{t as p,h as R,a as n,b as d}from"../chunks/BdD32qd5.js";import"../chunks/
             app.UseAuthServer();
             
             app.Run();
-        `,n(a,e)},$$slots:{default:!0}}),n(i,t)},$$slots:{default:!0}});var _=o(C,2);c(_,{title:"Database",children:(i,h)=>{var t=z(),s=o(m(t),6);l(s,{children:(e,g)=>{u();var r=d();r.nodeValue=`
+        `,n(a,e)},$$slots:{default:!0}}),n(i,t)},$$slots:{default:!0}});var _=o(C,2);c(_,{title:"Database",children:(i,h)=>{var t=D(),s=o(m(t),6);l(s,{children:(e,g)=>{u();var r=d();r.nodeValue=`
             INSERT INTO AuthenticationContextReference ([Name])
             VALUES ('urn:authserver:loa:low')
         `,n(e,r)},$$slots:{default:!0}});var a=o(s,4);l(a,{children:(e,g)=>{u();var r=d();r.nodeValue=`
             INSERT INTO Client (
                 Id, [Name], ClientUri, ApplicationType, 
                 TokenEndpointAuthMethod, TokenEndpointAuthSigningAlg,
-                CreatedAt, AccessTokenExpiration, RequireConsent,
+                CreatedAt, AccessTokenExpiration, DPoPNonceExpiration, RequireConsent,
                 RequirePushedAuthorizationRequests, RequireReferenceToken,
-                RequireSignedRequestObject, RequireIdTokenClaims)
+                RequireSignedRequestObject, RequireIdTokenClaims, RequireDPoPBoundAccessTokens)
             VALUES (
                 NEWID(), 'authserver', 'https://idp.authserver.dk',
-                0, 0, 0, GETUTCDATE(), 0, 0, 0, 0, 0, 0)
+                0, 0, 0, GETUTCDATE(), 0, 0, 0, 0, 0, 0, 0, 0)
             
             DECLARE @ClientId UNIQUEIDENTIFIER = SCOPE_IDENTITY()
             
