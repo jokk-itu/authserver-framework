@@ -15,7 +15,7 @@ internal class PostTokenResponse
     public string? IdToken { get; init; }
 
     [JsonPropertyName(Parameter.TokenType)]
-    public string TokenType { get; init; } = "Bearer";
+    public required string TokenType { get; init; }
 
     [JsonPropertyName(Parameter.ExpiresIn)]
     public required long ExpiresIn { get; init; }
