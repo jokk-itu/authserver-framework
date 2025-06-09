@@ -181,6 +181,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(UserConstants.Username, introspectionResponse.Username);
         Assert.Equal(authorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds(), introspectionResponse.AuthTime);
         Assert.Equal(lowAcr.Name, introspectionResponse.Acr);
+        Assert.Null(introspectionResponse.Jkt);
 
         Assert.NotNull(introspectionResponse.AccessControl);
         Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(introspectionResponse.AccessControl[ClaimNameConstants.Roles].ToString()!));
@@ -233,5 +234,6 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Null(introspectionResponse.AuthTime);
         Assert.Null(introspectionResponse.Acr);
         Assert.Null(introspectionResponse.AccessControl);
+        Assert.Equal(token.Jkt, introspectionResponse.Jkt);
     }
 }

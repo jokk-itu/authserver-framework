@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using AuthServer.Core;
+using AuthServer.Introspection;
 
 namespace AuthServer.Endpoints.Responses;
 internal class PostIntrospectionResponse
@@ -45,6 +46,9 @@ internal class PostIntrospectionResponse
 
     [JsonPropertyName(Parameter.Acr)]
     public string? Acr { get; init; }
+
+    [JsonPropertyName(Parameter.Cnf)]
+    public ConfirmationDto? Cnf { get; init; }
 
     [JsonPropertyName(Parameter.AccessControl)]
     public IDictionary<string, object>? AccessControl { get; init; }
