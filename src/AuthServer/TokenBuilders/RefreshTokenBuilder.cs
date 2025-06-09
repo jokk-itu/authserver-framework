@@ -66,7 +66,7 @@ internal class RefreshTokenBuilder : ITokenBuilder<RefreshTokenArguments>
     {
         var refreshToken = new RefreshToken(
             grantQuery.AuthorizationGrant, grantQuery.Client.Id, _discoveryDocumentOptions.Value.Issuer,
-            string.Join(' ', arguments.Scope), grantQuery.Client.RefreshTokenExpiration!.Value);
+            string.Join(' ', arguments.Scope), grantQuery.Client.RefreshTokenExpiration!.Value, arguments.Jkt);
 
         await _identityContext
             .Set<RefreshToken>()
@@ -80,7 +80,7 @@ internal class RefreshTokenBuilder : ITokenBuilder<RefreshTokenArguments>
         var now = DateTime.UtcNow;
         var refreshToken = new RefreshToken(
             grantQuery.AuthorizationGrant, grantQuery.Client.Id, _discoveryDocumentOptions.Value.Issuer,
-            string.Join(' ', arguments.Scope), grantQuery.Client.RefreshTokenExpiration!.Value);
+            string.Join(' ', arguments.Scope), grantQuery.Client.RefreshTokenExpiration!.Value, arguments.Jkt);
 
         await _identityContext.Set<RefreshToken>().AddAsync(refreshToken);
 
@@ -94,6 +94,15 @@ internal class RefreshTokenBuilder : ITokenBuilder<RefreshTokenArguments>
             { ClaimNameConstants.ClientId, grantQuery.Client.Id },
             { ClaimNameConstants.Scope, string.Join(' ', arguments.Scope) }
         };
+
+        if (!string.IsNullOrEmpty(arguments.Jkt))
+        {
+            var confirmation = new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Jkt, arguments.Jkt }
+            };
+            claims.Add(ClaimNameConstants.Cnf, confirmation);
+        }
 
         var signingKey = _jwksDocumentOptions.Value.GetTokenSigningKey();
         var signingCredentials = new SigningCredentials(signingKey.Key, signingKey.Alg.GetDescription());
