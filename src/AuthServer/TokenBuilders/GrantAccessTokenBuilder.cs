@@ -88,6 +88,15 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             { ClaimNameConstants.AccessControl, accessControl }
         };
 
+        if (!string.IsNullOrEmpty(arguments.Jkt))
+        {
+            var confirmation = new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Jkt, arguments.Jkt }
+            };
+            claims.Add(ClaimNameConstants.Cnf, confirmation);
+        }
+
         var now = DateTime.UtcNow;
         var signingKey = _jwksDocument.Value.GetTokenSigningKey();
         var signingCredentials = new SigningCredentials(signingKey.Key, signingKey.Alg.GetDescription());
@@ -110,7 +119,7 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
     {
         var accessToken = new GrantAccessToken(grantQuery.AuthorizationGrant,
             string.Join(' ', arguments.Resource), _discoveryDocumentOptions.Value.Issuer,
-            string.Join(' ', arguments.Scope), grantQuery.Client.AccessTokenExpiration);
+            string.Join(' ', arguments.Scope), grantQuery.Client.AccessTokenExpiration, arguments.Jkt);
 
         await _identityContext.Set<GrantAccessToken>().AddAsync(accessToken);
         return accessToken.Reference;
