@@ -1,12 +1,16 @@
 ﻿using AuthServer.Authentication.Models;
+using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.RefreshTokenGrant;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.TokenByGrant.RefreshTokenGrant;
@@ -368,6 +372,139 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_RequireDPoPWithoutDPoPProof_ExpectDPoPRequired()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        client.RequireDPoPBoundAccessTokens = true;
+        await SaveChangesAsync();
+
+        var refreshToken = await GetRefreshToken(client);
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = refreshToken.Reference,
+            Resource = ["resource"],
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.DPoPRequired, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidDPoP_ExpectInvalidDPoP()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client);
+
+        const string dPoP = "invalid_dpop_proof";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = false
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = refreshToken.Reference,
+            Resource = ["resource"],
+            DPoP = dPoP,
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidDPoP, processResult);
+        dPoPService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_DPoPWithoutNonceClaim_ExpectUseDPoPNonce()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client);
+
+        const string dPoP = "invalid_dpop_proof";
+        const string dPoPNonce = "dpop_nonce";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = false,
+                DPoPNonce = dPoPNonce
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = refreshToken.Reference,
+            Resource = ["resource"],
+            DPoP = dPoP,
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce), processResult);
+        dPoPService.Verify();
+    }
+
+    [Fact]
     public async Task Validate_NoConsent_ExpectConsentRequired()
     {
         // Arrange
@@ -543,7 +680,11 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     public async Task Validate_JwtRefreshTokenAndConsentRequired_ExpectValidatedRequest()
     {
         // Arrange
-        var serviceProvider = BuildServiceProvider();
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
         var refreshTokenRequestValidator = serviceProvider
             .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
 
@@ -557,12 +698,24 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         var weatherClient = await GetWeatherClient();
 
+        const string dPoP = "dpop";
+        const string dPoPJkt = "dpop_jkt";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = true,
+                DPoPJkt = dPoPJkt
+            })
+            .Verifiable();
+
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = jwtRefreshToken,
             Scope = [ScopeConstants.OpenId],
             Resource = [weatherClient.ClientUri!],
+            DPoP = dPoP,
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -580,6 +733,8 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         Assert.Equal(client.Id, processResult.Value!.ClientId);
         Assert.Equal([weatherClient.ClientUri!], processResult.Value!.Resource);
         Assert.Equal([ScopeConstants.OpenId], processResult.Value!.Scope);
+        Assert.Equal(dPoPJkt, processResult.Value!.DPoPJkt);
+        dPoPService.Verify();
     }
 
     private async Task<Client> GetClient(string plainSecret)

@@ -1,4 +1,6 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
@@ -23,6 +25,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IClientRepository _clientRepository;
     private readonly IConsentRepository _consentGrantRepository;
+    private readonly IDPoPService _dPoPService;
 
     public RefreshTokenRequestValidator(
         AuthorizationDbContext identityContext,
@@ -30,7 +33,8 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
         IClientRepository clientRepository,
-        IConsentRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository,
+        IDPoPService dPoPService)
     {
         _identityContext = identityContext;
         _tokenDecoder = tokenDecoder;
@@ -38,6 +42,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         _cachedClientStore = cachedClientStore;
         _clientRepository = clientRepository;
         _consentGrantRepository = consentGrantRepository;
+        _dPoPService = dPoPService;
     }
 
     public async Task<ProcessResult<RefreshTokenValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -92,6 +97,29 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
             return TokenError.UnauthorizedForGrantType;
         }
 
+        if (cachedClient.RequireDPoPBoundAccessTokens && string.IsNullOrEmpty(request.DPoP))
+        {
+            return TokenError.DPoPRequired;
+        }
+
+        var dPoPValidationResult = new DPoPValidationResult
+        {
+            IsValid = false
+        };
+        if (!string.IsNullOrEmpty(request.DPoP))
+        {
+            dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null })
+            {
+                return TokenError.InvalidDPoP;
+            }
+
+            if (dPoPValidationResult is { IsValid: false })
+            {
+                return TokenError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
+            }
+        }
+
         IReadOnlyCollection<string> requestedScopes;
         var isScopeRequested = request.Scope.Count != 0;
 
@@ -128,6 +156,7 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         {
             AuthorizationGrantId = authorizationGrantId,
             ClientId = clientId,
+            DPoPJkt = dPoPValidationResult.DPoPJkt,
             Resource = request.Resource,
             Scope = requestedScopes
         };
