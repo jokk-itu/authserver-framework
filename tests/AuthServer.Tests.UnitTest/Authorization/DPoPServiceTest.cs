@@ -50,6 +50,7 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
+        Assert.Null(validationResult.AccessTokenHash);
         Assert.Null(validationResult.DPoPNonce);
     }
 
@@ -81,6 +82,7 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
+        Assert.Null(validationResult.AccessTokenHash);
         Assert.Null(validationResult.DPoPNonce);
     }
 
@@ -114,6 +116,7 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
+        Assert.Null(validationResult.AccessTokenHash);
         Assert.Null(validationResult.DPoPNonce);
     }
 
@@ -142,6 +145,7 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
+        Assert.Null(validationResult.AccessTokenHash);
         Assert.Equal(client.Nonces.Single().Value, validationResult.DPoPNonce);
     }
 
@@ -171,6 +175,7 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
+        Assert.Null(validationResult.AccessTokenHash);
         Assert.Equal(nonce, validationResult.DPoPNonce);
     }
 
@@ -201,6 +206,7 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
+        Assert.Null(validationResult.AccessTokenHash);
         Assert.Equal(nonce, validationResult.DPoPNonce);
     }
 
@@ -242,6 +248,7 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
+        Assert.Null(validationResult.AccessTokenHash);
         Assert.Equal(nonce, validationResult.DPoPNonce);
     }
 
@@ -257,11 +264,13 @@ public class DPoPServiceTest : BaseUnitTest
         var dPoPNonce = new DPoPNonce(nonce, nonce.Sha256(), client);
         await AddEntity(dPoPNonce);
 
+        const string ath = "access_token_hash";
         var claims = new Dictionary<string, object>
         {
             { ClaimNameConstants.Htm, HttpMethod.Post.Method },
             { ClaimNameConstants.Htu, "https://localhost:5000/connect/par" },
-            { ClaimNameConstants.Nonce, nonce }
+            { ClaimNameConstants.Nonce, nonce },
+            { ClaimNameConstants.Ath, ath }
         };
         var jwks = ClientJwkBuilder.GetClientJwks();
         var jsonWebKey = new JsonWebKeySet(jwks.PublicJwks).Keys.First(x => x.Use == JsonWebKeyUseNames.Sig);
@@ -276,6 +285,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.True(validationResult.IsValid);
         Assert.Equal(jkt, validationResult.DPoPJkt);
         Assert.Null(validationResult.DPoPNonce);
+        Assert.Equal(ath, validationResult.AccessTokenHash);
     }
 
     private static void SetupHttpContext(IServiceCollection services)
