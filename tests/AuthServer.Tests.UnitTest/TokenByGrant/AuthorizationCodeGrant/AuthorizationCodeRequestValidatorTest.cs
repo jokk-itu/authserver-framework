@@ -12,7 +12,6 @@ using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.AuthorizationCodeGrant;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.FeatureManagement;
 using Moq;
 using Xunit.Abstractions;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
