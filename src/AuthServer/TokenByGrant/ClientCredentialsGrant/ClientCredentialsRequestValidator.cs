@@ -1,4 +1,6 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
@@ -13,15 +15,18 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
     private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IClientRepository _clientRepository;
+    private readonly IDPoPService _dPoPService;
 
     public ClientCredentialsRequestValidator(
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
-        IClientRepository clientRepository)
+        IClientRepository clientRepository,
+        IDPoPService dPoPService)
     {
         _clientAuthenticationService = clientAuthenticationService;
         _cachedClientStore = cachedClientStore;
         _clientRepository = clientRepository;
+        _dPoPService = dPoPService;
     }
 
     public async Task<ProcessResult<ClientCredentialsValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -63,6 +68,29 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
             return TokenError.UnauthorizedForGrantType;
         }
 
+        if (cachedClient.RequireDPoPBoundAccessTokens && string.IsNullOrEmpty(request.DPoP))
+        {
+            return TokenError.DPoPRequired;
+        }
+
+        var dPoPValidationResult = new DPoPValidationResult
+        {
+            IsValid = false
+        };
+        if (!string.IsNullOrEmpty(request.DPoP))
+        {
+            dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null })
+            {
+                return TokenError.InvalidDPoP;
+            }
+
+            if (dPoPValidationResult is { IsValid: false })
+            {
+                return TokenError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
+            }
+        }
+
         if (request.Scope.IsNotSubset(cachedClient.Scopes))
         {
             return TokenError.UnauthorizedForScope;
@@ -77,6 +105,7 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
         return new ClientCredentialsValidatedRequest
         {
             ClientId = clientId,
+            DPoPJkt = dPoPValidationResult.DPoPJkt,
             Scope = request.Scope,
             Resource = request.Resource
         };
