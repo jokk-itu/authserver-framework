@@ -385,7 +385,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Face));
 
         authorizationGrant.GrantTokens.Add(
-            new GrantAccessToken(authorizationGrant, "aud", "iss", ScopeConstants.OpenId, 500));
+            new GrantAccessToken(authorizationGrant, "aud", "iss", ScopeConstants.OpenId, 500, null));
 
         var nonce = CryptographyHelper.GetRandomString(16);
         authorizationGrant.Nonces.Add(new AuthorizationGrantNonce(nonce, nonce.Sha256(), authorizationGrant));

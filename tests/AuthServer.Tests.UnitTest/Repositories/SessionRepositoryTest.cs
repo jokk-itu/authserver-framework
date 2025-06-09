@@ -34,21 +34,21 @@ public class SessionRepositoryTest : BaseUnitTest
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            3600);
+            3600, null);
 
         var inactiveGrantAccessToken = new GrantAccessToken(
             activeAuthorizationGrant,
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            -3600);
+            -3600, null);
 
         var revokedGrantAccessToken = new GrantAccessToken(
             activeAuthorizationGrant,
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            3600);
+            3600, null);
 
         revokedGrantAccessToken.Revoke();
 

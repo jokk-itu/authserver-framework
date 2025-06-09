@@ -36,6 +36,10 @@ internal sealed class TokenConfiguration : IEntityTypeConfiguration<Token>
             .HasMaxLength(255);
 
         builder
+            .Property(x => x.Jkt)
+            .HasMaxLength(64);
+
+        builder
             .HasIndex(x => x.Reference)
             .IsUnique();
     }

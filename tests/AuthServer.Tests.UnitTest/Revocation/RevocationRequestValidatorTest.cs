@@ -145,7 +145,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         await AddEntity(client);
 
         var secondClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1);
+        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
         await AddEntity(token);
 
         var revocationRequest = new RevocationRequest
@@ -180,7 +180,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         await AddEntity(client);
 
         var secondClient = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1);
+        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
         await AddEntity(token);
 
         var key = JwksDocument.GetTokenSigningKey();
@@ -228,7 +228,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
-        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1);
+        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
         await AddEntity(token);
 
         var revocationRequest = new RevocationRequest
@@ -261,7 +261,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
-        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1);
+        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
         await AddEntity(token);
 
         var key = JwksDocument.GetTokenSigningKey();

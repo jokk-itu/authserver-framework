@@ -577,6 +577,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     NotBefore = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Audience = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Issuer = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Jkt = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     AuthorizationGrantId = table.Column<string>(type: "nvarchar(450)", nullable: true)

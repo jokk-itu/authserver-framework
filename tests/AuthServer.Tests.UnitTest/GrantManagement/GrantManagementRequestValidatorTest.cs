@@ -104,7 +104,7 @@ public class GrantManagementRequestValidatorTest : BaseUnitTest
         
         var clientTwo = new Client("mobile-app", ApplicationType.Native, TokenEndpointAuthMethod.None, 300, 60);
         var authorizationGrantTwo = new AuthorizationGrant(session, clientTwo, subjectIdentifier.Id, authenticationContextReference);
-        var accessToken = new GrantAccessToken(authorizationGrantTwo, "aud", "iss", "scope", 3600);
+        var accessToken = new GrantAccessToken(authorizationGrantTwo, "aud", "iss", "scope", 3600, null);
         await AddEntity(accessToken);
 
         var request = new GrantManagementRequest
@@ -163,7 +163,7 @@ public class GrantManagementRequestValidatorTest : BaseUnitTest
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceStrict);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
-        var accessToken = new GrantAccessToken(authorizationGrant, "aud", "iss", "scope", 3600);
+        var accessToken = new GrantAccessToken(authorizationGrant, "aud", "iss", "scope", 3600, null);
         await AddEntity(accessToken);
 
         var request = new GrantManagementRequest
