@@ -62,6 +62,15 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             { ClaimNameConstants.Sub, arguments.ClientId }
         };
 
+        if (!string.IsNullOrEmpty(arguments.Jkt))
+        {
+            var confirmation = new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Jkt, arguments.Jkt }
+            };
+            claims.Add(ClaimNameConstants.Cnf, confirmation);
+        }
+
         var now = DateTime.UtcNow;
         var signingKey = _jwksDocumentOptions.Value.GetTokenSigningKey();
         var signingCredentials = new SigningCredentials(signingKey.Key, signingKey.Alg.GetDescription());
@@ -86,7 +95,8 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             string.Join(' ', arguments.Resource),
             _discoveryDocumentOptions.Value.Issuer,
             string.Join(' ', arguments.Scope),
-            client.AccessTokenExpiration);
+            client.AccessTokenExpiration,
+            arguments.Jkt);
 
         await _identityContext.Set<ClientAccessToken>().AddAsync(accessToken);
         return accessToken.Reference;
