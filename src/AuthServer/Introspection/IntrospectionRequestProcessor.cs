@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using AuthServer.Authentication.Abstractions;
+using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
@@ -81,6 +82,10 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
             ? TokenTypeTag.RefreshToken
             : TokenTypeTag.AccessToken);
 
+        var tokenType = string.IsNullOrEmpty(query.Token.Jkt)
+            ? TokenTypeSchemaConstants.Bearer
+            : TokenTypeSchemaConstants.DPoP;
+
         return new IntrospectionResponse
         {
             Active = token.RevokedAt is null,
@@ -93,7 +98,7 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
             NotBefore = token.NotBefore.ToUnixTimeSeconds(),
             Scope = string.Join(' ', authorizedScope),
             Subject = subject,
-            TokenType = token.TokenType.GetDescription(),
+            TokenType = tokenType,
             Username = username,
             AuthTime = query.AuthTime?.ToUnixTimeSeconds(),
             Acr = query.Acr,

@@ -121,7 +121,7 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         Assert.Equal(weatherReadScope, introspectionResponse.Scope);
         Assert.Equal([weatherClient.ClientUri], introspectionResponse.Audience);
         Assert.Equal(registerResponse.ClientId, introspectionResponse.ClientId);
-        Assert.Equal(TokenTypeConstants.AccessToken, introspectionResponse.TokenType);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, introspectionResponse.TokenType);
         Assert.Null(introspectionResponse.Username);
         Assert.Equal(registerResponse.ClientId, introspectionResponse.Subject);
         Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);

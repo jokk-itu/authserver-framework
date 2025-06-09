@@ -4,8 +4,7 @@ using AuthServer.Metrics.Abstractions;
 
 namespace AuthServer.Introspection;
 
-internal class
-    IntrospectionRequestHandler : RequestHandler<IntrospectionRequest, IntrospectionValidatedRequest, IntrospectionResponse>
+internal class IntrospectionRequestHandler : RequestHandler<IntrospectionRequest, IntrospectionValidatedRequest, IntrospectionResponse>
 {
     private readonly IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse> _requestProcessor;
     private readonly IRequestValidator<IntrospectionRequest, IntrospectionValidatedRequest> _requestValidator;

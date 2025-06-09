@@ -171,12 +171,13 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.Id, introspectionResponse.ClientId);
         Assert.Equal(token.ExpiresAt!.Value.ToUnixTimeSeconds(), introspectionResponse.ExpiresAt);
         Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
+        Assert.NotNull(introspectionResponse.Audience);
         Assert.Equal(token.Audience, introspectionResponse.Audience.Single());
         Assert.Equal(token.IssuedAt.ToUnixTimeSeconds(),  introspectionResponse.IssuedAt!.Value);
         Assert.Equal(token.NotBefore.ToUnixTimeSeconds(), introspectionResponse.NotBefore!.Value);
         Assert.Equal(ScopeConstants.OpenId, introspectionResponse.Scope);
         Assert.Equal(subjectIdentifier.Id, introspectionResponse.Subject);
-        Assert.Equal(token.TokenType.GetDescription(), introspectionResponse.TokenType);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, introspectionResponse.TokenType);
         Assert.Equal(UserConstants.Username, introspectionResponse.Username);
         Assert.Equal(authorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds(), introspectionResponse.AuthTime);
         Assert.Equal(lowAcr.Name, introspectionResponse.Acr);
@@ -221,14 +222,16 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.Id, introspectionResponse.ClientId);
         Assert.Equal(token.ExpiresAt!.Value.ToUnixTimeSeconds(), introspectionResponse.ExpiresAt);
         Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
+        Assert.NotNull(introspectionResponse.Audience);
         Assert.Equal(token.Audience, introspectionResponse.Audience.Single());
         Assert.Equal(token.IssuedAt.ToUnixTimeSeconds(), introspectionResponse.IssuedAt!.Value);
         Assert.Equal(token.NotBefore.ToUnixTimeSeconds(), introspectionResponse.NotBefore!.Value);
         Assert.Equal(weatherReadScope.Name, introspectionResponse.Scope);
         Assert.Equal(client.Id, introspectionResponse.Subject);
-        Assert.Equal(token.TokenType.GetDescription(), introspectionResponse.TokenType);
+        Assert.Equal(TokenTypeSchemaConstants.DPoP, introspectionResponse.TokenType);
         Assert.Null(introspectionResponse.Username);
         Assert.Null(introspectionResponse.AuthTime);
         Assert.Null(introspectionResponse.Acr);
+        Assert.Null(introspectionResponse.AccessControl);
     }
 }
