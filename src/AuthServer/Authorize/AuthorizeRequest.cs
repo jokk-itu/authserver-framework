@@ -1,4 +1,4 @@
-﻿using AuthServer.Authorization;
+﻿using AuthServer.Authorization.Models;
 
 namespace AuthServer.Authorize;
 

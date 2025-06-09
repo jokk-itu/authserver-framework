@@ -7,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Moq;
 using System.Net;
-using AuthServer.Authorization;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Repositories.Abstractions;
 using Xunit.Abstractions;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Extensions;
 
 namespace AuthServer.Tests.UnitTest.Authorization;

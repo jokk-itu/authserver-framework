@@ -1,5 +1,5 @@
 ﻿using AuthServer.Authentication.Models;
-using AuthServer.Authorization;
+using AuthServer.Authorization.Models;
 
 namespace AuthServer.PushedAuthorization;
 internal class PushedAuthorizationRequest

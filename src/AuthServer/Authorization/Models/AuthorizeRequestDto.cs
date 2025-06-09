@@ -1,6 +1,6 @@
 ﻿using AuthServer.Authorize;
 
-namespace AuthServer.Authorization;
+namespace AuthServer.Authorization.Models;
 public class AuthorizeRequestDto
 {
     public AuthorizeRequestDto()

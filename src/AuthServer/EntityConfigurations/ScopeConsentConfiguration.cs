@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AuthServer.EntityConfigurations;
 
-public class ScopeConsentConfiguration : IEntityTypeConfiguration<ScopeConsent>
+internal sealed class ScopeConsentConfiguration : IEntityTypeConfiguration<ScopeConsent>
 {
     public void Configure(EntityTypeBuilder<ScopeConsent> builder)
     {

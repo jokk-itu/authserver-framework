@@ -1,5 +1,5 @@
 ﻿namespace AuthServer.TokenBuilders;
-public class RegistrationTokenArguments
+internal class RegistrationTokenArguments
 {
     public required string ClientId { get; init; }
 }

@@ -1,5 +1,5 @@
 ﻿namespace AuthServer.TokenBuilders;
-public class LogoutTokenArguments
+internal class LogoutTokenArguments
 {
     public required string ClientId { get; init; }
     public required string? SubjectIdentifier { get; init; }

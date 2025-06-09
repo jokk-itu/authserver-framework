@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AuthServer.EntityConfigurations;
 
-public class ClaimConsentConfiguration : IEntityTypeConfiguration<ClaimConsent>
+internal sealed class ClaimConsentConfiguration : IEntityTypeConfiguration<ClaimConsent>
 {
     public void Configure(EntityTypeBuilder<ClaimConsent> builder)
     {

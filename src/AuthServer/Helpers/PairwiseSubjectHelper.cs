@@ -3,7 +3,7 @@ using AuthServer.Entities;
 
 namespace AuthServer.Helpers;
 
-public static class PairwiseSubjectHelper
+internal static class PairwiseSubjectHelper
 {
     public static string GenerateSubject(SectorIdentifier sectorIdentifier, string subjectIdentifier)
     {
