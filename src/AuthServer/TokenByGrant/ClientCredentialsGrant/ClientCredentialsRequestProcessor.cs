@@ -1,4 +1,5 @@
 ﻿using AuthServer.Cache.Abstractions;
+using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
@@ -24,15 +25,21 @@ internal class ClientCredentialsRequestProcessor : IRequestProcessor<ClientCrede
         var accessToken = await _tokenBuilder.BuildToken(new ClientAccessTokenArguments
         {
             ClientId = request.ClientId,
+            Jkt = request.DPoPJkt,
             Resource = request.Resource,
             Scope = request.Scope
         }, cancellationToken);
+
+        var tokenType = string.IsNullOrEmpty(request.DPoPJkt)
+            ? TokenTypeSchemaConstants.Bearer
+            : TokenTypeSchemaConstants.DPoP;
 
         return new TokenResponse
         {
             AccessToken = accessToken,
             Scope = string.Join(' ', request.Scope),
-            ExpiresIn = cachedClient.AccessTokenExpiration
+            ExpiresIn = cachedClient.AccessTokenExpiration,
+            TokenType = tokenType
         };
     }
 }
