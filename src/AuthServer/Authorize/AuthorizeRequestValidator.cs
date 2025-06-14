@@ -1,5 +1,6 @@
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Cache.Entities;

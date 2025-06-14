@@ -1,7 +1,8 @@
 ﻿namespace AuthServer.TokenBuilders;
-public class GrantAccessTokenArguments
+internal class GrantAccessTokenArguments
 {
+    public required string AuthorizationGrantId { get; init; }
+    public string? Jkt { get; init; }
     public required IReadOnlyCollection<string> Resource { get; init; }
     public required IReadOnlyCollection<string> Scope { get; init; }
-    public required string AuthorizationGrantId { get; init; }
 }

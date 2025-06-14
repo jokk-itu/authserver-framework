@@ -109,6 +109,16 @@ public static class ClaimNameConstants
     public const string Events = "events";
 
     /// <summary>
+    /// Confirmation claim, containing information on proof of possession.,
+    /// </summary>
+    public const string Cnf = "cnf";
+
+    /// <summary>
+    /// The base64 of the sha256 value of a public JsonWebKey.
+    /// </summary>
+    public const string Jkt = "jkt";
+
+    /// <summary>
     /// Full name
     /// </summary>
     public const string Name = "name";

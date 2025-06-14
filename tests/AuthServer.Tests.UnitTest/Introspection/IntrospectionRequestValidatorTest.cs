@@ -152,7 +152,7 @@ public class IntrospectionRequestValidatorTest : BaseUnitTest
         client.Scopes.Add(openIdScope);
         client.Scopes.Add(profileScope);
 
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, $"{ScopeConstants.OpenId} {ScopeConstants.Address}", 1);
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, $"{ScopeConstants.OpenId} {ScopeConstants.Address}", 1, null);
 
         await AddEntity(token);
 

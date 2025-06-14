@@ -71,7 +71,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
 
         // Act
         var userinfoResponse = await UserinfoEndpointBuilder
-            .WithAccessToken(tokenResponse.AccessToken)
+            .WithAccessToken(tokenResponse.Response!.AccessToken)
             .Post();
 
         // Assert
@@ -121,7 +121,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
 
         // Act
         var userinfoResponse = await UserinfoEndpointBuilder
-            .WithAccessToken(tokenResponse.AccessToken)
+            .WithAccessToken(tokenResponse.Response!.AccessToken)
             .Post();
 
         // Assert
@@ -174,7 +174,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
 
         // Act
         var userinfoResponse = await UserinfoEndpointBuilder
-            .WithAccessToken(tokenResponse.AccessToken)
+            .WithAccessToken(tokenResponse.Response!.AccessToken)
             .Post();
 
         // Assert

@@ -1,6 +1,6 @@
 ﻿namespace AuthServer.Metrics;
 
-enum AuthenticationKind
+internal enum AuthenticationKind
 {
     AuthorizeUser,
     IdToken,

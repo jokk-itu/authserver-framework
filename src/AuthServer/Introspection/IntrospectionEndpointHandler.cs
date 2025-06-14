@@ -38,7 +38,13 @@ internal class IntrospectionEndpointHandler : IEndpointHandler
                 Subject = response.Subject,
                 AuthTime = response.AuthTime,
                 Acr = response.Acr,
-                AccessControl = response.AccessControl
+                AccessControl = response.AccessControl,
+                Cnf = response.Jkt is null
+                    ? null
+                    : new ConfirmationDto
+                    {
+                        Jkt = response.Jkt
+                    }
             }),
             error => Results.Extensions.OAuthBadRequest(error));
     }

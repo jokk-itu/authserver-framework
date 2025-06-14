@@ -1,4 +1,5 @@
-﻿using AuthServer.TokenDecoders;
+﻿using AuthServer.Authorization.Models;
+using AuthServer.TokenDecoders;
 
 namespace AuthServer.Authorization.Abstractions;
 internal interface ISecureRequestService

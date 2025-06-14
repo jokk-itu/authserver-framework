@@ -33,8 +33,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 			{ Parameter.ClientId, value },
 			{ Parameter.ClientSecret, value },
 			{ Parameter.ClientAssertion, value },
-			{ Parameter.ClientAssertionType, value },
-            { Parameter.DPoP, value }
+			{ Parameter.ClientAssertionType, value }
 		};
 
 		var httpContext = new DefaultHttpContext
@@ -45,8 +44,10 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 			}
 		};
 
-		// Act
-		var request = await requestAccessor.GetRequest(httpContext.Request);
+        httpContext.Request.Headers[Parameter.DPoP] = value;
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
 
 		// Assert
 		Assert.Equal(expectedValue, request.GrantType);
@@ -54,7 +55,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		Assert.Equal(expectedValue, request.CodeVerifier);
 		Assert.Equal(expectedValue, request.RedirectUri);
 		Assert.Equal(expectedValue, request.RefreshToken);
-		Assert.Equal(expectedValue, request.DPoPToken);
+		Assert.Equal(expectedValue, request.DPoP);
 		Assert.Empty(request.ClientAuthentications);
 	}
 
@@ -84,8 +85,10 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 			}
 		};
 
-		// Act
-		var request = await requestAccessor.GetRequest(httpContext.Request);
+        httpContext.Request.Headers[Parameter.DPoP] = value;
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
 
 		// Assert
 		Assert.Equal(value, request.GrantType);
@@ -93,6 +96,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		Assert.Equal(value, request.CodeVerifier);
 		Assert.Equal(value, request.RedirectUri);
 		Assert.Equal(value, request.RefreshToken);
+        Assert.Equal(value, request.DPoP);
 
         Assert.Single(request.ClientAuthentications);
         Assert.Equal(value, request.ClientAuthentications.OfType<ClientIdAuthentication>().Single().ClientId);

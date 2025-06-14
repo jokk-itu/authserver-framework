@@ -1,4 +1,5 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
@@ -22,6 +23,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
     private readonly IClientRepository _clientRepository;
     private readonly ICachedClientStore _cachedEntityStore;
     private readonly IConsentRepository _consentGrantRepository;
+    private readonly IDPoPService _dPoPService;
 
     public AuthorizationCodeRequestValidator(
         AuthorizationDbContext identityContext,
@@ -29,7 +31,8 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         IClientAuthenticationService clientAuthenticationService,
         IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentRepository consentGrantRepository)
+        IConsentRepository consentGrantRepository,
+        IDPoPService dPoPService)
     {
         _identityContext = identityContext;
         _authorizationCodeEncoder = authorizationCodeEncoder;
@@ -37,6 +40,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         _clientRepository = clientRepository;
         _cachedEntityStore = cachedEntityStore;
         _consentGrantRepository = consentGrantRepository;
+        _dPoPService = dPoPService;
     }
     
     public async Task<ProcessResult<AuthorizationCodeValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -114,6 +118,31 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             return TokenError.UnauthorizedForRedirectUri;
         }
 
+        var isDPoPRequired = cachedClient.RequireDPoPBoundAccessTokens || authorizationCode.DPoPJkt is not null;
+        if (isDPoPRequired && string.IsNullOrEmpty(request.DPoP))
+        {
+            return TokenError.DPoPRequired;
+        }
+
+        if (!string.IsNullOrEmpty(request.DPoP))
+        {
+            var dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null })
+            {
+                return TokenError.InvalidDPoP;
+            }
+
+            if (dPoPValidationResult is { IsValid: false })
+            {
+                return TokenError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
+            }
+
+            if (dPoPValidationResult.DPoPJkt != authorizationCode.DPoPJkt)
+            {
+                return TokenError.InvalidDPoPJktMatch;
+            }
+        }
+
         // Request.Scopes cannot be given during authorization_code grant
         var scope = authorizationCode.Scope;
 
@@ -149,6 +178,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         {
             AuthorizationGrantId = authorizationCode.AuthorizationGrantId,
             AuthorizationCodeId = authorizationCode.AuthorizationCodeId,
+            DPoPJkt = authorizationCode.DPoPJkt,
             Resource = request.Resource,
             Scope = scope
         };

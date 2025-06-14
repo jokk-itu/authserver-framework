@@ -1,4 +1,5 @@
-﻿using AuthServer.Constants;
+﻿using AuthServer.Authorization.Models;
+using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Responses;
@@ -55,8 +56,17 @@ internal class TokenEndpointHandler : IEndpointHandler
                 ExpiresIn = response.ExpiresIn,
                 IdToken = response.IdToken,
                 RefreshToken = response.RefreshToken,
-                GrantId = response.GrantId
+                GrantId = response.GrantId,
+                TokenType = response.TokenType
             }),
-            error => Results.Extensions.OAuthBadRequest(error));
+            error =>
+            {
+                if (error is DPoPNonceProcessError dPoPNonceProcessError)
+                {
+                    httpContext.Response.Headers[Parameter.DPoPNonce] = dPoPNonceProcessError.DPoPNonce;
+                }
+
+                return Results.Extensions.OAuthBadRequest(error);
+            });
     }
 }

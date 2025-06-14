@@ -1,5 +1,5 @@
 ﻿namespace AuthServer.TokenDecoders;
-public class ClientIssuedTokenDecodeArguments
+internal class ClientIssuedTokenDecodeArguments
 {
     public required bool ValidateLifetime { get; init; }
     public required string ClientId { get; init; }

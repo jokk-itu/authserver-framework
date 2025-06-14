@@ -63,5 +63,6 @@ public class ClientCredentialsRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.AccessTokenExpiration, tokenResponse.ExpiresIn);
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
         Assert.True(TokenHelper.IsJws(tokenResponse.AccessToken));
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
     }
 }

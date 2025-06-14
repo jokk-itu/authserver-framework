@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;

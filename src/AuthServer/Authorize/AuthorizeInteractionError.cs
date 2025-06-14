@@ -2,7 +2,7 @@
 
 namespace AuthServer.Authorize;
 
-public record AuthorizeInteractionError(
+internal record AuthorizeInteractionError(
     string Error,
     string ErrorDescription,
     ResultCode ResultCode,

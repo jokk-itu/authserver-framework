@@ -3,6 +3,7 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
+using AuthServer.Enums;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             {
                 AuthorizationCodeGrant = x,
                 ClientId = x.Client.Id,
+                x.Client.TokenEndpointAuthMethod,
                 AuthorizationCode = x.AuthorizationCodes.Single(y => y.Id == request.AuthorizationCodeId)
             })
             .SingleAsync(cancellationToken: cancellationToken);
@@ -53,6 +55,8 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             refreshToken = await _refreshTokenBuilder.BuildToken(new RefreshTokenArguments
             {
                 AuthorizationGrantId = query.AuthorizationCodeGrant.Id,
+                Jkt = query.TokenEndpointAuthMethod == TokenEndpointAuthMethod.None
+                    ? request.DPoPJkt : null,
                 Scope = request.Scope
             }, cancellationToken);
         }
@@ -60,6 +64,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
         var accessToken = await _accessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = query.AuthorizationCodeGrant.Id,
+            Jkt = request.DPoPJkt,
             Scope = request.Scope,
             Resource = request.Resource
         }, cancellationToken);
@@ -70,6 +75,10 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             Scope = request.Scope
         }, cancellationToken);
 
+        var tokenType = string.IsNullOrEmpty(request.DPoPJkt)
+            ? TokenTypeSchemaConstants.Bearer
+            : TokenTypeSchemaConstants.DPoP;
+
         return new TokenResponse
         {
             AccessToken = accessToken,
@@ -77,7 +86,8 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             RefreshToken = refreshToken,
             ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
-            GrantId = query.AuthorizationCodeGrant.Id
+            GrantId = query.AuthorizationCodeGrant.Id,
+            TokenType = tokenType
         };
     }
 }

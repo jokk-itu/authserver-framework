@@ -57,7 +57,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         };
         var openIdScope = await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1, null);
         
         await AddEntity(token);
 
@@ -87,7 +87,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         };
         var openIdScope = await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1, null);
         token.Revoke();
         await AddEntity(token);
 
@@ -115,7 +115,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             ClientUri = "https://webapp.authserver.dk"
         };
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1);
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1, null);
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
@@ -152,7 +152,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         var tokenScope = string.Join(' ', [ScopeConstants.OpenId, ScopeConstants.Address]);
-        var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, tokenScope, 3600);
+        var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, tokenScope, 3600, null);
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
@@ -171,15 +171,17 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.Id, introspectionResponse.ClientId);
         Assert.Equal(token.ExpiresAt!.Value.ToUnixTimeSeconds(), introspectionResponse.ExpiresAt);
         Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
+        Assert.NotNull(introspectionResponse.Audience);
         Assert.Equal(token.Audience, introspectionResponse.Audience.Single());
         Assert.Equal(token.IssuedAt.ToUnixTimeSeconds(),  introspectionResponse.IssuedAt!.Value);
         Assert.Equal(token.NotBefore.ToUnixTimeSeconds(), introspectionResponse.NotBefore!.Value);
         Assert.Equal(ScopeConstants.OpenId, introspectionResponse.Scope);
         Assert.Equal(subjectIdentifier.Id, introspectionResponse.Subject);
-        Assert.Equal(token.TokenType.GetDescription(), introspectionResponse.TokenType);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, introspectionResponse.TokenType);
         Assert.Equal(UserConstants.Username, introspectionResponse.Username);
         Assert.Equal(authorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds(), introspectionResponse.AuthTime);
         Assert.Equal(lowAcr.Name, introspectionResponse.Acr);
+        Assert.Null(introspectionResponse.Jkt);
 
         Assert.NotNull(introspectionResponse.AccessControl);
         Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(introspectionResponse.AccessControl[ClaimNameConstants.Roles].ToString()!));
@@ -203,7 +205,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         client.Scopes.Add(weatherReadScope);
 
-        var token = new ClientAccessToken(client, weatherClient.ClientUri!, DiscoveryDocument.Issuer, weatherReadScope.Name, 3600);
+        var token = new ClientAccessToken(client, weatherClient.ClientUri!, DiscoveryDocument.Issuer, weatherReadScope.Name, 3600, "jkt");
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
@@ -221,14 +223,17 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.Id, introspectionResponse.ClientId);
         Assert.Equal(token.ExpiresAt!.Value.ToUnixTimeSeconds(), introspectionResponse.ExpiresAt);
         Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
+        Assert.NotNull(introspectionResponse.Audience);
         Assert.Equal(token.Audience, introspectionResponse.Audience.Single());
         Assert.Equal(token.IssuedAt.ToUnixTimeSeconds(), introspectionResponse.IssuedAt!.Value);
         Assert.Equal(token.NotBefore.ToUnixTimeSeconds(), introspectionResponse.NotBefore!.Value);
         Assert.Equal(weatherReadScope.Name, introspectionResponse.Scope);
         Assert.Equal(client.Id, introspectionResponse.Subject);
-        Assert.Equal(token.TokenType.GetDescription(), introspectionResponse.TokenType);
+        Assert.Equal(TokenTypeSchemaConstants.DPoP, introspectionResponse.TokenType);
         Assert.Null(introspectionResponse.Username);
         Assert.Null(introspectionResponse.AuthTime);
         Assert.Null(introspectionResponse.Acr);
+        Assert.Null(introspectionResponse.AccessControl);
+        Assert.Equal(token.Jkt, introspectionResponse.Jkt);
     }
 }

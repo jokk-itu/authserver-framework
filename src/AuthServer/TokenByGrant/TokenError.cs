@@ -1,4 +1,5 @@
-﻿using AuthServer.Core;
+﻿using AuthServer.Authorization.Models;
+using AuthServer.Core;
 using AuthServer.Core.Request;
 
 namespace AuthServer.TokenByGrant;
@@ -47,9 +48,21 @@ internal static class TokenError
     public static readonly ProcessError ScopeExceedsConsentedScope =
         new(ErrorCode.InvalidScope, "scope exceeds consented scope", ResultCode.BadRequest);
 
-    public static readonly ProcessError LoginRequired =
-        new(ErrorCode.LoginRequired, "login required", ResultCode.BadRequest);
-
     public static readonly ProcessError InvalidScope =
         new(ErrorCode.InvalidRequest, "scope is missing", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidDPoPJktMatch =
+        new(ErrorCode.InvalidRequest, "dpop_jkt does not match jkt of dpop", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidRefreshTokenJktMatch =
+        new(ErrorCode.InvalidRequest, "refresh_token jkt does not match jkt of dpop", ResultCode.BadRequest);
+
+    public static readonly ProcessError DPoPRequired =
+        new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
+
+    public static ProcessError UseDPoPNonce(string dPoPNonce)
+        => new DPoPNonceProcessError(dPoPNonce, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidDPoP =
+        new(ErrorCode.InvalidRequest, "dpop is invalid", ResultCode.BadRequest);
 }

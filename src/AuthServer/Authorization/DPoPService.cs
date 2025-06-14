@@ -149,11 +149,13 @@ internal class DPoPService : IDPoPService
 
         var jwkHeaderClaim = validatedDPoPToken.GetHeaderValue<string>(ClaimNameConstants.Jwk);
         var jkt = CryptographyHelper.ComputeJwkThumbprint(jwkHeaderClaim);
+        validatedDPoPToken.TryGetPayloadValue<string>(ClaimNameConstants.Ath, out var accessTokenHash);
 
         return new DPoPValidationResult
         {
             IsValid = true,
-            DPoPJkt = jkt
+            DPoPJkt = jkt,
+            AccessTokenHash = accessTokenHash
         };
     }
 }

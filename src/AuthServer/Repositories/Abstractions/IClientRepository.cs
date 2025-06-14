@@ -1,4 +1,4 @@
-﻿using AuthServer.Authorization;
+﻿using AuthServer.Authorization.Models;
 using AuthServer.Entities;
 
 namespace AuthServer.Repositories.Abstractions;

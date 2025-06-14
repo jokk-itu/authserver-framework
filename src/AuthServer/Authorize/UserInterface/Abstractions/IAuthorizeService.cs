@@ -1,4 +1,4 @@
-﻿using AuthServer.Authorization;
+﻿using AuthServer.Authorization.Models;
 using AuthServer.Endpoints.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

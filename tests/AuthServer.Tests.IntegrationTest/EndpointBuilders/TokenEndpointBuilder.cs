@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Web;
@@ -12,11 +13,9 @@ using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
-public class TokenEndpointBuilder : EndpointBuilder
+public class TokenEndpointBuilder : EndpointBuilder<TokenEndpointBuilder>
 {
     private TokenEndpointAuthMethod _tokenEndpointAuthMethod = TokenEndpointAuthMethod.ClientSecretBasic;
-
-    private List<KeyValuePair<string, string>> _parameters = [];
 
     public TokenEndpointBuilder(
         HttpClient httpClient,
@@ -89,9 +88,11 @@ public class TokenEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    internal async Task<PostTokenResponse> Post()
+    internal async Task<TokenResponse> Post()
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/token");
+
+        AddDPoP(httpRequestMessage, "connect/token");
 
         if (_tokenEndpointAuthMethod == TokenEndpointAuthMethod.ClientSecretBasic)
         {
@@ -115,7 +116,29 @@ public class TokenEndpointBuilder : EndpointBuilder
             httpResponseMessage.StatusCode,
             await httpResponseMessage.Content.ReadAsStringAsync());
 
-        httpResponseMessage.EnsureSuccessStatusCode();
-        return (await httpResponseMessage.Content.ReadFromJsonAsync<PostTokenResponse>())!;
+        if (httpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+        {
+            httpResponseMessage.Headers.TryGetValues(Parameter.DPoPNonce, out var dPoPNonces);
+            return new TokenResponse
+            {
+                StatusCode = httpResponseMessage.StatusCode,
+                Error = await httpResponseMessage.Content.ReadFromJsonAsync<OAuthError>(),
+                DPoPNonce = dPoPNonces?.Single()
+            };
+        }
+
+        return new TokenResponse
+        {
+            StatusCode = httpResponseMessage.StatusCode,
+            Response = await httpResponseMessage.Content.ReadFromJsonAsync<PostTokenResponse>()
+        };
+    }
+
+    internal class TokenResponse
+    {
+        public HttpStatusCode StatusCode { get; set; }
+        public OAuthError? Error { get; set; }
+        public PostTokenResponse? Response { get; set; }
+        public string? DPoPNonce { get; set; }
     }
 }

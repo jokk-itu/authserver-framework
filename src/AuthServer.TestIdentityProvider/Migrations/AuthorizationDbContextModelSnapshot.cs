@@ -978,6 +978,10 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("Jkt")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("NotBefore")
                         .HasColumnType("datetime2");
 

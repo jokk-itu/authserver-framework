@@ -13,10 +13,9 @@ using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
-public class EndSessionEndpointBuilder : EndpointBuilder
+public class EndSessionEndpointBuilder : EndpointBuilder<EndSessionEndpointBuilder>
 {
     private readonly IDataProtectionProvider _dataProtectionProvider;
-    private readonly List<KeyValuePair<string, object>> _parameters = [];
     private readonly List<CookieHeaderValue> _cookies = [];
 
     public EndSessionEndpointBuilder(
@@ -31,27 +30,21 @@ public class EndSessionEndpointBuilder : EndpointBuilder
         _dataProtectionProvider = dataProtectionProvider;
     }
 
-    public EndSessionEndpointBuilder WithIdTokenHint(string idTokenHint)
-    {
-        _parameters.Add(new KeyValuePair<string, object>(Parameter.IdTokenHint, idTokenHint));
-        return this;
-    }
-
     public EndSessionEndpointBuilder WithClientId(string clientId)
     {
-        _parameters.Add(new KeyValuePair<string, object>(Parameter.ClientId, clientId));
+        _parameters.Add(new KeyValuePair<string, string>(Parameter.ClientId, clientId));
         return this;
     }
 
     public EndSessionEndpointBuilder WithPostLogoutRedirectUri(string postLogoutRedirectUri)
     {
-        _parameters.Add(new KeyValuePair<string, object>(Parameter.PostLogoutRedirectUri, postLogoutRedirectUri));
+        _parameters.Add(new KeyValuePair<string, string>(Parameter.PostLogoutRedirectUri, postLogoutRedirectUri));
         return this;
     }
 
     public EndSessionEndpointBuilder WithState(string state)
     {
-        _parameters.Add(new KeyValuePair<string, object>(Parameter.State, state));
+        _parameters.Add(new KeyValuePair<string, string>(Parameter.State, state));
         return this;
     }
 

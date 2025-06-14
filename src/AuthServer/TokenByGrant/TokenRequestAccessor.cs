@@ -11,13 +11,15 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
 {
     public async Task<TokenRequest> GetRequest(HttpRequest httpRequest)
     {
+        var dPoP = httpRequest.Headers.GetValue(Parameter.DPoP);
+
         var body = await httpRequest.ReadFormAsync();
+
         var grantType = body.GetValue(Parameter.GrantType);
         var code = body.GetValue(Parameter.Code);
         var codeVerifier = body.GetValue(Parameter.CodeVerifier);
         var redirectUri = body.GetValue(Parameter.RedirectUri);
         var refreshToken = body.GetValue(Parameter.RefreshToken);
-        var dPoPToken = body.GetValue(Parameter.DPoP);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var resource = body.GetCollectionValue(Parameter.Resource);
@@ -40,7 +42,7 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
             CodeVerifier = codeVerifier,
             RedirectUri = redirectUri,
             RefreshToken = refreshToken,
-            DPoPToken = dPoPToken,
+            DPoP = dPoP,
             Scope = scope,
             Resource = resource,
             ClientAuthentications = clientAuthentications

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 
 namespace AuthServer.Extensions;
 
-public static class ResultExtensions
+internal static class ResultExtensions
 {
     public static IResult OAuthBadRequest(this IResultExtensions _, OAuthError error)
     {

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250519154843_Initial")]
+    [Migration("20250609135218_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -980,6 +980,10 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Jkt")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("NotBefore")
                         .HasColumnType("datetime2");

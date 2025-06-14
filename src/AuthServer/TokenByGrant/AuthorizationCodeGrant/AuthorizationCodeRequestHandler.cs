@@ -31,6 +31,9 @@ internal class AuthorizationCodeRequestHandler : RequestHandler<TokenRequest, Au
 
     protected override async Task<ProcessResult<AuthorizationCodeValidatedRequest, ProcessError>> ValidateRequest(TokenRequest request, CancellationToken cancellationToken)
     {
-        return await _validator.Validate(request, cancellationToken);
+        await _unitOfWork.Begin(cancellationToken);
+        var result = await _validator.Validate(request, cancellationToken);
+        await _unitOfWork.Commit(cancellationToken);
+        return result;
     }
 }

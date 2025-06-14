@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AuthServer.EntityConfigurations;
 
-public class AuthorizationGrantScopeConsentConfiguration : IEntityTypeConfiguration<AuthorizationGrantScopeConsent>
+internal sealed class AuthorizationGrantScopeConsentConfiguration : IEntityTypeConfiguration<AuthorizationGrantScopeConsent>
 {
     public void Configure(EntityTypeBuilder<AuthorizationGrantScopeConsent> builder)
     {

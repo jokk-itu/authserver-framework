@@ -1,9 +1,13 @@
-﻿using AuthServer.Constants;
+﻿using System.Net;
+using AuthServer.Constants;
+using AuthServer.Core;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
@@ -13,6 +17,71 @@ public class TokenIntegrationTest : BaseIntegrationTest
     public TokenIntegrationTest(WebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
         : base(factory, testOutputHelper)
     {
+    }
+
+    [Fact]
+    public async Task Token_InvalidGrantType_ExpectUnsupportedGrantType()
+    {
+        // Arrange
+        var weatherReadScope = await AddWeatherReadScope();
+        var weatherClientSecret = CryptographyHelper.GetRandomString(16);
+        var weatherClient = await AddWeatherClient(weatherClientSecret);
+
+        var registerResponse = await RegisterEndpointBuilder
+            .WithGrantTypes([GrantTypeConstants.ClientCredentials])
+            .WithScope([weatherReadScope])
+            .WithClientName("worker-app")
+            .Post();
+
+        // Act
+        var tokenResponse = await TokenEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithClientSecret(registerResponse.ClientSecret!)
+            .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.ClientSecretBasic)
+            .WithGrantType("invalid_grant_type")
+            .WithScope([weatherReadScope])
+            .WithResource([weatherClient.ClientUri!])
+            .Post();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, tokenResponse.StatusCode);
+        Assert.NotNull(tokenResponse.Error);
+        Assert.Equal(ErrorCode.UnsupportedGrantType, tokenResponse.Error.Error);
+    }
+
+    [Fact]
+    public async Task Token_DPoPRequestWithoutNonce_ExpectUseDPoPNonce()
+    {
+        // Arrange
+        var weatherReadScope = await AddWeatherReadScope();
+        var weatherClientSecret = CryptographyHelper.GetRandomString(16);
+        var weatherClient = await AddWeatherClient(weatherClientSecret);
+
+        var registerResponse = await RegisterEndpointBuilder
+            .WithClientName("web-app")
+            .WithGrantTypes([GrantTypeConstants.ClientCredentials])
+            .WithScope([weatherReadScope])
+            .Post();
+
+        // Act
+        var jwks = ClientJwkBuilder.GetClientJwks();
+        var tokenResponse = await TokenEndpointBuilder
+            .WithGrantType(GrantTypeConstants.ClientCredentials)
+            .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.ClientSecretBasic)
+            .WithDPoP(null)
+            .WithClientJwks(jwks)
+            .WithClientId(registerResponse.ClientId)
+            .WithClientSecret(registerResponse.ClientSecret!)
+            .WithScope([weatherReadScope])
+            .WithResource([weatherClient.ClientUri!])
+            .Post();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, tokenResponse.StatusCode);
+        Assert.NotNull(tokenResponse.Error);
+        Assert.Equal(ErrorCode.UseDPoPNonce, tokenResponse.Error.Error);
+        Assert.Null(tokenResponse.Response);
+        Assert.NotNull(tokenResponse.DPoPNonce);
     }
 
     [Fact]
@@ -58,12 +127,12 @@ public class TokenIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.NotNull(tokenResponse);
-        Assert.Equal($"{weatherReadScope} {ScopeConstants.UserInfo} {ScopeConstants.OpenId}", tokenResponse.Scope);
-        Assert.Equal("Bearer", tokenResponse.TokenType);
-        Assert.Null(tokenResponse.RefreshToken);
-        Assert.NotNull(tokenResponse.IdToken);
-        Assert.NotNull(tokenResponse.AccessToken);
-        Assert.Equal(registerResponse.AccessTokenExpiration, tokenResponse.ExpiresIn);
+        Assert.Equal($"{weatherReadScope} {ScopeConstants.UserInfo} {ScopeConstants.OpenId}", tokenResponse.Response!.Scope);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.Response!.TokenType);
+        Assert.Null(tokenResponse.Response!.RefreshToken);
+        Assert.NotNull(tokenResponse.Response!.IdToken);
+        Assert.NotNull(tokenResponse.Response!.AccessToken);
+        Assert.Equal(registerResponse.AccessTokenExpiration, tokenResponse.Response!.ExpiresIn);
     }
 
     [Fact]
@@ -108,7 +177,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
         var refreshResponse = await TokenEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
-            .WithRefreshToken(tokenResponse.RefreshToken!)
+            .WithRefreshToken(tokenResponse.Response!.RefreshToken!)
             .WithGrantType(GrantTypeConstants.RefreshToken)
             .WithResource([weatherClient.ClientUri!])
             .WithScope([weatherReadScope])
@@ -116,13 +185,13 @@ public class TokenIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.NotNull(refreshResponse);
-        Assert.Equal(weatherReadScope, refreshResponse.Scope);
-        Assert.Equal("Bearer", refreshResponse.TokenType);
-        Assert.Null(refreshResponse.RefreshToken);
-        Assert.NotEqual(tokenResponse.RefreshToken, refreshResponse.RefreshToken);
-        Assert.NotNull(refreshResponse.IdToken);
-        Assert.NotNull(refreshResponse.AccessToken);
-        Assert.Equal(registerResponse.AccessTokenExpiration, refreshResponse.ExpiresIn);
+        Assert.Equal(weatherReadScope, refreshResponse.Response!.Scope);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, refreshResponse.Response!.TokenType);
+        Assert.Null(refreshResponse.Response!.RefreshToken);
+        Assert.NotEqual(tokenResponse.Response!.RefreshToken, refreshResponse.Response!.RefreshToken);
+        Assert.NotNull(refreshResponse.Response!.IdToken);
+        Assert.NotNull(refreshResponse.Response!.AccessToken);
+        Assert.Equal(registerResponse.AccessTokenExpiration, refreshResponse.Response!.ExpiresIn);
     }
 
     [Fact]
@@ -143,7 +212,9 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .Post();
         
         var clientAssertion = JwtBuilder.GetPrivateKeyJwt(registerResponse.ClientId, jwks.PrivateJwks, ClientTokenAudience.TokenEndpoint);
-        
+        var nonceRepository = ServiceProvider.GetRequiredService<INonceRepository>();
+        var nonce = await nonceRepository.CreateDPoPNonce(registerResponse.ClientId, CancellationToken.None);
+
         // Act
         var tokenResponse = await TokenEndpointBuilder
             .WithClientId(registerResponse.ClientId)
@@ -152,15 +223,17 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .WithGrantType(GrantTypeConstants.ClientCredentials)
             .WithScope([weatherReadScope])
             .WithResource([weatherClient.ClientUri!])
+            .WithClientJwks(jwks)
+            .WithDPoP(nonce)
             .Post();
 
         // Assert
         Assert.NotNull(tokenResponse);
-        Assert.Equal(weatherReadScope, tokenResponse.Scope);
-        Assert.Equal("Bearer", tokenResponse.TokenType);
-        Assert.Null(tokenResponse.RefreshToken);
-        Assert.Null(tokenResponse.IdToken);
-        Assert.NotNull(tokenResponse.AccessToken);
-        Assert.Equal(registerResponse.AccessTokenExpiration, tokenResponse.ExpiresIn);
+        Assert.Equal(weatherReadScope, tokenResponse.Response!.Scope);
+        Assert.Equal(TokenTypeSchemaConstants.DPoP, tokenResponse.Response!.TokenType);
+        Assert.Null(tokenResponse.Response!.RefreshToken);
+        Assert.Null(tokenResponse.Response!.IdToken);
+        Assert.NotNull(tokenResponse.Response!.AccessToken);
+        Assert.Equal(registerResponse.AccessTokenExpiration, tokenResponse.Response!.ExpiresIn);
     }
 }

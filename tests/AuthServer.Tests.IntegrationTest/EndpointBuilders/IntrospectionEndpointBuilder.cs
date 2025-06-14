@@ -12,10 +12,9 @@ using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
-public class IntrospectionEndpointBuilder : EndpointBuilder
+public class IntrospectionEndpointBuilder : EndpointBuilder<IntrospectionEndpointBuilder>
 {
     private TokenEndpointAuthMethod _tokenEndpointAuthMethod;
-    private readonly List<KeyValuePair<string, string>> _parameters = [];
 
     public IntrospectionEndpointBuilder(
         HttpClient httpClient,
@@ -48,13 +47,6 @@ public class IntrospectionEndpointBuilder : EndpointBuilder
     public IntrospectionEndpointBuilder WithClientSecret(string clientSecret)
     {
         _parameters.Add(new(Parameter.ClientSecret, clientSecret));
-        return this;
-    }
-
-    public IntrospectionEndpointBuilder WithClientAssertion(string clientAssertion)
-    {
-        _parameters.Add(new(Parameter.ClientAssertion, clientAssertion));
-        _parameters.Add(new(Parameter.ClientAssertionType, ClientAssertionTypeConstants.PrivateKeyJwt));
         return this;
     }
 

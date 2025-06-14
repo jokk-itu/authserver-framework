@@ -70,7 +70,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         var queryContent = new Dictionary<string, StringValues>();
         if (method == "PUT")
         {
-            queryContent.Add(Parameter.ClientId, value);
+            queryContent.Add(Parameter.ClientId, new StringValues(value));
         }
         var httpContext = new DefaultHttpContext
         {
@@ -90,9 +90,11 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             var authResult = AuthenticateResult.Success(
                 new AuthenticationTicket(new ClaimsPrincipal(), OAuthTokenAuthenticationDefaults.AuthenticationScheme));
 
+#pragma warning disable CS8601 // Ignore the null reference error, as it is a possible scenario to retrieve a null token.
             authResult.Properties!.StoreTokens([
                 new AuthenticationToken { Name = Parameter.AccessToken, Value = value }
             ]);
+#pragma warning disable CS8601
 
             authenticationServiceMock
                 .Setup(x => x.AuthenticateAsync(httpContext, OAuthTokenAuthenticationDefaults.AuthenticationScheme))

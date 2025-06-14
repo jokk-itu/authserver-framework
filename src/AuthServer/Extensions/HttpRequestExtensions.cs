@@ -5,7 +5,7 @@ using AuthServer.Enums;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.Extensions;
-public static class HttpRequestExtensions
+internal static class HttpRequestExtensions
 {
     public static ClientAuthentication? GetClientSecretBasic(this HttpRequest request)
     {

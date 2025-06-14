@@ -1,4 +1,5 @@
-﻿using AuthServer.Extensions;
+﻿using System.Net;
+using AuthServer.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -31,13 +32,14 @@ public class JwksDocumentIntegrationTest : BaseIntegrationTest
         };
         var token = jsonWebTokenHandler.CreateToken(securityTokenDescriptor);
 
+        // Act
         var httpClient = GetHttpClient();
         var response = await httpClient.GetAsync(EndpointResolver.JwksEndpoint);
-        response.EnsureSuccessStatusCode();
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var jwks = JsonWebKeySet.Create(responseContent);
+        
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        // Act
+        var jwks = JsonWebKeySet.Create(await response.Content.ReadAsStringAsync());
         var tokenValidationResult = await jsonWebTokenHandler.ValidateTokenAsync(token, new TokenValidationParameters
         {
             ClockSkew = TimeSpan.Zero,
@@ -49,7 +51,6 @@ public class JwksDocumentIntegrationTest : BaseIntegrationTest
             TryAllIssuerSigningKeys = false
         });
 
-        // Assert
         Assert.Null(tokenValidationResult.Exception);
         Assert.True(tokenValidationResult.IsValid);
     }

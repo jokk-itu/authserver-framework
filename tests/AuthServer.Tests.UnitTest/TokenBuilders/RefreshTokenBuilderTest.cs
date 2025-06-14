@@ -1,4 +1,6 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.TokenBuilders;
@@ -59,10 +61,12 @@ public class RefreshTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitT
 
         // Act
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
+        const string jkt = "jkt";
         var refreshToken = await refreshTokenBuilder.BuildToken(new RefreshTokenArguments
         {
             AuthorizationGrantId = authorizationGrant.Id,
-            Scope = scope
+            Scope = scope,
+            Jkt = jkt
         }, CancellationToken.None);
         await IdentityContext.SaveChangesAsync();
 
@@ -94,6 +98,10 @@ public class RefreshTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitT
         Assert.Equal(authorizationGrant.Id, validatedTokenResult.Claims[ClaimNameConstants.GrantId].ToString());
         Assert.Equal(authorizationGrant.Client.Id, validatedTokenResult.Claims[ClaimNameConstants.ClientId].ToString());
         Assert.Equal(string.Join(' ', scope), validatedTokenResult.Claims[ClaimNameConstants.Scope]);
+
+        var confirmation = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Cnf].ToString()!);
+        Assert.NotNull(confirmation);
+        Assert.Equal(jkt, confirmation[ClaimNameConstants.Jkt].ToString());
     }
 
     private async Task<AuthorizationGrant> GetAuthorizationGrant(bool requireReferenceToken)

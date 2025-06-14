@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Routing;
 
 namespace AuthServer.Core.Abstractions;
-public interface IEndpointModule
+internal interface IEndpointModule
 {
     /// <summary>
     /// 

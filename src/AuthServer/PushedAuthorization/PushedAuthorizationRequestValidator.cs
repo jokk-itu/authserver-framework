@@ -177,7 +177,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
 
         var dPoPValidationResult = new DPoPValidationResult
         {
-            IsValid = !cachedClient.RequireDPoPBoundAccessTokens
+            IsValid = false
         };
         if (!string.IsNullOrEmpty(request.DPoP))
         {

@@ -44,14 +44,14 @@ public class RevocationIntegrationTest : BaseIntegrationTest
         await RevocationEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
-            .WithToken(tokenResponse.AccessToken)
+            .WithToken(tokenResponse.Response!.AccessToken)
             .WithTokenTypeHint(TokenTypeConstants.AccessToken)
             .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.ClientSecretBasic)
             .Post();
 
         // Arrange
         var token = await ServiceProvider.GetRequiredService<AuthorizationDbContext>()
-            .Set<Token>().SingleAsync(x => x.Reference == tokenResponse.AccessToken);
+            .Set<Token>().SingleAsync(x => x.Reference == tokenResponse.Response!.AccessToken);
 
         Assert.NotNull(token.RevokedAt);
     }

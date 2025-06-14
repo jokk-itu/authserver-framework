@@ -1,4 +1,6 @@
 ﻿using AuthServer.Authentication.Models;
+using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
@@ -512,6 +514,258 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         authorizationCodeEncoder.Verify();
     }
 
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, "jkt")]
+    [InlineData(true, "jkt")]
+    public async Task Validate_RequireDPoPWithoutDPoPProof_ExpectDPoPRequired(bool requireDPoP, string? dPoPJkt)
+    {
+        // Arrange
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(authorizationCodeEncoder);
+        });
+
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
+        authorizationGrant.Client.RequireDPoPBoundAccessTokens = requireDPoP;
+        var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
+
+        authorizationCodeEncoder
+            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Returns(new EncodedAuthorizationCode
+            {
+                AuthorizationCodeId = authorizationCodeId,
+                AuthorizationGrantId = authorizationGrant.Id,
+                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                DPoPJkt = dPoPJkt,
+                Scope = [],
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.AuthorizationCode,
+            Resource = ["resource"],
+            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    authorizationGrant.Client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.DPoPRequired, processResult);
+        authorizationCodeEncoder.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_InvalidDPoP_ExpectInvalidDPoP()
+    {
+        // Arrange
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(authorizationCodeEncoder);
+            services.AddScopedMock(dPoPService);
+        });
+
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
+        var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
+
+        authorizationCodeEncoder
+            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Returns(new EncodedAuthorizationCode
+            {
+                AuthorizationCodeId = authorizationCodeId,
+                AuthorizationGrantId = authorizationGrant.Id,
+                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                Scope = [],
+            })
+            .Verifiable();
+
+        const string dPoPProof = "invalid_dpop_proof";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoPProof, authorizationGrant.Client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = false
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.AuthorizationCode,
+            Resource = ["resource"],
+            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            DPoP = dPoPProof,
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    authorizationGrant.Client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidDPoP, processResult);
+        authorizationCodeEncoder.Verify();
+        dPoPService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_DPoPWithoutNonceClaim_ExpectUseDPoPNonce()
+    {
+        // Arrange
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(authorizationCodeEncoder);
+            services.AddScopedMock(dPoPService);
+        });
+
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
+        var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
+
+        authorizationCodeEncoder
+            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Returns(new EncodedAuthorizationCode
+            {
+                AuthorizationCodeId = authorizationCodeId,
+                AuthorizationGrantId = authorizationGrant.Id,
+                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                Scope = [],
+            })
+            .Verifiable();
+
+        const string dPoPProof = "dpop_proof_without_nonce";
+        const string dPoPNonce = "dPoPNonce";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoPProof, authorizationGrant.Client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = false,
+                DPoPNonce = dPoPNonce
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.AuthorizationCode,
+            Resource = ["resource"],
+            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            DPoP = dPoPProof,
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    authorizationGrant.Client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce), processResult);
+        authorizationCodeEncoder.Verify();
+        dPoPService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_DPoPUnequalToDPoPJkt_ExpectInvalidDPoPJktMatch()
+    {
+        // Arrange
+        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(authorizationCodeEncoder);
+            services.AddScopedMock(dPoPService);
+        });
+
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
+        var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
+
+        authorizationCodeEncoder
+            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Returns(new EncodedAuthorizationCode
+            {
+                AuthorizationCodeId = authorizationCodeId,
+                AuthorizationGrantId = authorizationGrant.Id,
+                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                DPoPJkt = "jkt",
+                Scope = [],
+            })
+            .Verifiable();
+
+        const string dPoPProof = "dpop_proof_unequal_to_dpop_jkt";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoPProof, authorizationGrant.Client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = true,
+                DPoPJkt = "unequal_jkt"
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.AuthorizationCode,
+            Resource = ["resource"],
+            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            DPoP = dPoPProof,
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    authorizationGrant.Client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidDPoPJktMatch, processResult);
+        authorizationCodeEncoder.Verify();
+        dPoPService.Verify();
+    }
+
     [Fact]
     public async Task Validate_UnauthorizedScopeForClient_ExpectUnauthorizedForScope()
     {
@@ -782,9 +1036,11 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         // Arrange
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
+            services.AddScopedMock(dPoPService);
         });
 
         var validator = serviceProvider
@@ -796,6 +1052,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
         var weatherClient = await GetWeatherClient();
 
+        const string dPoPJkt = "jkt";
+        const string dPoP = "dpop";
+
         authorizationCodeEncoder
             .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
@@ -803,8 +1062,18 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
                 CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                DPoPJkt = "jkt",
                 RedirectUri = redirectUri,
                 Scope = [ScopeConstants.OpenId]
+            })
+            .Verifiable();
+
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, authorizationGrant.Client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = true,
+                DPoPJkt = dPoPJkt
             })
             .Verifiable();
 
@@ -814,6 +1083,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             Resource = [weatherClient.ClientUri!],
             CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
             RedirectUri = redirectUri,
+            DPoP = dPoP,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -831,7 +1101,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizationCodeId, processResult.Value!.AuthorizationCodeId);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
         Assert.Equal([ScopeConstants.OpenId], processResult.Value!.Scope);
+        Assert.Equal(dPoPJkt, processResult.Value!.DPoPJkt);
         authorizationCodeEncoder.Verify();
+        dPoPService.Verify();
     }
 
     private async Task<AuthorizationGrant> GetAuthorizationGrant(string plainSecret)

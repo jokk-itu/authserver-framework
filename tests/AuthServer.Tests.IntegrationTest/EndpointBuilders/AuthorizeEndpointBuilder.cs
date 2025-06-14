@@ -12,14 +12,13 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Xunit.Abstractions;
 using AuthServer.Constants;
 using System.Web;
-using System.Text.RegularExpressions;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 using AuthServer.Endpoints.Responses;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
-public class AuthorizeEndpointBuilder : EndpointBuilder
+public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder>
 {
     private readonly IDataProtectionProvider _dataProtectionProvider;
 
@@ -27,7 +26,6 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
     private string? _privateJwks;
     private string _clientId;
 
-    private readonly List<KeyValuePair<string, object>> _parameters = [];
     private readonly List<CookieHeaderValue> _cookies = [];
 
     public AuthorizeEndpointBuilder(
@@ -42,12 +40,6 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         _dataProtectionProvider = dataProtectionProvider;
     }
 
-    public AuthorizeEndpointBuilder WithState(string state)
-    {
-        _parameters.Add(new(Parameter.State, state));
-        return this;
-    }
-
     public AuthorizeEndpointBuilder WithResponseMode(string responseMode)
     {
         _parameters.Add(new(Parameter.ResponseMode, responseMode));
@@ -58,12 +50,6 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
     {
         _clientId = clientId;
         _parameters.Add(new(Parameter.ClientId, clientId));
-        return this;
-    }
-
-    public AuthorizeEndpointBuilder WithPrompt(string prompt)
-    {
-        _parameters.Add(new(Parameter.Prompt, prompt));
         return this;
     }
 
@@ -82,24 +68,6 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
     public AuthorizeEndpointBuilder WithCodeChallenge(string codeChallenge)
     {
         _parameters.Add(new(Parameter.CodeChallenge, codeChallenge));
-        return this;
-    }
-
-    public AuthorizeEndpointBuilder WithResponseType(string responseType)
-    {
-        _parameters.Add(new(Parameter.ResponseType, responseType));
-        return this;
-    }
-
-    public AuthorizeEndpointBuilder WithCodeChallengeMethod(string codeChallengeMethod)
-    {
-        _parameters.Add(new(Parameter.CodeChallengeMethod, codeChallengeMethod));
-        return this;
-    }
-
-    public AuthorizeEndpointBuilder WithNonce(string nonce)
-    {
-        _parameters.Add(new(Parameter.Nonce, nonce));
         return this;
     }
 
@@ -133,21 +101,34 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    public async Task<AuthorizeResponse> Get() => await Send(fields =>
-        new HttpRequestMessage(HttpMethod.Get, $"connect/authorize{new QueryBuilder(fields).ToQueryString()}"));
+    public async Task<AuthorizeResponse> Get() => await Send(HttpMethod.Get);
 
-    public async Task<AuthorizeResponse> Post() => await Send(fields =>
-        new HttpRequestMessage(HttpMethod.Post, "connect/authorize") { Content = new FormUrlEncodedContent(fields) });
+    public async Task<AuthorizeResponse> Post() => await Send(HttpMethod.Post);
 
-    private async Task<AuthorizeResponse> Send(Func<IEnumerable<KeyValuePair<string, string>>, HttpRequestMessage> requestGetter)
+    private async Task<AuthorizeResponse> Send(HttpMethod httpMethod)
     {
+        var httpRequestMessage = new HttpRequestMessage(httpMethod, (string?)null);
+
         SetDefaultValues();
+        AddDPoP(httpRequestMessage, "connect/authorize");
         OverwriteForRequestObject();
 
-        var fields = _parameters.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString()!));
-        var requestMessage = requestGetter.Invoke(fields);
-        requestMessage.Headers.Add("Cookie", _cookies.Select(x => x.ToString()));
-        var response = await HttpClient.SendAsync(requestMessage);
+        var fields = _parameters
+            .Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString()))
+            .ToList();
+
+        if (httpMethod == HttpMethod.Get)
+        {
+            httpRequestMessage.RequestUri = new Uri($"connect/authorize{new QueryBuilder(fields).ToQueryString()}", UriKind.Relative);
+        }
+        else if (httpMethod == HttpMethod.Post)
+        {
+            httpRequestMessage.RequestUri = new Uri("connect/authorize", UriKind.Relative);
+            httpRequestMessage.Content = new FormUrlEncodedContent(fields);
+        }
+
+        httpRequestMessage.Headers.Add("Cookie", _cookies.Select(x => x.ToString()));
+        var response = await HttpClient.SendAsync(httpRequestMessage);
 
         TestOutputHelper.WriteLine("Received Authorize response {0}, Location: {1}, Content: {2}",
             response.StatusCode,
@@ -258,7 +239,12 @@ public class AuthorizeEndpointBuilder : EndpointBuilder
             return;
         }
 
-        var requestObject = JwtBuilder.GetRequestObjectJwt(_parameters.ToDictionary(), _clientId, _privateJwks!, ClientTokenAudience.AuthorizationEndpoint);
+        var requestObject = JwtBuilder.GetRequestObjectJwt(
+            _parameters.ToDictionary(x => x.Key, object (x) => x.Value),
+            _clientId,
+            _privateJwks!,
+            ClientTokenAudience.AuthorizationEndpoint);
+
         _parameters.Clear();
         _parameters.Add(new(Parameter.Request, requestObject));
         _parameters.Add(new(Parameter.ClientId, _clientId));

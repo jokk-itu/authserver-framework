@@ -3,7 +3,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AuthServer.Extensions;
 
-public static class QueryCollectionExtensions
+internal static class QueryCollectionExtensions
 {
     public static string? GetValue(this IQueryCollection queryCollection, string key)
     {

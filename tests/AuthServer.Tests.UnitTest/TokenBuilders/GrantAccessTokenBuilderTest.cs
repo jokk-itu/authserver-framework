@@ -64,9 +64,11 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         // Act
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
         var resource = new[] { "https://localhost:5000", "https://localhost:5001" };
+        const string jkt = "jkt";
         var accessToken = await grantAccessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = authorizationGrant.Id,
+            Jkt = jkt,
             Scope = scope,
             Resource = resource
         }, CancellationToken.None);
@@ -100,6 +102,10 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         var accessControl = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.AccessControl].ToString()!);
         Assert.NotNull(accessControl);
         Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(accessControl[ClaimNameConstants.Roles].ToString()!));
+
+        var confirmation = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Cnf].ToString()!);
+        Assert.NotNull(confirmation);
+        Assert.Equal(jkt, confirmation[ClaimNameConstants.Jkt].ToString());
     }
 
     private async Task<AuthorizationGrant> GetAuthorizationGrant(bool requireReferenceToken)

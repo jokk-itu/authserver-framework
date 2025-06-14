@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 
 namespace AuthServer.Extensions;
-public static class StringExtensions
+internal static class StringExtensions
 {
     /// <summary>
     /// Gets the Enum of type <see cref="T"/>,

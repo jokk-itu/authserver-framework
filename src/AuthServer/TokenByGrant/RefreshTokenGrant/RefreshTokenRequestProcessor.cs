@@ -1,4 +1,5 @@
 ﻿using AuthServer.Cache.Abstractions;
+using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
@@ -27,6 +28,7 @@ internal class RefreshTokenRequestProcessor : IRequestProcessor<RefreshTokenVali
         var accessToken = await _accessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = request.AuthorizationGrantId,
+            Jkt = request.DPoPJkt,
             Resource = request.Resource,
             Scope = request.Scope
         }, cancellationToken);
@@ -37,13 +39,18 @@ internal class RefreshTokenRequestProcessor : IRequestProcessor<RefreshTokenVali
             Scope = request.Scope
         }, cancellationToken);
 
+        var tokenType = string.IsNullOrEmpty(request.DPoPJkt)
+            ? TokenTypeSchemaConstants.Bearer
+            : TokenTypeSchemaConstants.DPoP;
+
         return new TokenResponse
         {
             AccessToken = accessToken,
             IdToken = idToken,
             ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
-            GrantId = request.AuthorizationGrantId
+            GrantId = request.AuthorizationGrantId,
+            TokenType = tokenType
         };
     }
 }

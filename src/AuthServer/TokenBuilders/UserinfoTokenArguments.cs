@@ -1,7 +1,7 @@
 ﻿using AuthServer.Enums;
 
 namespace AuthServer.TokenBuilders;
-public class UserinfoTokenArguments
+internal class UserinfoTokenArguments
 {
     public required string ClientId { get; init; }
     public required SigningAlg SigningAlg { get; init; }

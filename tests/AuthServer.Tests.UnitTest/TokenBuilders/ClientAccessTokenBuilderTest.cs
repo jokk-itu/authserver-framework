@@ -1,4 +1,5 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.TokenBuilders;
@@ -61,11 +62,13 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         // Act
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
         var resource = new[] { "https://localhost:5000", "https://localhost:5001" };
+        const string jkt = "jkt";
         var accessToken = await grantAccessTokenBuilder.BuildToken(new ClientAccessTokenArguments
         {
             ClientId = client.Id,
             Scope = scope,
-            Resource = resource
+            Resource = resource,
+            Jkt = jkt
         }, CancellationToken.None);
         await IdentityContext.SaveChangesAsync();
 
@@ -88,6 +91,10 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(client.Id, validatedTokenResult.Claims[ClaimNameConstants.ClientId].ToString());
         Assert.Equal(client.Id, validatedTokenResult.Claims[ClaimNameConstants.Sub].ToString());
         Assert.Equal(resource, validatedTokenResult.Claims[ClaimNameConstants.Aud]);
+
+        var confirmation = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Cnf].ToString()!);
+        Assert.NotNull(confirmation);
+        Assert.Equal(jkt, confirmation[ClaimNameConstants.Jkt].ToString());
     }
 
     private async Task<Client> GetClient(bool requireReferenceToken)
