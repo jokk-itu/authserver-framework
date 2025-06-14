@@ -97,7 +97,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
         Assert.Equal(ErrorCode.UseDPoPNonce, pushedAuthorizationResponse.Error.Error);
         Assert.Null(pushedAuthorizationResponse.Response);
         Assert.Null(pushedAuthorizationResponse.Location);
-        // TODO verify the DPoPNonce
+        Assert.NotNull(pushedAuthorizationResponse.DPoPNonce);
     }
 
     [Fact]
