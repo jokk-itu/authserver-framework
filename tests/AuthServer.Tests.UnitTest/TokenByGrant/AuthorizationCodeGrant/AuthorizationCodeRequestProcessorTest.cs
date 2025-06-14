@@ -88,6 +88,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.AccessTokenExpiration, tokenResponse.ExpiresIn);
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
         Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
     }
 
     [Fact]
@@ -148,6 +149,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.AccessTokenExpiration, tokenResponse.ExpiresIn);
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
         Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
     }
 
     private async Task<Client> GetWeatherClient()
