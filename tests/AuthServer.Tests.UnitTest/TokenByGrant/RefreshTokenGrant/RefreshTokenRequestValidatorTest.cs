@@ -371,8 +371,11 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         Assert.Equal(TokenError.UnauthorizedForGrantType, processResult);
     }
 
-    [Fact]
-    public async Task Validate_RequireDPoPWithoutDPoPProof_ExpectDPoPRequired()
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, "jkt")]
+    [InlineData(true, "jkt")]
+    public async Task Validate_RequireDPoPWithoutDPoPProof_ExpectDPoPRequired(bool requireDPoP, string? jkt)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -381,10 +384,10 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        client.RequireDPoPBoundAccessTokens = true;
+        client.RequireDPoPBoundAccessTokens = requireDPoP;
         await SaveChangesAsync();
 
-        var refreshToken = await GetRefreshToken(client);
+        var refreshToken = await GetRefreshToken(client, null, jkt);
 
         var request = new TokenRequest
         {
@@ -501,6 +504,56 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce), processResult);
+        dPoPService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_DPoPDoesNotMatchRefreshTokenJkt_ExpectInvalidRefreshTokenJktMatch()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client, null, "jkt");
+
+        const string dPoP = "dpop_proof";
+        const string jkt = "invalid_jkt";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = true,
+                DPoPJkt = jkt
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = refreshToken.Reference,
+            Resource = ["resource"],
+            DPoP = dPoP,
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidRefreshTokenJktMatch, processResult);
         dPoPService.Verify();
     }
 
@@ -766,13 +819,13 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         return weatherClient;
     }
 
-    private async Task<RefreshToken> GetRefreshToken(Client client, int? expiration = null)
+    private async Task<RefreshToken> GetRefreshToken(Client client, int? expiration = null, string? jkt = null)
     {
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
-        var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600, null);
+        var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600, jkt);
         await AddEntity(refreshToken);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);

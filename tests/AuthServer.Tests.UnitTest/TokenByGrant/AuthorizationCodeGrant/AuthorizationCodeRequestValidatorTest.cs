@@ -517,6 +517,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     [Theory]
     [InlineData(true, null)]
     [InlineData(false, "jkt")]
+    [InlineData(true, "jkt")]
     public async Task Validate_RequireDPoPWithoutDPoPProof_ExpectDPoPRequired(bool requireDPoP, string? dPoPJkt)
     {
         // Arrange

@@ -54,6 +54,9 @@ internal static class TokenError
     public static readonly ProcessError InvalidDPoPJktMatch =
         new(ErrorCode.InvalidRequest, "dpop_jkt does not match jkt of dpop", ResultCode.BadRequest);
 
+    public static readonly ProcessError InvalidRefreshTokenJktMatch =
+        new(ErrorCode.InvalidRequest, "refresh_token jkt does not match jkt of dpop", ResultCode.BadRequest);
+
     public static readonly ProcessError DPoPRequired =
         new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
 
