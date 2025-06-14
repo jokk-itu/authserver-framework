@@ -67,8 +67,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
 
         // Act
         var grantResponse = await GrantManagementEndpointBuilder
-            .WithGrantId(tokenResponse.GrantId!)
-            .WithToken(tokenResponse.AccessToken)
+            .WithGrantId(tokenResponse.Response!.GrantId!)
+            .WithToken(tokenResponse.Response!.AccessToken)
             .Delete();
 
         // Assert
@@ -117,7 +117,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         // Act
         var grantResponse = await GrantManagementEndpointBuilder
             .WithGrantId("invalid_grant_id")
-            .WithToken(tokenResponse.AccessToken)
+            .WithToken(tokenResponse.Response!.AccessToken)
             .Delete();
 
         // Assert
@@ -169,7 +169,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         // Act
         var grantResponse = await GrantManagementEndpointBuilder
             .WithGrantId(otherGrantId)
-            .WithToken(tokenResponse.AccessToken)
+            .WithToken(tokenResponse.Response!.AccessToken)
             .Delete();
 
         // Assert
@@ -214,8 +214,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
 
         // Act
         var grantResponse = await GrantManagementEndpointBuilder
-            .WithGrantId(tokenResponse.GrantId!)
-            .WithToken(tokenResponse.AccessToken)
+            .WithGrantId(tokenResponse.Response!.GrantId!)
+            .WithToken(tokenResponse.Response!.AccessToken)
             .Delete();
 
         // Assert

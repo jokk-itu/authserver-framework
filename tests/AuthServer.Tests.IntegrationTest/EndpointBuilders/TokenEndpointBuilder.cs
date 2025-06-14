@@ -115,7 +115,29 @@ public class TokenEndpointBuilder : EndpointBuilder
             httpResponseMessage.StatusCode,
             await httpResponseMessage.Content.ReadAsStringAsync());
 
-        httpResponseMessage.EnsureSuccessStatusCode();
-        return (await httpResponseMessage.Content.ReadFromJsonAsync<PostTokenResponse>())!;
+        if (httpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+        {
+            httpResponseMessage.Headers.TryGetValues(Parameter.DPoPNonce, out var dPoPNonces);
+            return new TokenResponse
+            {
+                StatusCode = httpResponseMessage.StatusCode,
+                Error = await httpResponseMessage.Content.ReadFromJsonAsync<OAuthError>(),
+                DPoPNonce = dPoPNonces?.Single()
+            };
+        }
+
+        return new TokenResponse
+        {
+            StatusCode = httpResponseMessage.StatusCode,
+            Response = await httpResponseMessage.Content.ReadFromJsonAsync<PostTokenResponse>()
+        };
+    }
+
+    internal class TokenResponse
+    {
+        public HttpStatusCode StatusCode { get; set; }
+        public OAuthError? Error { get; set; }
+        public PostTokenResponse? Response { get; set; }
+        public string? DPoPNonce { get; set; }
     }
 }
