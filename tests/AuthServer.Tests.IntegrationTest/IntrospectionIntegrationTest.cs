@@ -2,8 +2,10 @@
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
@@ -17,7 +19,7 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Introspection_ActiveGrantAccessToken_ExpectActive()
+    public async Task Introspection_ActiveDPoPGrantAccessToken_ExpectActive()
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
@@ -39,13 +41,19 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, weatherReadScope], []);
 
         var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var jwks = ClientJwkBuilder.GetClientJwks();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
             .WithScope([weatherReadScope, ScopeConstants.OpenId])
             .WithResource([weatherClient.ClientUri!])
+            .WithDPoPJkt()
+            .WithClientJwks(jwks)
             .Get();
+
+        var nonceRepository = ServiceProvider.GetRequiredService<INonceRepository>();
+        var nonce = await nonceRepository.CreateDPoPNonce(registerResponse.ClientId, CancellationToken.None);
 
         var tokenResponse = await TokenEndpointBuilder
             .WithClientId(registerResponse.ClientId)
@@ -54,13 +62,15 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
             .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
             .WithResource([weatherClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
+            .WithDPoP(nonce)
+            .WithClientJwks(jwks)
             .Post();
 
         // Act
         var introspectionResponse = await IntrospectionEndpointBuilder
             .WithClientId(weatherClient.Id)
             .WithClientSecret(weatherClientSecret)
-            .WithToken(tokenResponse.AccessToken)
+            .WithToken(tokenResponse.Response!.AccessToken)
             .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.ClientSecretBasic)
             .Post();
 
@@ -79,13 +89,16 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         Assert.NotNull(introspectionResponse.Username);
         Assert.NotNull(introspectionResponse.AuthTime);
         Assert.NotNull(introspectionResponse.Acr);
+        Assert.Equal(TokenTypeSchemaConstants.DPoP, introspectionResponse.TokenType);
+        Assert.NotNull(introspectionResponse.Cnf);
+        Assert.NotNull(introspectionResponse.Cnf.Jkt);
 
         Assert.NotNull(introspectionResponse.AccessControl);
         Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(introspectionResponse.AccessControl[ClaimNameConstants.Roles].ToString()!));
     }
 
     [Fact]
-    public async Task Introspection_ActiveClientAccessToken_ExpectActive()
+    public async Task Introspection_ActiveBearerClientAccessToken_ExpectActive()
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
@@ -111,7 +124,7 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         var introspectionResponse = await IntrospectionEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
-            .WithToken(tokenResponse.AccessToken)
+            .WithToken(tokenResponse.Response!.AccessToken)
             .WithTokenTypeHint(TokenTypeConstants.AccessToken)
             .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.ClientSecretBasic)
             .Post();
@@ -127,5 +140,6 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
         Assert.NotNull(introspectionResponse.JwtId);
         Assert.Null(introspectionResponse.AccessControl);
+        Assert.Null(introspectionResponse.Cnf);
     }
 }
