@@ -14,7 +14,7 @@ namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
 public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
 {
-    private Dictionary<string, object> _parameters = [];
+    private Dictionary<string, object> _registerParameters = [];
 
     public RegisterEndpointBuilder(
         HttpClient httpClient,
@@ -28,73 +28,73 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
 
     public RegisterEndpointBuilder WithUserinfoSignedResponseAlg(SigningAlg signingAlg)
     {
-        _parameters.Add(Parameter.UserinfoSignedResponseAlg, signingAlg.GetDescription());
+        _registerParameters.Add(Parameter.UserinfoSignedResponseAlg, signingAlg.GetDescription());
         return this;
     }
 
     public RegisterEndpointBuilder WithRequestUriExpiration(int expiration)
     {
-        _parameters.Add(Parameter.RequestUriExpiration, expiration);
+        _registerParameters.Add(Parameter.RequestUriExpiration, expiration);
         return this;
     }
 
     public RegisterEndpointBuilder WithScope(IReadOnlyCollection<string> scope)
     {
-        _parameters.Add(Parameter.Scope, string.Join(' ', scope));
+        _registerParameters.Add(Parameter.Scope, string.Join(' ', scope));
         return this;
     }
 
     public RegisterEndpointBuilder WithClientName(string clientName)
     {
-        _parameters.Add(Parameter.ClientName, clientName);
+        _registerParameters.Add(Parameter.ClientName, clientName);
         return this;
     }
 
     public RegisterEndpointBuilder WithGrantTypes(IReadOnlyCollection<string> grantTypes)
     {
-        _parameters.Add(Parameter.GrantTypes, grantTypes);
+        _registerParameters.Add(Parameter.GrantTypes, grantTypes);
         return this;
     }
 
     public RegisterEndpointBuilder WithRedirectUris(IReadOnlyCollection<string> redirectUris)
     {
-        _parameters.Add(Parameter.RedirectUris, redirectUris);
+        _registerParameters.Add(Parameter.RedirectUris, redirectUris);
         return this;
     }
 
     public RegisterEndpointBuilder WithTokenEndpointAuthMethod(TokenEndpointAuthMethod tokenEndpointAuthMethod)
     {
-        _parameters.Add(Parameter.TokenEndpointAuthMethod, tokenEndpointAuthMethod.GetDescription());
+        _registerParameters.Add(Parameter.TokenEndpointAuthMethod, tokenEndpointAuthMethod.GetDescription());
         return this;
     }
 
     public RegisterEndpointBuilder WithJwks(string jwks)
     {
-        _parameters.Add(Parameter.Jwks, jwks);
+        _registerParameters.Add(Parameter.Jwks, jwks);
         return this;
     }
 
     public RegisterEndpointBuilder WithRequestObjectSigningAlg(SigningAlg requestObjectSigningAlg)
     {
-        _parameters.Add(Parameter.RequestObjectSigningAlg, requestObjectSigningAlg.GetDescription());
+        _registerParameters.Add(Parameter.RequestObjectSigningAlg, requestObjectSigningAlg.GetDescription());
         return this;
     }
 
     public RegisterEndpointBuilder WithRequireReferenceToken()
     {
-        _parameters.Add(Parameter.RequireReferenceToken, true);
+        _registerParameters.Add(Parameter.RequireReferenceToken, true);
         return this;
     }
 
     public RegisterEndpointBuilder WithPostLogoutRedirectUris(IReadOnlyCollection<string> postLogoutRedirectUris)
     {
-        _parameters.Add(Parameter.PostLogoutRedirectUris, postLogoutRedirectUris);
+        _registerParameters.Add(Parameter.PostLogoutRedirectUris, postLogoutRedirectUris);
         return this;
     }
 
     internal async Task<RegisterResponse> Post()
     {
-        var json = JsonSerializer.Serialize(_parameters);
+        var json = JsonSerializer.Serialize(_registerParameters);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/register")
         {
             Content = new StringContent(json, Encoding.UTF8, MimeTypeConstants.Json)
