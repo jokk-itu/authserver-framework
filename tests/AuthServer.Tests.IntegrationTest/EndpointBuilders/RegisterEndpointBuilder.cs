@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
-public class RegisterEndpointBuilder : EndpointBuilder
+public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
 {
     private Dictionary<string, object> _parameters = [];
 
@@ -35,12 +35,6 @@ public class RegisterEndpointBuilder : EndpointBuilder
     public RegisterEndpointBuilder WithRequestUriExpiration(int expiration)
     {
         _parameters.Add(Parameter.RequestUriExpiration, expiration);
-        return this;
-    }
-
-    public RegisterEndpointBuilder WithSectorIdentifierUri(string sectorIdentifierUri)
-    {
-        _parameters.Add(Parameter.SectorIdentifierUri, sectorIdentifierUri);
         return this;
     }
 

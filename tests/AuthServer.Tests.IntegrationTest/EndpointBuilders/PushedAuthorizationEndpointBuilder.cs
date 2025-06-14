@@ -12,22 +12,14 @@ using System.Text;
 using System.Text.Json;
 using System.Web;
 using AuthServer.Endpoints.Abstractions;
-using Microsoft.IdentityModel.Tokens;
 using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
-using static AuthServer.Tests.Core.ClientJwkBuilder;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
-public class PushedAuthorizationEndpointBuilder : EndpointBuilder
+public class PushedAuthorizationEndpointBuilder : EndpointBuilder<PushedAuthorizationEndpointBuilder>
 {
     private TokenEndpointAuthMethod _tokenEndpointAuthMethod;
     private bool _isProtectedWithRequestParameter;
-    private bool _isDPoPProtected;
-    private string? _dPoPNonce;
-    private bool _isDPoPJktProtected;
-    private ClientJwks? _clientJwks;
-
-    private List<KeyValuePair<string, string>> _parameters = [];
 
     public PushedAuthorizationEndpointBuilder(
         HttpClient httpClient,
@@ -43,19 +35,6 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         TokenEndpointAuthMethod tokenEndpointAuthMethod)
     {
         _tokenEndpointAuthMethod = tokenEndpointAuthMethod;
-        return this;
-    }
-
-    public PushedAuthorizationEndpointBuilder WithDPoP(string? nonce)
-    {
-        _isDPoPProtected = true;
-        _dPoPNonce = nonce;
-        return this;
-    }
-
-    public PushedAuthorizationEndpointBuilder WithDPoPJkt()
-    {
-        _isDPoPJktProtected = true;
         return this;
     }
 
@@ -95,45 +74,12 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
         return this;
     }
 
-    public PushedAuthorizationEndpointBuilder WithPrivateJwks(ClientJwks clientJwks)
-    {
-        _clientJwks = clientJwks;
-        return this;
-    }
-
     internal async Task<PushedAuthorizationResponse> Post()
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/par");
 
         SetDefaultValues();
-
-        if (_isDPoPProtected)
-        {
-            var claims = new Dictionary<string, object>
-            {
-                { ClaimNameConstants.Htm, HttpMethod.Post.Method },
-                { ClaimNameConstants.Htu, $"{HttpClient.BaseAddress}connect/par" }
-            };
-            if (_dPoPNonce is not null)
-            {
-                claims.Add(ClaimNameConstants.Nonce, _dPoPNonce);
-            }
-
-            var dPoP = JwtBuilder.GetDPoPToken(
-                claims,
-                _parameters.Single(x => x.Key == Parameter.ClientId).Value,
-                _clientJwks!,
-                ClientTokenAudience.PushedAuthorizationEndpoint);
-
-            httpRequestMessage.Headers.Add(Parameter.DPoP, dPoP);
-
-            if (_isDPoPJktProtected)
-            {
-                var jsonWebKey = new JsonWebKeySet(_clientJwks!.PublicJwks).Keys.Single(x => x.Use == JsonWebKeyUseNames.Sig);
-                var dPoPJkt = Base64UrlEncoder.Encode(jsonWebKey.ComputeJwkThumbprint());
-                _parameters.Add(new KeyValuePair<string, string>(Parameter.DPoPJkt, dPoPJkt));
-            }
-        }
+        AddDPoP(httpRequestMessage, "connect/par");
 
         if (_tokenEndpointAuthMethod == TokenEndpointAuthMethod.ClientSecretBasic)
         {
@@ -147,7 +93,11 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
                     .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
                     .ToDictionary();
 
-                var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _clientJwks!.PrivateJwks, ClientTokenAudience.PushedAuthorizationEndpoint);
+                var requestObject = JwtBuilder.GetRequestObjectJwt(
+                    claims,
+                    clientId,
+                    ClientJwks!.PrivateJwks,
+                    ClientTokenAudience.PushedAuthorizationEndpoint);
 
                 _parameters.Clear();
                 _parameters.Add(new(Parameter.Request, requestObject));
@@ -168,9 +118,13 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
 
             var claims = _parameters
                 .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
-            .ToDictionary();
+                .ToDictionary();
 
-            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _clientJwks!.PrivateJwks, ClientTokenAudience.PushedAuthorizationEndpoint);
+            var requestObject = JwtBuilder.GetRequestObjectJwt(
+                claims,
+                clientId,
+                ClientJwks!.PrivateJwks,
+                ClientTokenAudience.PushedAuthorizationEndpoint);
 
             _parameters.Clear();
             _parameters.Add(new(Parameter.Request, requestObject));
@@ -188,7 +142,11 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder
                 .Select(x => new KeyValuePair<string, object>(x.Key, x.Value))
                 .ToDictionary();
 
-            var requestObject = JwtBuilder.GetRequestObjectJwt(claims, clientId, _clientJwks!.PrivateJwks, ClientTokenAudience.PushedAuthorizationEndpoint);
+            var requestObject = JwtBuilder.GetRequestObjectJwt(
+                claims,
+                clientId,
+                ClientJwks!.PrivateJwks,
+                ClientTokenAudience.PushedAuthorizationEndpoint);
 
             _parameters.Clear();
             _parameters.Add(new(Parameter.Request, requestObject));

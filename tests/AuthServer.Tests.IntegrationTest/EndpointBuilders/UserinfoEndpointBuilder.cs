@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
-public class UserinfoEndpointBuilder : EndpointBuilder
+public class UserinfoEndpointBuilder : EndpointBuilder<UserinfoEndpointBuilder>
 {
     private string _token;
 
