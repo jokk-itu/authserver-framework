@@ -23,6 +23,7 @@ export const developerLinks = [
     new DeveloperLink('Client Authentication', '/client-authentication'),
     new DeveloperLink('Discovery', '/discovery'),
     new DeveloperLink('JWKS', '/jwks'),
+    new DeveloperLink('PKCE', '/pkce'),
     new DeveloperLink('Token', '/token'),
     new DeveloperLink('Client Credentials', '/client-credentials'),
     new DeveloperLink('Authorization Code', '/authorization-code'),
