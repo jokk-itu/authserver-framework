@@ -84,7 +84,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
         var pushedAuthorizationResponse = await PushedAuthorizationEndpointBuilder
             .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.ClientSecretBasic)
             .WithDPoP(null)
-            .WithPrivateJwks(jwks)
+            .WithClientJwks(jwks)
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
@@ -125,7 +125,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
             .WithRequest()
             .WithDPoP(nonce)
             .WithDPoPJkt()
-            .WithPrivateJwks(jwks)
+            .WithClientJwks(jwks)
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
