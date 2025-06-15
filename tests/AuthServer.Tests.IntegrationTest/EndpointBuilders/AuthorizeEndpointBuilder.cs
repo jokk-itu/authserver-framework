@@ -14,7 +14,7 @@ using AuthServer.Constants;
 using System.Web;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
+using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 using AuthServer.Endpoints.Responses;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
@@ -203,7 +203,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
     {
         if (_parameters.All(x => x.Key != Parameter.CodeChallenge))
         {
-            _parameters.Add(new(Parameter.CodeChallenge, ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge));
+            _parameters.Add(new(Parameter.CodeChallenge, ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge));
         }
 
         if (_parameters.All(x => x.Key != Parameter.CodeChallengeMethod))

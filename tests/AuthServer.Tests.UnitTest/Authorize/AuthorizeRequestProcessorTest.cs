@@ -4,9 +4,9 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
 
 namespace AuthServer.Tests.UnitTest.Authorize;
 
@@ -37,11 +37,13 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         await AddEntity(authorizationGrant);
         await AddEntity(authorizeMessage);
 
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var request = new AuthorizeValidatedRequest
         {
             RequestUri = $"{RequestUriConstants.RequestUriPrefix}{authorizeMessage.Reference}",
             ClientId = client.Id,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = proofKey.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
             Nonce = CryptographyHelper.GetRandomString(16),
             AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId]
@@ -92,10 +94,12 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         weatherClient.Scopes.Add(await GetScope(ScopeConstants.OpenId));
         await AddEntity(weatherClient);
 
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var request = new AuthorizeValidatedRequest
         {
             ClientId = client.Id,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = proofKey.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
             Nonce = CryptographyHelper.GetRandomString(16),
             AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId],

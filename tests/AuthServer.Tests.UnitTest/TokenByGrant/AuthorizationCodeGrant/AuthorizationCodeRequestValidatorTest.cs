@@ -14,7 +14,7 @@ using AuthServer.TokenByGrant.AuthorizationCodeGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
+using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.UnitTest.TokenByGrant.AuthorizationCodeGrant;
 
@@ -103,6 +103,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 AuthorizationCodeId = string.Empty,
                 AuthorizationGrantId = string.Empty,
                 CodeChallenge = string.Empty,
+                CodeChallengeMethod = string.Empty,
                 Scope = []
             })
             .Verifiable();
@@ -125,7 +126,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_MismatchingRedirectUris_ExpectInvalidRedirectUri()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -141,7 +142,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = string.Empty,
                 AuthorizationGrantId = string.Empty,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
                 RedirectUri = "valid_redirect_uri"
             })
@@ -152,7 +154,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
             RedirectUri = "invalid_redirect_uri",
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier
+            CodeVerifier = proofKey.CodeVerifier
         };
 
         // Act
@@ -167,7 +169,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_NoClientAuthentication_ExpectMultipleOrNoneClientMethod()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -183,7 +185,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = string.Empty,
                 AuthorizationGrantId = string.Empty,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -192,7 +195,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier
+            CodeVerifier = proofKey.CodeVerifier
         };
 
         // Act
@@ -207,7 +210,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_InvalidClientAuthentication_ExpectInvalidClient()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -223,7 +226,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = string.Empty,
                 AuthorizationGrantId = string.Empty,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -232,7 +236,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientIdAuthentication("clientId")
@@ -251,7 +255,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_RevokedGrant_ExpectInvalidGrant()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -273,7 +277,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -282,7 +287,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -304,7 +309,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_RedeemedAuthorizationCode_ExpectInvalidGrant()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -326,7 +331,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCode.Id,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -335,7 +341,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -357,7 +363,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_ExpiredAuthorizationCode_ExpectInvalidGrant()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -382,7 +388,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCode.Id,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -391,7 +398,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -413,7 +420,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_UnauthorizedForAuthorizationCode_ExpectUnauthorizedForGrantType()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -435,7 +442,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -444,7 +452,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -466,7 +474,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_UnauthorizedRedirectUri_ExpectUnauthorizedForRedirectUri()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -486,7 +494,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -495,7 +504,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             RedirectUri = "https://client.authserver.dk/invalid-callback",
             ClientAuthentications =
             [
@@ -521,7 +530,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_RequireDPoPWithoutDPoPProof_ExpectDPoPRequired(bool requireDPoP, string? dPoPJkt)
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -542,7 +551,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = dPoPJkt,
                 Scope = [],
             })
@@ -552,7 +562,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -574,7 +584,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_InvalidDPoP_ExpectInvalidDPoP()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
@@ -596,7 +606,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -614,7 +625,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             DPoP = dPoPProof,
             ClientAuthentications =
             [
@@ -638,7 +649,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_DPoPWithoutNonceClaim_ExpectUseDPoPNonce()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
@@ -660,7 +671,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
             })
             .Verifiable();
@@ -680,7 +692,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             DPoP = dPoPProof,
             ClientAuthentications =
             [
@@ -704,7 +716,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_DPoPUnequalToDPoPJkt_ExpectInvalidDPoPJktMatch()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
@@ -726,7 +738,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = "jkt",
                 Scope = [],
             })
@@ -746,7 +759,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             DPoP = dPoPProof,
             ClientAuthentications =
             [
@@ -770,7 +783,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_UnauthorizedScopeForClient_ExpectUnauthorizedForScope()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -792,7 +805,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [ScopeConstants.Profile],
             })
             .Verifiable();
@@ -801,7 +815,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -823,7 +837,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_NoConsentedScope_ExpectConsentRequired()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -845,7 +859,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [ScopeConstants.OpenId]
             })
             .Verifiable();
@@ -854,7 +869,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -876,7 +891,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_ExceedConsentedScope_ExpectScopeExceedsConsentedScope()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -898,7 +913,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [ScopeConstants.OpenId, ScopeConstants.Profile]
             })
             .Verifiable();
@@ -907,7 +923,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = [weatherClient.ClientUri!],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -929,7 +945,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_ExceedConsentedScopeWithResource_ExpectScopeExceedsConsentedScope()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -949,7 +965,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [ScopeConstants.OpenId]
             })
             .Verifiable();
@@ -958,7 +975,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["other_resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -980,7 +997,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_ResourceDoesNotExist_ExpectInvalidResource()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -1003,7 +1020,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [ScopeConstants.OpenId]
             })
             .Verifiable();
@@ -1012,7 +1030,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = ["resource"],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(
@@ -1034,7 +1052,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_ValidatedRequest_ExpectValidatedRequest()
     {
         // Arrange
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
@@ -1061,7 +1079,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             {
                 AuthorizationCodeId = authorizationCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = "jkt",
                 RedirectUri = redirectUri,
                 Scope = [ScopeConstants.OpenId]
@@ -1081,7 +1100,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
             Resource = [weatherClient.ClientUri!],
-            CodeVerifier = proofKeyForCodeExchange.CodeVerifier,
+            CodeVerifier = proofKey.CodeVerifier,
             RedirectUri = redirectUri,
             DPoP = dPoP,
             ClientAuthentications =

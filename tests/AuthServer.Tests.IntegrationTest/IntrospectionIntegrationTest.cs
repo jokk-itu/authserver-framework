@@ -7,7 +7,7 @@ using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
+using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.IntegrationTest;
 
@@ -40,12 +40,12 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, weatherReadScope], []);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var jwks = ClientJwkBuilder.GetClientJwks();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
-            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([weatherReadScope, ScopeConstants.OpenId])
             .WithResource([weatherClient.ClientUri!])
             .WithDPoPJkt()
@@ -59,7 +59,7 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
-            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithCodeVerifier(proofKey.CodeVerifier)
             .WithResource([weatherClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .WithDPoP(nonce)
