@@ -319,6 +319,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             GrantManagementAction = request.GrantManagementAction,
             ResponseMode = request.ResponseMode,
             CodeChallenge = request.CodeChallenge!,
+            CodeChallengeMethod = request.CodeChallengeMethod!,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
             Resource = request.Resource,

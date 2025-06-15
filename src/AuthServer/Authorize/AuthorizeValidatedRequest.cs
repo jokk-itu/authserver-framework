@@ -7,6 +7,7 @@ internal class AuthorizeValidatedRequest
     public string? GrantManagementAction { get; init; }
     public string? RedirectUri { get; init; }
     public required string CodeChallenge { get; init; }
+    public required string CodeChallengeMethod { get; init; }
     public required string Nonce { get; init; }
     public string? ResponseMode { get; init; }
     public string? RequestUri { get; init; }

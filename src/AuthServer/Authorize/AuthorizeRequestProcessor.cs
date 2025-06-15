@@ -55,7 +55,8 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
                 Scope = request.Scope,
                 RedirectUri = request.RedirectUri,
                 DPoPJkt = request.DPoPJkt,
-                CodeChallenge = request.CodeChallenge
+                CodeChallenge = request.CodeChallenge,
+                CodeChallengeMethod = request.CodeChallengeMethod
             });
 
         authorizationCode.SetValue(encodedAuthorizationCode);
