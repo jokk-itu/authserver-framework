@@ -47,11 +47,11 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
-            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
             .WithResource([identityProviderClient.ClientUri!])
             .Get();
@@ -60,7 +60,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
-            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithCodeVerifier(proofKey.CodeVerifier)
             .WithResource([identityProviderClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();
@@ -96,11 +96,11 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId], []);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
-            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId])
             .WithResource([identityProviderClient.ClientUri!])
             .Get();
@@ -109,7 +109,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
-            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithCodeVerifier(proofKey.CodeVerifier)
             .WithResource([identityProviderClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();
@@ -148,11 +148,11 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId], []);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
-            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId])
             .WithResource([identityProviderClient.ClientUri!])
             .Get();
@@ -161,7 +161,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
-            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithCodeVerifier(proofKey.CodeVerifier)
             .WithResource([identityProviderClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();
@@ -194,11 +194,11 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId], []);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
-            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId])
             .WithResource([identityProviderClient.ClientUri!])
             .Get();
@@ -207,7 +207,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
-            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithCodeVerifier(proofKey.CodeVerifier)
             .WithResource([identityProviderClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();

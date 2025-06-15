@@ -9,7 +9,7 @@ using AuthServer.TokenDecoders;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
+using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.IntegrationTest;
 public class TokenIntegrationTest : BaseIntegrationTest
@@ -106,11 +106,11 @@ public class TokenIntegrationTest : BaseIntegrationTest
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId, weatherReadScope], []);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
-            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([weatherReadScope, ScopeConstants.UserInfo, ScopeConstants.OpenId])
             .WithResource([identityProviderClient.ClientUri!, weatherClient.ClientUri!])
             .Get();
@@ -120,7 +120,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
-            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithCodeVerifier(proofKey.CodeVerifier)
             .WithResource([weatherClient.ClientUri!, identityProviderClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();
@@ -156,11 +156,11 @@ public class TokenIntegrationTest : BaseIntegrationTest
         var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
-            .WithCodeChallenge(proofKeyForCodeExchange.CodeChallenge)
+            .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([weatherReadScope, ScopeConstants.OpenId])
             .WithResource([weatherClient.ClientUri!])
             .Get();
@@ -169,7 +169,7 @@ public class TokenIntegrationTest : BaseIntegrationTest
             .WithClientId(registerResponse.ClientId)
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
-            .WithCodeVerifier(proofKeyForCodeExchange.CodeVerifier)
+            .WithCodeVerifier(proofKey.CodeVerifier)
             .WithResource([weatherClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();

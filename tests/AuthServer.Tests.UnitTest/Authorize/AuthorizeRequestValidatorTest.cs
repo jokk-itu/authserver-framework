@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
+using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.UnitTest.Authorize;
 
@@ -745,7 +745,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge
         };
 
         // Act
@@ -772,7 +772,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId]
         };
 
@@ -800,7 +800,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId]
         };
 
@@ -828,7 +828,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = ["invalid_target"]
         };
@@ -858,7 +858,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             MaxAge = "-1"
@@ -889,7 +889,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             IdTokenHint = "invalid_id_token"
@@ -920,7 +920,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             Prompt = "invalid_prompt"
@@ -951,7 +951,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             AcrValues = ["invalid_acr_value"]
@@ -994,7 +994,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             GrantManagementAction = grantManagementAction,
@@ -1026,7 +1026,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             GrantManagementAction = GrantManagementActionConstants.Replace,
@@ -1060,7 +1060,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!]
         };
@@ -1094,7 +1094,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!]
         };
@@ -1139,7 +1139,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!]
         };
@@ -1190,7 +1190,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!]
         };
@@ -1211,6 +1211,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
+        Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.AcrValues, processResult.Value!.AcrValues);
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
@@ -1241,7 +1242,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             AcrValues = [LevelOfAssuranceSubstantial],
             Display = DisplayConstants.Page,
@@ -1269,6 +1270,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
+        Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.AcrValues, processResult.Value!.AcrValues);
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
@@ -1305,7 +1307,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var authorizeRequestDto = new AuthorizeRequestDto
         {
             ResponseMode = ResponseModeConstants.FormPost,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             ResponseType = ResponseTypeConstants.Code,
             Scope = [ScopeConstants.OpenId],
@@ -1364,6 +1366,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(authorizeRequestDto.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
+        Assert.Equal(authorizeRequestDto.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(authorizeRequestDto.Scope, processResult.Value!.Scope);
         Assert.Equal(authorizeRequestDto.AcrValues, processResult.Value!.AcrValues);
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
@@ -1398,7 +1401,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var authorizeRequestDto = new AuthorizeRequestDto
         {
             ResponseMode = ResponseModeConstants.FormPost,
-            CodeChallenge = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
             CodeChallengeMethod = CodeChallengeMethodConstants.S256,
             ResponseType = ResponseTypeConstants.Code,
             Scope = [ScopeConstants.OpenId],
@@ -1457,6 +1460,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(authorizeRequestDto.ResponseMode, processResult.Value!.ResponseMode);
         Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
+        Assert.Equal(authorizeRequestDto.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(authorizeRequestDto.Scope, processResult.Value!.Scope);
         Assert.Equal(authorizeRequestDto.AcrValues, processResult.Value!.AcrValues);
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);

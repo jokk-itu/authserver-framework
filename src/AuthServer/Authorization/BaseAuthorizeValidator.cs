@@ -55,10 +55,10 @@ internal class BaseAuthorizeValidator
         => !string.IsNullOrEmpty(nonce);
 
     protected static bool HasValidCodeChallengeMethod(string? codeChallengeMethod)
-        => ProofKeyForCodeExchangeHelper.IsCodeChallengeMethodValid(codeChallengeMethod);
+        => ProofKeyHelper.IsCodeChallengeMethodValid(codeChallengeMethod);
 
     protected static bool HasValidCodeChallenge(string? codeChallenge)
-        => ProofKeyForCodeExchangeHelper.IsCodeChallengeValid(codeChallenge);
+        => ProofKeyHelper.IsCodeChallengeValid(codeChallenge);
 
     protected static bool HasValidScope(IReadOnlyCollection<string> scope)
         => scope.Contains(ScopeConstants.OpenId);

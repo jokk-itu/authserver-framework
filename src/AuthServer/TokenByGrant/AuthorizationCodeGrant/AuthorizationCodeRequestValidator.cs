@@ -61,7 +61,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             return TokenError.InvalidCode;
         }
 
-        var isCodeVerifierValid = ProofKeyForCodeExchangeHelper.IsCodeVerifierValid(request.CodeVerifier, authorizationCode.CodeChallenge);
+        var isCodeVerifierValid = ProofKeyHelper.IsCodeVerifierValid(request.CodeVerifier, authorizationCode.CodeChallenge, authorizationCode.CodeChallengeMethod);
         if (!isCodeVerifierValid)
         {
             return TokenError.InvalidCodeVerifier;

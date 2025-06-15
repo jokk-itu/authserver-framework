@@ -1,5 +1,4 @@
 ﻿using AuthServer.Authentication.Models;
-using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Constants;
@@ -13,7 +12,7 @@ using AuthServer.TokenDecoders;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
+using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.UnitTest.PushedAuthorization;
 
@@ -485,7 +484,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var request = new PushedAuthorizationRequest
         {
@@ -496,8 +495,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge
         };
 
         // Act
@@ -520,7 +519,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         client.Scopes.Clear();
         await SaveChangesAsync();
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var request = new PushedAuthorizationRequest
         {
@@ -531,8 +530,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId]
         };
 
@@ -554,7 +553,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var request = new PushedAuthorizationRequest
         {
@@ -565,8 +564,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId]
         };
 
@@ -588,7 +587,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var request = new PushedAuthorizationRequest
         {
@@ -599,8 +598,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = ["invalid_resource"]
         };
@@ -623,7 +622,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -636,8 +635,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             MaxAge = "invalid_max_age"
@@ -661,7 +660,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -674,8 +673,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             IdTokenHint = "invalid_token"
@@ -699,7 +698,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -712,8 +711,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             Prompt = "invalid_prompt"
@@ -737,7 +736,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -750,8 +749,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             AcrValues = ["invalid_acr_value"]
@@ -787,7 +786,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -800,8 +799,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             GrantManagementAction = grantManagementAction,
@@ -826,7 +825,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -839,8 +838,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             GrantManagementAction = GrantManagementActionConstants.Replace,
@@ -868,7 +867,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         client.RequireDPoPBoundAccessTokens = true;
         await SaveChangesAsync();
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -881,8 +880,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!]
         };
@@ -910,7 +909,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         const string dPoP = "invalid_dpop";
         dPoPService
@@ -929,8 +928,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             DPoP = dPoP
@@ -960,7 +959,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         const string dPoP = "dpop";
         const string dPoPNonce = "dpop_nonce";
@@ -980,8 +979,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             DPoP = dPoP
@@ -1011,7 +1010,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
 
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         const string dPoP = "dpop_token";
         dPoPService
@@ -1030,8 +1029,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             DPoP = dPoP,
@@ -1057,7 +1056,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -1070,8 +1069,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!]
         };
@@ -1117,7 +1116,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
         var authorizationGrant = await GetAuthorizationGrant(client);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -1143,8 +1142,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             Display = DisplayConstants.Page,
@@ -1204,7 +1203,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         var resource = await GetResource();
 
@@ -1215,8 +1214,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = CryptographyHelper.GetRandomString(16),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!]
         };
@@ -1281,7 +1280,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
         var authorizationGrant = await GetAuthorizationGrant(client);
-        var proofKeyForCodeExchange = ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange();
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
         const string dPoP = "dpop_token";
         const string dPoPJkt = "dpop_jkt";
@@ -1305,8 +1304,8 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            CodeChallenge = proofKeyForCodeExchange.CodeChallenge,
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
             Display = DisplayConstants.Page,

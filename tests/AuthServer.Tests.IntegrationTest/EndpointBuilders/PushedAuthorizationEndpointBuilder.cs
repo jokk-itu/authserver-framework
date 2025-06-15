@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Web;
 using AuthServer.Endpoints.Abstractions;
-using ProofKeyForCodeExchangeHelper = AuthServer.Tests.Core.ProofKeyForCodeExchangeHelper;
+using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
@@ -188,7 +188,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder<PushedAuthoriz
     {
         if (_parameters.All(x => x.Key != Parameter.CodeChallenge))
         {
-            _parameters.Add(new(Parameter.CodeChallenge, ProofKeyForCodeExchangeHelper.GetProofKeyForCodeExchange().CodeChallenge));
+            _parameters.Add(new(Parameter.CodeChallenge, ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge));
         }
 
         if (_parameters.All(x => x.Key != Parameter.CodeChallengeMethod))
