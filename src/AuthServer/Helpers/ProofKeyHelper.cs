@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AuthServer.Helpers;
 
-internal static class ProofKeyForCodeExchangeHelper
+internal static class ProofKeyHelper
 {
     public static bool IsCodeChallengeMethodValid(string? codeChallengeMethod)
         => CodeChallengeMethodConstants.CodeChallengeMethods.Contains(codeChallengeMethod);
