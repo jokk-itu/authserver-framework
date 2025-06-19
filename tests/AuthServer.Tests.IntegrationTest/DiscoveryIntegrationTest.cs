@@ -41,6 +41,7 @@ public class DiscoveryIntegrationTest : BaseIntegrationTest
         Assert.Equal(EndpointResolver.RevocationEndpoint, getDiscoveryResponse.RevocationEndpoint);
         Assert.Equal(EndpointResolver.PushedAuthorizationEndpoint, getDiscoveryResponse.PushedAuthorizationRequestEndpoint);
         Assert.Equal(EndpointResolver.GrantManagementEndpoint, getDiscoveryResponse.GrantManagementEndpoint);
+        Assert.Equal(EndpointResolver.DeviceAuthorizationEndpoint, getDiscoveryResponse.DeviceAuthorizationEndpoint);
 
         Assert.Equal(DiscoveryDocument.ProtectedResources, getDiscoveryResponse.ProtectedResources);
         Assert.Equal(DiscoveryDocument.ClaimsSupported, getDiscoveryResponse.ClaimsSupported);
