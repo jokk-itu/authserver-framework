@@ -695,6 +695,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 3,
                             Name = "refresh_token"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "urn:ietf:params:oauth:grant-type:device_code"
                         });
                 });
 
