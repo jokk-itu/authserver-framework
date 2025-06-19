@@ -58,6 +58,10 @@ internal class GetDiscoveryResponse
     [JsonPropertyName("grant_management_endpoint")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? GrantManagementEndpoint { get; init; }
+    
+    [JsonPropertyName("device_authorization_endpoint")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DeviceAuthorizationEndpoint { get; init; }
 
     [JsonPropertyName("protected_resources")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

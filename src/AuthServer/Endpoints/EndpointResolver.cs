@@ -18,7 +18,8 @@ internal class EndpointResolver : IEndpointResolver
     public string RevocationEndpoint { get; }
     public string PushedAuthorizationEndpoint { get; }
     public string GrantManagementEndpoint { get; }
-
+    public string DeviceAuthorizationEndpoint { get; }
+    
     public EndpointResolver(IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions)
     {
         var issuer = discoveryDocumentOptions.Value.Issuer;
@@ -33,6 +34,7 @@ internal class EndpointResolver : IEndpointResolver
         RevocationEndpoint = $"{issuer}/connect/revoke";
         PushedAuthorizationEndpoint = $"{issuer}/connect/par";
         GrantManagementEndpoint = $"{issuer}/connect/grants";
+        DeviceAuthorizationEndpoint = $"{issuer}/connect/device-authorization";
     }
 
     public string Convert(ClientTokenAudience clientTokenAudience)
@@ -46,6 +48,7 @@ internal class EndpointResolver : IEndpointResolver
             ClientTokenAudience.RevocationEndpoint => RevocationEndpoint,
             ClientTokenAudience.PushedAuthorizationEndpoint => PushedAuthorizationEndpoint,
             ClientTokenAudience.GrantManagementEndpoint => GrantManagementEndpoint,
+            ClientTokenAudience.DeviceAuthorizationEndpoint => DeviceAuthorizationEndpoint,
             _ => throw new ArgumentException("is not mappable to an endpoint", nameof(clientTokenAudience))
         };
     }
@@ -85,6 +88,11 @@ internal class EndpointResolver : IEndpointResolver
         if (endpoint == GrantManagementEndpoint)
         {
             return ClientTokenAudience.GrantManagementEndpoint;
+        }
+
+        if (endpoint == DeviceAuthorizationEndpoint)
+        {
+            return ClientTokenAudience.DeviceAuthorizationEndpoint;
         }
 
         throw new InvalidOperationException($"Endpoint {endpoint} is unrecognizable");
