@@ -27,7 +27,7 @@ internal class CachedClientStore : ICachedClientStore
     /// <inheritdoc/>
     public async Task<CachedClient?> TryGet(string entityId, CancellationToken cancellationToken)
     {
-        var isInternalCacheHit = _internalCache.TryGetValue($"Client#{entityId}", out var internalCachedClient);
+        var isInternalCacheHit = _internalCache.TryGetValue(entityId, out var internalCachedClient);
         if (isInternalCacheHit)
         {
             return internalCachedClient!;
@@ -55,7 +55,7 @@ internal class CachedClientStore : ICachedClientStore
     /// <inheritdoc/>
     public async Task Delete(string entityId, CancellationToken cancellationToken)
     {
-        _internalCache.Remove($"Client#{entityId}");
+        _internalCache.Remove(entityId);
         await _distributedCache.Delete($"Client#{entityId}", cancellationToken);
     }
 
@@ -134,7 +134,7 @@ internal class CachedClientStore : ICachedClientStore
                 .ToList()
         };
 
-        _internalCache.Add($"Client#{entityId}", cachedClient);
+        _internalCache.Add(entityId, cachedClient);
         await _distributedCache.Add($"Client#{entityId}", cachedClient, null, cancellationToken);
 
         return cachedClient;

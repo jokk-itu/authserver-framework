@@ -101,6 +101,11 @@ public static class Parameter
     public const string UpdatedAt = "updated_at";
     public const string Cnf = "cnf";
     public const string Jkt = "jkt";
+    public const string DeviceCode = "device_code";
+    public const string UserCode = "user_code";
+    public const string VerificationUri = "verification_uri";
+    public const string VerificationUriComplete = "verification_uri_complete";
+    public const string Interval = "interval";
 
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";

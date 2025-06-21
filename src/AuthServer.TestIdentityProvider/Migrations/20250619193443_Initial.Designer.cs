@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250609135218_Initial")]
+    [Migration("20250619193443_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -698,6 +698,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 3,
                             Name = "refresh_token"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "urn:ietf:params:oauth:grant-type:device_code"
                         });
                 });
 
