@@ -40,7 +40,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.Nonce, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
-                    { Parameter.DPoPJkt, value },
                     { Parameter.Request, value },
                     { Parameter.RequestUri, value },
                     { Parameter.ClientId, value },
@@ -93,7 +92,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.Nonce, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
-                    { Parameter.DPoPJkt, value },
                     { Parameter.Request, value },
                     { Parameter.RequestUri, value }
                 })

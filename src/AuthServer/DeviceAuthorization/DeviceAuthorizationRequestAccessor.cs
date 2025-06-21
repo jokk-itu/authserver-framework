@@ -15,14 +15,12 @@ internal class DeviceAuthorizationRequestAccessor : IRequestAccessor<DeviceAutho
 
         var body = await httpRequest.ReadFormAsync();
 
-        var responseMode = body.GetValue(Parameter.ResponseMode);
         var maxAge = body.GetValue(Parameter.MaxAge);
         var codeChallenge = body.GetValue(Parameter.CodeChallenge);
         var codeChallengeMethod = body.GetValue(Parameter.CodeChallengeMethod);
         var nonce = body.GetValue(Parameter.Nonce);
         var grantId = body.GetValue(Parameter.GrantId);
         var grantManagementAction = body.GetValue(Parameter.GrantManagementAction);
-        var dPoPJkt = body.GetValue(Parameter.DPoPJkt);
         var requestObject = body.GetValue(Parameter.Request);
         var requestUri = body.GetValue(Parameter.RequestUri);
 
