@@ -37,12 +37,12 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.MaxAge, value },
                     { Parameter.CodeChallenge, value },
                     { Parameter.CodeChallengeMethod, value },
-                    { Parameter.IdTokenHint, value },
                     { Parameter.Nonce, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
                     { Parameter.DPoPJkt, value },
                     { Parameter.Request, value },
+                    { Parameter.RequestUri, value },
                     { Parameter.ClientId, value },
                     { Parameter.ClientSecret, value },
                     { Parameter.ClientAssertion, value },
@@ -90,12 +90,12 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.MaxAge, value },
                     { Parameter.CodeChallenge, value },
                     { Parameter.CodeChallengeMethod, value },
-                    { Parameter.IdTokenHint, value },
                     { Parameter.Nonce, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
                     { Parameter.DPoPJkt, value },
-                    { Parameter.Request, value }
+                    { Parameter.Request, value },
+                    { Parameter.RequestUri, value }
                 })
             }
         };
