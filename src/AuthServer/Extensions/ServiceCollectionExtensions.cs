@@ -1,4 +1,4 @@
-﻿using AuthServer.Authentication;
+using AuthServer.Authentication;
 using AuthServer.Authentication.Abstractions;
 using AuthServer.Authentication.OAuthToken;
 using AuthServer.Authorization;
@@ -16,6 +16,7 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
+using AuthServer.DeviceAuthorization;
 using AuthServer.Discovery;
 using AuthServer.Endpoints;
 using AuthServer.Endpoints.Abstractions;
@@ -95,6 +96,7 @@ public static class ServiceCollectionExtensions
         AddPushedAuthorization(services);
         AddRegister(services);
         AddGrantManagement(services);
+        AddDeviceAuthorization(services);
         AddDiscovery(services);
         AddJwks(services);
 
@@ -317,6 +319,12 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>, GrantManagementQueryRequestProcessor>();
+    }
+
+    private static void AddDeviceAuthorization(IServiceCollection services)
+    {
+        services
+            .AddScoped<IRequestAccessor<DeviceAuthorizationRequest>, DeviceAuthorizationRequestAccessor>();
     }
 
     private static void AddDiscovery(IServiceCollection services)
