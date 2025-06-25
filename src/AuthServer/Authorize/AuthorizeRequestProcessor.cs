@@ -10,13 +10,13 @@ namespace AuthServer.Authorize;
 
 internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedRequest, string>
 {
-    private readonly IAuthorizationCodeEncoder _authorizationCodeEncoder;
+    private readonly ICodeEncoder<EncodedAuthorizationCode> _authorizationCodeEncoder;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IClientRepository _clientRepository;
     private readonly IConsentRepository _consentGrantRepository;
 
     public AuthorizeRequestProcessor(
-        IAuthorizationCodeEncoder authorizationCodeEncoder,
+        ICodeEncoder<EncodedAuthorizationCode> authorizationCodeEncoder,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository,
         IConsentRepository consentGrantRepository)
@@ -47,7 +47,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
         authorizationGrant.AuthorizationCodes.Add(authorizationCode);
         authorizationGrant.Nonces.Add(nonce);
 
-        var encodedAuthorizationCode = _authorizationCodeEncoder.EncodeAuthorizationCode(
+        var encodedAuthorizationCode = _authorizationCodeEncoder.Encode(
             new EncodedAuthorizationCode
             {
                 AuthorizationGrantId = authorizationGrant.Id,

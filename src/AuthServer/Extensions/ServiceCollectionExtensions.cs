@@ -78,7 +78,8 @@ public static class ServiceCollectionExtensions
         services
             .AddScoped<ITokenDecoder<ServerIssuedTokenDecodeArguments>, ServerIssuedTokenDecoder>()
             .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
-            .AddScoped<IAuthorizationCodeEncoder, AuthorizationCodeEncoder>();
+            .AddScoped<ICodeEncoder<EncodedAuthorizationCode>, CodeEncoder<EncodedAuthorizationCode>>()
+            .AddScoped<ICodeEncoder<EncodedDeviceCode>, CodeEncoder<EncodedDeviceCode>>();
 
         AddBackgroundServices(services);
         AddClientServices(services);

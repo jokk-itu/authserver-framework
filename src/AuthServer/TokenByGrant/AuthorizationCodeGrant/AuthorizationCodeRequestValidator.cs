@@ -1,6 +1,7 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
+using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
@@ -18,7 +19,7 @@ namespace AuthServer.TokenByGrant.AuthorizationCodeGrant;
 internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>
 {
     private readonly AuthorizationDbContext _identityContext;
-    private readonly IAuthorizationCodeEncoder _authorizationCodeEncoder;
+    private readonly ICodeEncoder<EncodedAuthorizationCode> _authorizationCodeEncoder;
     private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly IClientRepository _clientRepository;
     private readonly ICachedClientStore _cachedEntityStore;
@@ -27,7 +28,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
 
     public AuthorizationCodeRequestValidator(
         AuthorizationDbContext identityContext,
-        IAuthorizationCodeEncoder authorizationCodeEncoder,
+        ICodeEncoder<EncodedAuthorizationCode> authorizationCodeEncoder,
         IClientAuthenticationService clientAuthenticationService,
         IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
@@ -55,7 +56,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             return TokenError.InvalidResource;
         }
 
-        var authorizationCode = _authorizationCodeEncoder.DecodeAuthorizationCode(request.Code);
+        var authorizationCode = _authorizationCodeEncoder.Decode(request.Code);
         if (authorizationCode is null)
         {
             return TokenError.InvalidCode;
