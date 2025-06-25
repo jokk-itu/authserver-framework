@@ -7,7 +7,6 @@ internal class DeviceAuthorizationRequest
     public string? CodeChallenge { get; init; }
     public string? CodeChallengeMethod { get; init; }
     public string? Nonce { get; init; }
-    public string? MaxAge { get; init; }
     public string? RequestObject { get; init; }
     public string? RequestUri { get ; init; }
     public string? GrantId { get; init; }

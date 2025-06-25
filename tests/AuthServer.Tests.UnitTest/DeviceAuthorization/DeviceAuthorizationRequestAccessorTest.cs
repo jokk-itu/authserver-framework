@@ -34,7 +34,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                 Method = "POST",
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.MaxAge, value },
                     { Parameter.CodeChallenge, value },
                     { Parameter.CodeChallengeMethod, value },
                     { Parameter.Nonce, value },
@@ -60,7 +59,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(expectedValue, request.MaxAge);
         Assert.Equal(expectedValue, request.CodeChallenge);
         Assert.Equal(expectedValue, request.CodeChallengeMethod);
         Assert.Equal(expectedValue, request.Nonce);
@@ -85,8 +83,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
             {
                 Method = "POST",
                 Form = new FormCollection(new Dictionary<string, StringValues>
-                {   
-                    { Parameter.MaxAge, value },
+                {
                     { Parameter.CodeChallenge, value },
                     { Parameter.CodeChallengeMethod, value },
                     { Parameter.Nonce, value },
@@ -104,7 +101,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(value, request.MaxAge);
         Assert.Equal(value, request.CodeChallenge);
         Assert.Equal(value, request.CodeChallengeMethod);
         Assert.Equal(value, request.Nonce);

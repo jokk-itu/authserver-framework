@@ -15,7 +15,6 @@ internal class DeviceAuthorizationRequestAccessor : IRequestAccessor<DeviceAutho
 
         var body = await httpRequest.ReadFormAsync();
 
-        var maxAge = body.GetValue(Parameter.MaxAge);
         var codeChallenge = body.GetValue(Parameter.CodeChallenge);
         var codeChallengeMethod = body.GetValue(Parameter.CodeChallengeMethod);
         var nonce = body.GetValue(Parameter.Nonce);
@@ -42,7 +41,6 @@ internal class DeviceAuthorizationRequestAccessor : IRequestAccessor<DeviceAutho
             CodeChallenge = codeChallenge,
             CodeChallengeMethod = codeChallengeMethod,
             Nonce = nonce,
-            MaxAge = maxAge,
             GrantId = grantId,
             GrantManagementAction = grantManagementAction,
             DPoP = dPoP,
