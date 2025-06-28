@@ -1,8 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using AuthServer.Core;
-using AuthServer.Introspection;
 
-namespace AuthServer.Endpoints.Responses;
+namespace AuthServer.Introspection;
 internal class PostIntrospectionResponse
 {
     [JsonPropertyName(Parameter.Active)]

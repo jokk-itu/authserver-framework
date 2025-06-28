@@ -1,9 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 using AuthServer.Core;
 
-namespace AuthServer.Endpoints.Responses;
+namespace AuthServer.Register;
 
-internal class RegisterResponse
+internal class GetRegisterResponse
 {
 	[JsonPropertyName(Parameter.ClientId)]
 	public required string ClientId { get; init; }

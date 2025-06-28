@@ -2,9 +2,9 @@
 using System.Net.Http.Json;
 using AuthServer.Constants;
 using AuthServer.Core;
-using AuthServer.Endpoints.Responses;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Register;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -44,7 +44,7 @@ public class GetRegisterTest : BaseIntegrationTest
         // Act
         var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
-        var registerResponse = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+        var registerResponse = await response.Content.ReadFromJsonAsync<GetRegisterResponse>();
 
         // Assert
         Assert.NotNull(registerResponse);

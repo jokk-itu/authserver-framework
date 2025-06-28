@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using AuthServer.Core;
 
-namespace AuthServer.Endpoints.Responses;
+namespace AuthServer.TokenByGrant;
 
 internal class PostTokenResponse
 {

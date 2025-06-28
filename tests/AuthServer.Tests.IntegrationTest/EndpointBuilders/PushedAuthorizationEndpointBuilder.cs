@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Web;
 using AuthServer.Endpoints.Abstractions;
+using AuthServer.PushedAuthorization;
 using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
