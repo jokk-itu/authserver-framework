@@ -1,6 +1,4 @@
-﻿using AuthServer.Constants;
-using AuthServer.Endpoints.Responses;
-using AuthServer.Enums;
+﻿using AuthServer.Enums;
 using AuthServer.Options;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -8,6 +6,7 @@ using System.Text;
 using System.Web;
 using AuthServer.Core;
 using AuthServer.Endpoints.Abstractions;
+using AuthServer.Introspection;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;

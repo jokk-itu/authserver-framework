@@ -1,6 +1,5 @@
 ﻿using AuthServer.Constants;
 using AuthServer.Core;
-using AuthServer.Endpoints.Responses;
 using AuthServer.Options;
 using System.Net.Http.Json;
 using System.Text;
@@ -9,6 +8,7 @@ using AuthServer.Endpoints.Abstractions;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using Xunit.Abstractions;
+using AuthServer.Register;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
@@ -92,7 +92,7 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
         return this;
     }
 
-    internal async Task<RegisterResponse> Post()
+    internal async Task<GetRegisterResponse> Post()
     {
         var json = JsonSerializer.Serialize(_registerParameters);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/register")
@@ -107,6 +107,6 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
             await httpResponseMessage.Content.ReadAsStringAsync());
 
         httpResponseMessage.EnsureSuccessStatusCode();
-        return (await httpResponseMessage.Content.ReadFromJsonAsync<RegisterResponse>())!;
+        return (await httpResponseMessage.Content.ReadFromJsonAsync<GetRegisterResponse>())!;
     }
 }

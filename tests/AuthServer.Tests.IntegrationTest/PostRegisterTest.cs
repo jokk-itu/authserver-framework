@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using AuthServer.Constants;
 using AuthServer.Core;
-using AuthServer.Endpoints.Responses;
+using AuthServer.Register;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit.Abstractions;
 
@@ -34,7 +34,7 @@ public class PostRegisterTest : BaseIntegrationTest
         // Act
         var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
-        var registerResponse = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+        var registerResponse = await response.Content.ReadFromJsonAsync<GetRegisterResponse>();
 
         // Assert
         Assert.NotNull(registerResponse);
@@ -66,7 +66,7 @@ public class PostRegisterTest : BaseIntegrationTest
         // Act
         var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
-        var registerResponse = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+        var registerResponse = await response.Content.ReadFromJsonAsync<GetRegisterResponse>();
 
         // Assert
         Assert.NotNull(registerResponse);
@@ -93,7 +93,7 @@ public class PostRegisterTest : BaseIntegrationTest
         // Act
         var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
-        var registerResponse = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+        var registerResponse = await response.Content.ReadFromJsonAsync<GetRegisterResponse>();
 
         // Assert
         Assert.NotNull(registerResponse);

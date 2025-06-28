@@ -1,11 +1,11 @@
 ﻿using AuthServer.Constants;
-using AuthServer.Endpoints.Responses;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Text.Json;
 using AuthServer.Core;
 using AuthServer.Entities;
+using AuthServer.GrantManagement.Query;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Routing.Constraints;
-
-namespace AuthServer.GrantManagement.Query;
+﻿namespace AuthServer.GrantManagement.Query;
 internal class GrantResponse
 {
     public IReadOnlyCollection<ScopeDto> Scopes { get; set; } = [];
