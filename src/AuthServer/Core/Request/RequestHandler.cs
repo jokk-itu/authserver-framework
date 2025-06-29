@@ -22,15 +22,19 @@ internal abstract class RequestHandler<TRequest, TValidatedRequest, TResponse> :
         var validationResult = await ValidateRequest(request, cancellationToken);
 
         return await validationResult.Match(
-            validatedRequest =>
+            async validatedRequest =>
             {
                 activity?.AddEvent(new ActivityEvent("Request validation succeeded"));
-                return ProcessRequest(validatedRequest, cancellationToken);
+                var response = await ProcessValidatedRequest(validatedRequest, cancellationToken);
+                activity?.AddEvent(new ActivityEvent("Request processing succeeded"));
+                return response;
             },
-            error =>
+            async error =>
             {
                 activity?.AddEvent(new ActivityEvent("Request validation failed"));
-                return Task.FromResult(new ProcessResult<TResponse, ProcessError>(error));
+                var response = await ProcessInvalidRequest(error, cancellationToken);
+                activity?.AddEvent(new ActivityEvent("Request processing succeeded"));
+                return new ProcessResult<TResponse, ProcessError>(response);
             });
     }
 
@@ -40,7 +44,13 @@ internal abstract class RequestHandler<TRequest, TValidatedRequest, TResponse> :
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected abstract Task<ProcessResult<TResponse, ProcessError>> ProcessRequest(TValidatedRequest request, CancellationToken cancellationToken);
+    protected abstract Task<ProcessResult<TResponse, ProcessError>> ProcessValidatedRequest(TValidatedRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Assumes that <typeparam name="TRequest"></typeparam> is raw from the endpoint.
+    /// </summary>
+    /// <returns></returns>
+    protected abstract Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken);
 
     /// <summary>
     /// Assumes that <typeparam name="TRequest"></typeparam> is raw from the endpoint.

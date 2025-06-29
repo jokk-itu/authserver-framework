@@ -21,12 +21,17 @@ internal class ClientCredentialsRequestHandler : RequestHandler<TokenRequest, Cl
         _clientCredentialsProcessor = clientCredentialsProcessor;
     }
 
-    protected override async Task<ProcessResult<TokenResponse, ProcessError>> ProcessRequest(ClientCredentialsValidatedRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<TokenResponse, ProcessError>> ProcessValidatedRequest(ClientCredentialsValidatedRequest request, CancellationToken cancellationToken)
     {
 	    await _unitOfWork.Begin(cancellationToken);
         var result = await _clientCredentialsProcessor.Process(request, cancellationToken);
         await _unitOfWork.Commit(cancellationToken);
         return result;
+    }
+
+    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(error);
     }
 
     protected override async Task<ProcessResult<ClientCredentialsValidatedRequest, ProcessError>> ValidateRequest(TokenRequest request, CancellationToken cancellationToken)

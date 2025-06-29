@@ -27,7 +27,7 @@ internal class PushedAuthorizationRequestHandler : RequestHandler<PushedAuthoriz
         _unitOfWork = unitOfWork;
     }
 
-    protected override async Task<ProcessResult<PushedAuthorizationResponse, ProcessError>> ProcessRequest(
+    protected override async Task<ProcessResult<PushedAuthorizationResponse, ProcessError>> ProcessValidatedRequest(
         PushedAuthorizationValidatedRequest request, CancellationToken cancellationToken)
     {
         await _unitOfWork.Begin(cancellationToken);
@@ -36,12 +36,14 @@ internal class PushedAuthorizationRequestHandler : RequestHandler<PushedAuthoriz
         return result;
     }
 
+    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(error);
+    }
+
     protected override async Task<ProcessResult<PushedAuthorizationValidatedRequest, ProcessError>> ValidateRequest(
         PushedAuthorizationRequest request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.Begin(cancellationToken);
-        var result = await _requestValidator.Validate(request, cancellationToken);
-        await _unitOfWork.Commit(cancellationToken);
-        return result;
+        return await _requestValidator.Validate(request, cancellationToken);
     }
 }

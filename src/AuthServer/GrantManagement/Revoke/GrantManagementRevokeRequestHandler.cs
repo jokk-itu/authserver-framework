@@ -22,12 +22,17 @@ internal class GrantManagementRevokeRequestHandler : RequestHandler<GrantManagem
         _unitOfWork = unitOfWork;
     }
 
-    protected override async Task<ProcessResult<Unit, ProcessError>> ProcessRequest(GrantManagementValidatedRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<Unit, ProcessError>> ProcessValidatedRequest(GrantManagementValidatedRequest request, CancellationToken cancellationToken)
     {
         await _unitOfWork.Begin(cancellationToken);
         var result = await _requestProcessor.Process(request, cancellationToken);
         await _unitOfWork.Commit(cancellationToken);
         return result;
+    }
+
+    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(error);
     }
 
     protected override async Task<ProcessResult<GrantManagementValidatedRequest, ProcessError>> ValidateRequest(GrantManagementRequest request, CancellationToken cancellationToken)

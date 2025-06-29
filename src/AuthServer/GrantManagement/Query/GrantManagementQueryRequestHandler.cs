@@ -18,9 +18,14 @@ internal class GrantManagementQueryRequestHandler : RequestHandler<GrantManageme
         _requestProcessor = requestProcessor;
     }
 
-    protected override async Task<ProcessResult<GrantResponse, ProcessError>> ProcessRequest(GrantManagementValidatedRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<GrantResponse, ProcessError>> ProcessValidatedRequest(GrantManagementValidatedRequest request, CancellationToken cancellationToken)
     {
         return await _requestProcessor.Process(request, cancellationToken);
+    }
+
+    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(error);
     }
 
     protected override async Task<ProcessResult<GrantManagementValidatedRequest, ProcessError>> ValidateRequest(GrantManagementRequest request, CancellationToken cancellationToken)
