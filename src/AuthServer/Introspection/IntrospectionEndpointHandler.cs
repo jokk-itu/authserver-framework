@@ -1,5 +1,4 @@
 ﻿using AuthServer.Core.Abstractions;
-using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
 using Microsoft.AspNetCore.Http;
 
