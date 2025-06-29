@@ -1,6 +1,5 @@
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
-using AuthServer.Authorization.Models;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Cache.Entities;
@@ -299,17 +298,11 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
                     request.ClientId!);
             }
 
-            var authorizeRequestDto = new AuthorizeRequestDto(request);
-            var authorizeMessage = await _clientRepository.AddAuthorizeMessage(authorizeRequestDto, cancellationToken);
-            requestUri = $"{RequestUriConstants.RequestUriPrefix}{authorizeMessage.Reference}";
-
-            return new AuthorizeInteractionError(
+            return new PersistRequestUriError(
                 interactionError.Error,
                 interactionError.ErrorDescription,
                 interactionError.ResultCode,
-                requestUri,
-                request.ClientId!,
-                interactionResult.RedirectToInteraction);
+                request);
         }
 
         return new AuthorizeValidatedRequest

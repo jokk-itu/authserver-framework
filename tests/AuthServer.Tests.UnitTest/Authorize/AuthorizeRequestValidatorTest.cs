@@ -1,5 +1,4 @@
-﻿using AuthServer.Authorization;
-using AuthServer.Authorization.Abstractions;
+﻿using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
@@ -1106,7 +1105,6 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         // Act
         var processResult = await validator.Validate(request, CancellationToken.None);
-        await IdentityContext.SaveChangesAsync();
 
         // Assert
         authorizeInteractionService.Verify();
@@ -1114,11 +1112,11 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(AuthorizeError.LoginRequired.Error, processResult.Error!.Error);
         Assert.Equal(AuthorizeError.LoginRequired.ErrorDescription, processResult.Error!.ErrorDescription);
         Assert.Equal(AuthorizeError.LoginRequired.ResultCode, processResult.Error!.ResultCode);
-        Assert.IsNotType<AuthorizeInteractionError>(processResult.Error);
+        Assert.IsNotType<PersistRequestUriError>(processResult.Error);
     }
 
     [Fact]
-    public async Task Validate_RequiresInteractionWithRedirectToInteraction_ExpectInteractionWithNewRequestUri()
+    public async Task Validate_RequiresInteractionWithRedirectToInteraction_ExpectPersistRequestUri()
     {
         // Arrange
         var authorizeInteractionService = new Mock<IAuthorizeInteractionService>();
@@ -1151,7 +1149,6 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         // Act
         var processResult = await validator.Validate(request, CancellationToken.None);
-        await IdentityContext.SaveChangesAsync();
 
         // Assert
         authorizeInteractionService.Verify();
@@ -1160,12 +1157,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(AuthorizeError.LoginRequired.ErrorDescription, processResult.Error!.ErrorDescription);
         Assert.Equal(AuthorizeError.LoginRequired.ResultCode, processResult.Error!.ResultCode);
 
-        Assert.IsType<AuthorizeInteractionError>(processResult.Error);
-        var authorizeInteractionError = (processResult.Error as AuthorizeInteractionError)!;
-        Assert.Equal(request.ClientId, authorizeInteractionError.ClientId);
-
-        var reference = authorizeInteractionError.RequestUri[RequestUriConstants.RequestUriPrefix.Length..];
-        Assert.Single(await IdentityContext.Set<AuthorizeMessage>().Where(x => x.Reference == reference).ToListAsync());
+        Assert.IsType<PersistRequestUriError>(processResult.Error);
+        Assert.Equal(((PersistRequestUriError)processResult.Error).AuthorizeRequest, request);
     }
 
     [Fact]
