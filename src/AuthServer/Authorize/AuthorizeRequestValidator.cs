@@ -285,7 +285,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             {
                 return interactionError;
             }
-            
+
             var requestUri = request.RequestUri;
 
             // do not persist the request, if it has already been persisted
@@ -296,8 +296,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
                     interactionError.ErrorDescription,
                     interactionError.ResultCode,
                     requestUri,
-                    request.ClientId!,
-                    interactionResult.RedirectToInteraction);
+                    request.ClientId!);
             }
 
             var authorizeRequestDto = new AuthorizeRequestDto(request);
