@@ -19,7 +19,6 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IAuthorizeInteractionService _authorizeInteractionService;
     private readonly ISecureRequestService _secureRequestService;
-    private readonly IClientRepository _clientRepository;
 
     public AuthorizeRequestValidator(
         ICachedClientStore cachedClientStore,
@@ -35,7 +34,6 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;
         _secureRequestService = secureRequestService;
-        _clientRepository = clientRepository;
     }
 
     public async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> Validate(AuthorizeRequest request,
