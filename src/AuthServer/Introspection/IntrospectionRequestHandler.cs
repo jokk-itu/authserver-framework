@@ -19,7 +19,7 @@ internal class IntrospectionRequestHandler : RequestHandler<IntrospectionRequest
         _requestValidator = requestValidator;
     }
 
-    protected override async Task<ProcessResult<IntrospectionResponse, ProcessError>> ProcessRequest(
+    protected override async Task<ProcessResult<IntrospectionResponse, ProcessError>> ProcessValidatedRequest(
         IntrospectionValidatedRequest request, CancellationToken cancellationToken)
     {
         return await _requestProcessor.Process(request, cancellationToken);

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Helpers;
@@ -16,6 +17,33 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
     public IntrospectionIntegrationTest(WebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
         : base(factory, testOutputHelper)
     {
+    }
+
+    [Fact]
+    public async Task Introspection_InvalidTokenTypeHint_ExpectBadRequest()
+    {
+        // Arrange
+        var weatherReadScope = await AddWeatherReadScope();
+
+        var registerResponse = await RegisterEndpointBuilder
+            .WithClientName("worker-app")
+            .WithGrantTypes([GrantTypeConstants.ClientCredentials])
+            .WithScope([weatherReadScope])
+            .WithRequireReferenceToken()
+            .Post();
+
+        // Act
+        var introspectionResponse = await IntrospectionEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithClientSecret(registerResponse.ClientSecret!)
+            .WithTokenTypeHint("invalid_token_type_hint")
+            .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.ClientSecretBasic)
+            .Post();
+
+        // Arrange
+        Assert.Equal(HttpStatusCode.BadRequest, introspectionResponse.StatusCode);
+        Assert.NotNull(introspectionResponse.Error);
+        Assert.Null(introspectionResponse.Response);
     }
 
     [Fact]
@@ -75,26 +103,31 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
             .Post();
 
         // Arrange
-        Assert.True(introspectionResponse.Active);
-        Assert.NotNull(introspectionResponse.JwtId);
-        Assert.Equal(registerResponse.ClientId, introspectionResponse.ClientId);
-        Assert.NotNull(introspectionResponse.ExpiresAt);
-        Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
-        Assert.NotNull(introspectionResponse.Audience);
-        Assert.Single(introspectionResponse.Audience);
-        Assert.Equal(weatherClient.ClientUri!, introspectionResponse.Audience.Single());
-        Assert.NotNull(introspectionResponse.IssuedAt);
-        Assert.NotNull(introspectionResponse.NotBefore);
-        Assert.Equal(weatherReadScope, introspectionResponse.Scope);
-        Assert.NotNull(introspectionResponse.Username);
-        Assert.NotNull(introspectionResponse.AuthTime);
-        Assert.NotNull(introspectionResponse.Acr);
-        Assert.Equal(TokenTypeSchemaConstants.DPoP, introspectionResponse.TokenType);
-        Assert.NotNull(introspectionResponse.Cnf);
-        Assert.NotNull(introspectionResponse.Cnf.Jkt);
+        Assert.Equal(HttpStatusCode.OK, introspectionResponse.StatusCode);
+        Assert.Null(introspectionResponse.Error);
+        Assert.NotNull(introspectionResponse.Response);
+        var response = introspectionResponse.Response;
 
-        Assert.NotNull(introspectionResponse.AccessControl);
-        Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(introspectionResponse.AccessControl[ClaimNameConstants.Roles].ToString()!));
+        Assert.True(response.Active);
+        Assert.NotNull(response.JwtId);
+        Assert.Equal(registerResponse.ClientId, response.ClientId);
+        Assert.NotNull(response.ExpiresAt);
+        Assert.Equal(DiscoveryDocument.Issuer, response.Issuer);
+        Assert.NotNull(response.Audience);
+        Assert.Single(response.Audience);
+        Assert.Equal(weatherClient.ClientUri!, response.Audience.Single());
+        Assert.NotNull(response.IssuedAt);
+        Assert.NotNull(response.NotBefore);
+        Assert.Equal(weatherReadScope, response.Scope);
+        Assert.NotNull(response.Username);
+        Assert.NotNull(response.AuthTime);
+        Assert.NotNull(response.Acr);
+        Assert.Equal(TokenTypeSchemaConstants.DPoP, response.TokenType);
+        Assert.NotNull(response.Cnf);
+        Assert.NotNull(response.Cnf.Jkt);
+
+        Assert.NotNull(response.AccessControl);
+        Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(response.AccessControl[ClaimNameConstants.Roles].ToString()!));
     }
 
     [Fact]
@@ -130,16 +163,21 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
             .Post();
 
         // Arrange
-        Assert.True(introspectionResponse.Active);
-        Assert.Equal(weatherReadScope, introspectionResponse.Scope);
-        Assert.Equal([weatherClient.ClientUri], introspectionResponse.Audience);
-        Assert.Equal(registerResponse.ClientId, introspectionResponse.ClientId);
-        Assert.Equal(TokenTypeSchemaConstants.Bearer, introspectionResponse.TokenType);
-        Assert.Null(introspectionResponse.Username);
-        Assert.Equal(registerResponse.ClientId, introspectionResponse.Subject);
-        Assert.Equal(DiscoveryDocument.Issuer, introspectionResponse.Issuer);
-        Assert.NotNull(introspectionResponse.JwtId);
-        Assert.Null(introspectionResponse.AccessControl);
-        Assert.Null(introspectionResponse.Cnf);
+        Assert.Equal(HttpStatusCode.OK, introspectionResponse.StatusCode);
+        Assert.Null(introspectionResponse.Error);
+        Assert.NotNull(introspectionResponse.Response);
+        var response = introspectionResponse.Response;
+
+        Assert.True(response.Active);
+        Assert.Equal(weatherReadScope, response.Scope);
+        Assert.Equal([weatherClient.ClientUri], response.Audience);
+        Assert.Equal(registerResponse.ClientId, response.ClientId);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, response.TokenType);
+        Assert.Null(response.Username);
+        Assert.Equal(registerResponse.ClientId, response.Subject);
+        Assert.Equal(DiscoveryDocument.Issuer, response.Issuer);
+        Assert.NotNull(response.JwtId);
+        Assert.Null(response.AccessControl);
+        Assert.Null(response.Cnf);
     }
 }

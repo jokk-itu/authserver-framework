@@ -18,7 +18,7 @@ internal class UserinfoRequestHandler : RequestHandler<UserinfoRequest, Userinfo
         _requestValidator = requestValidator;
     }
 
-    protected override async Task<ProcessResult<string, ProcessError>> ProcessRequest(UserinfoValidatedRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<string, ProcessError>> ProcessValidatedRequest(UserinfoValidatedRequest request, CancellationToken cancellationToken)
     {
         return await _userinfoProcessor.Process(request, cancellationToken);
     }
