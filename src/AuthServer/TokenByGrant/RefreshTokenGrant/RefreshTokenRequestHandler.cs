@@ -29,11 +29,6 @@ internal class RefreshTokenRequestHandler : RequestHandler<TokenRequest, Refresh
         return result;
     }
 
-    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(error);
-    }
-
     protected override async Task<ProcessResult<RefreshTokenValidatedRequest, ProcessError>> ValidateRequest(TokenRequest request, CancellationToken cancellationToken)
     {
         return await _requestValidator.Validate(request, cancellationToken);

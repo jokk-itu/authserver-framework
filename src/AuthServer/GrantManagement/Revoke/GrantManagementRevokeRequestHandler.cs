@@ -30,11 +30,6 @@ internal class GrantManagementRevokeRequestHandler : RequestHandler<GrantManagem
         return result;
     }
 
-    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(error);
-    }
-
     protected override async Task<ProcessResult<GrantManagementValidatedRequest, ProcessError>> ValidateRequest(GrantManagementRequest request, CancellationToken cancellationToken)
     {
         return await _requestValidator.Validate(request, cancellationToken);

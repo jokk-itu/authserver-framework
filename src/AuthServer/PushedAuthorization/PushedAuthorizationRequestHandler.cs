@@ -36,11 +36,6 @@ internal class PushedAuthorizationRequestHandler : RequestHandler<PushedAuthoriz
         return result;
     }
 
-    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(error);
-    }
-
     protected override async Task<ProcessResult<PushedAuthorizationValidatedRequest, ProcessError>> ValidateRequest(
         PushedAuthorizationRequest request, CancellationToken cancellationToken)
     {

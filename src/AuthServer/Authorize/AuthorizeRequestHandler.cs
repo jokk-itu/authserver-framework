@@ -36,12 +36,17 @@ internal class AuthorizeRequestHandler : RequestHandler<AuthorizeRequest, Author
         return result;
     }
 
-    protected override async Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> ValidateRequest(AuthorizeRequest request, CancellationToken cancellationToken)
     {
-        if (error is PersistRequestUriError persistRequestUriError)
+        var response = await _requestValidator.Validate(request, cancellationToken);
+
+        if (response is { IsSuccess: false, Error: PersistRequestUriError persistRequestUriError })
         {
+            await _unitOfWork.Begin(cancellationToken);
             var authorizeRequestDto = new AuthorizeRequestDto(persistRequestUriError.AuthorizeRequest);
             var authorizeMessage = await _clientRepository.AddAuthorizeMessage(authorizeRequestDto, cancellationToken);
+            await _unitOfWork.Commit(cancellationToken);
+
             var requestUri = $"{RequestUriConstants.RequestUriPrefix}{authorizeMessage.Reference}";
 
             return new AuthorizeInteractionError(
@@ -52,11 +57,6 @@ internal class AuthorizeRequestHandler : RequestHandler<AuthorizeRequest, Author
                 persistRequestUriError.AuthorizeRequest.ClientId!);
         }
 
-        return error;
-    }
-
-    protected override async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> ValidateRequest(AuthorizeRequest request, CancellationToken cancellationToken)
-    {
-        return await _requestValidator.Validate(request, cancellationToken);
+        return response;
     }
 }

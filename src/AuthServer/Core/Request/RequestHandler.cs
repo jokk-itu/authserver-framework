@@ -29,12 +29,10 @@ internal abstract class RequestHandler<TRequest, TValidatedRequest, TResponse> :
                 activity?.AddEvent(new ActivityEvent("Request processing succeeded"));
                 return response;
             },
-            async error =>
+            error =>
             {
                 activity?.AddEvent(new ActivityEvent("Request validation failed"));
-                var response = await ProcessInvalidRequest(error, cancellationToken);
-                activity?.AddEvent(new ActivityEvent("Request processing succeeded"));
-                return new ProcessResult<TResponse, ProcessError>(response);
+                return Task.FromResult(new ProcessResult<TResponse, ProcessError>(error));
             });
     }
 
@@ -45,12 +43,6 @@ internal abstract class RequestHandler<TRequest, TValidatedRequest, TResponse> :
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected abstract Task<ProcessResult<TResponse, ProcessError>> ProcessValidatedRequest(TValidatedRequest request, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Assumes that <typeparam name="TRequest"></typeparam> is raw from the endpoint.
-    /// </summary>
-    /// <returns></returns>
-    protected abstract Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken);
 
     /// <summary>
     /// Assumes that <typeparam name="TRequest"></typeparam> is raw from the endpoint.

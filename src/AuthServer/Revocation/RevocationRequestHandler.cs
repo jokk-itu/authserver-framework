@@ -28,11 +28,6 @@ internal class RevocationRequestHandler : RequestHandler<RevocationRequest, Revo
         return new ProcessResult<Unit, ProcessError>(Unit.Value);
     }
 
-    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(error);
-    }
-
     protected override async Task<ProcessResult<RevocationValidatedRequest, ProcessError>> ValidateRequest(RevocationRequest request, CancellationToken cancellationToken)
     {
         return await _requestValidator.Validate(request, cancellationToken);

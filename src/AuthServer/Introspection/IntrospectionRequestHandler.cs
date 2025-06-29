@@ -25,11 +25,6 @@ internal class IntrospectionRequestHandler : RequestHandler<IntrospectionRequest
         return await _requestProcessor.Process(request, cancellationToken);
     }
 
-    protected override Task<ProcessError> ProcessInvalidRequest(ProcessError error, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(error);
-    }
-
     protected override async Task<ProcessResult<IntrospectionValidatedRequest, ProcessError>> ValidateRequest(IntrospectionRequest request,
         CancellationToken cancellationToken)
     {
