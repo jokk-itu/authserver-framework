@@ -1,4 +1,4 @@
-using AuthServer.Authentication;
+﻿using AuthServer.Authentication;
 using AuthServer.Authentication.Abstractions;
 using AuthServer.Authentication.OAuthToken;
 using AuthServer.Authorization;
@@ -325,7 +325,12 @@ public static class ServiceCollectionExtensions
     private static void AddDeviceAuthorization(IServiceCollection services)
     {
         services
-            .AddScoped<IRequestAccessor<DeviceAuthorizationRequest>, DeviceAuthorizationRequestAccessor>();
+            .AddScoped<IRequestAccessor<DeviceAuthorizationRequest>, DeviceAuthorizationRequestAccessor>()
+            .AddScoped<IEndpointHandler, DeviceAuthorizationEndpointHandler>()
+            .AddScoped<IEndpointModule, DeviceAuthorizationEndpointModule>()
+            .AddScoped<IRequestHandler<DeviceAuthorizationRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestHandler>()
+            .AddScoped<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>, DeviceAuthorizationRequestValidator>()
+            .AddScoped<IRequestProcessor<DeviceAuthorizationValidatedRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestProcessor>();
     }
 
     private static void AddDiscovery(IServiceCollection services)
