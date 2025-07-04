@@ -46,7 +46,7 @@ internal class AuthorizeEndpointHandler : IEndpointHandler
             },
             async error =>
             {
-                if (error is AuthorizeInteractionError { RedirectToInteraction: true } authorizeInteractionError)
+                if (error is AuthorizeInteractionError authorizeInteractionError)
                 {
                     var substituteRequest = new Dictionary<string, string>
                     {

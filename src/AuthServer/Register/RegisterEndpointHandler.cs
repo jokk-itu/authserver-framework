@@ -27,7 +27,7 @@ internal class RegisterEndpointHandler : IEndpointHandler
                 return result.Match(
                     client =>
                     {
-                        var body = new Endpoints.Responses.RegisterResponse
+                        var body = new GetRegisterResponse
                         {
                             ClientId = client.ClientId,
                             ClientIdIssuedAt = DateTime.UtcNow,

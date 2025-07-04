@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using AuthServer.Constants;
-using AuthServer.Endpoints.Responses;
+using AuthServer.Discovery;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit.Abstractions;
 

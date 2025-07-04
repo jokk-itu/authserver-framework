@@ -7,10 +7,8 @@ internal record AuthorizeInteractionError(
     string ErrorDescription,
     ResultCode ResultCode,
     string RequestUri,
-    string ClientId,
-    bool RedirectToInteraction) : ProcessError(Error, ErrorDescription, ResultCode)
+    string ClientId) : ProcessError(Error, ErrorDescription, ResultCode)
 {
     public string RequestUri { get; } = RequestUri;
     public string ClientId { get; } = ClientId;
-    public bool RedirectToInteraction { get; } = RedirectToInteraction;
 }

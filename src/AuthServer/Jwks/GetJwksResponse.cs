@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AuthServer.Endpoints.Responses;
+namespace AuthServer.Jwks;
 internal class GetJwksResponse
 {
     [JsonPropertyName("keys")]

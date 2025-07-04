@@ -22,7 +22,7 @@ internal class RegisterRequestHandler : RequestHandler<RegisterRequest, Register
         _requestProcessor = registerProcessor;
     }
 
-    protected override async Task<ProcessResult<ProcessResult<RegisterResponse, Unit>, ProcessError>> ProcessRequest(RegisterValidatedRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<ProcessResult<RegisterResponse, Unit>, ProcessError>> ProcessValidatedRequest(RegisterValidatedRequest request, CancellationToken cancellationToken)
     {
         await _unitOfWork.Begin(cancellationToken);
         var result = await _requestProcessor.Process(request, cancellationToken);

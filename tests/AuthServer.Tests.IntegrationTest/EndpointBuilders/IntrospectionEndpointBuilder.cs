@@ -1,5 +1,4 @@
-﻿using AuthServer.Constants;
-using AuthServer.Endpoints.Responses;
+﻿using System.Net;
 using AuthServer.Enums;
 using AuthServer.Options;
 using System.Net.Http.Headers;
@@ -8,6 +7,8 @@ using System.Text;
 using System.Web;
 using AuthServer.Core;
 using AuthServer.Endpoints.Abstractions;
+using AuthServer.Endpoints.Responses;
+using AuthServer.Introspection;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
@@ -56,7 +57,7 @@ public class IntrospectionEndpointBuilder : EndpointBuilder<IntrospectionEndpoin
         return this;
     }
 
-    internal async Task<PostIntrospectionResponse> Post()
+    internal async Task<IntrospectionResponse> Post()
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "connect/introspection");
 
@@ -82,7 +83,28 @@ public class IntrospectionEndpointBuilder : EndpointBuilder<IntrospectionEndpoin
             httpResponseMessage.StatusCode,
             await httpResponseMessage.Content.ReadAsStringAsync());
 
-        httpResponseMessage.EnsureSuccessStatusCode();
-        return (await httpResponseMessage.Content.ReadFromJsonAsync<PostIntrospectionResponse>())!;
+        if (httpResponseMessage.StatusCode == HttpStatusCode.OK)
+        {
+            var response = await httpResponseMessage.Content.ReadFromJsonAsync<PostIntrospectionResponse>()!;
+            return new IntrospectionResponse
+            {
+                StatusCode = httpResponseMessage.StatusCode,
+                Response = response
+            };
+        }
+
+        var error = await httpResponseMessage.Content.ReadFromJsonAsync<OAuthError>()!;
+        return new IntrospectionResponse
+        {
+            StatusCode = httpResponseMessage.StatusCode,
+            Error = error
+        };
+    }
+
+    internal class IntrospectionResponse
+    {
+        public HttpStatusCode StatusCode { get; set; }
+        public OAuthError? Error { get; set; }
+        public PostIntrospectionResponse? Response { get; set; }
     }
 }
