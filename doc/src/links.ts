@@ -27,7 +27,8 @@ export const developerLinks = [
     new DeveloperLink('Token', '/token'),
     new DeveloperLink('Client Credentials', '/client-credentials'),
     new DeveloperLink('Authorization Code', '/authorization-code'),
-    new DeveloperLink('Refresh Token', '/refresh-token')
+    new DeveloperLink('Refresh Token', '/refresh-token'),
+    new DeveloperLink('Token Revocation', '/token-revocation'),
 ];
 
 export const navLinks = [
