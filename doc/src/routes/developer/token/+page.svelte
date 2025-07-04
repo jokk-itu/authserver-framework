@@ -154,7 +154,7 @@ Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 grant_type=invalid_grant_type
         `}
     </CodeBlock>
-    <p>The following HTTP exmaple shows the error response.</p>
+    <p>The following HTTP example shows the error response.</p>
     <CodeBlock>
         {`
 HTTP/1.1 400 BadRequest
