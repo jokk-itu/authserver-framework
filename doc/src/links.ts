@@ -31,7 +31,8 @@ export const developerLinks = [
     new DeveloperLink('Authorization Code', '/authorization-code'),
     new DeveloperLink('Refresh Token', '/refresh-token'),
     new DeveloperLink('Token Revocation', '/token-revocation'),
-    new DeveloperLink("Token Introspection", "/token-introspection")
+    new DeveloperLink('Token Introspection', '/token-introspection'),
+    new DeveloperLink('Grant Management', '/grant-management')
 ];
 
 export const navLinks = [
