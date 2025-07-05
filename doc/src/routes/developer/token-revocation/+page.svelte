@@ -36,7 +36,7 @@
     <p>The token revocation endpoint accepts the POST HTTP method, and the content is application/x-www-form-urlencoded.</p>
     <p>The endpoint also requires client authentication, and the parameters are defined in the Client Authentication page.</p>
     <InformationBanner>
-        The endpoint does not accept the 'none' client authentication method.
+        The endpoint requires client authentication by confidential clients.
     </InformationBanner>
     <br>
     <p>The token revocation endpoint returns HTTP 200 with no content if successful, and 400 if an error occurred.</p>
@@ -61,7 +61,7 @@ token=2YotnFZFEjr1zCsicMWpAA
     <p>The following HTTP example shows the response.</p>
     <CodeBlock>
         {`
-HTTP/1.1 200 BadRequest
+HTTP/1.1 200 OK
 Cache-Control: no-cache, no-store
         `}
     </CodeBlock>

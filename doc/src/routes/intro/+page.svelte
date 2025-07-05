@@ -39,8 +39,8 @@
         </svg>
         <div class="font-bold text-xl mb-2">Tokens</div>
         <p class="text-gray-800 text-base">
-            Choose typed JWT with signatures and optionally encryption and
-            sender constraints. Or use Opaque tokens with Introspection.
+            Choose structured JWT with signatures and optionally encryption. Or use Opaque tokens with Introspection.
+            Optionally sender constraint your tokens using DPoP.
         </p>
     </div>
 
