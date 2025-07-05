@@ -61,7 +61,7 @@ token=2YotnFZFEjr1zCsicMWpAA
     <p>The following HTTP example shows the response.</p>
     <CodeBlock>
         {`
-HTTP/1.1 200 BadRequest
+HTTP/1.1 200 OK
 Cache-Control: no-cache, no-store
         `}
     </CodeBlock>
