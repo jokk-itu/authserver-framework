@@ -24,6 +24,7 @@ export const developerLinks = [
     new DeveloperLink('Discovery', '/discovery'),
     new DeveloperLink('JWKS', '/jwks'),
     new DeveloperLink('PKCE', '/pkce'),
+    new DeveloperLink('Subject Type', '/subject-type'),
     new DeveloperLink('Token', '/token'),
     new DeveloperLink('Client Credentials', '/client-credentials'),
     new DeveloperLink('Authorization Code', '/authorization-code'),
