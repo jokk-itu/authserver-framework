@@ -95,7 +95,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return PushedAuthorizationError.InvalidResponseType;
         }
 
-        if (!HasValidGrantType(cachedClient))
+        if (!HasAuthorizationCodeGrantType(cachedClient))
         {
             return PushedAuthorizationError.UnauthorizedResponseType;
         }

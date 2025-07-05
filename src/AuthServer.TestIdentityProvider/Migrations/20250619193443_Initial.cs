@@ -659,7 +659,8 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 {
                     { 1, "authorization_code" },
                     { 2, "client_credentials" },
-                    { 3, "refresh_token" }
+                    { 3, "refresh_token" },
+                    { 4, "urn:ietf:params:oauth:grant-type:device_code" }
                 });
 
             migrationBuilder.InsertData(

@@ -45,8 +45,11 @@ internal class BaseAuthorizeValidator
     protected static bool HasValidResponseType(string? responseType)
         => !string.IsNullOrEmpty(responseType) && ResponseTypeConstants.ResponseTypes.Contains(responseType);
 
-    protected static bool HasValidGrantType(CachedClient cachedClient)
+    protected static bool HasAuthorizationCodeGrantType(CachedClient cachedClient)
         => cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.AuthorizationCode);
+
+    protected static bool HasDeviceCodeGrantType(CachedClient cachedClient)
+        => cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.DeviceCode);
 
     protected static bool HasValidDisplay(string? display)
         => string.IsNullOrEmpty(display) || DisplayConstants.DisplayValues.Contains(display);
