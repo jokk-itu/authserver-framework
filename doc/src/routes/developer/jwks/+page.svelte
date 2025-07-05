@@ -26,8 +26,8 @@
         [ new RowCellDefinition('n'), new RowCellDefinition('The modulus value used with kty: RSA') ],
         [ new RowCellDefinition('e'), new RowCellDefinition('The exponnent value used with kty: RSA') ],
 
-        [ new RowCellDefinition('x5t'), new RowCellDefinition('The SHA1 thumpbrint of the certificate') ],
         [ new RowCellDefinition('x5c'), new RowCellDefinition('Array of one base64 certificate') ],
+        [ new RowCellDefinition('x5t'), new RowCellDefinition('The SHA1 thumpbrint of the certificate') ],
         [ new RowCellDefinition('x5t#S256'), new RowCellDefinition('The SHA256 thumbprint of the certificate') ],
     ];
 </script>
@@ -69,6 +69,15 @@ Content-Type: application/json;charset=UTF-8
       "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
       "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
       "kid": "d890e7ed-662b-48c5-8914-c5c58571f8b6"
+    },
+    {
+      "kty":"RSA",
+      "use": "sig",
+      "alg": "RS256",
+      "key_ops": ["verify"],
+      "n": "0vx7agoebGcQSuuPi...",
+      "e":"AQAB",
+      "kid":"b3f74555-ce9f-4dd3-a3fc-9789a77580a9"
     }
   ]
 }
