@@ -33,7 +33,7 @@ internal class GrantManagementRevokeEndpointHandler : IEndpointHandler
                 {
                     ResultCode.NotFound => Results.Extensions.OAuthNotFound(error),
                     ResultCode.Forbidden => Results.Forbid(
-                        new AuthenticationProperties(new Dictionary<string, string?>
+                        new AuthenticationProperties(null, new Dictionary<string, object?>
                         {
                             { OAuthTokenAuthenticationDefaults.ErrorParameter, error.Error },
                             { OAuthTokenAuthenticationDefaults.ErrorDescriptionParameter, error.ErrorDescription }
