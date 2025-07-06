@@ -184,14 +184,19 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, cachedClient.Id, cancellationToken);
             var isJktValid = string.IsNullOrEmpty(request.DPoPJkt) || request.DPoPJkt == dPoPValidationResult.DPoPJkt;
 
-            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null })
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null, RenewDPoPNonce: false })
             {
                 return PushedAuthorizationError.InvalidDPoP;
             }
 
-            if (dPoPValidationResult is { IsValid: false })
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: not null })
             {
                 return PushedAuthorizationError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
+            }
+
+            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
+            {
+                return PushedAuthorizationError.RenewDPoPNonce(clientAuthenticationResult.ClientId);
             }
 
             if (!isJktValid)
