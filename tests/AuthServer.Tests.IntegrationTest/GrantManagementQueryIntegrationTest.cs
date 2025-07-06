@@ -83,7 +83,7 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Revoke_InvalidGrantId_ExpectNotFound()
+    public async Task Query_InvalidGrantId_ExpectNotFound()
     {
         var identityProviderClient = await AddIdentityProviderClient();
 
@@ -128,7 +128,7 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Revoke_ClientDoesNotOwnGrant_ExpectForbidden()
+    public async Task Query_ClientDoesNotOwnGrant_ExpectForbidden()
     {
         var identityProviderClient = await AddIdentityProviderClient();
 
