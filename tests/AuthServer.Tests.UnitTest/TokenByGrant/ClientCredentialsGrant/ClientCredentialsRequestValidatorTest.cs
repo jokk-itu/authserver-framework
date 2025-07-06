@@ -302,7 +302,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce, client.Id), processResult);
+        Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce), processResult);
         dPoPService.Verify();
     }
 
@@ -351,7 +351,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.RenewDPoPNonce, processResult);
+        Assert.Equal(TokenError.RenewDPoPNonce(client.Id), processResult);
         dPoPService.Verify();
     }
 
