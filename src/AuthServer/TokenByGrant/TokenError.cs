@@ -52,10 +52,10 @@ internal static class TokenError
         new(ErrorCode.InvalidRequest, "scope is missing", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidDPoPJktMatch =
-        new(ErrorCode.InvalidRequest, "dpop_jkt does not match jkt of dpop", ResultCode.BadRequest);
+        new(ErrorCode.InvalidDPoPProof, "dpop_jkt does not match jkt of dpop", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidRefreshTokenJktMatch =
-        new(ErrorCode.InvalidRequest, "refresh_token jkt does not match jkt of dpop", ResultCode.BadRequest);
+        new(ErrorCode.InvalidDPoPProof, "refresh_token jkt does not match jkt of dpop", ResultCode.BadRequest);
 
     public static readonly ProcessError DPoPRequired =
         new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
@@ -64,5 +64,5 @@ internal static class TokenError
         => new DPoPNonceProcessError(dPoPNonce, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidDPoP =
-        new(ErrorCode.InvalidRequest, "dpop is invalid", ResultCode.BadRequest);
+        new(ErrorCode.InvalidDPoPProof, "dpop is invalid", ResultCode.BadRequest);
 }

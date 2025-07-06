@@ -70,7 +70,7 @@ internal static class PushedAuthorizationError
         new(ErrorCode.InvalidGrantId, "grant_id is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidDPoPJktMatch =
-        new(ErrorCode.InvalidRequest, "dpop_jkt does not match jkt of dpop", ResultCode.BadRequest);
+        new(ErrorCode.InvalidDPoPProof, "dpop_jkt does not match jkt of dpop", ResultCode.BadRequest);
 
     public static readonly ProcessError DPoPRequired =
         new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
@@ -79,7 +79,7 @@ internal static class PushedAuthorizationError
         => new DPoPNonceProcessError(dPoPNonce, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidDPoP =
-        new(ErrorCode.InvalidRequest, "dpop is invalid", ResultCode.BadRequest);
+        new(ErrorCode.InvalidDPoPProof, "dpop is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidRequest =
         new(ErrorCode.InvalidRequestObject, "request is invalid", ResultCode.BadRequest);
