@@ -4,6 +4,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Extensions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.GrantManagement.Query;
@@ -41,7 +42,13 @@ internal class GrantManagementQueryEndpointHandler : IEndpointHandler
                 error.ResultCode switch
                 {
                     ResultCode.NotFound => Results.Extensions.OAuthNotFound(error),
-                    ResultCode.Forbidden => Results.Forbid(null, [OAuthTokenAuthenticationDefaults.AuthenticationScheme]),
+                    ResultCode.Forbidden => Results.Forbid(
+                        new AuthenticationProperties(new Dictionary<string, string?>
+                        {
+                            { OAuthTokenAuthenticationDefaults.ErrorParameter, error.Error },
+                            { OAuthTokenAuthenticationDefaults.ErrorDescriptionParameter, error.ErrorDescription }
+                        }),
+                        [OAuthTokenAuthenticationDefaults.AuthenticationScheme]),
                     _ => Results.Extensions.OAuthBadRequest(
                         new OAuthError(ErrorCode.ServerError, "unexpected error occurred"))
                 });
