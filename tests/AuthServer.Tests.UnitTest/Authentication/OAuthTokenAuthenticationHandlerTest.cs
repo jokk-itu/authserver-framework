@@ -74,7 +74,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
             {
                 Headers =
                 {
-                    Authorization = "Bearer"
+                    Authorization = TokenTypeSchemaConstants.Bearer
                 }
             },
             RequestServices = serviceProvider
@@ -84,8 +84,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
-        Assert.True(result.None);
-        Assert.Null(result.Failure);
+        Assert.False(result.None);
+        Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -110,7 +111,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -149,7 +152,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -188,7 +193,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -227,7 +234,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -266,7 +275,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -306,7 +317,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -345,7 +358,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -384,7 +399,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -409,6 +426,8 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
+        Assert.Null(result.Failure);
         Assert.NotNull(result.Principal);
 
         var accessToken = await httpContext.GetTokenAsync(Parameter.AccessToken);
@@ -436,8 +455,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
-        Assert.True(result.None);
-        Assert.Null(result.Failure);
+        Assert.False(result.None);
+        Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -465,7 +485,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -494,7 +516,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -526,7 +550,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -558,7 +584,9 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
         Assert.NotNull(result.Failure);
+        Assert.IsType<OAuthTokenException>(result.Failure);
     }
 
     [Fact]
@@ -586,6 +614,8 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        Assert.False(result.None);
+        Assert.Null(result.Failure);
         Assert.NotNull(result.Principal);
 
         var accessToken = await httpContext.GetTokenAsync(Parameter.AccessToken);
@@ -607,7 +637,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
 
         // Assert
         Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
-        Assert.Equal("Bearer error=\"invalid_request\"", httpContext.Response.Headers.WWWAuthenticate);
+        Assert.Equal($"Bearer, DPoP algs={string.Join(' ', DiscoveryDocument.DPoPSigningAlgValuesSupported)}", httpContext.Response.Headers.WWWAuthenticate);
     }
 
     [Fact]
@@ -633,7 +663,33 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
 
         // Assert
         Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
-        Assert.Equal("Bearer error=\"invalid_token\"", httpContext.Response.Headers.WWWAuthenticate);
+        Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"token is not valid\", DPoP algs={string.Join(' ', DiscoveryDocument.DPoPSigningAlgValuesSupported)}", httpContext.Response.Headers.WWWAuthenticate);
+    }
+
+    [Fact]
+    public async Task HandleChallengeAsync_InvalidDPoPToken_ExpectInvalidToken()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var encodedJson = Convert.ToBase64String("{}"u8.ToArray());
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"DPoP {encodedJson}.{encodedJson}.{encodedJson}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        // Act
+        await httpContext.ChallengeAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        Assert.Equal($"Bearer, DPoP algs={string.Join(' ', DiscoveryDocument.DPoPSigningAlgValuesSupported)}, error=\"invalid_token\", error_description=\"token is not valid\"", httpContext.Response.Headers.WWWAuthenticate);
     }
 
     [Fact]
