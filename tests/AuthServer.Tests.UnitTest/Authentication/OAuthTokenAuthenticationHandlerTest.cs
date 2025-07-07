@@ -1502,6 +1502,55 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task HandleChallengeAsync_InvalidDPoPNonce_ExpectUseDPoPNonce()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+
+        const string clientId = "client_id";
+        const string jkt = "jkt";
+        var token = JwtBuilder.GetAccessToken(clientId, jkt);
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Headers =
+                {
+                    Authorization = $"DPoP {token}"
+                }
+            },
+            RequestServices = serviceProvider
+        };
+
+        const string dPoPToken = "dpop";
+        const string dPoPNonce = "dpop_nonce";
+
+        httpContext.Request.Headers.Append(Parameter.DPoP, dPoPToken);
+
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoPToken, clientId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult
+            {
+                IsValid = false,
+                DPoPNonce = dPoPNonce
+            })
+            .Verifiable();
+
+        // Act
+        await httpContext.ChallengeAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        var dPoPAlgs = string.Join(' ', DiscoveryDocument.DPoPSigningAlgValuesSupported);
+        Assert.Equal($"Bearer, DPoP algs=\"{dPoPAlgs}\", error=\"{ErrorCode.UseDPoPNonce}\", error_description=\"use the provided DPoP nonce\"", httpContext.Response.Headers.WWWAuthenticate);
+        Assert.Equal(dPoPNonce, httpContext.Response.Headers.GetValue(Parameter.DPoPNonce));
+    }
+
+    [Fact]
     public async Task HandleForbidAsync_UnauthorizedBearerToken_ExpectCustomError()
     {
         // Arrange
