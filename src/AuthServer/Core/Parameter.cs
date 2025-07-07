@@ -86,7 +86,7 @@ public static class Parameter
     public const string ClientAssertionType = "client_assertion_type";
     public const string ClientAssertion = "client_assertion";
     public const string DPoP = "dpop";
-    public const string DPoPNonce = "dpop-nonce";
+    public const string DPoPNonce = "DPoP-Nonce";
     public const string DPoPJkt = "dpop_jkt";
     public const string DPoPBoundAccessTokens = "dpop_bound_access_tokens";
     public const string DPoPNonceExpiration = "dpop_nonce_expiration";

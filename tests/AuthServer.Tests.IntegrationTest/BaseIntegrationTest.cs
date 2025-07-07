@@ -176,6 +176,29 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         await consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, scopes, claims, CancellationToken.None);
     }
 
+    protected async Task<string> GetDPoPNonce(string clientId)
+    {
+        var nonceRepository = ServiceProvider.GetRequiredService<INonceRepository>();
+        var activeDPoPNonce = await nonceRepository.GetActiveDPoPNonce(clientId, CancellationToken.None);
+        if (activeDPoPNonce is not null)
+        {
+            return activeDPoPNonce;
+        }
+
+        activeDPoPNonce = await nonceRepository.CreateDPoPNonce(clientId, CancellationToken.None);
+        await ServiceProvider.GetRequiredService<AuthorizationDbContext>().SaveChangesAsync();
+        return activeDPoPNonce;
+    }
+
+    protected async Task ExpireDPoPNonce(string dPoPNonce)
+    {
+        var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        await dbContext
+            .Set<DPoPNonce>()
+            .Where(x => x.HashedValue == dPoPNonce.Sha256())
+            .ExecuteDeleteAsync();
+    }
+
     protected async Task<string> AddWeatherReadScope()
     {
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();

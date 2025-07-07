@@ -115,4 +115,19 @@ public static class ErrorCode
     /// The DPoP token does not contain a valid nonce.
     /// </summary>
     public const string UseDPoPNonce = "use_dpop_nonce";
+
+    /// <summary>
+    /// The token from the Authorization header is invalid.
+    /// </summary>
+    public const string InvalidToken = "invalid_token";
+
+    /// <summary>
+    /// The DPoP proof is invalid.
+    /// </summary>
+    public const string InvalidDPoPProof = "invalid_dpop_proof";
+
+    /// <summary>
+    /// The token has insufficient scope.
+    /// </summary>
+    public const string InsufficientScope = "insufficient_scope";
 }

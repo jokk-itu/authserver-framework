@@ -80,14 +80,19 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
         if (!string.IsNullOrEmpty(request.DPoP))
         {
             dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
-            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null })
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null, RenewDPoPNonce: false })
             {
                 return TokenError.InvalidDPoP;
             }
 
-            if (dPoPValidationResult is { IsValid: false })
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: not null })
             {
                 return TokenError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
+            }
+
+            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
+            {
+                return TokenError.RenewDPoPNonce(clientId);
             }
         }
 

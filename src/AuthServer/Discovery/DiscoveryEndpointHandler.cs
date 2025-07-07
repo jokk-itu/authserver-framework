@@ -2,7 +2,6 @@
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints.Abstractions;
-using AuthServer.Endpoints.Responses;
 using AuthServer.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;

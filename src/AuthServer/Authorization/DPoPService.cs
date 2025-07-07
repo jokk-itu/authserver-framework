@@ -96,11 +96,10 @@ internal class DPoPService : IDPoPService
         if (activeDPoPNonce is null)
         {
             _logger.LogInformation("DPoPNonce has expired for client {ClientId}", clientId);
-            activeDPoPNonce = await _nonceRepository.CreateDPoPNonce(clientId, cancellationToken);
             return new DPoPValidationResult
             {
                 IsValid = false,
-                DPoPNonce = activeDPoPNonce
+                RenewDPoPNonce = true
             };
         }
 
