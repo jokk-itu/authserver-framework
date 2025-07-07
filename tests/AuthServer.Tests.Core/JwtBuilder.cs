@@ -142,7 +142,7 @@ public class JwtBuilder
         });
     }
 
-    public string GetAccessToken(string clientId)
+    public string GetAccessToken(string clientId, string? jkt = null)
     {
         var key = _jwksDocument.GetTokenSigningKey();
         var signingCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription());
@@ -152,6 +152,14 @@ public class JwtBuilder
         {
             { ClaimNameConstants.ClientId, clientId }
         };
+
+        if (jkt is not null)
+        {
+            claims.Add(ClaimNameConstants.Cnf, new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Jkt, jkt }
+            });
+        }
         
         return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
@@ -202,6 +210,8 @@ public class JwtBuilder
             ClientTokenAudience.IntrospectionEndpoint => _endpointResolver.IntrospectionEndpoint,
             ClientTokenAudience.RevocationEndpoint => _endpointResolver.RevocationEndpoint,
             ClientTokenAudience.PushedAuthorizationEndpoint => _endpointResolver.PushedAuthorizationEndpoint,
+            ClientTokenAudience.UserinfoEndpoint => _endpointResolver.UserinfoEndpoint,
+            ClientTokenAudience.GrantManagementEndpoint => _endpointResolver.GrantManagementEndpoint,
             _ => throw new ArgumentException("unknown value", nameof(audience))
         };
 }

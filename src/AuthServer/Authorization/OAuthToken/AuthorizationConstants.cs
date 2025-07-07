@@ -1,4 +1,4 @@
-﻿namespace AuthServer.Constants;
+﻿namespace AuthServer.Authorization.OAuthToken;
 internal static class AuthorizationConstants
 {
     public const string Register = "Register";
