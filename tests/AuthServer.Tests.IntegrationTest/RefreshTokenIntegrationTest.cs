@@ -59,6 +59,8 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();
 
+        await ExpireDPoPNonce(dPoPNonce);
+
         // Act
         var refreshResponse = await TokenEndpointBuilder
             .WithDPoP(null)

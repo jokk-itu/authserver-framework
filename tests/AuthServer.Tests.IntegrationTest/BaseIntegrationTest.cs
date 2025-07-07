@@ -190,6 +190,15 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         return activeDPoPNonce;
     }
 
+    protected async Task ExpireDPoPNonce(string dPoPNonce)
+    {
+        var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        await dbContext
+            .Set<DPoPNonce>()
+            .Where(x => x.HashedValue == dPoPNonce.Sha256())
+            .ExecuteDeleteAsync();
+    }
+
     protected async Task<string> AddWeatherReadScope()
     {
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
