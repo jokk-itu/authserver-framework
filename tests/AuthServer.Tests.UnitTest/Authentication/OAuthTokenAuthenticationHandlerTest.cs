@@ -9,12 +9,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using Moq;
 using Xunit.Abstractions;
+using Claim = System.Security.Claims.Claim;
 
 namespace AuthServer.Tests.UnitTest.Authentication;
 
@@ -1396,10 +1398,24 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     public async Task HandleAuthenticateAsync_ValidBearerReferenceToken_ExpectClaimsPrincipal()
     {
         // Arrange
-        var serviceProvider = BuildServiceProvider();
+        var userClaimService = new Mock<IUserClaimService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(userClaimService);
+        });
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", "scope", 3600, null);
+        var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var token = new GrantAccessToken(authorizationGrant, DiscoveryDocument.Issuer, DiscoveryDocument.Issuer, "scope", 300, null);
         await AddEntity(token);
+
+        userClaimService
+            .Setup(x => x.GetClaims(subjectIdentifier.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Claim>())
+            .Verifiable();
 
         var httpContext = new DefaultHttpContext
         {
@@ -1417,6 +1433,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
 
         // Assert
+        userClaimService.Verify();
         Assert.False(result.None);
         Assert.Null(result.Failure);
         Assert.NotNull(result.Principal);
