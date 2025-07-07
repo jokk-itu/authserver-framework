@@ -71,10 +71,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, grantResponse.StatusCode);
-        Assert.Single(grantResponse.WwwAuthenticate);
-        var wwwAuthenticate = grantResponse.WwwAuthenticate.Single();
-        Assert.Equal("Bearer", wwwAuthenticate.Scheme);
-        Assert.Equal("error=\"insufficient_scope\"", wwwAuthenticate.Parameter);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.Bearer);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.DPoP);
     }
 
     [Fact]
@@ -172,6 +170,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, grantResponse.StatusCode);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.Bearer);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.DPoP);
     }
 
     [Fact]
