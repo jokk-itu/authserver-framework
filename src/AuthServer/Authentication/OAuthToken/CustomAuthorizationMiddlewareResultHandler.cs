@@ -29,7 +29,7 @@ public class CustomAuthorizationMiddlewareResultHandler : IAuthorizationMiddlewa
     {
         if (authorizeResult.Challenged)
         {
-            await HandleChallenged(context, policy, authorizeResult);
+            await HandleChallenged(context, policy);
         }
         else if (authorizeResult.Forbidden)
         {
@@ -37,8 +37,7 @@ public class CustomAuthorizationMiddlewareResultHandler : IAuthorizationMiddlewa
         }
     }
 
-    private static async Task HandleChallenged(HttpContext context, AuthorizationPolicy policy,
-        PolicyAuthorizationResult authorizeResult)
+    private static async Task HandleChallenged(HttpContext context, AuthorizationPolicy policy)
     {
         if (policy.AuthenticationSchemes.Count > 0)
         {
