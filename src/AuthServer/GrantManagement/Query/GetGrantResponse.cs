@@ -11,8 +11,8 @@ internal class GetGrantResponse
     public IEnumerable<string> Claims { get; set; } = [];
 
     [JsonPropertyName(Parameter.CreatedAt)]
-    public DateTime CreatedAt { get; set; }
+    public long CreatedAt { get; set; }
 
     [JsonPropertyName(Parameter.UpdatedAt)]
-    public DateTime UpdatedAt { get; set; }
+    public long UpdatedAt { get; set; }
 }
