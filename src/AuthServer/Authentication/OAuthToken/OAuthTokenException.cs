@@ -1,5 +1,5 @@
 ﻿namespace AuthServer.Authentication.OAuthToken;
-internal class OAuthTokenException : Exception
+public class OAuthTokenException : Exception
 {
     public string Error { get; private init; }
     public string ErrorDescription { get; private init; }
