@@ -125,4 +125,9 @@ public static class ErrorCode
     /// The DPoP proof is invalid.
     /// </summary>
     public const string InvalidDPoPProof = "invalid_dpop_proof";
+
+    /// <summary>
+    /// The token has insufficient scope.
+    /// </summary>
+    public const string InsufficientScope = "insufficient_scope";
 }
