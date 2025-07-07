@@ -13,7 +13,7 @@
 </script>
 
 <svelte:head>
-	<title>Subjct Type</title>
+	<title>Subject Type</title>
 </svelte:head>
 
 <PageTitle title="Subject Type" />
@@ -64,7 +64,7 @@
     </p>
     <InformationBanner>
         The sector_identifier_uri should not be considered a secret, as it cannot be used to register malicious clients,
-        or deduce the pairwise subjects of end-users.
+        or deduce the pairwise subjects of end-users as the pairwise subject is a hash of combining the sector identifier, a salt and the public subject.
     </InformationBanner>
     <br>
     <InformationBanner>

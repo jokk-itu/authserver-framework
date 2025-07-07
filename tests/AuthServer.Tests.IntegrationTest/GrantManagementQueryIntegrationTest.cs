@@ -1,6 +1,7 @@
 ﻿using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
+using AuthServer.Extensions;
 using AuthServer.GrantManagement.Query;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -229,8 +230,8 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
         Assert.NotNull(getGrantResponse);
 
         var grant = (await ServiceProvider.GetRequiredService<AuthorizationDbContext>().FindAsync<AuthorizationGrant>([grantId], CancellationToken.None))!;
-        Assert.Equal(grant.CreatedAuthTime, getGrantResponse.CreatedAt);
-        Assert.Equal(grant.UpdatedAuthTime, getGrantResponse.UpdatedAt);
+        Assert.Equal(grant.CreatedAuthTime.ToUnixTimeSeconds(), getGrantResponse.CreatedAt);
+        Assert.Equal(grant.UpdatedAuthTime.ToUnixTimeSeconds(), getGrantResponse.UpdatedAt);
 
         Assert.Single(getGrantResponse.Claims);
         Assert.Equal(ClaimNameConstants.Name, getGrantResponse.Claims.Single());

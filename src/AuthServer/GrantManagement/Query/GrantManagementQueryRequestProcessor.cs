@@ -1,6 +1,7 @@
 ﻿using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
+using AuthServer.Extensions;
 using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.GrantManagement.Query;
@@ -46,8 +47,8 @@ internal class GrantManagementQueryRequestProcessor : IRequestProcessor<GrantMan
         {
             Scopes = scopeDtos,
             Claims = claims,
-            CreatedAt = grant.CreatedAuthTime,
-            UpdatedAt = grant.UpdatedAuthTime
+            CreatedAt = grant.CreatedAuthTime.ToUnixTimeSeconds(),
+            UpdatedAt = grant.UpdatedAuthTime.ToUnixTimeSeconds()
         };
     }
 }

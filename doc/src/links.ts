@@ -25,12 +25,14 @@ export const developerLinks = [
     new DeveloperLink('JWKS', '/jwks'),
     new DeveloperLink('PKCE', '/pkce'),
     new DeveloperLink('Subject Type', '/subject-type'),
+    new DeveloperLink('DPoP', '/dpop'),
     new DeveloperLink('Token', '/token'),
     new DeveloperLink('Client Credentials', '/client-credentials'),
     new DeveloperLink('Authorization Code', '/authorization-code'),
     new DeveloperLink('Refresh Token', '/refresh-token'),
     new DeveloperLink('Token Revocation', '/token-revocation'),
-    new DeveloperLink("Token Introspection", "/token-introspection")
+    new DeveloperLink('Token Introspection', '/token-introspection'),
+    new DeveloperLink('Grant Management', '/grant-management')
 ];
 
 export const navLinks = [

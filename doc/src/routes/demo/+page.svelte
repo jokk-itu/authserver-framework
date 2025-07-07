@@ -82,5 +82,6 @@
         <p class="text-gray-800 text-base">
             Strict API behaving as a protected resource. It handles highly sensitive information and requires strict authorization.
         </p>
+        <p class="text-openid font-bold">Work in progress</p>
     </div>
 </div>
