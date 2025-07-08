@@ -22,7 +22,7 @@ internal class DeviceAuthorizationRequestHandler : RequestHandler<DeviceAuthoriz
         _unitOfWork = unitOfWork;
     }
 
-    protected override async Task<ProcessResult<DeviceAuthorizationResponse, ProcessError>> ProcessRequest(DeviceAuthorizationValidatedRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<DeviceAuthorizationResponse, ProcessError>> ProcessValidatedRequest(DeviceAuthorizationValidatedRequest request, CancellationToken cancellationToken)
     {
         await _unitOfWork.Begin(cancellationToken);
         var result = await _requestProcessor.Process(request, cancellationToken);
