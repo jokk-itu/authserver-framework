@@ -2,9 +2,9 @@
 using AuthServer.Core;
 
 namespace AuthServer.Entities;
-public class AuthorizationGrant : Entity<string>
+public abstract class AuthorizationGrant : Entity<string>
 {
-    public AuthorizationGrant(Session session, Client client, string subject, AuthenticationContextReference authenticationContextReference)
+    protected AuthorizationGrant(Session session, Client client, string subject, AuthenticationContextReference authenticationContextReference)
     {
         Id = Guid.NewGuid().ToString();
         CreatedAuthTime = DateTime.UtcNow;
@@ -17,7 +17,7 @@ public class AuthorizationGrant : Entity<string>
 
 #pragma warning disable CS8618
     // Used to hydrate EF Core model
-    private AuthorizationGrant(){}
+    protected AuthorizationGrant(){}
 #pragma warning restore
 
     public DateTime UpdatedAuthTime { get; private set; }
@@ -27,7 +27,6 @@ public class AuthorizationGrant : Entity<string>
     public Session Session { get; private init; }
     public Client Client { get; private init; }
     public AuthenticationContextReference AuthenticationContextReference { get; set; }
-    public ICollection<AuthorizationCode> AuthorizationCodes { get; init; } = [];
     public ICollection<AuthorizationGrantNonce> Nonces { get; init; } = [];
     public ICollection<GrantToken> GrantTokens { get; init; } = [];
     public ICollection<AuthenticationMethodReference> AuthenticationMethodReferences { get; init; } = [];

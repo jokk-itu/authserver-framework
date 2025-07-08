@@ -1,15 +1,11 @@
-﻿using System.Linq.Expressions;
-using AuthServer.Core;
+﻿using AuthServer.Enums;
 
 namespace AuthServer.Entities;
-public class AuthorizationCode : Entity<string>
+public class AuthorizationCode : Code
 {
-    public AuthorizationCode(AuthorizationGrant authorizationGrant, int expirationSeconds)
+    public AuthorizationCode(AuthorizationCodeGrant authorizationCodeGrant, int expirationSeconds) : base(expirationSeconds, CodeType.AuthorizationCode)
     {
-        Id = Guid.NewGuid().ToString();
-        IssuedAt = DateTime.UtcNow;
-        AuthorizationGrant = authorizationGrant ?? throw new ArgumentNullException(nameof(authorizationGrant));
-        ExpiresAt = IssuedAt.AddSeconds(expirationSeconds);
+        AuthorizationCodeGrant = authorizationCodeGrant ?? throw new ArgumentNullException(nameof(authorizationCodeGrant));
     }
 
 #pragma warning disable CS8618
@@ -17,22 +13,5 @@ public class AuthorizationCode : Entity<string>
     private AuthorizationCode() { }
 #pragma warning restore
 
-    public string Value { get; private set; } = null!;
-    public DateTime IssuedAt { get; private init; }
-    public DateTime ExpiresAt { get; private init; }
-    public DateTime? RedeemedAt { get; private set; }
-    public AuthorizationGrant AuthorizationGrant { get; private init; }
-
-    public static readonly Expression<Func<AuthorizationCode, bool>> IsActive =
-        x => x.RedeemedAt == null && x.ExpiresAt > DateTime.UtcNow;
-
-    public void Redeem()
-    {
-        RedeemedAt ??= DateTime.UtcNow;
-    }
-
-    public void SetValue(string value)
-    {
-        Value = value;
-    }
+    public AuthorizationCodeGrant AuthorizationCodeGrant { get; private init; }
 }
