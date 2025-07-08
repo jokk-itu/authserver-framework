@@ -9,9 +9,16 @@ internal static class CryptographyHelper
 {
     private const string Characters = "0123456789!?$()[]{}abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    private const string LatinAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
     public static string GetRandomString(int length)
     {
         return RandomNumberGenerator.GetString(Characters, length);
+    }
+
+    public static string GetUserCode()
+    {
+        return RandomNumberGenerator.GetString(LatinAlphabet, 8);
     }
 
     /// <summary>
