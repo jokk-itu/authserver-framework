@@ -87,7 +87,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     public async Task Validate_NullCodeVerifier_ExpectInvalidCodeVerifier()
     {
         // Arrange
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -97,7 +97,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -127,7 +127,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -137,7 +137,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -170,7 +170,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -180,7 +180,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -211,7 +211,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -221,7 +221,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -256,7 +256,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -272,7 +272,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         await SaveChangesAsync();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -310,7 +310,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -326,7 +326,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         await SaveChangesAsync();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCode.Id,
@@ -364,7 +364,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -383,7 +383,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         await SaveChangesAsync();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCode.Id,
@@ -421,7 +421,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -437,7 +437,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         await SaveChangesAsync();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -475,7 +475,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -489,7 +489,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -531,7 +531,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -546,7 +546,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -585,7 +585,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -601,7 +601,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -650,7 +650,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -666,7 +666,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -717,7 +717,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -733,7 +733,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -784,7 +784,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -800,7 +800,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         await SaveChangesAsync();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -838,7 +838,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -854,7 +854,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         await SaveChangesAsync();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -892,7 +892,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -908,7 +908,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -946,7 +946,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -960,7 +960,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -998,7 +998,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(authorizationCodeEncoder);
@@ -1015,7 +1015,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         await SaveChangesAsync();
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -1053,7 +1053,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<IAuthorizationCodeEncoder>();
+        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
         var dPoPService = new Mock<IDPoPService>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -1074,7 +1074,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         const string dPoP = "dpop";
 
         authorizationCodeEncoder
-            .Setup(x => x.DecodeAuthorizationCode(It.IsAny<string>()))
+            .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
