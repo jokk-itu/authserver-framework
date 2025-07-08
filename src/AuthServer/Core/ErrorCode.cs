@@ -115,4 +115,19 @@ public static class ErrorCode
     /// The DPoP token does not contain a valid nonce.
     /// </summary>
     public const string UseDPoPNonce = "use_dpop_nonce";
+
+    /// <summary>
+    /// The device authorization request is still pending. Keep polling with the same interval.
+    /// </summary>
+    public const string AuthorizationPending = "authorization_pending";
+
+    /// <summary>
+    /// The device authorization request is still pending. Increase the polling interval by 5 seconds and keep polling.
+    /// </summary>
+    public const string SlowDown = "slow_down";
+
+    /// <summary>
+    /// The device code has expired.
+    /// </summary>
+    public const string ExpiredToken = "expired_token";
 }
