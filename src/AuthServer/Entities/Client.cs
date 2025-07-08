@@ -62,6 +62,11 @@ public class Client : Entity<string>
     public int? AuthorizationCodeExpiration { get; set; }
 
     /// <summary>
+    /// Device code lifetime in seconds.
+    /// </summary>
+    public int? DeviceCodeExpiration { get; set; }
+
+    /// <summary>
     /// Request uri from a PushedAuthorizationRequest lifetime in seconds.
     /// </summary>
     public int? RequestUriExpiration { get; set; }

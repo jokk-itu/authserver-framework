@@ -892,6 +892,31 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Theory]
+    [InlineData(29)]
+    [InlineData(601)]
+    public async Task Validate_InvalidDeviceCodeExpiration_ExpectInvalidDeviceCodeExpiration(int expiration)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            DeviceCodeExpiration = expiration
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidDeviceCodeExpiration, processResult);
+    }
+
+    [Theory]
     [InlineData(59)]
     [InlineData(3601)]
     public async Task Validate_InvalidAccessTokenExpiration_ExpectInvalidAccessTokenExpiration(int expiration)

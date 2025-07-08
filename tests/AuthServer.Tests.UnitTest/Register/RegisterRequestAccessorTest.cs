@@ -282,6 +282,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         var requestContent = new Dictionary<string, int?>
         {
             { Parameter.AuthorizationCodeExpiration, value },
+            { Parameter.DeviceCodeExpiration, value },
             { Parameter.AccessTokenExpiration, value },
             { Parameter.RefreshTokenExpiration, value },
             { Parameter.ClientSecretExpiration, value },
@@ -329,6 +330,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         // Assert
         Assert.Equal(method, request.Method.Method);
         Assert.Equal(expectedValue, request.AuthorizationCodeExpiration);
+        Assert.Equal(expectedValue, request.DeviceCodeExpiration);
         Assert.Equal(expectedValue, request.AccessTokenExpiration);
         Assert.Equal(expectedValue, request.RefreshTokenExpiration);
         Assert.Equal(expectedValue, request.ClientSecretExpiration);

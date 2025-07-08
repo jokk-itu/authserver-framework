@@ -110,6 +110,7 @@ public static class Parameter
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";
     public const string AuthorizationCodeExpiration = "authorization_code_expiration";
+    public const string DeviceCodeExpiration = "device_code_expiration";
     public const string AccessTokenExpiration = "access_token_expiration";
     public const string RefreshTokenExpiration = "refresh_token_expiration";
     public const string ClientSecretExpiration = "client_secret_expiration";

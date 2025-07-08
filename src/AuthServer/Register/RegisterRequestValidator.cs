@@ -141,6 +141,12 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return authorizationCodeExpirationError;
         }
 
+        var deviceCodeExpirationError = ValidateDeviceCodeExpiration(request, validatedRequest);
+        if (deviceCodeExpirationError is not null)
+        {
+            return deviceCodeExpirationError;
+        }
+
         var accessTokenExpirationError = ValidateAccessTokenExpiration(request, validatedRequest);
         if (accessTokenExpirationError is not null)
         {
@@ -901,6 +907,35 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         validatedRequest.AuthorizationCodeExpiration = request.AuthorizationCodeExpiration;
+        return null;
+    }
+
+    /// <summary>
+    /// DeviceCodeExpiration is OPTIONAL.
+    /// Default is 60 if GrantType is <see cref="GrantTypeConstants.DeviceCode"/>.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="validatedRequest"></param>
+    /// <returns></returns>
+    private static ProcessError? ValidateDeviceCodeExpiration(RegisterRequest request,
+        RegisterValidatedRequest validatedRequest)
+    {
+        if (request.DeviceCodeExpiration is null)
+        {
+            validatedRequest.DeviceCodeExpiration =
+                validatedRequest.GrantTypes.Contains(GrantTypeConstants.DeviceCode)
+                    ? 30
+                    : null;
+
+            return null;
+        }
+
+        if (request.DeviceCodeExpiration is < 30 or > 600)
+        {
+            return RegisterError.InvalidDeviceCodeExpiration;
+        }
+
+        validatedRequest.DeviceCodeExpiration = request.DeviceCodeExpiration;
         return null;
     }
 

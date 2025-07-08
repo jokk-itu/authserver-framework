@@ -140,6 +140,10 @@ internal class GetRegisterResponse
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? AuthorizationCodeExpiration { get; init; }
 
+	[JsonPropertyName(Parameter.DeviceCodeExpiration)]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public int? DeviceCodeExpiration { get; init; }
+
 	[JsonPropertyName(Parameter.AccessTokenExpiration)]
 	public required int AccessTokenExpiration { get; init; }
 

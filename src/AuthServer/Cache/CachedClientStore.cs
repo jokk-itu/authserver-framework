@@ -90,6 +90,7 @@ internal class CachedClientStore : ICachedClientStore
             AccessTokenExpiration = client.AccessTokenExpiration,
             RefreshTokenExpiration = client.RefreshTokenExpiration,
             AuthorizationCodeExpiration = client.AuthorizationCodeExpiration,
+            DeviceCodeExpiration = client.DeviceCodeExpiration,
             JwksExpiration = client.JwksExpiration,
             RequestUriExpiration = client.RequestUriExpiration,
             DPoPNonceExpiration = client.DPoPNonceExpiration,

@@ -37,6 +37,7 @@ internal class RegisterRequest
     public string? IdTokenEncryptedResponseAlg { get; init; }
     public string? IdTokenSignedResponseAlg { get; init; }
     public int? AuthorizationCodeExpiration { get; init; }
+    public int? DeviceCodeExpiration { get; init; }
     public int? AccessTokenExpiration { get; init; }
     public int? RefreshTokenExpiration { get; init; }
     public int? ClientSecretExpiration { get; init; }

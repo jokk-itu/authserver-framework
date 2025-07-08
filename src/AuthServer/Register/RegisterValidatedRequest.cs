@@ -39,6 +39,7 @@ internal class RegisterValidatedRequest
 	public EncryptionAlg? IdTokenEncryptedResponseAlg { get; set; }
 	public SigningAlg? IdTokenSignedResponseAlg { get; set; }
 	public int? AuthorizationCodeExpiration { get; set; }
+	public int? DeviceCodeExpiration { get; set; }
 	public int AccessTokenExpiration { get; set; }
 	public int? RefreshTokenExpiration { get; set; }
 	public int? ClientSecretExpiration { get; set; }
