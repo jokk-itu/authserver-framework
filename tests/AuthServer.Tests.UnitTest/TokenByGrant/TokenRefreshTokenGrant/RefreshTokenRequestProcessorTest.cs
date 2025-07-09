@@ -6,12 +6,12 @@ using AuthServer.Tests.Core;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using AuthServer.TokenByGrant;
-using AuthServer.TokenByGrant.RefreshTokenGrant;
+using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.TokenByGrant.RefreshTokenGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenRefreshTokenGrant;
 
 public class RefreshTokenRequestProcessorTest : BaseUnitTest
 {
@@ -40,7 +40,7 @@ public class RefreshTokenRequestProcessorTest : BaseUnitTest
             AccessTokenExpiration = 300
         };
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
 
         var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)

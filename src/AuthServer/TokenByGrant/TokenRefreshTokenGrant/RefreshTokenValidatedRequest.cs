@@ -1,4 +1,4 @@
-﻿namespace AuthServer.TokenByGrant.RefreshTokenGrant;
+﻿namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 internal class RefreshTokenValidatedRequest
 {
     public required string ClientId { get; init; }

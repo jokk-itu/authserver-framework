@@ -3,19 +3,17 @@ using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
-using AuthServer.TokenByGrant.ClientCredentialsGrant;
-using AuthServer.TokenByGrant.RefreshTokenGrant;
+using AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.TokenByGrant.ClientCredentialsGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenClientCredentialsGrant;
 
 public class ClientCredentialsRequestValidatorTest : BaseUnitTest
 {

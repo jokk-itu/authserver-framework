@@ -4,7 +4,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 
-namespace AuthServer.TokenByGrant.RefreshTokenGrant;
+namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 
 internal class RefreshTokenRequestProcessor : IRequestProcessor<RefreshTokenValidatedRequest, TokenResponse>
 {

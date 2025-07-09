@@ -8,7 +8,7 @@ using AuthServer.Core.Request;
 using AuthServer.Extensions;
 using AuthServer.Repositories.Abstractions;
 
-namespace AuthServer.TokenByGrant.ClientCredentialsGrant;
+namespace AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 
 internal class ClientCredentialsRequestValidator : IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>
 {

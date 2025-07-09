@@ -14,7 +14,7 @@ using AuthServer.Repositories.Abstractions;
 using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthServer.TokenByGrant.AuthorizationCodeGrant;
+namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 
 internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>
 {
@@ -90,13 +90,13 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         }
 
         var subjectIdentifier = await _identityContext
-            .Set<AuthorizationGrant>()
-            .Where(AuthorizationGrant.IsActive)
+            .Set<AuthorizationCodeGrant>()
             .Where(x => x.Id == authorizationCode.AuthorizationGrantId)
             .Where(x => x.AuthorizationCodes
                 .AsQueryable()
                 .Where(y => y.Id == authorizationCode.AuthorizationCodeId)
-                .Any(AuthorizationCode.IsActive))
+                .Any(Code.IsActive))
+            .Where(AuthorizationGrant.IsActive)
             .Select(x => x.Session.SubjectIdentifier.Id)
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 

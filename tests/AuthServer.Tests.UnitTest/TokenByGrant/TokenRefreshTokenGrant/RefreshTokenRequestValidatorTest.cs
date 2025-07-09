@@ -8,12 +8,12 @@ using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
-using AuthServer.TokenByGrant.RefreshTokenGrant;
+using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.TokenByGrant.RefreshTokenGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenRefreshTokenGrant;
 
 public class RefreshTokenRequestValidatorTest : BaseUnitTest
 {
@@ -824,7 +824,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new Entities.AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600, jkt);
         await AddEntity(refreshToken);
 

@@ -1,4 +1,4 @@
-﻿namespace AuthServer.TokenByGrant.ClientCredentialsGrant;
+﻿namespace AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 internal class ClientCredentialsValidatedRequest
 {
     public required string ClientId { get; init; }

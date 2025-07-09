@@ -8,7 +8,7 @@ using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthServer.TokenByGrant.AuthorizationCodeGrant;
+namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 internal class AuthorizationCodeRequestProcessor : IRequestProcessor<AuthorizationCodeValidatedRequest, TokenResponse>
 {
     private readonly AuthorizationDbContext _identityContext;
@@ -34,7 +34,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
     public async Task<TokenResponse> Process(AuthorizationCodeValidatedRequest request, CancellationToken cancellationToken)
     {
         var query = await _identityContext
-            .Set<AuthorizationGrant>()
+            .Set<AuthorizationCodeGrant>()
             .Where(x => x.Id == request.AuthorizationGrantId)
             .Select(x => new
             {

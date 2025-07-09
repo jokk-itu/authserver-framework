@@ -4,7 +4,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 
-namespace AuthServer.TokenByGrant.ClientCredentialsGrant;
+namespace AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 
 internal class ClientCredentialsRequestProcessor : IRequestProcessor<ClientCredentialsValidatedRequest, TokenResponse>
 {

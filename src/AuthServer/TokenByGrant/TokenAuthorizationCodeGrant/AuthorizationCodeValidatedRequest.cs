@@ -1,4 +1,4 @@
-﻿namespace AuthServer.TokenByGrant.AuthorizationCodeGrant;
+﻿namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 internal class AuthorizationCodeValidatedRequest
 {
     public required string AuthorizationGrantId { get; init; }

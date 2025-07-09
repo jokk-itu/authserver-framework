@@ -4,11 +4,11 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.TokenByGrant;
-using AuthServer.TokenByGrant.ClientCredentialsGrant;
+using AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.TokenByGrant.ClientCredentialsGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenClientCredentialsGrant;
 public class ClientCredentialsRequestProcessorTest : BaseUnitTest
 {
     public ClientCredentialsRequestProcessorTest(ITestOutputHelper outputHelper)

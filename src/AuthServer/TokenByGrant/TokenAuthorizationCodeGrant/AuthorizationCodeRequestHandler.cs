@@ -2,7 +2,7 @@
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 
-namespace AuthServer.TokenByGrant.AuthorizationCodeGrant;
+namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 internal class AuthorizationCodeRequestHandler : RequestHandler<TokenRequest, AuthorizationCodeValidatedRequest, TokenResponse>
 {
     private readonly IRequestProcessor<AuthorizationCodeValidatedRequest, TokenResponse> _processor;

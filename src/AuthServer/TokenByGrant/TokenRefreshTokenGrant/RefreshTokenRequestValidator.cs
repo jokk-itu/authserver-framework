@@ -15,7 +15,7 @@ using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthServer.TokenByGrant.RefreshTokenGrant;
+namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 
 internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>
 {

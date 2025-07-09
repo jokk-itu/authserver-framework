@@ -2,7 +2,7 @@
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 
-namespace AuthServer.TokenByGrant.RefreshTokenGrant;
+namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 internal class RefreshTokenRequestHandler : RequestHandler<TokenRequest, RefreshTokenValidatedRequest, TokenResponse>
 {
 	private readonly IUnitOfWork _unitOfWork;

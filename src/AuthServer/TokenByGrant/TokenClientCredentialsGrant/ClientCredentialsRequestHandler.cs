@@ -2,7 +2,7 @@
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 
-namespace AuthServer.TokenByGrant.ClientCredentialsGrant;
+namespace AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 internal class ClientCredentialsRequestHandler : RequestHandler<TokenRequest, ClientCredentialsValidatedRequest, TokenResponse>
 {
 	private readonly IUnitOfWork _unitOfWork;

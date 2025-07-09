@@ -6,12 +6,12 @@ using AuthServer.Tests.Core;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using AuthServer.TokenByGrant;
-using AuthServer.TokenByGrant.AuthorizationCodeGrant;
+using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 
-namespace AuthServer.Tests.UnitTest.TokenByGrant.AuthorizationCodeGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenAuthorizationCodeGrant;
 
 public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
 {
@@ -163,16 +163,16 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         return weatherClient;
     }
 
-    private async Task<AuthorizationGrant> GetAuthorizationGrant(Client client)
+    private async Task<AuthorizationCodeGrant> GetAuthorizationGrant(Client client)
     {
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
 
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         var authorizationCode = new AuthorizationCode(authorizationGrant, 60);
-        typeof(AuthorizationCode)
-            .GetProperty(nameof(AuthorizationCode.Value))!
+        typeof(Code)
+            .GetProperty(nameof(Code.RawValue))!
             .SetValue(authorizationCode, "value");
 
         await AddEntity(authorizationCode);

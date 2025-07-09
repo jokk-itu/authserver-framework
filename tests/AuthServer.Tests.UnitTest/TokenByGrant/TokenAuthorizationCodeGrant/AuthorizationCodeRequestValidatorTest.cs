@@ -10,13 +10,13 @@ using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
-using AuthServer.TokenByGrant.AuthorizationCodeGrant;
+using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
-namespace AuthServer.Tests.UnitTest.TokenByGrant.AuthorizationCodeGrant;
+namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenAuthorizationCodeGrant;
 
 public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 {
@@ -376,8 +376,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
         var authorizationCode = authorizationGrant.AuthorizationCodes.Single();
-        typeof(AuthorizationCode)
-            .GetProperty(nameof(AuthorizationCode.ExpiresAt))!
+        typeof(Code)
+            .GetProperty(nameof(Code.ExpiresAt))!
             .SetValue(authorizationCode, DateTime.UtcNow.AddSeconds(-60));
 
         await SaveChangesAsync();
@@ -1125,7 +1125,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         dPoPService.Verify();
     }
 
-    private async Task<AuthorizationGrant> GetAuthorizationGrant(string plainSecret)
+    private async Task<AuthorizationCodeGrant> GetAuthorizationGrant(string plainSecret)
     {
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
@@ -1145,9 +1145,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         client.GrantTypes.Add(authorizationCodeGrantType);
 
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         var authorizationCode = new AuthorizationCode(authorizationGrant, 60);
-        authorizationCode.SetValue("authorization_code");
+        authorizationCode.SetRawValue("authorization_code");
 
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
         var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(
