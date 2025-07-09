@@ -77,7 +77,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
         var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
         var amr = await GetAuthenticationMethodReferences(authenticationMethodReferences, cancellationToken);
 
-        var newGrant = new AuthorizationGrant(session, client, subject, acr)
+        var newGrant = new AuthorizationCodeGrant(session, client, subject, acr)
         {
             AuthenticationMethodReferences = amr
         };
@@ -87,7 +87,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
     }
 
     /// <inheritdoc/>
-    public async Task<AuthorizationGrant?> GetActiveAuthorizationGrant(string authorizationGrantId, CancellationToken cancellationToken)
+    public async Task<AuthorizationCodeGrant?> GetActiveAuthorizationCodeGrant(string authorizationGrantId, CancellationToken cancellationToken)
     {
         return await _identityContext
             .Set<AuthorizationGrant>()
@@ -98,6 +98,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             .Where(AuthorizationGrant.IsActive)
             .Where(x => x.Session.RevokedAt == null)
             .Where(x => x.Id == authorizationGrantId)
+            .OfType<AuthorizationCodeGrant>()
             .SingleOrDefaultAsync(cancellationToken);
     }
 

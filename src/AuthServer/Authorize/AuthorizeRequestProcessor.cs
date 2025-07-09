@@ -39,7 +39,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             }
         }
 
-        var authorizationGrant = (await _authorizationGrantRepository.GetActiveAuthorizationGrant(request.AuthorizationGrantId, cancellationToken))!;
+        var authorizationGrant = (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId, cancellationToken))!;
 
         var authorizationCode = new AuthorizationCode(authorizationGrant, authorizationGrant.Client.AuthorizationCodeExpiration!.Value);
         var nonce = new AuthorizationGrantNonce(request.Nonce, request.Nonce.Sha256(), authorizationGrant);
@@ -59,7 +59,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
                 CodeChallengeMethod = request.CodeChallengeMethod
             });
 
-        authorizationCode.SetValue(encodedAuthorizationCode);
+        authorizationCode.SetRawValue(encodedAuthorizationCode);
 
         if (authorizationGrant.Client.RequireConsent)
         {

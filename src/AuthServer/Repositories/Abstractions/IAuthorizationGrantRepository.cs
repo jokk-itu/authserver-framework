@@ -40,7 +40,7 @@ internal interface IAuthorizationGrantRepository
     /// <param name="authorizationGrantId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<AuthorizationGrant?> GetActiveAuthorizationGrant(string authorizationGrantId, CancellationToken cancellationToken);
+    Task<AuthorizationCodeGrant?> GetActiveAuthorizationCodeGrant(string authorizationGrantId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Revokes grant if active, with all relations.

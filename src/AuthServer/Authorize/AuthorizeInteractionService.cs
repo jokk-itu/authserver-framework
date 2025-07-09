@@ -109,7 +109,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
 
     private async Task<InteractionResult> GetPrompt(AuthorizeUser authorizeUser, AuthorizeRequest authorizeRequest, CancellationToken cancellationToken)
     {
-        var authorizationGrant = await _authorizationGrantRepository.GetActiveAuthorizationGrant(authorizeUser.AuthorizationGrantId, cancellationToken);
+        var authorizationGrant = await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(authorizeUser.AuthorizationGrantId, cancellationToken);
         if (authorizationGrant is null)
         {
             _logger.LogDebug("Grant {GrantId} has expired, deducing prompt {Prompt}", authorizeUser.AuthorizationGrantId, PromptConstants.Login);
