@@ -10,6 +10,7 @@ internal class UserCodeConfiguration : IEntityTypeConfiguration<UserCode>
         builder
             .HasOne(x => x.DeviceCode)
             .WithOne()
+            .HasForeignKey<UserCode>("DeviceCodeId")
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
