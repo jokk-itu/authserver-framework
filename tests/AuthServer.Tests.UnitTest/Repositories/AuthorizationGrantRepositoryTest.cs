@@ -27,7 +27,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         await AddEntity(authorizationGrant);
 
         // Act
@@ -48,7 +48,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         authorizationGrant.Revoke();
         await AddEntity(authorizationGrant);
 
@@ -71,7 +71,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authenticationMethodReference = await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         var originalAuthTime = DateTime.UtcNow.AddSeconds(-180);
         typeof(AuthorizationGrant)
             .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
@@ -195,7 +195,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task GetActiveAuthorizationGrant_GrantIdWithRevokedGrant_ExpectNull()
+    public async Task GetActiveAuthorizationCodeGrant_GrantIdWithRevokedGrant_ExpectNull()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -205,19 +205,19 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         authorizationGrant.Revoke();
         await AddEntity(authorizationGrant);
 
         // Act
-        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationGrant(authorizationGrant.Id, CancellationToken.None);
+        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationCodeGrant(authorizationGrant.Id, CancellationToken.None);
 
         // Assert
         Assert.Null(activeGrant);
     }
 
     [Fact]
-    public async Task GetActiveAuthorizationGrant_GrantIdWithRevokedSession_ExpectNull()
+    public async Task GetActiveAuthorizationCodeGrant_GrantIdWithRevokedSession_ExpectNull()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -229,18 +229,17 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
 
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         // Act
-        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationGrant(authorizationGrant.Id, CancellationToken.None);
-
+        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationCodeGrant(authorizationGrant.Id, CancellationToken.None);
         // Assert
         Assert.Null(activeGrant);
     }
 
     [Fact]
-    public async Task GetActiveAuthorizationGrant_ActiveAuthorizationGrant_ExpectAuthorizationGrant()
+    public async Task GetActiveAuthorizationCodeGrant_ActiveAuthorizationGrant_ExpectAuthorizationGrant()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -250,11 +249,11 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         // Act
-        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationGrant(authorizationGrant.Id, CancellationToken.None);
+        var activeGrant = await authorizationGrantRepository.GetActiveAuthorizationCodeGrant(authorizationGrant.Id, CancellationToken.None);
 
         // Assert
         Assert.Equal(authorizationGrant, activeGrant);
@@ -271,7 +270,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
 
         var activeGrantAccessToken = new GrantAccessToken(
             authorizationGrant,
@@ -346,9 +345,9 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var activeAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var activeAuthorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
 
-        var expiredAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var expiredAuthorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         expiredAuthorizationGrant.Revoke();
 
         await AddEntity(activeAuthorizationGrant);

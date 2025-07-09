@@ -165,7 +165,7 @@ public class LogoutTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTe
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant( session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant( session, client, subjectIdentifier.Id, lowAcr);
 
         await AddEntity(authorizationGrant);
         return authorizationGrant;
@@ -191,7 +191,7 @@ public class LogoutTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTe
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         await AddEntity(authorizationGrant);
         return authorizationGrant;

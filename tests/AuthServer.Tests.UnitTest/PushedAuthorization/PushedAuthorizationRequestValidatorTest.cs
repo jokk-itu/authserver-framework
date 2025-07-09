@@ -387,7 +387,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceStrict);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, authenticationContextReference);
         var nonceValue = Guid.NewGuid().ToString();
         var nonce = new AuthorizationGrantNonce(nonceValue, nonceValue.Sha256(), authorizationGrant);
         await AddEntity(nonce);
@@ -1384,7 +1384,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
 
         var passwordMethod = await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password);
         authorizationGrant.AuthenticationMethodReferences.Add(passwordMethod);

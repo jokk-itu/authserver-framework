@@ -32,7 +32,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         authorizationGrant.Revoke();
 
         await AddEntity(authorizationGrant);
@@ -72,7 +72,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         typeof(AuthorizationGrant)
             .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
             .SetValue(authorizationGrant, DateTime.UtcNow.AddSeconds(-180));
@@ -118,7 +118,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             DefaultMaxAge = 30
         };
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         typeof(AuthorizationGrant)
             .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
             .SetValue(authorizationGrant, DateTime.UtcNow.AddSeconds(-180));
@@ -158,7 +158,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr)
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr)
         {
             AuthenticationMethodReferences =
                 [await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password)]
@@ -200,7 +200,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var substantialAcr = await GetAuthenticationContextReference(LevelOfAssuranceSubstantial);
         var clientAuthenticationContextReference = new ClientAuthenticationContextReference(client, substantialAcr, 0);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr)
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr)
         {
             AuthenticationMethodReferences =
                 [await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password)]
@@ -240,7 +240,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         var authorizeUser = new AuthorizeUser("other_subject", true, authorizationGrant.Id);
@@ -279,7 +279,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             RequireConsent = false,
         };
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
@@ -317,7 +317,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
@@ -353,7 +353,7 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
