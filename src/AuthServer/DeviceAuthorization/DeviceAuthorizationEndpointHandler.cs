@@ -1,4 +1,7 @@
+using AuthServer.Authorization.Models;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
+using AuthServer.Extensions;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.DeviceAuthorization;
@@ -16,8 +19,28 @@ internal class DeviceAuthorizationEndpointHandler : IEndpointHandler
         _requestHandler = requestHandler;
     }
     
-    public Task<IResult> Handle(HttpContext httpContext, CancellationToken cancellationToken)
+    public async Task<IResult> Handle(HttpContext httpContext, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var request = await _requestAccessor.GetRequest(httpContext.Request);
+        var response = await _requestHandler.Handle(request, cancellationToken);
+        return response.Match(
+            result => Results.Ok(new PostDeviceAuthorizationResponse
+            {
+                DeviceCode = result.DeviceCode,
+                UserCode = result.UserCode,
+                VerificationUri = result.VerificationUri,
+                VerificationUriComplete = result.VerificationUriComplete,
+                ExpiresIn = result.ExpiresIn,
+                Interval = result.Interval
+            }),
+            error =>
+            {
+                if (error is DPoPNonceProcessError dPoPNonceProcessError)
+                {
+                    httpContext.Response.Headers[Parameter.DPoPNonce] = dPoPNonceProcessError.DPoPNonce;
+                }
+
+                return Results.Extensions.OAuthBadRequest(error);
+            });
     }
 }
