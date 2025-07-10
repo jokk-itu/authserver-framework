@@ -1408,7 +1408,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         var token = new GrantAccessToken(authorizationGrant, DiscoveryDocument.Issuer, DiscoveryDocument.Issuer, "scope", 300, null);
         await AddEntity(token);
 
