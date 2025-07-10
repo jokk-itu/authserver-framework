@@ -2,6 +2,7 @@
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Extensions;
 using AuthServer.GrantManagement;
 using AuthServer.GrantManagement.Query;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,8 +53,8 @@ public class GrantManagementQueryRequestProcessorTest : BaseUnitTest
         var grantResponse = await processor.Process(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(authorizationGrant.CreatedAuthTime, grantResponse.CreatedAt);
-        Assert.Equal(authorizationGrant.UpdatedAuthTime, grantResponse.UpdatedAt);
+        Assert.Equal(authorizationGrant.CreatedAuthTime.ToUnixTimeSeconds(), grantResponse.CreatedAt);
+        Assert.Equal(authorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds(), grantResponse.UpdatedAt);
 
         Assert.Single(grantResponse.Claims);
         Assert.Equal(nameClaim.Name, grantResponse.Claims.Single());

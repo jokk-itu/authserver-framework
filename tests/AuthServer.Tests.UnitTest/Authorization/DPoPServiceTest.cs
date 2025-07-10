@@ -52,6 +52,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
         Assert.Null(validationResult.DPoPNonce);
+        Assert.False(validationResult.RenewDPoPNonce);
     }
 
     [Theory]
@@ -84,6 +85,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
         Assert.Null(validationResult.DPoPNonce);
+        Assert.False(validationResult.RenewDPoPNonce);
     }
 
     [Theory]
@@ -118,6 +120,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
         Assert.Null(validationResult.DPoPNonce);
+        Assert.False(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
@@ -146,7 +149,8 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
-        Assert.Equal(client.Nonces.Single().Value, validationResult.DPoPNonce);
+        Assert.True(validationResult.RenewDPoPNonce);
+        Assert.Null(validationResult.DPoPNonce);
     }
 
     [Fact]
@@ -177,6 +181,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
         Assert.Equal(nonce, validationResult.DPoPNonce);
+        Assert.False(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
@@ -208,6 +213,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
         Assert.Equal(nonce, validationResult.DPoPNonce);
+        Assert.False(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
@@ -250,6 +256,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
         Assert.Equal(nonce, validationResult.DPoPNonce);
+        Assert.False(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
@@ -286,6 +293,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Equal(jkt, validationResult.DPoPJkt);
         Assert.Null(validationResult.DPoPNonce);
         Assert.Equal(ath, validationResult.AccessTokenHash);
+        Assert.False(validationResult.RenewDPoPNonce);
     }
 
     private static void SetupHttpContext(IServiceCollection services)

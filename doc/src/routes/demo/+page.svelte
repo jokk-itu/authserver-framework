@@ -59,11 +59,29 @@
         <p class="text-openid font-bold">Work in progress</p>
     </div>
 
+    <!-- Desktop Client -->
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
+        <div class="font-bold text-xl mb-2">Desktop Client</div>
+        <p class="text-gray-800 text-base">
+            Desktop app behaving as a native app without a backend responsible for authentication.
+        </p>
+        <p class="text-openid font-bold">Work in progress</p>
+    </div>
+
     <!-- Weather Client -->
     <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
         <div class="font-bold text-xl mb-2">Weather Client</div>
         <p class="text-gray-800 text-base">
-            API behaving as a protected resource.
+            Simple API behaving as a protected resource. It handles public information and requires little authorization.
         </p>
+    </div>
+
+    <!-- Banking Client -->
+    <div class="max-w rounded overflow-hidden shadow-lg px-6 py-4">
+        <div class="font-bold text-xl mb-2">Banking Client</div>
+        <p class="text-gray-800 text-base">
+            Strict API behaving as a protected resource. It handles highly sensitive information and requires strict authorization.
+        </p>
+        <p class="text-openid font-bold">Work in progress</p>
     </div>
 </div>

@@ -130,4 +130,19 @@ public static class ErrorCode
     /// The device code has expired.
     /// </summary>
     public const string ExpiredToken = "expired_token";
+
+    /// <summary>
+    /// The token from the Authorization header is invalid.
+    /// </summary>
+    public const string InvalidToken = "invalid_token";
+
+    /// <summary>
+    /// The DPoP proof is invalid.
+    /// </summary>
+    public const string InvalidDPoPProof = "invalid_dpop_proof";
+
+    /// <summary>
+    /// The token has insufficient scope.
+    /// </summary>
+    public const string InsufficientScope = "insufficient_scope";
 }

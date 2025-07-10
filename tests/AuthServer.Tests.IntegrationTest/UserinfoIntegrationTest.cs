@@ -26,10 +26,9 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, userinfoResponse.StatusCode);
-        Assert.Single(userinfoResponse.WwwAuthenticate);
-        var wwwAuthenticate = userinfoResponse.WwwAuthenticate.Single();
-        Assert.Equal("Bearer", wwwAuthenticate.Scheme);
-        Assert.Equal("error=\"invalid_request\"", wwwAuthenticate.Parameter);
+
+        Assert.Single(userinfoResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.Bearer);
+        Assert.Single(userinfoResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.DPoP);
     }
 
     [Fact]
@@ -76,10 +75,8 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, userinfoResponse.StatusCode);
-        Assert.Single(userinfoResponse.WwwAuthenticate);
-        var wwwAuthenticate = userinfoResponse.WwwAuthenticate.Single();
-        Assert.Equal("Bearer", wwwAuthenticate.Scheme);
-        Assert.Equal("error=\"insufficient_scope\"", wwwAuthenticate.Parameter);
+        Assert.Single(userinfoResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.Bearer);
+        Assert.Single(userinfoResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.DPoP);
     }
 
     [Fact]

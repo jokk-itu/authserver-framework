@@ -1,7 +1,7 @@
-﻿using System.Net;
-using AuthServer.Constants;
+﻿using AuthServer.Constants;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
@@ -23,10 +23,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, grantResponse.StatusCode);
-        Assert.Single(grantResponse.WwwAuthenticate);
-        var wwwAuthenticate = grantResponse.WwwAuthenticate.Single();
-        Assert.Equal("Bearer", wwwAuthenticate.Scheme);
-        Assert.Equal("error=\"invalid_request\"", wwwAuthenticate.Parameter);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.Bearer);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.DPoP);
     }
 
     [Fact]
@@ -73,10 +71,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, grantResponse.StatusCode);
-        Assert.Single(grantResponse.WwwAuthenticate);
-        var wwwAuthenticate = grantResponse.WwwAuthenticate.Single();
-        Assert.Equal("Bearer", wwwAuthenticate.Scheme);
-        Assert.Equal("error=\"insufficient_scope\"", wwwAuthenticate.Parameter);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.Bearer);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.DPoP);
     }
 
     [Fact]
@@ -174,6 +170,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, grantResponse.StatusCode);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.Bearer);
+        Assert.Single(grantResponse.WwwAuthenticate, x => x.Scheme == TokenTypeSchemaConstants.DPoP);
     }
 
     [Fact]

@@ -18,6 +18,7 @@ internal class ClientSectorService : IClientSectorService
         _logger = logger;
     }
 
+    /// <inheritdoc/>
     public async Task<bool> ContainsSectorDocument(Uri sectorIdentifierUri, IReadOnlyCollection<string> uris, CancellationToken cancellationToken)
     {
         var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.Client);

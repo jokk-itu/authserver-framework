@@ -996,6 +996,56 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_MissingNonce_ExpectRenewDPoPNonce()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+
+        const string dPoP = "dpop";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult { IsValid = false, DPoPNonce = null, RenewDPoPNonce = true })
+            .Verifiable();
+
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            DPoP = dPoP
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        dPoPService.Verify();
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.RenewDPoPNonce(client.Id), processResult.Error);
+    }
+
+    [Fact]
     public async Task Validate_MismatchingDPoPJkt_ExpectInvalidDPoPMatch()
     {
         // Arrange

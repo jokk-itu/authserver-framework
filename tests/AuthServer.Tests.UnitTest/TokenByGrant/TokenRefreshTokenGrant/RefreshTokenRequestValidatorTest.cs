@@ -6,6 +6,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.PushedAuthorization;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
@@ -505,6 +506,52 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         // Assert
         Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce), processResult);
         dPoPService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_MissingNonce_ExpectRenewDPoPNonce()
+    {
+        // Arrange
+        var dPoPService = new Mock<IDPoPService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(dPoPService);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client);
+
+        const string dPoP = "dpop";
+        dPoPService
+            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DPoPValidationResult { IsValid = false, DPoPNonce = null, RenewDPoPNonce = true })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = refreshToken.Reference,
+            Resource = ["resource"],
+            DPoP = dPoP,
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        dPoPService.Verify();
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(TokenError.RenewDPoPNonce(client.Id), processResult.Error);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-﻿using AuthServer.Constants;
+﻿using AuthServer.Authorization.OAuthToken;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints;

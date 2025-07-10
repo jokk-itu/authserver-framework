@@ -3,6 +3,7 @@ using AuthServer.Authentication.Abstractions;
 using AuthServer.Authentication.OAuthToken;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.OAuthToken;
 using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Authorize.UserInterface;
@@ -45,6 +46,7 @@ using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using AuthServer.Userinfo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FeatureManagement;
@@ -158,6 +160,8 @@ public static class ServiceCollectionExtensions
 
     private static void AddAuthServerAuthentication(IServiceCollection services)
     {
+        services.AddScoped<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
+
         services
             .AddAuthentication()
             .AddScheme<OAuthTokenAuthenticationOptions, OAuthTokenAuthenticationHandler>(
@@ -166,40 +170,13 @@ public static class ServiceCollectionExtensions
 
     private static void AddAuthServerAuthorization(IServiceCollection services)
     {
+        services.AddScoped<IAuthorizationHandler, ScopeRequirementHandler>();
         services
             .AddAuthorizationBuilder()
-            .AddPolicy(AuthorizationConstants.Userinfo, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireAssertion(context =>
-                {
-                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
-                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.UserInfo);
-                });
-            })
-            .AddPolicy(AuthorizationConstants.Register, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireClaim(ClaimNameConstants.Scope, ScopeConstants.Register);
-            })
-            .AddPolicy(AuthorizationConstants.GrantManagementQuery, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireAssertion(context =>
-                {
-                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
-                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementQuery);
-                });
-            })
-            .AddPolicy(AuthorizationConstants.GrantManagementRevoke, policy =>
-            {
-                policy.AddAuthenticationSchemes(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-                policy.RequireAssertion(context =>
-                {
-                    var scope = context.User.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Scope)?.Value;
-                    return scope is not null && scope.Split(' ').Contains(ScopeConstants.GrantManagementRevoke);
-                });
-            });
+            .AddPolicy(AuthorizationConstants.Userinfo, new UserinfoPolicy())
+            .AddPolicy(AuthorizationConstants.Register, new RegisterPolicy())
+            .AddPolicy(AuthorizationConstants.GrantManagementQuery, new GrantManagementQueryPolicy())
+            .AddPolicy(AuthorizationConstants.GrantManagementRevoke, new GrantManagementRevokePolicy());
     }
 
     private static void AddPushedAuthorization(IServiceCollection services)
