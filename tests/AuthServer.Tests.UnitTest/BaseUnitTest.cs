@@ -40,6 +40,7 @@ public abstract class BaseUnitTest
     protected DiscoveryDocument DiscoveryDocument = null!;
     protected JwksDocument JwksDocument = null!;
     protected IEndpointResolver EndpointResolver = null!;
+    protected UserInteraction UserInteraction = null!;
     protected SigningAlg TokenSigningAlg = SigningAlg.RsaSha256;
 
     protected const string LevelOfAssuranceLow = AuthenticationContextReferenceConstants.LevelOfAssuranceLow;
@@ -134,6 +135,7 @@ public abstract class BaseUnitTest
             userInteraction.ConsentUri = "https://localhost:5000/consent";
             userInteraction.AccountSelectionUri = "https://localhost:5000/select-account";
             userInteraction.EndSessionUri = "https://localhost:5000/logout";
+            userInteraction.VerificationUri = "https://localhost:5000/device";
         });
         services.AddAuthServer((_, contextOptions) =>
         {
@@ -173,6 +175,9 @@ public abstract class BaseUnitTest
         EndpointResolver = endpointResolver;
 
         JwtBuilder = new JwtBuilder(DiscoveryDocument, JwksDocument, EndpointResolver);
+
+        var userInteraction = serviceProvider.GetRequiredService<IOptionsSnapshot<UserInteraction>>();
+        UserInteraction = userInteraction.Value;
 
         return serviceProvider;
     }

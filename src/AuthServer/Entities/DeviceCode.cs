@@ -5,7 +5,9 @@ public class DeviceCode : Code
 {
     public DeviceCode(int expirationSeconds, int currentInterval) : base(expirationSeconds, CodeType.DeviceCode)
     {
-        CurrentInterval = currentInterval;
+        CurrentInterval = currentInterval < 0
+            ? throw new ArgumentException("must not be a negative number", nameof(currentInterval))
+            : currentInterval;
     }
 
 #pragma warning disable CS8618
