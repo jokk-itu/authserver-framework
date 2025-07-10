@@ -66,8 +66,11 @@ internal static class DeviceAuthorizationError
     public static readonly ProcessError DPoPRequired =
         new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
 
+    public static ProcessError RenewDPoPNonce(string clientId) =>
+        new DPoPNonceProcessError(null, clientId, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
+
     public static ProcessError UseDPoPNonce(string dPoPNonce)
-        => new DPoPNonceProcessError(dPoPNonce, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
+        => new DPoPNonceProcessError(dPoPNonce, null, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidDPoP =
         new(ErrorCode.InvalidRequest, "dpop is invalid", ResultCode.BadRequest);

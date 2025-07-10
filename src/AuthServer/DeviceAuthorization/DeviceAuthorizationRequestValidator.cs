@@ -163,12 +163,17 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         {
             dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, cachedClient.Id, cancellationToken);
 
-            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null })
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null, RenewDPoPNonce: false })
             {
                 return DeviceAuthorizationError.InvalidDPoP;
             }
 
-            if (dPoPValidationResult is { IsValid: false })
+            if (dPoPValidationResult is { IsValid: false, DPoPNonce: not null })
+            {
+                return DeviceAuthorizationError.RenewDPoPNonce(clientAuthenticationResult.ClientId);
+            }
+
+            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
             {
                 return DeviceAuthorizationError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
             }
