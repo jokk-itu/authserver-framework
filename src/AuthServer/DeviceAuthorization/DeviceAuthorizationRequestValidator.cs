@@ -170,12 +170,12 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
 
             if (dPoPValidationResult is { IsValid: false, DPoPNonce: not null })
             {
-                return DeviceAuthorizationError.RenewDPoPNonce(clientAuthenticationResult.ClientId);
+                return DeviceAuthorizationError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
             }
 
             if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
             {
-                return DeviceAuthorizationError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
+                return DeviceAuthorizationError.RenewDPoPNonce(clientAuthenticationResult.ClientId);
             }
         }
 
