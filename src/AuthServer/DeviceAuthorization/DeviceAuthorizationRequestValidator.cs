@@ -93,6 +93,8 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             {
                 return DeviceAuthorizationError.InvalidRequestObjectFromRequestUri;
             }
+
+            request = new DeviceAuthorizationRequest(newRequest, request.ClientAuthentications, request.DPoP);
         }
         
         if (!HasDeviceCodeGrantType(cachedClient))
