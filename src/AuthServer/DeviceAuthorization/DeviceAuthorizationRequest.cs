@@ -25,7 +25,6 @@ internal class DeviceAuthorizationRequest
     public string? CodeChallengeMethod { get; init; }
     public string? Nonce { get; init; }
     public string? RequestObject { get; init; }
-    public string? RequestUri { get ; init; }
     public string? GrantId { get; init; }
     public string? GrantManagementAction { get; init; }
     public string? DPoP { get; init; }

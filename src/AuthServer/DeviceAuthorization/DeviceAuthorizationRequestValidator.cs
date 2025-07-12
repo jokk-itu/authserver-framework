@@ -54,44 +54,17 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         }
 
         var cachedClient = await _cachedClientStore.Get(clientAuthenticationResult.ClientId, cancellationToken);
-        if (!HasValidEmptyRequest(request.RequestObject, request.RequestUri, cachedClient.RequireSignedRequestObject))
+        if (!HasValidEmptyRequest(request.RequestObject, null, cachedClient.RequireSignedRequestObject))
         {
-            return DeviceAuthorizationError.RequestOrRequestUriRequiredAsRequestObject;
+            return DeviceAuthorizationError.RequestRequiredAsRequestObject;
         }
         
-        var isRequestObjectEmpty = string.IsNullOrEmpty(request.RequestObject);
-        var isRequestUriEmpty = string.IsNullOrEmpty(request.RequestUri);
-        if (!isRequestObjectEmpty && !isRequestUriEmpty)
-        {
-            return DeviceAuthorizationError.InvalidRequestAndRequestUri;
-        }
-        
-        if (!isRequestObjectEmpty)
+        if (!string.IsNullOrEmpty(request.RequestObject))
         {
             var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, clientAuthenticationResult.ClientId, ClientTokenAudience.DeviceAuthorizationEndpoint, cancellationToken);
             if (newRequest is null)
             {
                 return DeviceAuthorizationError.InvalidRequest;
-            }
-
-            request = new DeviceAuthorizationRequest(newRequest, request.ClientAuthentications, request.DPoP);
-        }
-        else if (!isRequestUriEmpty)
-        {
-            if (!Uri.TryCreate(request.RequestUri, UriKind.Absolute, out var requestUri))
-            {
-                return DeviceAuthorizationError.InvalidRequestUri;
-            }
-
-            if (!cachedClient.RequestUris.Contains(requestUri.GetLeftPart(UriPartial.Path)))
-            {
-                return DeviceAuthorizationError.UnauthorizedRequestUri;
-            }
-
-            var newRequest = await _secureRequestService.GetRequestByReference(requestUri, clientAuthenticationResult.ClientId, ClientTokenAudience.DeviceAuthorizationEndpoint, cancellationToken);
-            if (newRequest is null)
-            {
-                return DeviceAuthorizationError.InvalidRequestObjectFromRequestUri;
             }
 
             request = new DeviceAuthorizationRequest(newRequest, request.ClientAuthentications, request.DPoP);

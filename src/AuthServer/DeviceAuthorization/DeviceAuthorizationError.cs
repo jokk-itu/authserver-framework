@@ -45,9 +45,6 @@ internal static class DeviceAuthorizationError
     public static readonly ProcessError InvalidResource =
         new(ErrorCode.InvalidTarget, "resource is invalid", ResultCode.BadRequest);
 
-    public static readonly ProcessError InvalidRequestAndRequestUri =
-        new(ErrorCode.InvalidRequest, "request_uri and request were both provided", ResultCode.BadRequest);
-
     public static readonly ProcessError InvalidRequestUri =
         new(ErrorCode.InvalidRequestUri, "request_uri is not an absolute well formed uri", ResultCode.BadRequest);
 
@@ -60,8 +57,8 @@ internal static class DeviceAuthorizationError
     public static readonly ProcessError InvalidRequest =
         new(ErrorCode.InvalidRequestObject, "request is invalid", ResultCode.BadRequest);
 
-    public static readonly ProcessError RequestOrRequestUriRequiredAsRequestObject =
-        new(ErrorCode.InvalidRequest, "client requires either request or request_uri as request_object", ResultCode.BadRequest);
+    public static readonly ProcessError RequestRequiredAsRequestObject =
+        new(ErrorCode.InvalidRequest, "client requires request as request_object", ResultCode.BadRequest);
     
     public static readonly ProcessError DPoPRequired =
         new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);

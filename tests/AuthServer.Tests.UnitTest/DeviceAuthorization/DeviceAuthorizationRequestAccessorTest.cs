@@ -40,7 +40,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
                     { Parameter.Request, value },
-                    { Parameter.RequestUri, value },
                     { Parameter.ClientId, value },
                     { Parameter.ClientSecret, value },
                     { Parameter.ClientAssertion, value },
@@ -66,7 +65,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.GrantManagementAction);
         Assert.Equal(expectedValue, request.DPoP);
         Assert.Equal(expectedValue, request.RequestObject);
-        Assert.Equal(expectedValue, request.RequestUri);
         Assert.Empty(request.ClientAuthentications);
     }
 
@@ -89,8 +87,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.Nonce, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
-                    { Parameter.Request, value },
-                    { Parameter.RequestUri, value }
+                    { Parameter.Request, value }
                 })
             }
         };
@@ -108,7 +105,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(value, request.GrantManagementAction);
         Assert.Equal(value, request.DPoP);
         Assert.Equal(value, request.RequestObject);
-        Assert.Equal(value, request.RequestUri);
         Assert.Empty(request.ClientAuthentications);
     }
 

@@ -21,7 +21,6 @@ internal class DeviceAuthorizationRequestAccessor : IRequestAccessor<DeviceAutho
         var grantId = body.GetValue(Parameter.GrantId);
         var grantManagementAction = body.GetValue(Parameter.GrantManagementAction);
         var requestObject = body.GetValue(Parameter.Request);
-        var requestUri = body.GetValue(Parameter.RequestUri);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
@@ -45,7 +44,6 @@ internal class DeviceAuthorizationRequestAccessor : IRequestAccessor<DeviceAutho
             GrantManagementAction = grantManagementAction,
             DPoP = dPoP,
             RequestObject = requestObject,
-            RequestUri = requestUri,
             Scope = scope,
             AcrValues = acrValues,
             Resource = resource,

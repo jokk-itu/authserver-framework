@@ -64,40 +64,11 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(DeviceAuthorizationError.InvalidClient, processResult.Error);
     }
 
-    [Fact]
-    public async Task Validate_GivenRequestAndRequestUri_ExpectInvalidRequestAndRequestUri()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService<
-            IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var request = new DeviceAuthorizationRequest
-        {
-            RequestUri = "uri",
-            RequestObject = "object",
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.False(processResult.IsSuccess);
-        Assert.Equal(DeviceAuthorizationError.InvalidRequestAndRequestUri, processResult);
-    }
-
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task Validate_RequireSignedRequestWithEmptyRequestAndRequestUri_ExpectRequestOrRequestUriRequiredAsRequestObject(bool clientRequires, bool serverRequires)
+    public async Task Validate_RequireSignedRequestWithEmptyRequestAndRequestUri_ExpectRequestRequiredAsRequestObject(bool clientRequires, bool serverRequires)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -123,96 +94,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.False(processResult.IsSuccess);
-        Assert.Equal(DeviceAuthorizationError.RequestOrRequestUriRequiredAsRequestObject, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_InvalidRequestUriFromClient_ExpectInvalidRequestUri()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService<
-            IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var request = new DeviceAuthorizationRequest
-        {
-            RequestUri = "invalid_value",
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.False(processResult.IsSuccess);
-        Assert.Equal(DeviceAuthorizationError.InvalidRequestUri, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ClientIsUnauthorizedForRequestUri_ExpectUnauthorizedRequestUri()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService<
-            IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var request = new DeviceAuthorizationRequest
-        {
-            RequestUri = "https://webapp.authserver.dk/request#4567kebab",
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.False(processResult.IsSuccess);
-        Assert.Equal(DeviceAuthorizationError.UnauthorizedRequestUri, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_RequestUriPointsToInvalidRequestObject_ExpectInvalidRequestObjectFromRequestUri()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(new Mock<ISecureRequestService>());
-        });
-
-        var validator = serviceProvider.GetRequiredService<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-        var requestUri = new RequestUri("https://webapp.authserver.dk/request", client);
-        await AddEntity(requestUri);
-
-        var request = new DeviceAuthorizationRequest
-        {
-            RequestUri = $"{requestUri.Uri}#3790kebab",
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.False(processResult.IsSuccess);
-        Assert.Equal(DeviceAuthorizationError.InvalidRequestObjectFromRequestUri, processResult);
+        Assert.Equal(DeviceAuthorizationError.RequestRequiredAsRequestObject, processResult);
     }
 
     [Fact]
@@ -927,94 +809,6 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(dPoPJkt,  processResult.Value!.DPoPJkt);
         Assert.Null(processResult.Value!.AuthorizationGrantId);
         Assert.Equal(request.GrantManagementAction, processResult.Value!.GrantManagementAction);
-    }
-
-    [Fact]
-    public async Task Validate_ValidRequestObjectFromRequestUri_ExpectDeviceAuthorizationValidatedRequest()
-    {
-        // Arrange
-        var secureRequestService = new Mock<ISecureRequestService>();
-        var dPoPService = new Mock<IDPoPService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(secureRequestService);
-            services.AddScopedMock(dPoPService);
-        });
-        var validator = serviceProvider.GetRequiredService<
-            IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-        var requestUri = new RequestUri("https://webapp.authserver.dk/request", client);
-        await AddEntity(requestUri);
-
-        var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var grant = new DeviceCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
-        await AddEntity(grant);
-
-        var resource = await GetResource();
-
-        const string dPoP = "dpop";
-        const string dPoPJkt = "dpop_jkt";
-        dPoPService
-            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult { IsValid = true, DPoPJkt = dPoPJkt })
-            .Verifiable();
-
-        var authorizeRequestDto = new AuthorizeRequestDto
-        {
-            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
-            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
-            Scope = [ScopeConstants.OpenId],
-            AcrValues = [LevelOfAssuranceLow],
-            Nonce = CryptographyHelper.GetRandomString(16),
-            Resource = [resource.ClientUri!],
-            GrantId = grant.Id,
-            GrantManagementAction = GrantManagementActionConstants.Replace,
-        };
-
-        var givenRequestUri = $"{requestUri.Uri}#1234";
-        
-        secureRequestService
-            .Setup(x =>
-                x.GetRequestByReference(
-                    It.Is<Uri>(y => y.AbsoluteUri == givenRequestUri),
-                    client.Id,
-                    ClientTokenAudience.DeviceAuthorizationEndpoint,
-                    CancellationToken.None)
-                )
-            .ReturnsAsync(authorizeRequestDto)
-            .Verifiable();
-
-        var request = new DeviceAuthorizationRequest
-        {
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ],
-            DPoP = dPoP,
-            RequestUri = givenRequestUri
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        secureRequestService.Verify();
-        dPoPService.Verify();
-        
-        Assert.True(processResult.IsSuccess);
-        Assert.Equal(authorizeRequestDto.CodeChallenge, processResult.Value!.CodeChallenge);
-        Assert.Equal(authorizeRequestDto.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
-        Assert.Equal(authorizeRequestDto.Scope, processResult.Value!.Scope);
-        Assert.Equal(authorizeRequestDto.AcrValues, processResult.Value!.AcrValues);
-        Assert.Equal(client.Id, processResult.Value!.ClientId);
-        Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
-        Assert.Equal(dPoPJkt, processResult.Value!.DPoPJkt);
-        Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
-        Assert.Equal(authorizeRequestDto.GrantId, processResult.Value!.AuthorizationGrantId);
     }
 
     [Fact]
