@@ -16,6 +16,7 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
         var body = await httpRequest.ReadFormAsync();
 
         var grantType = body.GetValue(Parameter.GrantType);
+        var deviceCode = body.GetValue(Parameter.DeviceCode);
         var code = body.GetValue(Parameter.Code);
         var codeVerifier = body.GetValue(Parameter.CodeVerifier);
         var redirectUri = body.GetValue(Parameter.RedirectUri);
@@ -38,6 +39,7 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
         return new TokenRequest
         {
             GrantType = grantType,
+            DeviceCode = deviceCode,
             Code = code,
             CodeVerifier = codeVerifier,
             RedirectUri = redirectUri,

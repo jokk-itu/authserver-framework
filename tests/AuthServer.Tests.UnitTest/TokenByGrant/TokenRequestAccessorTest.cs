@@ -26,6 +26,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		var formUrlContent = new Dictionary<string, StringValues>
 		{
 			{ Parameter.GrantType, value },
+			{ Parameter.DeviceCode, value },
 			{ Parameter.Code, value },
 			{ Parameter.CodeVerifier, value },
 			{ Parameter.RedirectUri, value },
@@ -51,6 +52,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 
 		// Assert
 		Assert.Equal(expectedValue, request.GrantType);
+		Assert.Equal(expectedValue, request.DeviceCode);
 		Assert.Equal(expectedValue, request.Code);
 		Assert.Equal(expectedValue, request.CodeVerifier);
 		Assert.Equal(expectedValue, request.RedirectUri);
@@ -69,6 +71,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		var formUrlContent = new Dictionary<string, StringValues>
 		{
 			{ Parameter.GrantType, value },
+			{ Parameter.DeviceCode, value },
 			{ Parameter.Code, value },
 			{ Parameter.CodeVerifier, value },
 			{ Parameter.RedirectUri, value },
@@ -92,6 +95,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 
 		// Assert
 		Assert.Equal(value, request.GrantType);
+		Assert.Equal(value, request.DeviceCode);
 		Assert.Equal(value, request.Code);
 		Assert.Equal(value, request.CodeVerifier);
 		Assert.Equal(value, request.RedirectUri);
