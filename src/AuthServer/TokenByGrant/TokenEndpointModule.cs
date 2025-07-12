@@ -13,9 +13,8 @@ internal class TokenEndpointModule : IEndpointModule
     public void RegisterEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
         var routeBuilder = endpointRouteBuilder
-            .MapMethods(
+            .MapPost(
                 "connect/token",
-                ["POST"],
                 (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Token)] IEndpointHandler endpointHandler,
                     CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 
