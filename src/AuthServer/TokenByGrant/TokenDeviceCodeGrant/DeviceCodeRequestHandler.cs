@@ -12,19 +12,22 @@ internal class DeviceCodeRequestHandler : RequestHandler<TokenRequest, DeviceCod
     private readonly IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse> _requestProcessor;
     private readonly IUnitOfWork _unitOfWork;
     private readonly INonceRepository _nonceRepository;
+    private readonly IDeviceCodeRepository _deviceCodeRepository;
 
     public DeviceCodeRequestHandler(
         IMetricService metricService,
         IRequestValidator<TokenRequest, DeviceCodeValidatedRequest> requestValidator,
         IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse> requestProcessor,
         IUnitOfWork unitOfWork,
-        INonceRepository nonceRepository)
+        INonceRepository nonceRepository,
+        IDeviceCodeRepository deviceCodeRepository)
         : base(metricService)
     {
         _requestValidator = requestValidator;
         _requestProcessor = requestProcessor;
         _unitOfWork = unitOfWork;
         _nonceRepository = nonceRepository;
+        _deviceCodeRepository = deviceCodeRepository;
     }
     
     protected override async Task<ProcessResult<TokenResponse, ProcessError>> ProcessValidatedRequest(DeviceCodeValidatedRequest request, CancellationToken cancellationToken)
@@ -53,6 +56,32 @@ internal class DeviceCodeRequestHandler : RequestHandler<TokenRequest, DeviceCod
             await _unitOfWork.Commit(cancellationToken);
 
             return dPoPNonceProcessError with { DPoPNonce = dPoPNonce };
+        }
+
+        if (response is
+            {
+                IsSuccess: false,
+                Error: SlowDownProcessError slowDownProcessError
+            })
+        {
+            await _unitOfWork.Begin(cancellationToken);
+            await _deviceCodeRepository.UpdateInterval(slowDownProcessError.DeviceCodeId, cancellationToken);
+            await _unitOfWork.Commit(cancellationToken);
+
+            return slowDownProcessError;
+        }
+
+        if (response is
+            {
+                IsSuccess: false,
+                Error: AuthorizationPendingProcessError authorizationPendingProcessError
+            })
+        {
+            await _unitOfWork.Begin(cancellationToken);
+            await _deviceCodeRepository.UpdatePoll(authorizationPendingProcessError.DeviceCodeId, cancellationToken);
+            await _unitOfWork.Commit(cancellationToken);
+
+            return authorizationPendingProcessError;
         }
 
         return response;
