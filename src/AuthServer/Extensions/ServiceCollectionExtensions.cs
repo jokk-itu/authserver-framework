@@ -133,7 +133,8 @@ public static class ServiceCollectionExtensions
             .AddScoped<IAuthorizationGrantRepository, AuthorizationGrantRepository>()
             .AddScoped<ITokenRepository, TokenRepository>()
             .AddScoped<INonceRepository, NonceRepository>()
-            .AddScoped<ISessionRepository, SessionRepository>();
+            .AddScoped<ISessionRepository, SessionRepository>()
+            .AddScoped<IDeviceCodeRepository, DeviceCodeRepository>();
     }
 
     private static void AddAuthServerOptions(IServiceCollection services)
