@@ -92,7 +92,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         var hasActiveGrant = await _identityContext
             .Set<AuthorizationCodeGrant>()
             .Where(x => x.Id == authorizationCode.AuthorizationGrantId)
-            .Where(x => x.AuthorizationGrantCodes
+            .Where(x => x.AuthorizationCodes
                 .AsQueryable()
                 .Where(y => y.Id == authorizationCode.AuthorizationCodeId)
                 .Any(Code.IsActive))

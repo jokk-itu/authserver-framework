@@ -86,7 +86,7 @@ internal class DeviceCodeRequestValidator : IRequestValidator<TokenRequest, Devi
             .Select(x => new
             {
                 DeviceCode = x,
-                Grant = x.AuthorizationGrant as DeviceCodeGrant
+                Grant = x.DeviceCodeGrant
             })
             .SingleOrDefaultAsync(cancellationToken);
 
