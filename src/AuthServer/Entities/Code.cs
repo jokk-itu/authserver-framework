@@ -24,7 +24,7 @@ public abstract class Code : Entity<string>
     public DateTime? RedeemedAt { get; private set; }
     public CodeType CodeType { get; private init; }
 
-    public static readonly Expression<Func<AuthorizationCode, bool>> IsActive =
+    public static readonly Expression<Func<Code, bool>> IsActive =
         x => x.RedeemedAt == null && x.ExpiresAt > DateTime.UtcNow;
 
     public void Redeem()
