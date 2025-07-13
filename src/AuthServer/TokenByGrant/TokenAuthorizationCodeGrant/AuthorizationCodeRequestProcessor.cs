@@ -6,7 +6,6 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
-using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 internal class AuthorizationCodeRequestProcessor : IRequestProcessor<AuthorizationCodeValidatedRequest, TokenResponse>
@@ -31,31 +30,21 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
         _idTokenBuilder = idTokenBuilder;
     }
 
-    public async Task<TokenResponse> Process(AuthorizationCodeValidatedRequest request, CancellationToken cancellationToken)
+    public async Task<TokenResponse> Process(AuthorizationCodeValidatedRequest request,
+        CancellationToken cancellationToken)
     {
-        var query = await _identityContext
-            .Set<AuthorizationCodeGrant>()
-            .Where(x => x.Id == request.AuthorizationGrantId)
-            .Select(x => new
-            {
-                AuthorizationCodeGrant = x,
-                ClientId = x.Client.Id,
-                x.Client.TokenEndpointAuthMethod,
-                AuthorizationCode = x.AuthorizationCodes.Single(y => y.Id == request.AuthorizationCodeId)
-            })
-            .SingleAsync(cancellationToken: cancellationToken);
+        var authorizationCode = (await _identityContext.FindAsync<AuthorizationCode>([request.AuthorizationCodeId], cancellationToken))!;
+        authorizationCode.Redeem();
 
-        query.AuthorizationCode.Redeem();
-
-        var cachedClient = await _cachedClientStore.Get(query.ClientId, cancellationToken);
+        var cachedClient = await _cachedClientStore.Get(request.ClientId, cancellationToken);
 
         string? refreshToken = null;
         if (cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.RefreshToken))
         {
             refreshToken = await _refreshTokenBuilder.BuildToken(new RefreshTokenArguments
             {
-                AuthorizationGrantId = query.AuthorizationCodeGrant.Id,
-                Jkt = query.TokenEndpointAuthMethod == TokenEndpointAuthMethod.None
+                AuthorizationGrantId = request.AuthorizationGrantId,
+                Jkt = cachedClient.TokenEndpointAuthMethod == TokenEndpointAuthMethod.None
                     ? request.DPoPJkt : null,
                 Scope = request.Scope
             }, cancellationToken);
@@ -63,7 +52,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
 
         var accessToken = await _accessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
-            AuthorizationGrantId = query.AuthorizationCodeGrant.Id,
+            AuthorizationGrantId = request.AuthorizationGrantId,
             Jkt = request.DPoPJkt,
             Scope = request.Scope,
             Resource = request.Resource
@@ -71,7 +60,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
 
         var idToken = await _idTokenBuilder.BuildToken(new IdTokenArguments
         {
-            AuthorizationGrantId = query.AuthorizationCodeGrant.Id,
+            AuthorizationGrantId = request.AuthorizationGrantId,
             Scope = request.Scope
         }, cancellationToken);
 
@@ -86,7 +75,7 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             RefreshToken = refreshToken,
             ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
-            GrantId = query.AuthorizationCodeGrant.Id,
+            GrantId = request.AuthorizationGrantId,
             TokenType = tokenType
         };
     }

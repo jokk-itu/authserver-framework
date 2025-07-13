@@ -89,18 +89,16 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             return TokenError.InvalidClient;
         }
 
-        var subjectIdentifier = await _identityContext
+        var hasActiveGrant = await _identityContext
             .Set<AuthorizationCodeGrant>()
             .Where(x => x.Id == authorizationCode.AuthorizationGrantId)
-            .Where(x => x.AuthorizationCodes
+            .Where(x => x.AuthorizationGrantCodes
                 .AsQueryable()
                 .Where(y => y.Id == authorizationCode.AuthorizationCodeId)
                 .Any(Code.IsActive))
-            .Where(AuthorizationGrant.IsActive)
-            .Select(x => x.Session.SubjectIdentifier.Id)
-            .SingleOrDefaultAsync(cancellationToken: cancellationToken);
+            .AnyAsync(AuthorizationGrant.IsActive, cancellationToken);
 
-        if (subjectIdentifier is null)
+        if (!hasActiveGrant)
         {
             return TokenError.InvalidGrant;
         }
@@ -182,6 +180,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
 
         return new AuthorizationCodeValidatedRequest
         {
+            ClientId = clientId,
             AuthorizationGrantId = authorizationCode.AuthorizationGrantId,
             AuthorizationCodeId = authorizationCode.AuthorizationCodeId,
             DPoPJkt = authorizationCode.DPoPJkt,

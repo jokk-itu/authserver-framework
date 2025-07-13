@@ -1,6 +1,7 @@
 ﻿namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 internal class AuthorizationCodeValidatedRequest
 {
+    public required string ClientId { get; init; }
     public required string AuthorizationGrantId { get; init; }
     public required string AuthorizationCodeId { get; init; }
     public string? DPoPJkt { get; init; }
