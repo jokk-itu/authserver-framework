@@ -18,10 +18,24 @@ public class DeviceCode : Code
     public DateTime? LatestPoll { get; private set; }
     public int CurrentInterval { get; private set; }
     public DeviceCodeGrant? DeviceCodeGrant { get; private set; }
+    public DateTime? RevokedAt { get; private set; }
 
-    public void UpdatePoll(int interval)
+    public void IncrementInterval(int interval)
+    {
+        UpdatePoll();
+        CurrentInterval += interval;
+    }
+
+    public void UpdatePoll()
     {
         LatestPoll = DateTime.UtcNow;
-        CurrentInterval = interval;
     }
+
+    public void Revoke()
+    {
+        RevokedAt ??= DateTime.UtcNow;
+    }
+
+    public bool IsWithinInterval() =>
+        LatestPoll is null || LatestPoll.Value.AddSeconds(CurrentInterval) < DateTime.UtcNow;
 }
