@@ -67,6 +67,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
 
         var tokenRequest = new AuthorizationCodeValidatedRequest
         {
+            ClientId = client.Id,
             AuthorizationGrantId = authorizationGrant.Id,
             AuthorizationCodeId = authorizationCode.Id,
             Scope = [ScopeConstants.OpenId],
@@ -129,6 +130,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
 
         var tokenRequest = new AuthorizationCodeValidatedRequest
         {
+            ClientId = client.Id,
             AuthorizationGrantId = authorizationGrant.Id,
             AuthorizationCodeId = authorizationCode.Id,
             Scope = [ScopeConstants.OpenId],
