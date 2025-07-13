@@ -175,10 +175,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return PushedAuthorizationError.DPoPRequired;
         }
 
-        var dPoPValidationResult = new DPoPValidationResult
-        {
-            IsValid = false
-        };
+        var dPoPValidationResult = new DPoPValidationResult();
         if (!string.IsNullOrEmpty(request.DPoP))
         {
             dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, cachedClient.Id, cancellationToken);
