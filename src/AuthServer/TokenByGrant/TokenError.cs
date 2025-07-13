@@ -30,6 +30,9 @@ internal static class TokenError
     public static readonly ProcessError InvalidCode =
         new(ErrorCode.InvalidRequest, "code is invalid", ResultCode.BadRequest);
 
+    public static readonly ProcessError InvalidDeviceCode =
+        new(ErrorCode.InvalidRequest, "device_code is invalid", ResultCode.BadRequest);
+
     public static readonly ProcessError InvalidRefreshToken =
         new(ErrorCode.InvalidRequest, "refresh_token is invalid", ResultCode.BadRequest);
 
@@ -59,6 +62,18 @@ internal static class TokenError
 
     public static readonly ProcessError DPoPRequired =
         new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
+
+    public static SlowDownProcessError DeviceAuthorizationPending(string deviceCodeId) =>
+        new(deviceCodeId, ErrorCode.AuthorizationPending, "device authorization is pending", ResultCode.BadRequest);
+
+    public static readonly ProcessError DeviceAuthorizationDenied =
+        new(ErrorCode.AccessDenied, "end-user has denied the request", ResultCode.BadRequest);
+
+    public static readonly ProcessError DeviceCodeExpired =
+        new(ErrorCode.ExpiredToken, "device_code has expired", ResultCode.BadRequest);
+
+    public static SlowDownProcessError DeviceSlowDown(string deviceCodeId) =>
+        new(deviceCodeId, ErrorCode.SlowDown, "device authorization is pending", ResultCode.BadRequest);
 
     public static ProcessError UseDPoPNonce(string dPoPNonce)
         => new DPoPNonceProcessError(dPoPNonce, null, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
