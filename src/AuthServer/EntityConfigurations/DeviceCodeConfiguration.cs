@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AuthServer.EntityConfigurations;
-internal class DeviceCodeConfiguration : IEntityTypeConfiguration<DeviceCode>
+internal sealed class DeviceCodeConfiguration : IEntityTypeConfiguration<DeviceCode>
 {
     public void Configure(EntityTypeBuilder<DeviceCode> builder)
     {
