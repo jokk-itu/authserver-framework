@@ -42,6 +42,7 @@ using AuthServer.TokenBuilders.Abstractions;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 using AuthServer.TokenByGrant.TokenClientCredentialsGrant;
+using AuthServer.TokenByGrant.TokenDeviceCodeGrant;
 using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
@@ -284,6 +285,11 @@ public static class ServiceCollectionExtensions
             .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, ClientCredentialsRequestHandler>(GrantTypeConstants.ClientCredentials)
             .AddScoped<IRequestProcessor<ClientCredentialsValidatedRequest, TokenResponse>, ClientCredentialsRequestProcessor>()
             .AddScoped<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>, ClientCredentialsRequestValidator>();
+
+        services
+            .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, DeviceCodeRequestHandler>(GrantTypeConstants.DeviceCode)
+            .AddScoped<IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse>, DeviceCodeRequestProcessor>()
+            .AddScoped<IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>, DeviceCodeRequestValidator>();
     }
 
     private static void AddGrantManagement(IServiceCollection services)
