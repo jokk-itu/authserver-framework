@@ -29,11 +29,13 @@ internal class DeviceAuthorizationRequestAccessor : IRequestAccessor<DeviceAutho
         var clientSecretBasic = httpRequest.GetClientSecretBasic();
         var clientSecretPost = body.GetClientSecretPost();
         var clientAssertion = body.GetClientAssertion(ClientTokenAudience.DeviceAuthorizationEndpoint);
+        var clientId = body.GetClientId();
 
         var clientAuthentications = new List<ClientAuthentication>();
         if (clientSecretBasic is not null) clientAuthentications.Add(clientSecretBasic);
         if (clientSecretPost is not null) clientAuthentications.Add(clientSecretPost);
         if (clientAssertion is not null) clientAuthentications.Add(clientAssertion);
+        if (clientId is not null) clientAuthentications.Add(clientId);
 
         return new DeviceAuthorizationRequest
         {
