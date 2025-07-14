@@ -10,7 +10,8 @@ internal sealed class DeviceCodeConfiguration : IEntityTypeConfiguration<DeviceC
         builder
             .HasOne(x => x.DeviceCodeGrant)
             .WithMany(x => x.DeviceCodes)
+            .HasForeignKey("DeviceCodeGrantId")
             .IsRequired(false)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
     }
 }

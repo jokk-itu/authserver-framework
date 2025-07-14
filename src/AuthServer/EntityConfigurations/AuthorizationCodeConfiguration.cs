@@ -10,7 +10,8 @@ internal sealed class AuthorizationCodeConfiguration : IEntityTypeConfiguration<
         builder
             .HasOne(x => x.AuthorizationCodeGrant)
             .WithMany(x => x.AuthorizationCodes)
+            .HasForeignKey("AuthorizationCodeGrantId")
             .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
     }
 }
