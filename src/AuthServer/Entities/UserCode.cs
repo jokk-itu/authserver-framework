@@ -5,6 +5,7 @@ public class UserCode : Entity<string>
 {
     public UserCode(DeviceCode deviceCode, string value)
     {
+        Id = Guid.NewGuid().ToString();
         Value = value;
         DeviceCode = deviceCode ?? throw new ArgumentNullException(nameof(deviceCode));
     }
