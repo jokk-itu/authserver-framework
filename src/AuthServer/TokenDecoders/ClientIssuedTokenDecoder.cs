@@ -139,9 +139,9 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
 
             return jsonWebKey;
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException e)
         {
-            _logger.LogInformation(ex, "Token does not contain a valid jwk header");
+            _logger.LogInformation(e, "Token does not contain a valid jwk header");
             return null;
         }
         catch (SecurityTokenValidationException e)
@@ -160,6 +160,7 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             ClientTokenAudience.IntrospectionEndpoint => _endpointResolver.IntrospectionEndpoint,
             ClientTokenAudience.RevocationEndpoint => _endpointResolver.RevocationEndpoint,
             ClientTokenAudience.PushedAuthorizationEndpoint => _endpointResolver.PushedAuthorizationEndpoint,
+            ClientTokenAudience.DeviceAuthorizationEndpoint => _endpointResolver.DeviceAuthorizationEndpoint,
             _ => throw new SwitchExpressionException(audience)
         };
     }
