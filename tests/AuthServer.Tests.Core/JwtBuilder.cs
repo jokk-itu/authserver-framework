@@ -212,6 +212,7 @@ public class JwtBuilder
             ClientTokenAudience.PushedAuthorizationEndpoint => _endpointResolver.PushedAuthorizationEndpoint,
             ClientTokenAudience.UserinfoEndpoint => _endpointResolver.UserinfoEndpoint,
             ClientTokenAudience.GrantManagementEndpoint => _endpointResolver.GrantManagementEndpoint,
+            ClientTokenAudience.DeviceAuthorizationEndpoint => _endpointResolver.DeviceAuthorizationEndpoint,
             _ => throw new ArgumentException("unknown value", nameof(audience))
         };
 }
