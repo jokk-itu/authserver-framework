@@ -310,7 +310,7 @@ public static class ServiceCollectionExtensions
     {
         services
             .AddScoped<IRequestAccessor<DeviceAuthorizationRequest>, DeviceAuthorizationRequestAccessor>()
-            .AddScoped<IEndpointHandler, DeviceAuthorizationEndpointHandler>()
+            .AddKeyedScoped<IEndpointHandler, DeviceAuthorizationEndpointHandler>(EndpointNameConstants.DeviceAuthorization)
             .AddScoped<IEndpointModule, DeviceAuthorizationEndpointModule>()
             .AddScoped<IRequestHandler<DeviceAuthorizationRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestHandler>()
             .AddScoped<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>, DeviceAuthorizationRequestValidator>()
