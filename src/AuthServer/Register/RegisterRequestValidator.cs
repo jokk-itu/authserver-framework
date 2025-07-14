@@ -924,7 +924,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         {
             validatedRequest.DeviceCodeExpiration =
                 validatedRequest.GrantTypes.Contains(GrantTypeConstants.DeviceCode)
-                    ? 30
+                    ? 300
                     : null;
 
             return null;
