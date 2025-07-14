@@ -162,7 +162,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                 Assert.Equal(value, clientAssertionAuthentication.ClientId);
                 Assert.Equal(value, clientAssertionAuthentication.ClientAssertion);
                 Assert.Equal(value, clientAssertionAuthentication.ClientAssertionType);
-                Assert.Equal(ClientTokenAudience.PushedAuthorizationEndpoint, clientAssertionAuthentication.Audience);
+                Assert.Equal(ClientTokenAudience.DeviceAuthorizationEndpoint, clientAssertionAuthentication.Audience);
                 Assert.Equal(TokenEndpointAuthMethod.PrivateKeyJwt, clientAssertionAuthentication.Method);
             });
     }
