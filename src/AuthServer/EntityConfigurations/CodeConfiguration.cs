@@ -11,8 +11,7 @@ internal class CodeConfiguration : IEntityTypeConfiguration<Code>
         builder
             .HasDiscriminator(x => x.CodeType)
             .HasValue<AuthorizationCode>(CodeType.AuthorizationCode)
-            .HasValue<DeviceCode>(CodeType.DeviceCode)
-            .HasValue<UserCode>(CodeType.UserCode);
+            .HasValue<DeviceCode>(CodeType.DeviceCode);
 
         builder
             .Property(x => x.RawValue)

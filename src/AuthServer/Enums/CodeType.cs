@@ -2,6 +2,5 @@
 public enum CodeType
 {
     AuthorizationCode,
-    DeviceCode,
-    UserCode
+    DeviceCode
 }

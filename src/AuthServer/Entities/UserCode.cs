@@ -1,12 +1,11 @@
-﻿using AuthServer.Enums;
+﻿using AuthServer.Core;
 
 namespace AuthServer.Entities;
-public class UserCode : Code
+public class UserCode : Entity<string>
 {
-    public UserCode(DeviceCode deviceCode, string value, int expirationSeconds) : base(expirationSeconds, CodeType.UserCode)
+    public UserCode(DeviceCode deviceCode, string value)
     {
         Value = value;
-        SetRawValue(value);
         DeviceCode = deviceCode ?? throw new ArgumentNullException(nameof(deviceCode));
     }
 
@@ -16,5 +15,11 @@ public class UserCode : Code
 #pragma warning restore
 
     public string Value { get; private init; }
+    public DateTime? RedeemedAt { get; private set; }
     public DeviceCode DeviceCode { get; private init; }
+
+    public void Redeem()
+    {
+        RedeemedAt ??= DateTime.UtcNow;
+    }
 }

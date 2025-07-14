@@ -38,7 +38,7 @@ internal class DeviceAuthorizationRequestProcessor : IRequestProcessor<DeviceAut
         var deviceCode = new DeviceCode(expiresOn, interval);
 
         var userCodeValue = CryptographyHelper.GetUserCode();
-        var userCode = new UserCode(deviceCode, userCodeValue, expiresOn);
+        var userCode = new UserCode(deviceCode, userCodeValue);
 
         var encodedDeviceCode = _deviceCodeEncoder.Encode(new EncodedDeviceCode
         {
@@ -60,7 +60,7 @@ internal class DeviceAuthorizationRequestProcessor : IRequestProcessor<DeviceAut
         await _authorizationDbContext.SaveChangesAsync(cancellationToken);
 
         var verificationUri = _userInteractionOptions.CurrentValue.VerificationUri!;
-        var verificationUriComplete = $"{verificationUri}?{Parameter.UserCode}={userCode.RawValue}";
+        var verificationUriComplete = $"{verificationUri}?{Parameter.UserCode}={userCode.Value}";
 
         return new DeviceAuthorizationResponse
         {

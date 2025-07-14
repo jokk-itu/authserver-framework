@@ -62,12 +62,11 @@ public class DeviceAuthorizationRequestProcessorTest : BaseUnitTest
 
         var userCode = Assert.Single(
             IdentityContext.Set<UserCode>().Include(x => x.DeviceCode),
-            x => x.RawValue == response.UserCode);
+            x => x.Value == response.UserCode);
 
         Assert.Equal(deviceCode, userCode.DeviceCode);
 
         Assert.Equal(deviceCode.ExpiresAt.ToUnixTimeSeconds() - deviceCode.IssuedAt.ToUnixTimeSeconds(), response.ExpiresIn);
-        Assert.Equal(userCode.ExpiresAt.ToUnixTimeSeconds() - userCode.IssuedAt.ToUnixTimeSeconds(), response.ExpiresIn);
 
         Assert.Equal(deviceCode.CurrentInterval, response.Interval);
 
