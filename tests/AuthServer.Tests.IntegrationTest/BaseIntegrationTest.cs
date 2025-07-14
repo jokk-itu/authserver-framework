@@ -30,7 +30,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     protected readonly ITestOutputHelper TestOutputHelper;
     protected readonly IServiceProvider ServiceProvider;
 
-    protected AuthorizeEndpointBuilder AuthorizeEndpointBuilder => new AuthorizeEndpointBuilder(
+    protected AuthorizeEndpointBuilder AuthorizeEndpointBuilder => new(
         GetHttpClient(),
         _dataProtectionProvider,
         DiscoveryDocument,
@@ -38,49 +38,49 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         EndpointResolver,
         TestOutputHelper);
 
-    protected RegisterEndpointBuilder RegisterEndpointBuilder => new RegisterEndpointBuilder(
+    protected RegisterEndpointBuilder RegisterEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected IntrospectionEndpointBuilder IntrospectionEndpointBuilder => new IntrospectionEndpointBuilder(
+    protected IntrospectionEndpointBuilder IntrospectionEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected RevocationEndpointBuilder RevocationEndpointBuilder => new RevocationEndpointBuilder(
+    protected RevocationEndpointBuilder RevocationEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected UserinfoEndpointBuilder UserinfoEndpointBuilder => new UserinfoEndpointBuilder(
+    protected UserinfoEndpointBuilder UserinfoEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder => new PushedAuthorizationEndpointBuilder(
+    protected PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected GrantManagementEndpointBuilder GrantManagementEndpointBuilder => new GrantManagementEndpointBuilder(
+    protected GrantManagementEndpointBuilder GrantManagementEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected EndSessionEndpointBuilder EndSessionEndpointBuilder => new EndSessionEndpointBuilder(
+    protected EndSessionEndpointBuilder EndSessionEndpointBuilder => new(
         GetHttpClient(),
         _dataProtectionProvider,
         DiscoveryDocument,
@@ -88,7 +88,18 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         EndpointResolver,
         TestOutputHelper);
 
-    protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, EndpointResolver, TestOutputHelper);
+    protected DeviceAuthorizationEndpointBuilder DeviceAuthorizationEndpointBuilder => new(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected TokenEndpointBuilder TokenEndpointBuilder => new(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver, TestOutputHelper);
 
     private readonly IOptionsMonitor<DiscoveryDocument> _discoveryDocumentOptions;
     protected DiscoveryDocument DiscoveryDocument => _discoveryDocumentOptions.CurrentValue;
