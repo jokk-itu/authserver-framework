@@ -56,7 +56,7 @@ internal class DeviceAuthorizationRequestProcessor : IRequestProcessor<DeviceAut
 
         deviceCode.SetRawValue(encodedDeviceCode);
 
-        await _authorizationDbContext.AddRangeAsync([deviceCode, userCode], cancellationToken);
+        await _authorizationDbContext.AddAsync(userCode, cancellationToken);
         await _authorizationDbContext.SaveChangesAsync(cancellationToken);
 
         var verificationUri = _userInteractionOptions.CurrentValue.VerificationUri!;
