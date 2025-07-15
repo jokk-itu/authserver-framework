@@ -100,7 +100,7 @@ internal class DeviceCodeRequestValidator : IRequestValidator<TokenRequest, Devi
             return TokenError.DeviceCodeExpired;
         }
 
-        if (deviceCodeQuery.DeviceCode.IsWithinInterval())
+        if (!deviceCodeQuery.DeviceCode.IsWithinInterval())
         {
             return TokenError.DeviceSlowDown(deviceCode.DeviceCodeId);
         }
