@@ -31,7 +31,7 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -85,7 +85,7 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId, weatherReadScope], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();

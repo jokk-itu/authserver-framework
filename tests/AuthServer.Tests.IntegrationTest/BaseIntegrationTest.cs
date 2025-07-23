@@ -152,7 +152,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         AllowAutoRedirect = false
     });
 
-    protected async Task<string> CreateAuthorizationGrant(string clientId, IReadOnlyCollection<string> amr)
+    protected async Task<string> CreateAuthorizationCodeGrant(string clientId, IReadOnlyCollection<string> amr)
     {
         var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
         var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);

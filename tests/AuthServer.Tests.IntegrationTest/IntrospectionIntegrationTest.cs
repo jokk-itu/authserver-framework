@@ -65,7 +65,7 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, weatherReadScope], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();

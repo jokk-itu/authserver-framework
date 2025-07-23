@@ -42,7 +42,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -89,7 +89,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -140,8 +140,8 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var otherGrantId = await CreateAuthorizationGrant(otherRegisterResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var otherGrantId = await CreateAuthorizationCodeGrant(otherRegisterResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -189,7 +189,7 @@ public class GrantManagementRevokeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementRevoke, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
