@@ -11,5 +11,5 @@ public class DeviceCodeGrant : AuthorizationGrant
     private DeviceCodeGrant() { }
 #pragma warning restore
 
-    public ICollection<DeviceCode> DeviceCodes { get; init; } = [];
+    public ICollection<DeviceCode> DeviceCodes { get; private init; } = [];
 }
