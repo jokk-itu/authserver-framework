@@ -390,7 +390,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         if (request.GrantTypes.Contains(GrantTypeConstants.RefreshToken)
-            && !request.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode))
+            && request.GrantTypes.IsNotSubset(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
         {
             return RegisterError.InvalidGrantTypes;
         }
@@ -419,7 +419,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             }
             validatedRequest.Scope = request.Scope;
         }
-        else if (validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode))
+        else if (GrantTypeConstants.OpenIdConnectInitiatingGrantTypes.IsSubset(request.GrantTypes))
         {
             validatedRequest.Scope = [ScopeConstants.OpenId];
         }
@@ -783,7 +783,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
 
     /// <summary>
     /// SubjectType is OPTIONAL.
-    /// Default value is <see cref="SubjectType.Public"/> if GrantType is <see cref="GrantTypeConstants.AuthorizationCode"/>.
+    /// Default value is <see cref="SubjectType.Public"/> if GrantTypes are OpenId compliant.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
@@ -792,7 +792,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     {
         if (string.IsNullOrEmpty(request.SubjectType))
         {
-            validatedRequest.SubjectType = validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode)
+            validatedRequest.SubjectType = validatedRequest.GrantTypes.IsSubset(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes)
                 ? SubjectType.Public
                 : null;
 
@@ -1269,7 +1269,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     {
         var hasEmptyIdTokenSignedResponseAlg = string.IsNullOrEmpty(request.IdTokenSignedResponseAlg);
         if (hasEmptyIdTokenSignedResponseAlg &&
-            !validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode))
+            validatedRequest.GrantTypes.IsNotSubset(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
         {
             return null;
         }
