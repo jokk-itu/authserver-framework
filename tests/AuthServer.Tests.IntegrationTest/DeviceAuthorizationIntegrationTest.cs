@@ -71,7 +71,6 @@ public class DeviceAuthorizationIntegrationTest : BaseIntegrationTest
             .Post();
 
         // Act
-        var jwks = ClientJwkBuilder.GetClientJwks();
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var deviceAuthorizationResponse = await DeviceAuthorizationEndpointBuilder
             .WithClientId(registerResponse.ClientId)
