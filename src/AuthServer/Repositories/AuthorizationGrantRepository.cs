@@ -64,7 +64,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
     }
 
     /// <inheritdoc/>
-    public async Task<AuthorizationGrant> CreateAuthorizationGrant(
+    public async Task<AuthorizationCodeGrant> CreateAuthorizationCodeGrant(
         string subjectIdentifier,
         string clientId,
         string authenticationContextReference,

@@ -158,7 +158,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
 
         var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-        var grant = await authorizationGrantRepository.CreateAuthorizationGrant(
+        var grant = await authorizationGrantRepository.CreateAuthorizationCodeGrant(
             UserConstants.SubjectIdentifier,
             clientId,
             acr,

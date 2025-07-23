@@ -105,7 +105,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task CreateAuthorizationGrant_ActiveSessionWithPasswordAmr_ExpectGrant()
+    public async Task CreateAuthorizationCodeGrant_ActiveSessionWithPasswordAmr_ExpectGrant()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -120,7 +120,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         await AddEntity(client);
 
         // Act
-        var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationGrant(
+        var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationCodeGrant(
             subjectIdentifier.Id,
             client.Id,
             LevelOfAssuranceLow,
@@ -136,7 +136,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task CreateAuthorizationGrant_ActiveSession_ExpectGrant()
+    public async Task CreateAuthorizationCodeGrant_ActiveSession_ExpectGrant()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -151,7 +151,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         await AddEntity(session);
 
         // Act
-        var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationGrant(
+        var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationCodeGrant(
             subjectIdentifier.Id,
             client.Id,
             LevelOfAssuranceLow,
@@ -165,7 +165,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task CreateAuthorizationGrant_SubjectTypePairwise_ExpectGrant()
+    public async Task CreateAuthorizationCodeGrant_SubjectTypePairwise_ExpectGrant()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -181,7 +181,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
         await AddEntity(client);
 
         // Act
-        var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationGrant(
+        var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationCodeGrant(
             subjectIdentifier.Id,
             client.Id,
             LevelOfAssuranceLow,
