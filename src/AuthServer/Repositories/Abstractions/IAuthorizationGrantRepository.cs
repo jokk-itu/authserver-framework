@@ -35,6 +35,17 @@ internal interface IAuthorizationGrantRepository
     Task<AuthorizationCodeGrant> CreateAuthorizationCodeGrant(string subjectIdentifier, string clientId, string authenticationContextReference, IReadOnlyCollection<string> authenticationMethodReferences, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Creates a new device code grant.
+    /// </summary>
+    /// <param name="subjectIdentifier"></param>
+    /// <param name="clientId"></param>
+    /// <param name="authenticationContextReference"></param>
+    /// <param name="authenticationMethodReferences"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<DeviceCodeGrant> CreateDeviceCodeGrant(string subjectIdentifier, string clientId, string authenticationContextReference, IReadOnlyCollection<string> authenticationMethodReferences, CancellationToken cancellationToken);
+
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="authorizationGrantId"></param>
