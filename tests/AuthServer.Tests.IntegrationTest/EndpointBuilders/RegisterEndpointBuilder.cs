@@ -44,6 +44,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
         return this;
     }
 
+    public RegisterEndpointBuilder WithIdTokenSigningAlg(SigningAlg signingAlg)
+    {
+        _registerParameters.Add(Parameter.IdTokenSignedResponseAlg, signingAlg.GetDescription());
+        return this;
+    }
+
     public RegisterEndpointBuilder WithDeviceCodeExpiration(int expiration)
     {
         _registerParameters.Add(Parameter.DeviceCodeExpiration, expiration);
@@ -53,6 +59,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
     public RegisterEndpointBuilder WithApplicationType(string applicationType)
     {
         _registerParameters.Add(Parameter.ApplicationType, applicationType);
+        return this;
+    }
+
+    public RegisterEndpointBuilder WithSubjectType(SubjectType subjectType)
+    {
+        _registerParameters.Add(Parameter.SubjectType, subjectType.GetDescription());
         return this;
     }
 

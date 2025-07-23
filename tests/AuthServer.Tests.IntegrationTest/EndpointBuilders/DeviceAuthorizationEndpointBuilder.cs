@@ -44,6 +44,12 @@ public class DeviceAuthorizationEndpointBuilder : EndpointBuilder<DeviceAuthoriz
         return this;
     }
 
+    public DeviceAuthorizationEndpointBuilder WithNonce(string nonce)
+    {
+        _parameters.Add(new(Parameter.Nonce, nonce));
+        return this;
+    }
+
     public DeviceAuthorizationEndpointBuilder WithCodeChallengeMethod(string codeChallengeMethod)
     {
         _parameters.Add(new(Parameter.CodeChallengeMethod, codeChallengeMethod));

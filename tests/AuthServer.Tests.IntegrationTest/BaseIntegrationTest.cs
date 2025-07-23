@@ -168,23 +168,53 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         return grant.Id;
     }
 
-    protected async Task UpdateAuthorizationGrant(string authorizationGrantId, IReadOnlyCollection<string> amr)
+    protected async Task<string> CreateDeviceCodeGrant(string clientId, IReadOnlyCollection<string> amr, string userCode, string nonce)
     {
         var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
         var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
 
         var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-        await authorizationGrantRepository.UpdateAuthorizationGrant(
-            authorizationGrantId,
+        var grant = await authorizationGrantRepository.CreateDeviceCodeGrant(
+            UserConstants.SubjectIdentifier,
+            clientId,
             acr,
             amr,
             CancellationToken.None);
+
+        var authorizationDbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        var deviceCode = await authorizationDbContext
+            .Set<UserCode>()
+            .Where(x => x.Value == userCode)
+            .Select(x => x.DeviceCode)
+            .SingleAsync();
+
+        grant.DeviceCodes.Add(deviceCode);
+
+        var authorizationGrantNonce = new AuthorizationGrantNonce(nonce, nonce.Sha256(), grant);
+        await authorizationDbContext.AddAsync(authorizationGrantNonce);
+        await authorizationDbContext.SaveChangesAsync();
+
+        return grant.Id;
+    }
+
+    protected async Task RedeemUserCode(string userCodeValue)
+    {
+        var authorizationDbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        var userCode = await authorizationDbContext.Set<UserCode>().SingleAsync(x => x.Value == userCodeValue);
+        userCode.Redeem();
+        await authorizationDbContext.SaveChangesAsync();
     }
 
     protected async Task Consent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims)
     {
         var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
         await consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, scopes, claims, CancellationToken.None);
+    }
+
+    protected async Task GrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources)
+    {
+        var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
+        await consentRepository.CreateGrantConsent(authorizationGrantId, scopes, resources, CancellationToken.None);
     }
 
     protected async Task<string> GetDPoPNonce(string clientId)
