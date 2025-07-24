@@ -76,7 +76,7 @@ internal class BaseAuthorizeValidator
         => string.IsNullOrEmpty(prompt) || PromptConstants.Prompts.Contains(prompt);
 
     protected bool HasValidAcrValues(IReadOnlyCollection<string> acrValues)
-        => acrValues.Count == 0 || !acrValues.IsNotSubset(_discoveryDocumentOptions.Value.AcrValuesSupported);
+        => acrValues.Count == 0 || acrValues.IsSubset(_discoveryDocumentOptions.Value.AcrValuesSupported);
 
     protected async Task<bool> HasUniqueNonce(string nonce, CancellationToken cancellationToken)
         => !await _nonceRepository.IsNonceReplay(nonce, cancellationToken);
