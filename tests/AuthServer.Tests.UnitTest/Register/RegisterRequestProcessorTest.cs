@@ -361,6 +361,8 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         client.SetSecret(CryptographyHelper.GetRandomString(16));
         
         client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.AuthorizationCode));
+        client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.RefreshToken));
+        client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.DeviceCode));
         client.Scopes.Add(await GetScope(ScopeConstants.OpenId));
         client.ResponseTypes.Add(await GetResponseType(ResponseTypeConstants.Code));
         client.ClientAuthenticationContextReferences.Add(
@@ -376,45 +378,96 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         client.ClientTokens.Add(new RegistrationToken(client, "aud", "iss", ScopeConstants.Register));
         client.AuthorizeMessages.Add(
             new AuthorizeMessage(CryptographyHelper.GetRandomString(16), DateTime.UtcNow.AddSeconds(60), client));
+
+        client.Nonces.Add(new DPoPNonce("value", "value".Sha256(), client));
         
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
-        var authorizationGrant = new AuthorizationCodeGrant(
-            session,
-            client,
-            subjectIdentifier.Id,
-            await GetAuthenticationContextReference(LevelOfAssuranceStrict));
-
-        authorizationGrant.AuthenticationMethodReferences.Add(
-            await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Face));
-
-        authorizationGrant.GrantTokens.Add(
-            new GrantAccessToken(authorizationGrant, "aud", "iss", ScopeConstants.OpenId, 500, null));
-
-        var nonce = CryptographyHelper.GetRandomString(16);
-        authorizationGrant.Nonces.Add(new AuthorizationGrantNonce(nonce, nonce.Sha256(), authorizationGrant));
-
-        var authorizationCode = new AuthorizationCode(authorizationGrant, 60);
-        authorizationCode.SetRawValue(CryptographyHelper.GetRandomString(16));
-        authorizationGrant.AuthorizationCodes.Add(authorizationCode);
-
         var scopeConsent = new ScopeConsent(
             subjectIdentifier,
             client,
             await GetScope(ScopeConstants.OpenId));
-        
+
         var claimConsent = new ClaimConsent(
             subjectIdentifier,
             client,
             await GetClaim(ClaimNameConstants.Name));
-        
-        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://idp.authserver.dk");
-        var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
-        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
-        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
-        
-        await AddEntity(authorizationGrant);
-        
+
+        await AddAuthorizationCodeGrant(client, session, [scopeConsent], [claimConsent]);
+        await AddDeviceCodeGrant(client, session, [scopeConsent], [claimConsent]);
+
         return client;
+    }
+
+    private async Task AddAuthorizationCodeGrant(Client client, Session session, IReadOnlyCollection<ScopeConsent> scopeConsents, IReadOnlyCollection<ClaimConsent> claimConsents)
+    {
+        var authorizationCodeGrant = new AuthorizationCodeGrant(
+            session,
+            client,
+            session.SubjectIdentifier.Id,
+            await GetAuthenticationContextReference(LevelOfAssuranceStrict));
+
+        authorizationCodeGrant.AuthenticationMethodReferences.Add(
+            await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Face));
+
+        authorizationCodeGrant.GrantTokens.Add(
+            new GrantAccessToken(authorizationCodeGrant, "aud", "iss", ScopeConstants.OpenId, 500, null));
+
+        var nonce = CryptographyHelper.GetRandomString(16);
+        authorizationCodeGrant.Nonces.Add(new AuthorizationGrantNonce(nonce, nonce.Sha256(), authorizationCodeGrant));
+
+        var authorizationCode = new AuthorizationCode(authorizationCodeGrant, 60);
+        authorizationCode.SetRawValue(CryptographyHelper.GetRandomString(16));
+        authorizationCodeGrant.AuthorizationCodes.Add(authorizationCode);
+
+        foreach (var scopeConsent in scopeConsents)
+        {
+            var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationCodeGrant, "https://idp.authserver.dk");
+            authorizationCodeGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
+        }
+
+        foreach (var claimConsent in claimConsents)
+        {
+            var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationCodeGrant);
+            authorizationCodeGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
+        }
+
+        await AddEntity(authorizationCodeGrant);
+    }
+
+    private async Task AddDeviceCodeGrant(Client client, Session session, IReadOnlyCollection<ScopeConsent> scopeConsents, IReadOnlyCollection<ClaimConsent> claimConsents)
+    {
+        var deviceCodeGrant = new DeviceCodeGrant(
+            session,
+            client,
+            session.SubjectIdentifier.Id,
+            await GetAuthenticationContextReference(LevelOfAssuranceStrict));
+
+        deviceCodeGrant.AuthenticationMethodReferences.Add(
+            await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Face));
+
+        deviceCodeGrant.GrantTokens.Add(
+            new GrantAccessToken(deviceCodeGrant, "aud", "iss", ScopeConstants.OpenId, 500, null));
+
+        var nonce = CryptographyHelper.GetRandomString(16);
+        deviceCodeGrant.Nonces.Add(new AuthorizationGrantNonce(nonce, nonce.Sha256(), deviceCodeGrant));
+
+        var deviceCode = new DeviceCode(client.DeviceCodeExpiration!.Value, 60);
+        deviceCode.SetRawValue(CryptographyHelper.GetRandomString(16));
+        deviceCodeGrant.DeviceCodes.Add(deviceCode);
+
+        foreach (var scopeConsent in scopeConsents)
+        {
+            var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, deviceCodeGrant, "https://idp.authserver.dk");
+            deviceCodeGrant.AuthorizationGrantConsents.Add(authorizationGrantScopeConsent);
+        }
+
+        foreach (var claimConsent in claimConsents)
+        {
+            var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, deviceCodeGrant);
+            deviceCodeGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
+        }
+
+        await AddEntity(deviceCodeGrant);
     }
 }
