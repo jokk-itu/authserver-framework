@@ -310,6 +310,16 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             .ExecuteDeleteAsync(cancellationToken);
 
         await _authorizationDbContext
+            .Set<AuthorizationCode>()
+            .Where(x => x.AuthorizationCodeGrant.Client.Id == clientId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        await _authorizationDbContext
+            .Set<DeviceCode>()
+            .Where(x => x.DeviceCodeGrant!.Client.Id == clientId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        await _authorizationDbContext
             .Set<AuthorizationGrant>()
             .Where(x => x.Client.Id == clientId)
             .ExecuteDeleteAsync(cancellationToken);
