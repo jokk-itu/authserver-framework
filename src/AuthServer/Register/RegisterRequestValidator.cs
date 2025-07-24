@@ -390,7 +390,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         if (request.GrantTypes.Contains(GrantTypeConstants.RefreshToken)
-            && request.GrantTypes.IsNotSubset(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
+            && request.GrantTypes.IsDisjoint(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
         {
             return RegisterError.InvalidGrantTypes;
         }
@@ -419,7 +419,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             }
             validatedRequest.Scope = request.Scope;
         }
-        else if (GrantTypeConstants.OpenIdConnectInitiatingGrantTypes.IsSubset(request.GrantTypes))
+        else if (GrantTypeConstants.OpenIdConnectInitiatingGrantTypes.IsIntersected(request.GrantTypes))
         {
             validatedRequest.Scope = [ScopeConstants.OpenId];
         }
@@ -792,7 +792,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     {
         if (string.IsNullOrEmpty(request.SubjectType))
         {
-            validatedRequest.SubjectType = validatedRequest.GrantTypes.IsSubset(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes)
+            validatedRequest.SubjectType = validatedRequest.GrantTypes.IsIntersected(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes)
                 ? SubjectType.Public
                 : null;
 
@@ -1270,7 +1270,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     {
         var hasEmptyIdTokenSignedResponseAlg = string.IsNullOrEmpty(request.IdTokenSignedResponseAlg);
         if (hasEmptyIdTokenSignedResponseAlg &&
-            validatedRequest.GrantTypes.IsNotSubset(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
+            validatedRequest.GrantTypes.IsDisjoint(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
         {
             return null;
         }
