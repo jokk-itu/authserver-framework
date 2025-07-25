@@ -107,14 +107,9 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         if (!string.IsNullOrEmpty(request.DPoP))
         {
             dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
-            if (dPoPValidationResult is { IsValid: false, DPoPNonce: null, RenewDPoPNonce: false })
+            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: false })
             {
                 return TokenError.InvalidDPoP;
-            }
-
-            if (dPoPValidationResult is { IsValid: false, DPoPNonce: not null })
-            {
-                return TokenError.UseDPoPNonce(dPoPValidationResult.DPoPNonce!);
             }
 
             if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
