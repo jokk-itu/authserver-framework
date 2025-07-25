@@ -9,11 +9,11 @@ namespace AuthServer.Codes.Abstractions;
 internal class CodeEncoder<T> : ICodeEncoder<T> where T : class
 {
     private readonly IDataProtector _dataProtector;
-    private readonly ILogger<T> _logger;
+    private readonly ILogger<CodeEncoder<T>> _logger;
 
     public CodeEncoder(
         IDataProtectionProvider dataProtectionProvider,
-        ILogger<T> logger)
+        ILogger<CodeEncoder<T>> logger)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(typeof(T).Name);
         _logger = logger;
