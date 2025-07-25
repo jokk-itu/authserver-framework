@@ -34,7 +34,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
         {
             Token = "invalid_token",
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            ClientId = client.Id
         };
 
         // Act
@@ -64,7 +65,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
         {
             Token = token.Reference,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            ClientId = client.Id
         };
 
         // Act
@@ -87,14 +89,15 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         };
         var openIdScope = await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1, null);
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, 3600, null);
         token.Revoke();
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
         {
             Token = token.Reference,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            ClientId = client.Id
         };
 
         // Act
@@ -115,13 +118,46 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             ClientUri = "https://webapp.authserver.dk"
         };
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, -1, null);
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, ScopeConstants.OpenId, 3600, null);
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
         {
             Token = token.Reference,
-            Scope = []
+            Scope = [],
+            ClientId = client.Id
+        };
+
+        // Act
+        var introspectionResponse = await processor.Process(introspectionValidatedRequest, CancellationToken.None);
+
+        // Assert
+        Assert.False(introspectionResponse.Active);
+    }
+
+    [Fact]
+    public async Task Process_ClientIsNotAudience_ExpectActiveIsFalse()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var processor = serviceProvider.GetRequiredService<IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse>>();
+
+        var weatherClient = new Client("weather-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        await AddEntity(weatherClient);
+
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
+        var token = new ClientAccessToken(client, "invalid_audience", DiscoveryDocument.Issuer, ScopeConstants.OpenId, 3600, null);
+        await AddEntity(token);
+
+        var introspectionValidatedRequest = new IntrospectionValidatedRequest
+        {
+            Token = token.Reference,
+            Scope = [ScopeConstants.OpenId],
+            ClientUri = weatherClient.ClientUri,
+            ClientId = weatherClient.Id
         };
 
         // Act
@@ -141,24 +177,30 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
 
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
-        {
-            ClientUri = "https://webapp.authserver.dk"
-        };
         var openidScope = await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
+
+        var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        weatherClient.Scopes.Add(openidScope);
+        await AddEntity(weatherClient);
+
+        var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         client.Scopes.Add(openidScope);
 
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         var tokenScope = string.Join(' ', [ScopeConstants.OpenId, ScopeConstants.Address]);
-        var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, tokenScope, 3600, null);
+        var token = new GrantAccessToken(authorizationGrant, weatherClient.ClientUri!, DiscoveryDocument.Issuer, tokenScope, 3600, null);
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
         {
             Token = token.Reference,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            ClientId = client.Id
         };
 
         // Act
@@ -211,7 +253,9 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
         {
             Token = token.Reference,
-            Scope = [weatherReadScope.Name]
+            Scope = [weatherReadScope.Name],
+            ClientUri = weatherClient.ClientUri!,
+            ClientId = client.Id
         };
 
         // Act
