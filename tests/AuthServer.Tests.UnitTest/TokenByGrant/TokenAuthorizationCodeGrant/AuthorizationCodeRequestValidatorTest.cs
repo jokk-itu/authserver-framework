@@ -1178,6 +1178,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
+        Assert.True(processResult.IsSuccess);
+        Assert.Equal(authorizationGrant.Client.Id, processResult.Value!.ClientId);
         Assert.Equal(authorizationGrant.Id, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(authorizationCodeId, processResult.Value!.AuthorizationCodeId);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
