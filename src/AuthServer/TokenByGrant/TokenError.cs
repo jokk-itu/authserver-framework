@@ -75,9 +75,6 @@ internal static class TokenError
     public static SlowDownProcessError DeviceSlowDown(string deviceCodeId) =>
         new(deviceCodeId, ErrorCode.SlowDown, "device authorization is pending", ResultCode.BadRequest);
 
-    public static ProcessError UseDPoPNonce(string dPoPNonce)
-        => new DPoPNonceProcessError(dPoPNonce, null, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
-
     public static readonly ProcessError InvalidDPoP =
         new(ErrorCode.InvalidDPoPProof, "dpop is invalid", ResultCode.BadRequest);
 
