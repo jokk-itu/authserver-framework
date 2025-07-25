@@ -490,6 +490,7 @@ public class ClientCredentialsRequestValidatorTest : BaseUnitTest
         var processResult = await validator.Validate(request, CancellationToken.None);
 
         // Assert
+        Assert.True(processResult.IsSuccess);
         Assert.Equal(client.Id, processResult.Value!.ClientId);
         Assert.Equal(scope, processResult.Value!.Scope);
         Assert.Equal(resource, processResult.Value!.Resource);
