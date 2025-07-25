@@ -621,55 +621,6 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_InvalidNonceClaimInDPoP_ExpectUseDPoPNonce()
-    {
-        // Arrange
-        var dPoPService = new Mock<IDPoPService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(dPoPService);
-        });
-        var validator = serviceProvider
-            .GetRequiredService<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-
-        const string dPoP = "dpop";
-        const string dPoPNonce = "dpop_nonce";
-        dPoPService
-            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult { IsValid = false, DPoPNonce = dPoPNonce })
-            .Verifiable();
-
-        var resource = await GetResource();
-
-        var request = new DeviceAuthorizationRequest
-        {
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ],
-            Nonce = Guid.NewGuid().ToString(),
-            CodeChallengeMethod = proofKey.CodeChallengeMethod,
-            CodeChallenge = proofKey.CodeChallenge,
-            Scope = [ScopeConstants.OpenId],
-            Resource = [resource.ClientUri!],
-            DPoP = dPoP
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Arrange
-        dPoPService.Verify();
-        Assert.False(processResult.IsSuccess);
-        Assert.Equal(DeviceAuthorizationError.UseDPoPNonce(dPoPNonce), processResult.Error);
-    }
-
-    [Fact]
     public async Task Validate_MissingNonce_ExpectRenewDPoPNonce()
     {
         // Arrange
@@ -689,7 +640,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         const string dPoP = "dpop";
         dPoPService
             .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult { IsValid = false, DPoPNonce = null, RenewDPoPNonce = true })
+            .ReturnsAsync(new DPoPValidationResult { IsValid = false, RenewDPoPNonce = true })
             .Verifiable();
 
         var resource = await GetResource();
