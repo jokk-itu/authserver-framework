@@ -54,67 +54,7 @@ public class NonceRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task GetActiveDPoPNonce_ExpiredNonce_ExpectNull()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var nonceRepository = serviceProvider.GetRequiredService<INonceRepository>();
-
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var nonce = CryptographyHelper.GetRandomString(16);
-        var dPoPNonce = new DPoPNonce(nonce, nonce.Sha256(), client);
-
-        typeof(DPoPNonce)
-            .GetProperty(nameof(DPoPNonce.ExpiresAt))!
-            .SetValue(dPoPNonce, DateTime.UtcNow.AddSeconds(-60));
-
-        await AddEntity(dPoPNonce);
-        
-        // Act
-        var dPoPNonceValue = await nonceRepository.GetActiveDPoPNonce(client.Id, CancellationToken.None);
-
-        // Assert
-        Assert.Null(dPoPNonceValue);
-    }
-
-    [Fact]
-    public async Task GetActiveDPoPNonce_ClientHasNoDPoPNonce_ExpectNull()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var nonceRepository = serviceProvider.GetRequiredService<INonceRepository>();
-
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        await AddEntity(client);
-
-        // Act
-        var dPoPNonceValue = await nonceRepository.GetActiveDPoPNonce(client.Id, CancellationToken.None);
-
-        // Assert
-        Assert.Null(dPoPNonceValue);
-    }
-
-    [Fact]
-    public async Task GetActiveDPoPNonce_ClientHasActiveDPoPNonce_ExpectNonceValue()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var nonceRepository = serviceProvider.GetRequiredService<INonceRepository>();
-
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var nonce = CryptographyHelper.GetRandomString(16);
-        var dPoPNonce = new DPoPNonce(nonce, nonce.Sha256(), client);
-        await AddEntity(dPoPNonce);
-
-        // Act
-        var dPoPNonceValue = await nonceRepository.GetActiveDPoPNonce(client.Id, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(nonce, dPoPNonceValue);
-    }
-
-    [Fact]
-    public async Task IsDPoPNonce_NonceDoesNotBelongToRequestedClient_ExpectFalse()
+    public async Task IsActiveDPoPNonce_NonceDoesNotBelongToRequestedClient_ExpectFalse()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -129,14 +69,14 @@ public class NonceRepositoryTest : BaseUnitTest
         await AddEntity(otherClient);
 
         // Act
-        var isDPoPNonce = await nonceRepository.IsDPoPNonce(nonce, otherClient.Id, CancellationToken.None);
+        var isDPoPNonce = await nonceRepository.IsActiveDPoPNonce(nonce, otherClient.Id, CancellationToken.None);
 
         // Assert
         Assert.False(isDPoPNonce);
     }
 
     [Fact]
-    public async Task IsDPoPNonce_NonceDoesNotExist_ExpectFalse()
+    public async Task IsActiveDPoPNonce_NonceDoesNotExist_ExpectFalse()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -147,14 +87,14 @@ public class NonceRepositoryTest : BaseUnitTest
         await AddEntity(client);
 
         // Act
-        var isDPoPNonce = await nonceRepository.IsDPoPNonce(nonce, client.Id, CancellationToken.None);
+        var isDPoPNonce = await nonceRepository.IsActiveDPoPNonce(nonce, client.Id, CancellationToken.None);
 
         // Assert
         Assert.False(isDPoPNonce);
     }
 
     [Fact]
-    public async Task IsDPoPNonce_DPoPNonceExistsAndBelongsToClient_ExpectTrue()
+    public async Task IsActiveDPoPNonce_DPoPNonceExistsAndBelongsToClient_ExpectTrue()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -166,7 +106,7 @@ public class NonceRepositoryTest : BaseUnitTest
         await AddEntity(dPoPNonce);
 
         // Act
-        var isDPoPNonce = await nonceRepository.IsDPoPNonce(nonce, client.Id, CancellationToken.None);
+        var isDPoPNonce = await nonceRepository.IsActiveDPoPNonce(nonce, client.Id, CancellationToken.None);
 
         // Assert
         Assert.True(isDPoPNonce);

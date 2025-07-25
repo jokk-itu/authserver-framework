@@ -338,14 +338,9 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
         }
 
         var dPoPValidationResult = await _dPoPService.ValidateDPoP(dPoP, clientId, Context.RequestAborted);
-        if (dPoPValidationResult is { IsValid: false, DPoPNonce: null, RenewDPoPNonce: false })
+        if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: false })
         {
             return AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidDPoPProof, "DPoP proof is invalid", scheme));
-        }
-
-        if (dPoPValidationResult is { IsValid: false, DPoPNonce: not null })
-        {
-            return AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.UseDPoPNonce, "use the provided DPoP nonce", scheme, null, dPoPValidationResult.DPoPNonce));
         }
 
         if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })

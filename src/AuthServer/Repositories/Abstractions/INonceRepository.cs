@@ -12,19 +12,11 @@ internal interface INonceRepository
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="clientId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<string?> GetActiveDPoPNonce(string clientId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="nonce"></param>
     /// <param name="clientId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> IsDPoPNonce(string nonce, string clientId, CancellationToken cancellationToken);
+    Task<bool> IsActiveDPoPNonce(string nonce, string clientId, CancellationToken cancellationToken);
 
     /// <summary>
     /// 

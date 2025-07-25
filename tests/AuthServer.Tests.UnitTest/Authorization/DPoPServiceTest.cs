@@ -51,7 +51,6 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
-        Assert.Null(validationResult.DPoPNonce);
         Assert.False(validationResult.RenewDPoPNonce);
     }
 
@@ -84,7 +83,6 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
-        Assert.Null(validationResult.DPoPNonce);
         Assert.False(validationResult.RenewDPoPNonce);
     }
 
@@ -119,12 +117,11 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
-        Assert.Null(validationResult.DPoPNonce);
         Assert.False(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
-    public async Task ValidateDPoP_InactiveDPoP_ExpectInvalidResultWithNewDPoPNonce()
+    public async Task ValidateDPoP_InactiveDPoP_ExpectInvalidResultWithRenewDPoPNonce()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider(SetupHttpContext);
@@ -150,11 +147,10 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
         Assert.True(validationResult.RenewDPoPNonce);
-        Assert.Null(validationResult.DPoPNonce);
     }
 
     [Fact]
-    public async Task ValidateDPoP_NullNonce_ExpectInvalidResultWithActiveDPoPNonce()
+    public async Task ValidateDPoP_NullNonce_ExpectInvalidResultWithRenewDPoPNonce()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider(SetupHttpContext);
@@ -180,12 +176,11 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
-        Assert.Equal(nonce, validationResult.DPoPNonce);
-        Assert.False(validationResult.RenewDPoPNonce);
+        Assert.True(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
-    public async Task ValidateDPoP_InvalidNonceClaim_ExpectInvalidResultWithActiveDPoPNonce()
+    public async Task ValidateDPoP_InvalidNonceClaim_ExpectInvalidResultWithRenewDPoPNonce()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider(SetupHttpContext);
@@ -212,12 +207,11 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
-        Assert.Equal(nonce, validationResult.DPoPNonce);
-        Assert.False(validationResult.RenewDPoPNonce);
+        Assert.True(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
-    public async Task ValidateDPoP_ExpiredNonceClaim_ExpectInvalidResultWithActiveDPoPNonce()
+    public async Task ValidateDPoP_ExpiredNonceClaim_ExpectInvalidResultWithRenewDPoPNonce()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider(SetupHttpContext);
@@ -255,8 +249,7 @@ public class DPoPServiceTest : BaseUnitTest
         Assert.False(validationResult.IsValid);
         Assert.Null(validationResult.DPoPJkt);
         Assert.Null(validationResult.AccessTokenHash);
-        Assert.Equal(nonce, validationResult.DPoPNonce);
-        Assert.False(validationResult.RenewDPoPNonce);
+        Assert.True(validationResult.RenewDPoPNonce);
     }
 
     [Fact]
@@ -291,7 +284,6 @@ public class DPoPServiceTest : BaseUnitTest
         // Assert
         Assert.True(validationResult.IsValid);
         Assert.Equal(jkt, validationResult.DPoPJkt);
-        Assert.Null(validationResult.DPoPNonce);
         Assert.Equal(ath, validationResult.AccessTokenHash);
         Assert.False(validationResult.RenewDPoPNonce);
     }

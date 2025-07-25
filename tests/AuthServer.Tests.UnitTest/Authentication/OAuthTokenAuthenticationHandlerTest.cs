@@ -552,56 +552,6 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task HandleAuthenticateAsync_ExistingDPoPNonceJwt_ExpectDPoPNonceFailure()
-    {
-        // Arrange
-        var dPoPService = new Mock<IDPoPService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(dPoPService);
-        });
-
-        const string clientId = "client_id";
-        var token = JwtBuilder.GetAccessToken(clientId, "jkt");
-        var httpContext = new DefaultHttpContext
-        {
-            Request =
-            {
-                Headers =
-                {
-                    Authorization = $"DPoP {token}"
-                }
-            },
-            RequestServices = serviceProvider
-        };
-
-        const string dPoPToken = "dpop";
-        const string dPoPNonce = "dpop_nonce";
-
-        httpContext.Request.Headers.Append(Parameter.DPoP, dPoPToken);
-
-        dPoPService
-            .Setup(x => x.ValidateDPoP(dPoPToken, clientId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult
-            {
-                IsValid = false,
-                DPoPNonce = dPoPNonce
-            })
-            .Verifiable();
-
-        // Act
-        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-
-        // Assert
-        dPoPService.Verify();
-        Assert.False(result.None);
-        Assert.NotNull(result.Failure);
-        Assert.IsType<OAuthTokenException>(result.Failure);
-        Assert.Equal(ErrorCode.UseDPoPNonce, ((OAuthTokenException)result.Failure).Error);
-        Assert.Equal(dPoPNonce, ((OAuthTokenException)result.Failure).DPoPNonce);
-    }
-
-    [Fact]
     public async Task HandleAuthenticateAsync_InvalidDPoPNonceJwt_ExpectDPoPNonceFailure()
     {
         // Arrange
@@ -1139,57 +1089,6 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task HandleAuthenticateAsync_ExistingDPoPNonceReferenceToken_ExpectDPoPNonceFailure()
-    {
-        // Arrange
-        var dPoPService = new Mock<IDPoPService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(dPoPService);
-        });
-        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, "jkt");
-        await AddEntity(token);
-
-        var httpContext = new DefaultHttpContext
-        {
-            Request =
-            {
-                Headers =
-                {
-                    Authorization = $"DPoP {token.Reference}"
-                }
-            },
-            RequestServices = serviceProvider
-        };
-
-        const string dPoPToken = "dpop";
-        const string dPoPNonce = "dpop-nonce";
-
-        httpContext.Request.Headers.Append(Parameter.DPoP, dPoPToken);
-
-        dPoPService
-            .Setup(x => x.ValidateDPoP(dPoPToken, client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult
-            {
-                IsValid = false,
-                DPoPNonce = dPoPNonce
-            })
-            .Verifiable();
-
-        // Act
-        var result = await httpContext.AuthenticateAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-
-        // Assert
-        dPoPService.Verify();
-        Assert.False(result.None);
-        Assert.NotNull(result.Failure);
-        Assert.IsType<OAuthTokenException>(result.Failure);
-        Assert.Equal(ErrorCode.UseDPoPNonce, ((OAuthTokenException)result.Failure).Error);
-        Assert.Equal(dPoPNonce, ((OAuthTokenException)result.Failure).DPoPNonce);
-    }
-
-    [Fact]
     public async Task HandleAuthenticateAsync_InvalidDPoPNonceReferenceToken_ExpectDPoPNonceFailure()
     {
         // Arrange
@@ -1516,55 +1415,6 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
         var dPoPAlgs = string.Join(' ', DiscoveryDocument.DPoPSigningAlgValuesSupported);
         Assert.Equal($"Bearer, DPoP algs=\"{dPoPAlgs}\", error=\"invalid_token\", error_description=\"token is not valid\"", httpContext.Response.Headers.WWWAuthenticate);
-    }
-
-    [Fact]
-    public async Task HandleChallengeAsync_InvalidDPoPNonce_ExpectUseDPoPNonce()
-    {
-        // Arrange
-        var dPoPService = new Mock<IDPoPService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(dPoPService);
-        });
-
-        const string clientId = "client_id";
-        const string jkt = "jkt";
-        var token = JwtBuilder.GetAccessToken(clientId, jkt);
-        var httpContext = new DefaultHttpContext
-        {
-            Request =
-            {
-                Headers =
-                {
-                    Authorization = $"DPoP {token}"
-                }
-            },
-            RequestServices = serviceProvider
-        };
-
-        const string dPoPToken = "dpop";
-        const string dPoPNonce = "dpop_nonce";
-
-        httpContext.Request.Headers.Append(Parameter.DPoP, dPoPToken);
-
-        dPoPService
-            .Setup(x => x.ValidateDPoP(dPoPToken, clientId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult
-            {
-                IsValid = false,
-                DPoPNonce = dPoPNonce
-            })
-            .Verifiable();
-
-        // Act
-        await httpContext.ChallengeAsync(OAuthTokenAuthenticationDefaults.AuthenticationScheme);
-
-        // Assert
-        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
-        var dPoPAlgs = string.Join(' ', DiscoveryDocument.DPoPSigningAlgValuesSupported);
-        Assert.Equal($"Bearer, DPoP algs=\"{dPoPAlgs}\", error=\"{ErrorCode.UseDPoPNonce}\", error_description=\"use the provided DPoP nonce\"", httpContext.Response.Headers.WWWAuthenticate);
-        Assert.Equal(dPoPNonce, httpContext.Response.Headers.GetValue(Parameter.DPoPNonce));
     }
 
     [Fact]

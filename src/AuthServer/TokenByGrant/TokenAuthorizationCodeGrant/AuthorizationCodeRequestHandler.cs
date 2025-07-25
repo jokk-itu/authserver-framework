@@ -40,18 +40,15 @@ internal class AuthorizationCodeRequestHandler : RequestHandler<TokenRequest, Au
         if (response is
             {
                 IsSuccess: false,
-                Error: DPoPNonceProcessError
-                {
-                    DPoPNonce: null,
-                    ClientId: not null
-                } dPoPNonceProcessError
+                Error: RenewDPoPNonceProcessError dPoPNonceProcessError
             })
         {
             await _unitOfWork.Begin(cancellationToken);
             var dPoPNonce = await _nonceRepository.CreateDPoPNonce(dPoPNonceProcessError.ClientId, cancellationToken);
             await _unitOfWork.Commit(cancellationToken);
 
-            return dPoPNonceProcessError with { DPoPNonce = dPoPNonce };
+            return new DPoPNonceProcessError(dPoPNonce, dPoPNonceProcessError.Error,
+                dPoPNonceProcessError.ErrorDescription, dPoPNonceProcessError.ResultCode);
         }
 
         return response;

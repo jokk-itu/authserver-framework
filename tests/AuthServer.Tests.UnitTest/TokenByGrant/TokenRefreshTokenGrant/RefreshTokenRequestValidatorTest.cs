@@ -459,56 +459,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_DPoPWithoutNonceClaim_ExpectUseDPoPNonce()
-    {
-        // Arrange
-        var dPoPService = new Mock<IDPoPService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(dPoPService);
-        });
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var refreshToken = await GetRefreshToken(client);
-
-        const string dPoP = "invalid_dpop_proof";
-        const string dPoPNonce = "dpop_nonce";
-        dPoPService
-            .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult
-            {
-                IsValid = false,
-                DPoPNonce = dPoPNonce
-            })
-            .Verifiable();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
-            DPoP = dPoP,
-            ClientAuthentications = [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce), processResult);
-        dPoPService.Verify();
-    }
-
-    [Fact]
     public async Task Validate_MissingNonce_ExpectRenewDPoPNonce()
     {
         // Arrange
@@ -528,7 +478,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         const string dPoP = "dpop";
         dPoPService
             .Setup(x => x.ValidateDPoP(dPoP, client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult { IsValid = false, DPoPNonce = null, RenewDPoPNonce = true })
+            .ReturnsAsync(new DPoPValidationResult { IsValid = false, RenewDPoPNonce = true })
             .Verifiable();
 
         var request = new TokenRequest
