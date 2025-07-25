@@ -2,5 +2,5 @@
 
 namespace AuthServer.Authorization.Models;
 
-internal record DPoPNonceProcessError(string? DPoPNonce, string? ClientId, string Error, string ErrorDescription, ResultCode ResultCode)
+internal record DPoPNonceProcessError(string DPoPNonce, string Error, string ErrorDescription, ResultCode ResultCode)
     : ProcessError(Error, ErrorDescription, ResultCode);
