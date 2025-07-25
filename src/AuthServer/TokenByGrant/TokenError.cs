@@ -79,5 +79,5 @@ internal static class TokenError
         new(ErrorCode.InvalidDPoPProof, "dpop is invalid", ResultCode.BadRequest);
 
     public static ProcessError RenewDPoPNonce(string clientId) =>
-        new DPoPNonceProcessError(null, clientId, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
+        new RenewDPoPNonceProcessError(clientId, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
 }
