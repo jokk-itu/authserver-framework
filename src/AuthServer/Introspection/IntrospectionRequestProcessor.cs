@@ -47,14 +47,20 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
         var isInvalidToken = query is null;
         var hasExceededExpiration = query?.Token.ExpiresAt < DateTime.UtcNow;
         var isRevoked = query?.Token.RevokedAt is not null;
+
         var scope = query?.Token.Scope?.Split(' ') ?? [];
         var authorizedScope = request.Scope.Intersect(scope).ToList();
+
+        var audience = query?.Token.Audience.Split(" ") ?? [];
+        var isAudience = audience.Contains(request.ClientUri) ||
+                         query?.ClientIdFromClientAccessToken == request.ClientId ||
+                         query?.ClientIdFromGrantAccessToken == request.ClientId;
 
         /*
          * If active is false, then the requesting client does not need to know more.
          * Therefore, the other optional properties are not set.
          */
-        if (isInvalidToken || hasExceededExpiration || isRevoked || authorizedScope.Count == 0)
+        if (isInvalidToken || hasExceededExpiration || isRevoked || authorizedScope.Count == 0 || !isAudience)
         {
             return new IntrospectionResponse
             {

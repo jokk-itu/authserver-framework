@@ -80,6 +80,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
         return this;
     }
 
+    public RegisterEndpointBuilder WithClientUri(string clientUri)
+    {
+        _registerParameters.Add(Parameter.ClientUri, clientUri);
+        return this;
+    }
+
     public RegisterEndpointBuilder WithRedirectUris(IReadOnlyCollection<string> redirectUris)
     {
         _registerParameters.Add(Parameter.RedirectUris, redirectUris);
