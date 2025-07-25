@@ -24,24 +24,14 @@ internal class NonceRepository : INonceRepository
     }
 
     /// <inheritdoc/>
-    public async Task<string?> GetActiveDPoPNonce(string clientId, CancellationToken cancellationToken)
-    {
-        return await _authorizationDbContext
-            .Set<DPoPNonce>()
-            .Where(DPoPNonce.IsActive)
-            .Where(x => x.Client.Id == clientId)
-            .Select(x => x.Value)
-            .SingleOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<bool> IsDPoPNonce(string nonce, string clientId, CancellationToken cancellationToken)
+    public async Task<bool> IsActiveDPoPNonce(string nonce, string clientId, CancellationToken cancellationToken)
     {
         var hashedNonce = nonce.Sha256();
         return await _authorizationDbContext
             .Set<DPoPNonce>()
             .Where(x => x.HashedValue == hashedNonce)
             .Where(x => x.Client.Id == clientId)
+            .Where(DPoPNonce.IsActive)
             .AnyAsync(cancellationToken);
     }
 
