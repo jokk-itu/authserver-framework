@@ -220,15 +220,9 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     protected async Task<string> GetDPoPNonce(string clientId)
     {
         var nonceRepository = ServiceProvider.GetRequiredService<INonceRepository>();
-        var activeDPoPNonce = await nonceRepository.GetActiveDPoPNonce(clientId, CancellationToken.None);
-        if (activeDPoPNonce is not null)
-        {
-            return activeDPoPNonce;
-        }
-
-        activeDPoPNonce = await nonceRepository.CreateDPoPNonce(clientId, CancellationToken.None);
+        var dPoPNonce = await nonceRepository.CreateDPoPNonce(clientId, CancellationToken.None);
         await ServiceProvider.GetRequiredService<AuthorizationDbContext>().SaveChangesAsync();
-        return activeDPoPNonce;
+        return dPoPNonce;
     }
 
     protected async Task ExpireDPoPNonce(string dPoPNonce)
