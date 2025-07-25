@@ -646,73 +646,6 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_DPoPWithoutNonceClaim_ExpectUseDPoPNonce()
-    {
-        // Arrange
-        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var authorizationCodeEncoder = new Mock<ICodeEncoder<EncodedAuthorizationCode>>();
-        var dPoPService = new Mock<IDPoPService>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authorizationCodeEncoder);
-            services.AddScopedMock(dPoPService);
-        });
-
-        var validator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(32);
-        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
-        var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
-
-        authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
-            .Returns(new EncodedAuthorizationCode
-            {
-                AuthorizationCodeId = authorizationCodeId,
-                AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKey.CodeChallenge,
-                CodeChallengeMethod = proofKey.CodeChallengeMethod,
-                Scope = [],
-            })
-            .Verifiable();
-
-        const string dPoPProof = "dpop_proof_without_nonce";
-        const string dPoPNonce = "dPoPNonce";
-        dPoPService
-            .Setup(x => x.ValidateDPoP(dPoPProof, authorizationGrant.Client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult
-            {
-                IsValid = false,
-                DPoPNonce = dPoPNonce
-            })
-            .Verifiable();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.AuthorizationCode,
-            Resource = ["resource"],
-            CodeVerifier = proofKey.CodeVerifier,
-            DPoP = dPoPProof,
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    authorizationGrant.Client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.UseDPoPNonce(dPoPNonce), processResult);
-        authorizationCodeEncoder.Verify();
-        dPoPService.Verify();
-    }
-
-    [Fact]
     public async Task Validate_MissingNonce_ExpectRenewDPoPNonce()
     {
         // Arrange
@@ -747,7 +680,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         const string dPoPProof = "dpop_proof_without_nonce";
         dPoPService
             .Setup(x => x.ValidateDPoP(dPoPProof, authorizationGrant.Client.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DPoPValidationResult { IsValid = false, DPoPNonce = null, RenewDPoPNonce = true })
+            .ReturnsAsync(new DPoPValidationResult { IsValid = false, RenewDPoPNonce = true })
             .Verifiable();
 
         var request = new TokenRequest
