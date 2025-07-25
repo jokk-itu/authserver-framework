@@ -32,7 +32,7 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -99,7 +99,7 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -135,7 +135,6 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
         Assert.Equal(weatherReadScope, refreshResponse.Response!.Scope);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, refreshResponse.Response!.TokenType);
         Assert.Null(refreshResponse.Response!.RefreshToken);
-        Assert.NotEqual(tokenResponse.Response!.RefreshToken, refreshResponse.Response!.RefreshToken);
         Assert.NotNull(refreshResponse.Response!.IdToken);
         Assert.NotNull(refreshResponse.Response!.AccessToken);
         Assert.Equal(registerResponse.AccessTokenExpiration, refreshResponse.Response!.ExpiresIn);

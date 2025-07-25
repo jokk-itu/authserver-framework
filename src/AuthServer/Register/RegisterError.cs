@@ -85,6 +85,9 @@ internal static class RegisterError
     public static readonly ProcessError InvalidAuthorizationCodeExpiration =
         new(ErrorCode.InvalidClientMetadata, "invalid authorization_code_expiration", ResultCode.BadRequest);
 
+    public static readonly ProcessError InvalidDeviceCodeExpiration =
+        new(ErrorCode.InvalidClientMetadata, "invalid device_code_expiration", ResultCode.BadRequest);
+
     public static readonly ProcessError InvalidAccessTokenExpiration =
         new(ErrorCode.InvalidClientMetadata, "invalid access_token_expiration", ResultCode.BadRequest);
 

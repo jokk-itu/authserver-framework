@@ -32,7 +32,7 @@ public class UserinfoRequestValidatorTest : BaseUnitTest
             ClientUri = "https://webapp.authserver.dk"
         };
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
@@ -73,7 +73,7 @@ public class UserinfoRequestValidatorTest : BaseUnitTest
             ClientUri = "https://webapp.authserver.dk"
         };
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         var grantAccessToken = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer,
             $"{ScopeConstants.OpenId} {ScopeConstants.UserInfo}", 1, null);
 

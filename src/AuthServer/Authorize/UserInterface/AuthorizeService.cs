@@ -62,7 +62,7 @@ internal class AuthorizeService : IAuthorizeService
 
         if (isCreateAction)
         {
-            var grant = await _authorizationGrantRepository.CreateAuthorizationGrant(
+            var grant = await _authorizationGrantRepository.CreateAuthorizationCodeGrant(
                 subjectIdentifier,
                 request.ClientId!,
                 acr,

@@ -47,7 +47,7 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         authorizationGrant.Revoke();
         await AddEntity(authorizationGrant);
 
@@ -89,7 +89,7 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
             BackchannelLogoutUri = "https://webapp.authserver.dk/logout"
         };
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
 
         clientLogoutService
@@ -130,7 +130,7 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
             BackchannelLogoutUri = "https://webapp.authserver.dk/logout"
         };
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         authorizationGrant.Revoke();
         await AddEntity(authorizationGrant);
 
@@ -163,7 +163,7 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
 
         var request = new EndSessionValidatedRequest
@@ -205,7 +205,7 @@ public class EndSessionRequestProcessorTest : BaseUnitTest
             BackchannelLogoutUri = "https://webapp.authserver.dk/logout"
         };
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
 
         clientLogoutService

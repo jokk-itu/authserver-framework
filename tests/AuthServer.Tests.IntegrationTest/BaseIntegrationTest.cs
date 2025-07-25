@@ -30,7 +30,7 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     protected readonly ITestOutputHelper TestOutputHelper;
     protected readonly IServiceProvider ServiceProvider;
 
-    protected AuthorizeEndpointBuilder AuthorizeEndpointBuilder => new AuthorizeEndpointBuilder(
+    protected AuthorizeEndpointBuilder AuthorizeEndpointBuilder => new(
         GetHttpClient(),
         _dataProtectionProvider,
         DiscoveryDocument,
@@ -38,49 +38,49 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         EndpointResolver,
         TestOutputHelper);
 
-    protected RegisterEndpointBuilder RegisterEndpointBuilder => new RegisterEndpointBuilder(
+    protected RegisterEndpointBuilder RegisterEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected IntrospectionEndpointBuilder IntrospectionEndpointBuilder => new IntrospectionEndpointBuilder(
+    protected IntrospectionEndpointBuilder IntrospectionEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected RevocationEndpointBuilder RevocationEndpointBuilder => new RevocationEndpointBuilder(
+    protected RevocationEndpointBuilder RevocationEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected UserinfoEndpointBuilder UserinfoEndpointBuilder => new UserinfoEndpointBuilder(
+    protected UserinfoEndpointBuilder UserinfoEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder => new PushedAuthorizationEndpointBuilder(
+    protected PushedAuthorizationEndpointBuilder PushedAuthorizationEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected GrantManagementEndpointBuilder GrantManagementEndpointBuilder => new GrantManagementEndpointBuilder(
+    protected GrantManagementEndpointBuilder GrantManagementEndpointBuilder => new(
         GetHttpClient(),
         DiscoveryDocument,
         JwksDocument,
         EndpointResolver,
         TestOutputHelper);
 
-    protected EndSessionEndpointBuilder EndSessionEndpointBuilder => new EndSessionEndpointBuilder(
+    protected EndSessionEndpointBuilder EndSessionEndpointBuilder => new(
         GetHttpClient(),
         _dataProtectionProvider,
         DiscoveryDocument,
@@ -88,7 +88,18 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         EndpointResolver,
         TestOutputHelper);
 
-    protected TokenEndpointBuilder TokenEndpointBuilder => new(GetHttpClient(), DiscoveryDocument, JwksDocument, EndpointResolver, TestOutputHelper);
+    protected DeviceAuthorizationEndpointBuilder DeviceAuthorizationEndpointBuilder => new(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver,
+        TestOutputHelper);
+
+    protected TokenEndpointBuilder TokenEndpointBuilder => new(
+        GetHttpClient(),
+        DiscoveryDocument,
+        JwksDocument,
+        EndpointResolver, TestOutputHelper);
 
     private readonly IOptionsMonitor<DiscoveryDocument> _discoveryDocumentOptions;
     protected DiscoveryDocument DiscoveryDocument => _discoveryDocumentOptions.CurrentValue;
@@ -141,13 +152,13 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         AllowAutoRedirect = false
     });
 
-    protected async Task<string> CreateAuthorizationGrant(string clientId, IReadOnlyCollection<string> amr)
+    protected async Task<string> CreateAuthorizationCodeGrant(string clientId, IReadOnlyCollection<string> amr)
     {
         var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
         var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
 
         var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-        var grant = await authorizationGrantRepository.CreateAuthorizationGrant(
+        var grant = await authorizationGrantRepository.CreateAuthorizationCodeGrant(
             UserConstants.SubjectIdentifier,
             clientId,
             acr,
@@ -157,23 +168,53 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         return grant.Id;
     }
 
-    protected async Task UpdateAuthorizationGrant(string authorizationGrantId, IReadOnlyCollection<string> amr)
+    protected async Task<string> CreateDeviceCodeGrant(string clientId, IReadOnlyCollection<string> amr, string userCode, string nonce)
     {
         var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
         var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
 
         var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-        await authorizationGrantRepository.UpdateAuthorizationGrant(
-            authorizationGrantId,
+        var grant = await authorizationGrantRepository.CreateDeviceCodeGrant(
+            UserConstants.SubjectIdentifier,
+            clientId,
             acr,
             amr,
             CancellationToken.None);
+
+        var authorizationDbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        var deviceCode = await authorizationDbContext
+            .Set<UserCode>()
+            .Where(x => x.Value == userCode)
+            .Select(x => x.DeviceCode)
+            .SingleAsync();
+
+        grant.DeviceCodes.Add(deviceCode);
+
+        var authorizationGrantNonce = new AuthorizationGrantNonce(nonce, nonce.Sha256(), grant);
+        await authorizationDbContext.AddAsync(authorizationGrantNonce);
+        await authorizationDbContext.SaveChangesAsync();
+
+        return grant.Id;
+    }
+
+    protected async Task RedeemUserCode(string userCodeValue)
+    {
+        var authorizationDbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        var userCode = await authorizationDbContext.Set<UserCode>().SingleAsync(x => x.Value == userCodeValue);
+        userCode.Redeem();
+        await authorizationDbContext.SaveChangesAsync();
     }
 
     protected async Task Consent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims)
     {
         var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
         await consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, scopes, claims, CancellationToken.None);
+    }
+
+    protected async Task GrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources)
+    {
+        var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
+        await consentRepository.CreateGrantConsent(authorizationGrantId, scopes, resources, CancellationToken.None);
     }
 
     protected async Task<string> GetDPoPNonce(string clientId)

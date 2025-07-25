@@ -148,6 +148,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
                 .ToList(),
             Contacts = client.Contacts.Select(c => c.Email).ToList(),
             AuthorizationCodeExpiration = client.AuthorizationCodeExpiration,
+            DeviceCodeExpiration = client.DeviceCodeExpiration,
             AccessTokenExpiration = client.AccessTokenExpiration,
             RefreshTokenExpiration = client.RefreshTokenExpiration,
             ClientSecretExpiration = client.SecretExpiration,
@@ -214,6 +215,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.SubjectType = request.SubjectType;
         client.DefaultMaxAge = request.DefaultMaxAge;
         client.AuthorizationCodeExpiration = request.AuthorizationCodeExpiration;
+        client.DeviceCodeExpiration = request.DeviceCodeExpiration;
         client.AccessTokenExpiration = request.AccessTokenExpiration;
         client.RefreshTokenExpiration = request.RefreshTokenExpiration;
         client.SecretExpiration = request.ClientSecretExpiration;
@@ -305,6 +307,16 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         await _authorizationDbContext
             .Set<Consent>()
             .Where(x => x.Client.Id == clientId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        await _authorizationDbContext
+            .Set<AuthorizationCode>()
+            .Where(x => x.AuthorizationCodeGrant.Client.Id == clientId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        await _authorizationDbContext
+            .Set<DeviceCode>()
+            .Where(x => x.DeviceCodeGrant!.Client.Id == clientId)
             .ExecuteDeleteAsync(cancellationToken);
 
         await _authorizationDbContext

@@ -14,4 +14,5 @@ internal static class EndpointNameConstants
     public const string GrantManagementRevoke = "GrantManagementRevoke";
     public const string Discovery = "Discovery";
     public const string Jwks = "Jwks";
+    public const string DeviceAuthorization = "DeviceAuthorization";
 }

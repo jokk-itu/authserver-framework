@@ -40,6 +40,12 @@ public class TokenEndpointBuilder : EndpointBuilder<TokenEndpointBuilder>
         return this;
     }
 
+    public TokenEndpointBuilder WithDeviceCode(string deviceCode)
+    {
+        _parameters.Add(new(Parameter.DeviceCode, deviceCode));
+        return this;
+    }
+
     public TokenEndpointBuilder WithRefreshToken(string refreshToken)
     {
         _parameters.Add(new(Parameter.RefreshToken, refreshToken));

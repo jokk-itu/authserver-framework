@@ -15,6 +15,7 @@ public interface IEndpointResolver
     string RevocationEndpoint { get; }
     string PushedAuthorizationEndpoint { get; }
     string GrantManagementEndpoint { get; }
+    string DeviceAuthorizationEndpoint { get; }
 
     string Convert(ClientTokenAudience clientTokenAudience);
     ClientTokenAudience Convert(string endpoint);

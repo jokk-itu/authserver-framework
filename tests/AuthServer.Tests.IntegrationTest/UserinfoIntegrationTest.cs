@@ -47,7 +47,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -95,7 +95,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
@@ -148,7 +148,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();

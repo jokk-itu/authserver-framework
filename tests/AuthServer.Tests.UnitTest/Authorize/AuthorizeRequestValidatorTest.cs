@@ -1206,7 +1206,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
         Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
-        Assert.Equal(request.AcrValues, processResult.Value!.AcrValues);
+        Assert.Equal(request.Resource, processResult.Value!.Resource);
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
@@ -1266,6 +1266,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.AcrValues, processResult.Value!.AcrValues);
+        Assert.Equal(request.Resource, processResult.Value!.Resource);
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);

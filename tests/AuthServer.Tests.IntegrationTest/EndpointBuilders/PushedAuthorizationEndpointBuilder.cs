@@ -170,7 +170,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder<PushedAuthoriz
         {
             return new PushedAuthorizationResponse
             {
-                StatusCode = HttpStatusCode.Created,
+                StatusCode = httpResponseMessage.StatusCode,
                 Response = JsonSerializer.Deserialize<PostPushedAuthorizationResponse>(content),
                 Location = httpResponseMessage.Headers.Location
             };

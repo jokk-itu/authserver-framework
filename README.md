@@ -7,6 +7,24 @@ The following grant types are supported:
 - Authorization Code
 - Refresh Token
 - Client Credentials
+- Device Code
+
+The following additional specifications are supported:
+- OAuth 2.1
+- OpenId Connect 1.0
+- OpenId Connect Discovery
+- OpenId Connect EndSession
+- OpenId Connect Backchannel Logout
+- OpenId Connect Dynamic Client Registration
+- Token Introspection
+- Token Revocation
+- Resource identifier
+- JWT Assertion for Client Authentication
+- OAuth JAR
+- DPoP
+- Pushed Authorization
+- GrantManagement
+- OAuth DeviceCode
 
 ## Pipeline runs
 
@@ -21,3 +39,7 @@ Take a look at [authserver.dk](https://www.authserver.dk).
 ## Demo
 
 Take a look at [authserver demo](https://github.com/jokk-itu/authserver-demo).
+
+## Testing
+
+The solution has high coverage and consists of unit tests and integration tests.

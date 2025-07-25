@@ -101,7 +101,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         authorizationGrant.Revoke();
         await AddEntity(authorizationGrant);
 
@@ -147,7 +147,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         typeof(AuthorizationGrant)
             .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
             .SetValue(authorizationGrant, DateTime.UtcNow.AddSeconds(-180));
@@ -200,7 +200,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             DefaultMaxAge = 30
         };
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         typeof(AuthorizationGrant)
             .GetProperty(nameof(AuthorizationGrant.UpdatedAuthTime))!
             .SetValue(authorizationGrant, DateTime.UtcNow.AddSeconds(-180));
@@ -247,7 +247,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr)
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr)
         {
             AuthenticationMethodReferences =
                 [await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password)]
@@ -296,7 +296,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var substantialAcr = await GetAuthenticationContextReference(LevelOfAssuranceSubstantial);
         var clientAuthenticationContextReference = new ClientAuthenticationContextReference(client, substantialAcr, 0);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr)
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr)
         {
             AuthenticationMethodReferences =
                 [await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password)]
@@ -343,7 +343,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr)
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr)
         {
             AuthenticationMethodReferences =
                 [await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password)]
@@ -393,7 +393,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             RequireConsent = false
         };
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         authenticateUserAccessorMock
@@ -437,7 +437,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         await AddEntity(authorizationGrant);
 
         authenticateUserAccessorMock
@@ -481,7 +481,7 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);

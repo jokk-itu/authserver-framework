@@ -188,7 +188,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return responseParametersValidationResult;
         }
 
-        if (!HasValidGrantType(cachedClient))
+        if (!HasAuthorizationCodeGrantType(cachedClient))
         {
             return AuthorizeError.UnauthorizedResponseType;
         }

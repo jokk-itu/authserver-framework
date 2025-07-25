@@ -33,7 +33,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         };
         var authorizeMessage = new AuthorizeMessage("value", DateTime.Now.AddSeconds(60), client);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
         await AddEntity(authorizeMessage);
 
@@ -58,7 +58,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         Assert.NotNull(authorizationCode);
         Assert.Single(authorizationGrant.Nonces);
         Assert.Single(authorizationGrant.AuthorizationCodes);
-        Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().Value);
+        Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().RawValue);
     }
 
     [Theory]
@@ -80,7 +80,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             AuthorizationCodeExpiration = 60
         };
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);
@@ -116,7 +116,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         Assert.NotNull(authorizationCode);
         Assert.Single(authorizationGrant.Nonces);
         Assert.Single(authorizationGrant.AuthorizationCodes);
-        Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().Value);
+        Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().RawValue);
         Assert.Single(authorizationGrant.AuthorizationGrantConsents);
     }
 }

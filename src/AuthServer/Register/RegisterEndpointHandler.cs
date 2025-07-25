@@ -62,6 +62,7 @@ internal class RegisterEndpointHandler : IEndpointHandler
                             DefaultAcrValues = client.DefaultAcrValues,
                             Contacts = client.Contacts,
                             AuthorizationCodeExpiration = client.AuthorizationCodeExpiration,
+                            DeviceCodeExpiration = client.DeviceCodeExpiration,
                             AccessTokenExpiration = client.AccessTokenExpiration,
                             RefreshTokenExpiration = client.RefreshTokenExpiration,
                             ClientSecretExpiration = client.ClientSecretExpiration,

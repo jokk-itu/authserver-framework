@@ -14,7 +14,7 @@ namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
 public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
 {
-    private Dictionary<string, object> _registerParameters = [];
+    private readonly Dictionary<string, object> _registerParameters = [];
 
     public RegisterEndpointBuilder(
         HttpClient httpClient,
@@ -41,6 +41,30 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
     public RegisterEndpointBuilder WithScope(IReadOnlyCollection<string> scope)
     {
         _registerParameters.Add(Parameter.Scope, string.Join(' ', scope));
+        return this;
+    }
+
+    public RegisterEndpointBuilder WithIdTokenSigningAlg(SigningAlg signingAlg)
+    {
+        _registerParameters.Add(Parameter.IdTokenSignedResponseAlg, signingAlg.GetDescription());
+        return this;
+    }
+
+    public RegisterEndpointBuilder WithDeviceCodeExpiration(int expiration)
+    {
+        _registerParameters.Add(Parameter.DeviceCodeExpiration, expiration);
+        return this;
+    }
+
+    public RegisterEndpointBuilder WithApplicationType(string applicationType)
+    {
+        _registerParameters.Add(Parameter.ApplicationType, applicationType);
+        return this;
+    }
+
+    public RegisterEndpointBuilder WithSubjectType(SubjectType subjectType)
+    {
+        _registerParameters.Add(Parameter.SubjectType, subjectType.GetDescription());
         return this;
     }
 

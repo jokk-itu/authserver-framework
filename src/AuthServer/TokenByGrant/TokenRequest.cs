@@ -5,6 +5,7 @@ namespace AuthServer.TokenByGrant;
 internal class TokenRequest
 {
     public string? GrantType { get; init; }
+    public string? DeviceCode { get; init; }
     public string? Code { get; init; }
     public string? CodeVerifier { get; init; }
     public string? RedirectUri { get; init; }

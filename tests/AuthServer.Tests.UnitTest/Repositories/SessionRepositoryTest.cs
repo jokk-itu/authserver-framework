@@ -24,9 +24,9 @@ public class SessionRepositoryTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var activeAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var activeAuthorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
 
-        var revokedAuthorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var revokedAuthorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         revokedAuthorizationGrant.Revoke();
 
         var activeGrantAccessToken = new GrantAccessToken(

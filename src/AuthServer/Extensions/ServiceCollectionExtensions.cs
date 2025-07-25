@@ -17,6 +17,7 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
+using AuthServer.DeviceAuthorization;
 using AuthServer.Discovery;
 using AuthServer.Endpoints;
 using AuthServer.Endpoints.Abstractions;
@@ -39,9 +40,10 @@ using AuthServer.Revocation;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
 using AuthServer.TokenByGrant;
-using AuthServer.TokenByGrant.AuthorizationCodeGrant;
-using AuthServer.TokenByGrant.ClientCredentialsGrant;
-using AuthServer.TokenByGrant.RefreshTokenGrant;
+using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
+using AuthServer.TokenByGrant.TokenClientCredentialsGrant;
+using AuthServer.TokenByGrant.TokenDeviceCodeGrant;
+using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using AuthServer.Userinfo;
@@ -79,7 +81,8 @@ public static class ServiceCollectionExtensions
         services
             .AddScoped<ITokenDecoder<ServerIssuedTokenDecodeArguments>, ServerIssuedTokenDecoder>()
             .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
-            .AddScoped<IAuthorizationCodeEncoder, AuthorizationCodeEncoder>();
+            .AddScoped<ICodeEncoder<EncodedAuthorizationCode>, CodeEncoder<EncodedAuthorizationCode>>()
+            .AddScoped<ICodeEncoder<EncodedDeviceCode>, CodeEncoder<EncodedDeviceCode>>();
 
         AddBackgroundServices(services);
         AddClientServices(services);
@@ -97,6 +100,7 @@ public static class ServiceCollectionExtensions
         AddPushedAuthorization(services);
         AddRegister(services);
         AddGrantManagement(services);
+        AddDeviceAuthorization(services);
         AddDiscovery(services);
         AddJwks(services);
 
@@ -130,7 +134,8 @@ public static class ServiceCollectionExtensions
             .AddScoped<IAuthorizationGrantRepository, AuthorizationGrantRepository>()
             .AddScoped<ITokenRepository, TokenRepository>()
             .AddScoped<INonceRepository, NonceRepository>()
-            .AddScoped<ISessionRepository, SessionRepository>();
+            .AddScoped<ISessionRepository, SessionRepository>()
+            .AddScoped<IDeviceCodeRepository, DeviceCodeRepository>();
     }
 
     private static void AddAuthServerOptions(IServiceCollection services)
@@ -280,6 +285,11 @@ public static class ServiceCollectionExtensions
             .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, ClientCredentialsRequestHandler>(GrantTypeConstants.ClientCredentials)
             .AddScoped<IRequestProcessor<ClientCredentialsValidatedRequest, TokenResponse>, ClientCredentialsRequestProcessor>()
             .AddScoped<IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>, ClientCredentialsRequestValidator>();
+
+        services
+            .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, DeviceCodeRequestHandler>(GrantTypeConstants.DeviceCode)
+            .AddScoped<IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse>, DeviceCodeRequestProcessor>()
+            .AddScoped<IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>, DeviceCodeRequestValidator>();
     }
 
     private static void AddGrantManagement(IServiceCollection services)
@@ -294,6 +304,17 @@ public static class ServiceCollectionExtensions
             .AddScoped<IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>, GrantManagementRequestValidator>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, Unit>, GrantManagementRevokeRequestProcessor>()
             .AddScoped<IRequestProcessor<GrantManagementValidatedRequest, GrantResponse>, GrantManagementQueryRequestProcessor>();
+    }
+
+    private static void AddDeviceAuthorization(IServiceCollection services)
+    {
+        services
+            .AddScoped<IRequestAccessor<DeviceAuthorizationRequest>, DeviceAuthorizationRequestAccessor>()
+            .AddKeyedScoped<IEndpointHandler, DeviceAuthorizationEndpointHandler>(EndpointNameConstants.DeviceAuthorization)
+            .AddScoped<IEndpointModule, DeviceAuthorizationEndpointModule>()
+            .AddScoped<IRequestHandler<DeviceAuthorizationRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestHandler>()
+            .AddScoped<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>, DeviceAuthorizationRequestValidator>()
+            .AddScoped<IRequestProcessor<DeviceAuthorizationValidatedRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestProcessor>();
     }
 
     private static void AddDiscovery(IServiceCollection services)

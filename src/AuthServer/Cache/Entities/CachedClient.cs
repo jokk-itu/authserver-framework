@@ -11,6 +11,7 @@ internal class CachedClient
     public required int AccessTokenExpiration { get; init; }
     public required int? RefreshTokenExpiration { get; init; }
     public required int? AuthorizationCodeExpiration { get; init; }
+    public required int? DeviceCodeExpiration { get; init; }
     public required int? JwksExpiration { get; init; }
     public required int? RequestUriExpiration { get; init; }
     public required int DPoPNonceExpiration { get; init; }

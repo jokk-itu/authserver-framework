@@ -41,6 +41,8 @@ internal class TokenEndpointHandler : IEndpointHandler
                 !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.RefreshToken):
             case GrantTypeConstants.ClientCredentials when
                 !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.ClientCredentials):
+            case GrantTypeConstants.DeviceCode when
+                !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.DeviceCode):    
                 return Results.Extensions.OAuthBadRequest(TokenError.UnsupportedGrantType);
         }
 

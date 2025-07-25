@@ -8,14 +8,10 @@ internal sealed class AuthorizationCodeConfiguration : IEntityTypeConfiguration<
     public void Configure(EntityTypeBuilder<AuthorizationCode> builder)
     {
         builder
-            .Property(x => x.Value)
-            .HasMaxLength(2048)
-            .IsRequired();
-
-        builder
-            .HasOne(x => x.AuthorizationGrant)
+            .HasOne(x => x.AuthorizationCodeGrant)
             .WithMany(x => x.AuthorizationCodes)
+            .HasForeignKey("AuthorizationCodeGrantId")
             .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
     }
 }

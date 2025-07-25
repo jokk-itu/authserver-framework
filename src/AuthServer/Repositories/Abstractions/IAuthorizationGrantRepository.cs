@@ -24,7 +24,7 @@ internal interface IAuthorizationGrantRepository
     Task<bool> IsActiveAuthorizationGrant(string authorizationGrantId, string clientId, CancellationToken cancellationToken);
     
     /// <summary>
-    /// Creates a new grant.
+    /// Creates a new authorization code grant.
     /// </summary>
     /// <param name="subjectIdentifier"></param>
     /// <param name="clientId"></param>
@@ -32,7 +32,18 @@ internal interface IAuthorizationGrantRepository
     /// <param name="authenticationMethodReferences"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<AuthorizationGrant> CreateAuthorizationGrant(string subjectIdentifier, string clientId, string authenticationContextReference, IReadOnlyCollection<string> authenticationMethodReferences, CancellationToken cancellationToken);
+    Task<AuthorizationCodeGrant> CreateAuthorizationCodeGrant(string subjectIdentifier, string clientId, string authenticationContextReference, IReadOnlyCollection<string> authenticationMethodReferences, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Creates a new device code grant.
+    /// </summary>
+    /// <param name="subjectIdentifier"></param>
+    /// <param name="clientId"></param>
+    /// <param name="authenticationContextReference"></param>
+    /// <param name="authenticationMethodReferences"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<DeviceCodeGrant> CreateDeviceCodeGrant(string subjectIdentifier, string clientId, string authenticationContextReference, IReadOnlyCollection<string> authenticationMethodReferences, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
@@ -40,7 +51,7 @@ internal interface IAuthorizationGrantRepository
     /// <param name="authorizationGrantId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<AuthorizationGrant?> GetActiveAuthorizationGrant(string authorizationGrantId, CancellationToken cancellationToken);
+    Task<AuthorizationCodeGrant?> GetActiveAuthorizationCodeGrant(string authorizationGrantId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Revokes grant if active, with all relations.

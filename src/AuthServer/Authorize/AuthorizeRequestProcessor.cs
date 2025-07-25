@@ -10,13 +10,13 @@ namespace AuthServer.Authorize;
 
 internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedRequest, string>
 {
-    private readonly IAuthorizationCodeEncoder _authorizationCodeEncoder;
+    private readonly ICodeEncoder<EncodedAuthorizationCode> _authorizationCodeEncoder;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IClientRepository _clientRepository;
     private readonly IConsentRepository _consentGrantRepository;
 
     public AuthorizeRequestProcessor(
-        IAuthorizationCodeEncoder authorizationCodeEncoder,
+        ICodeEncoder<EncodedAuthorizationCode> authorizationCodeEncoder,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository,
         IConsentRepository consentGrantRepository)
@@ -39,7 +39,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             }
         }
 
-        var authorizationGrant = (await _authorizationGrantRepository.GetActiveAuthorizationGrant(request.AuthorizationGrantId, cancellationToken))!;
+        var authorizationGrant = (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId, cancellationToken))!;
 
         var authorizationCode = new AuthorizationCode(authorizationGrant, authorizationGrant.Client.AuthorizationCodeExpiration!.Value);
         var nonce = new AuthorizationGrantNonce(request.Nonce, request.Nonce.Sha256(), authorizationGrant);
@@ -47,7 +47,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
         authorizationGrant.AuthorizationCodes.Add(authorizationCode);
         authorizationGrant.Nonces.Add(nonce);
 
-        var encodedAuthorizationCode = _authorizationCodeEncoder.EncodeAuthorizationCode(
+        var encodedAuthorizationCode = _authorizationCodeEncoder.Encode(
             new EncodedAuthorizationCode
             {
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -59,7 +59,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
                 CodeChallengeMethod = request.CodeChallengeMethod
             });
 
-        authorizationCode.SetValue(encodedAuthorizationCode);
+        authorizationCode.SetRawValue(encodedAuthorizationCode);
 
         if (authorizationGrant.Client.RequireConsent)
         {

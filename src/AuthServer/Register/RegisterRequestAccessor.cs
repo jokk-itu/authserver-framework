@@ -71,6 +71,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 		var idTokenSignedResponseAlg = json.GetStringValue(Parameter.IdTokenSignedResponseAlg);
 
 		var authorizationCodeExpiration = json.GetIntValue(Parameter.AuthorizationCodeExpiration);
+        var deviceCodeExpiration = json.GetIntValue(Parameter.DeviceCodeExpiration);
 		var accessTokenExpiration = json.GetIntValue(Parameter.AccessTokenExpiration);
 		var refreshTokenExpiration = json.GetIntValue(Parameter.RefreshTokenExpiration);
 		var clientSecretExpiration = json.GetIntValue(Parameter.ClientSecretExpiration);
@@ -125,6 +126,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 			IdTokenEncryptedResponseAlg = idTokenEncryptedResponseAlg,
 			IdTokenSignedResponseAlg = idTokenSignedResponseAlg,
 			AuthorizationCodeExpiration = authorizationCodeExpiration,
+			DeviceCodeExpiration = deviceCodeExpiration,
 			AccessTokenExpiration = accessTokenExpiration,
 			RefreshTokenExpiration = refreshTokenExpiration,
 			ClientSecretExpiration = clientSecretExpiration,

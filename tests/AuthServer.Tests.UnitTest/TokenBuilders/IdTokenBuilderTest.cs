@@ -172,7 +172,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         var session = new Session(subjectIdentifier);
         var authenticationMethodReference = await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference)
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, authenticationContextReference)
         {
             AuthenticationMethodReferences = [authenticationMethodReference]
         };
@@ -227,7 +227,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         var session = new Session(subjectIdentifier);
         var authenticationMethodReference = await GetAuthenticationMethodReference(AuthenticationMethodReferenceConstants.Password);
         var authenticationContextReference = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, authenticationContextReference)
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, authenticationContextReference)
         {
             AuthenticationMethodReferences = [authenticationMethodReference]
         };

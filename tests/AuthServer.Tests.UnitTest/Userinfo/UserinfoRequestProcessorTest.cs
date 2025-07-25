@@ -181,7 +181,7 @@ public class UserinfoRequestProcessorTest : BaseUnitTest
         client.Scopes.Add(addressScope);
 
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, addressScope);
         var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://weather.authserver.dk");

@@ -149,7 +149,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         client.Scopes.Add(openidScope);
 
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationGrant(session, client, subjectIdentifier.Id, lowAcr);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         var tokenScope = string.Join(' ', [ScopeConstants.OpenId, ScopeConstants.Address]);
         var token = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer, tokenScope, 3600, null);

@@ -45,8 +45,11 @@ internal class BaseAuthorizeValidator
     protected static bool HasValidResponseType(string? responseType)
         => !string.IsNullOrEmpty(responseType) && ResponseTypeConstants.ResponseTypes.Contains(responseType);
 
-    protected static bool HasValidGrantType(CachedClient cachedClient)
+    protected static bool HasAuthorizationCodeGrantType(CachedClient cachedClient)
         => cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.AuthorizationCode);
+
+    protected static bool HasDeviceCodeGrantType(CachedClient cachedClient)
+        => cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.DeviceCode);
 
     protected static bool HasValidDisplay(string? display)
         => string.IsNullOrEmpty(display) || DisplayConstants.DisplayValues.Contains(display);
@@ -73,7 +76,7 @@ internal class BaseAuthorizeValidator
         => string.IsNullOrEmpty(prompt) || PromptConstants.Prompts.Contains(prompt);
 
     protected bool HasValidAcrValues(IReadOnlyCollection<string> acrValues)
-        => acrValues.Count == 0 || !acrValues.IsNotSubset(_discoveryDocumentOptions.Value.AcrValuesSupported);
+        => acrValues.Count == 0 || acrValues.IsSubset(_discoveryDocumentOptions.Value.AcrValuesSupported);
 
     protected async Task<bool> HasUniqueNonce(string nonce, CancellationToken cancellationToken)
         => !await _nonceRepository.IsNonceReplay(nonce, cancellationToken);

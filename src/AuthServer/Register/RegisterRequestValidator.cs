@@ -141,6 +141,12 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return authorizationCodeExpirationError;
         }
 
+        var deviceCodeExpirationError = ValidateDeviceCodeExpiration(request, validatedRequest);
+        if (deviceCodeExpirationError is not null)
+        {
+            return deviceCodeExpirationError;
+        }
+
         var accessTokenExpirationError = ValidateAccessTokenExpiration(request, validatedRequest);
         if (accessTokenExpirationError is not null)
         {
@@ -384,7 +390,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         if (request.GrantTypes.Contains(GrantTypeConstants.RefreshToken)
-            && !request.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode))
+            && request.GrantTypes.IsDisjoint(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
         {
             return RegisterError.InvalidGrantTypes;
         }
@@ -413,7 +419,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             }
             validatedRequest.Scope = request.Scope;
         }
-        else if (validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode))
+        else if (GrantTypeConstants.OpenIdConnectInitiatingGrantTypes.IsIntersected(request.GrantTypes))
         {
             validatedRequest.Scope = [ScopeConstants.OpenId];
         }
@@ -777,7 +783,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
 
     /// <summary>
     /// SubjectType is OPTIONAL.
-    /// Default value is <see cref="SubjectType.Public"/> if GrantType is <see cref="GrantTypeConstants.AuthorizationCode"/>.
+    /// Default value is <see cref="SubjectType.Public"/> if GrantTypes are OpenId compliant.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
@@ -786,7 +792,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     {
         if (string.IsNullOrEmpty(request.SubjectType))
         {
-            validatedRequest.SubjectType = validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode)
+            validatedRequest.SubjectType = validatedRequest.GrantTypes.IsIntersected(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes)
                 ? SubjectType.Public
                 : null;
 
@@ -901,6 +907,35 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         validatedRequest.AuthorizationCodeExpiration = request.AuthorizationCodeExpiration;
+        return null;
+    }
+
+    /// <summary>
+    /// DeviceCodeExpiration is OPTIONAL.
+    /// Default is 60 if GrantType is <see cref="GrantTypeConstants.DeviceCode"/>.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="validatedRequest"></param>
+    /// <returns></returns>
+    private static ProcessError? ValidateDeviceCodeExpiration(RegisterRequest request,
+        RegisterValidatedRequest validatedRequest)
+    {
+        if (request.DeviceCodeExpiration is null)
+        {
+            validatedRequest.DeviceCodeExpiration =
+                validatedRequest.GrantTypes.Contains(GrantTypeConstants.DeviceCode)
+                    ? 300
+                    : null;
+
+            return null;
+        }
+
+        if (request.DeviceCodeExpiration is < 30 or > 600)
+        {
+            return RegisterError.InvalidDeviceCodeExpiration;
+        }
+
+        validatedRequest.DeviceCodeExpiration = request.DeviceCodeExpiration;
         return null;
     }
 
@@ -1022,6 +1057,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         {
             validatedRequest.RequestUriExpiration =
                 validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode)
+                && validatedRequest.TokenEndpointAuthMethod != TokenEndpointAuthMethod.None
                     ? 300
                     : null;
 
@@ -1234,7 +1270,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     {
         var hasEmptyIdTokenSignedResponseAlg = string.IsNullOrEmpty(request.IdTokenSignedResponseAlg);
         if (hasEmptyIdTokenSignedResponseAlg &&
-            !validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode))
+            validatedRequest.GrantTypes.IsDisjoint(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes))
         {
             return null;
         }

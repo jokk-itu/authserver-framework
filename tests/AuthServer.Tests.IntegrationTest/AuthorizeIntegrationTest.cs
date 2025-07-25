@@ -39,7 +39,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
 
         // Act
@@ -74,7 +74,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, ScopeConstants.UserInfo], []);
 
         // Act
@@ -106,7 +106,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
 
         var databaseContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
         var grant = await databaseContext
@@ -165,7 +165,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
 
-        var grantId = await CreateAuthorizationGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder

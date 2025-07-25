@@ -171,36 +171,6 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         });
                 });
 
-            modelBuilder.Entity("AuthServer.Entities.AuthorizationCode", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AuthorizationGrantId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("IssuedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("RedeemedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("nvarchar(2048)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorizationGrantId");
-
-                    b.ToTable("AuthorizationCode");
-                });
-
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrant", b =>
                 {
                     b.Property<string>("Id")
@@ -215,6 +185,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
                     b.Property<DateTime>("CreatedAuthTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2");
@@ -240,6 +215,10 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.HasIndex("SessionId");
 
                     b.ToTable("AuthorizationGrant");
+
+                    b.HasDiscriminator().HasValue("AuthorizationGrant");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantConsent", b =>
@@ -463,6 +442,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<int?>("DefaultMaxAge")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DeviceCodeExpiration")
+                        .HasColumnType("int");
+
                     b.Property<int?>("IdTokenEncryptedResponseAlg")
                         .HasColumnType("int");
 
@@ -604,6 +586,37 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.ToTable("ClientAuthenticationContextReference");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.Code", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("CodeType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RawValue")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<DateTime?>("RedeemedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Code");
+
+                    b.HasDiscriminator<int>("CodeType");
+
+                    b.UseTphMappingStrategy();
+                });
+
             modelBuilder.Entity("AuthServer.Entities.Consent", b =>
                 {
                     b.Property<int>("Id")
@@ -695,6 +708,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 3,
                             Name = "refresh_token"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "urn:ietf:params:oauth:grant-type:device_code"
                         });
                 });
 
@@ -1012,6 +1030,33 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.UserCode", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DeviceCodeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("RedeemedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceCodeId")
+                        .IsUnique();
+
+                    b.HasIndex("Value");
+
+                    b.ToTable("UserCode");
+                });
+
             modelBuilder.Entity("AuthorizationGrantAuthenticationMethodReference", b =>
                 {
                     b.Property<int>("AuthenticationMethodReferenceId")
@@ -1072,6 +1117,20 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.ToTable("ClientScope");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationCodeGrant", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.AuthorizationGrant");
+
+                    b.HasDiscriminator().HasValue("AuthorizationCodeGrant");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.DeviceCodeGrant", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.AuthorizationGrant");
+
+                    b.HasDiscriminator().HasValue("DeviceCodeGrant");
+                });
+
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantClaimConsent", b =>
                 {
                     b.HasBaseType("AuthServer.Entities.AuthorizationGrantConsent");
@@ -1087,6 +1146,40 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationCode", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.Code");
+
+                    b.Property<string>("AuthorizationCodeGrantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasIndex("AuthorizationCodeGrantId");
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.DeviceCode", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.Code");
+
+                    b.Property<int>("CurrentInterval")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DeviceCodeGrantId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("LatestPoll")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasIndex("DeviceCodeGrantId");
 
                     b.HasDiscriminator().HasValue(1);
                 });
@@ -1192,17 +1285,6 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.HasBaseType("AuthServer.Entities.GrantToken");
 
                     b.HasDiscriminator().HasValue(0);
-                });
-
-            modelBuilder.Entity("AuthServer.Entities.AuthorizationCode", b =>
-                {
-                    b.HasOne("AuthServer.Entities.AuthorizationGrant", "AuthorizationGrant")
-                        .WithMany("AuthorizationCodes")
-                        .HasForeignKey("AuthorizationGrantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AuthorizationGrant");
                 });
 
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrant", b =>
@@ -1364,6 +1446,17 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("SubjectIdentifier");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.UserCode", b =>
+                {
+                    b.HasOne("AuthServer.Entities.DeviceCode", "DeviceCode")
+                        .WithOne()
+                        .HasForeignKey("AuthServer.Entities.UserCode", "DeviceCodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DeviceCode");
+                });
+
             modelBuilder.Entity("AuthorizationGrantAuthenticationMethodReference", b =>
                 {
                     b.HasOne("AuthServer.Entities.AuthenticationMethodReference", null)
@@ -1422,6 +1515,27 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasForeignKey("ScopeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationCode", b =>
+                {
+                    b.HasOne("AuthServer.Entities.AuthorizationCodeGrant", "AuthorizationCodeGrant")
+                        .WithMany("AuthorizationCodes")
+                        .HasForeignKey("AuthorizationCodeGrantId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorizationCodeGrant");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.DeviceCode", b =>
+                {
+                    b.HasOne("AuthServer.Entities.DeviceCodeGrant", "DeviceCodeGrant")
+                        .WithMany("DeviceCodes")
+                        .HasForeignKey("DeviceCodeGrantId")
+                        .OnDelete(DeleteBehavior.ClientCascade);
+
+                    b.Navigation("DeviceCodeGrant");
                 });
 
             modelBuilder.Entity("AuthServer.Entities.ClaimConsent", b =>
@@ -1499,8 +1613,6 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrant", b =>
                 {
-                    b.Navigation("AuthorizationCodes");
-
                     b.Navigation("AuthorizationGrantConsents");
 
                     b.Navigation("GrantTokens");
@@ -1561,6 +1673,16 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("Consents");
 
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationCodeGrant", b =>
+                {
+                    b.Navigation("AuthorizationCodes");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.DeviceCodeGrant", b =>
+                {
+                    b.Navigation("DeviceCodes");
                 });
 #pragma warning restore 612, 618
         }
