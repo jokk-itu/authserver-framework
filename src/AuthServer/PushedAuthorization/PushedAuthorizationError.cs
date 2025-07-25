@@ -75,9 +75,6 @@ internal static class PushedAuthorizationError
     public static readonly ProcessError DPoPRequired =
         new(ErrorCode.InvalidRequest, "client requires dpop or dpop_jkt", ResultCode.BadRequest);
 
-    public static ProcessError UseDPoPNonce(string dPoPNonce)
-        => new DPoPNonceProcessError(dPoPNonce, null, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
-
     public static ProcessError RenewDPoPNonce(string clientId) =>
         new DPoPNonceProcessError(null, clientId, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
 
