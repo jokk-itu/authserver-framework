@@ -1,32 +1,26 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization.Abstractions;
-using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.Extensions;
 using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 
-internal class ClientCredentialsRequestValidator : IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>
+internal class ClientCredentialsRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest>
 {
-    private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly ICachedClientStore _cachedClientStore;
-    private readonly IClientRepository _clientRepository;
-    private readonly IDPoPService _dPoPService;
 
     public ClientCredentialsRequestValidator(
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
         IClientRepository clientRepository,
-        IDPoPService dPoPService)
+        IDPoPService dPoPService,
+        IConsentRepository consentRepository)
+        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
     {
-        _clientAuthenticationService = clientAuthenticationService;
         _cachedClientStore = cachedClientStore;
-        _clientRepository = clientRepository;
-        _dPoPService = dPoPService;
     }
 
     public async Task<ProcessResult<ClientCredentialsValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -46,63 +40,36 @@ internal class ClientCredentialsRequestValidator : IRequestValidator<TokenReques
             return TokenError.InvalidResource;
         }
 
-        var isClientAuthenticationMethodInvalid = request.ClientAuthentications.Count != 1;
-        if (isClientAuthenticationMethodInvalid)
+        var clientAuthenticationResult = await AuthenticateClient(request.ClientAuthentications, cancellationToken);
+        if (!clientAuthenticationResult.IsSuccess)
         {
-            return TokenError.MultipleOrNoneClientMethod;
+            return clientAuthenticationResult.Error!;
         }
 
-        var clientAuthentication = request.ClientAuthentications.Single();
-        var clientAuthenticationResult = await _clientAuthenticationService.AuthenticateClient(clientAuthentication, cancellationToken);
-        if (!clientAuthenticationResult.IsAuthenticated)
-        {
-            return TokenError.InvalidClient;
-        }
-
-        var clientId = clientAuthenticationResult.ClientId!;
+        var clientId = clientAuthenticationResult.Value!;
         var cachedClient = await _cachedClientStore.Get(clientId, cancellationToken);
 
-        var isClientAuthorizedForClientCredentials = cachedClient.GrantTypes.Contains(GrantTypeConstants.ClientCredentials);
-        if (!isClientAuthorizedForClientCredentials)
+        if (cachedClient.GrantTypes.All(x => x != GrantTypeConstants.ClientCredentials))
         {
             return TokenError.UnauthorizedForGrantType;
         }
 
-        if (cachedClient.RequireDPoPBoundAccessTokens && string.IsNullOrEmpty(request.DPoP))
+        var dPoPResult = await ValidateDPoP(request.DPoP, cachedClient, null, cancellationToken);
+        if (dPoPResult?.Error is not null)
         {
-            return TokenError.DPoPRequired;
+            return dPoPResult.Error;
         }
 
-        var dPoPValidationResult = new DPoPValidationResult();
-        if (!string.IsNullOrEmpty(request.DPoP))
+        var scopeValidationResult = await ValidateScope(request.Scope, request.Resource, null, cachedClient, cancellationToken);
+        if (!scopeValidationResult.IsSuccess)
         {
-            dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: false })
-            {
-                return TokenError.InvalidDPoP;
-            }
-
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
-            {
-                return TokenError.RenewDPoPNonce(clientId);
-            }
-        }
-
-        if (request.Scope.IsNotSubset(cachedClient.Scopes))
-        {
-            return TokenError.UnauthorizedForScope;
-        }
-
-        var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, request.Scope, cancellationToken);
-        if (!doesResourcesExist)
-        {
-            return TokenError.InvalidResource;
+            return scopeValidationResult.Error!;
         }
 
         return new ClientCredentialsValidatedRequest
         {
             ClientId = clientId,
-            DPoPJkt = dPoPValidationResult.DPoPJkt,
+            DPoPJkt = dPoPResult?.DPoPJkt,
             Scope = request.Scope,
             Resource = request.Resource
         };
