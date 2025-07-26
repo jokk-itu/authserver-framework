@@ -42,7 +42,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         Client client;
         if (request.Method == HttpMethod.Post)
         {
-            client = new Client(request.ClientName, request.ApplicationType, request.TokenEndpointAuthMethod, 300, 60);
+            client = new Client(request.ClientName, request.ApplicationType, request.TokenEndpointAuthMethod, request.AccessTokenExpiration, request.DPoPNonceExpiration);
             _authorizationDbContext.Add(client);
         }
         else if (request.Method == HttpMethod.Delete)
@@ -54,19 +54,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         }
         else
         {
-            client = await _authorizationDbContext
-                .Set<Client>()
-                .Where(x => x.Id == request.ClientId)
-                .Include(c => c.GrantTypes)
-                .Include(c => c.ResponseTypes)
-                .Include(c => c.RedirectUris)
-                .Include(c => c.PostLogoutRedirectUris)
-                .Include(c => c.RequestUris)
-                .Include(c => c.Contacts)
-                .Include(c => c.Scopes)
-                .Include(x => x.ClientAuthenticationContextReferences)
-                .ThenInclude(x => x.AuthenticationContextReference)
-                .SingleAsync(cancellationToken);
+            client = await GetClient(request.ClientId, cancellationToken);
             
             _metricService.AddClientGet(stopWatch.ElapsedMilliseconds, request.ClientId);
             stopWatch.Restart();
