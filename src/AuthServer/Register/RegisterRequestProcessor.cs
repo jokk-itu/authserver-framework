@@ -110,10 +110,10 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             ClientName = client.Name,
             GrantTypes = client.GrantTypes.Select(gt => gt.Name).ToList(),
             Scope = client.Scopes.Select(s => s.Name).ToList(),
-            ResponseTypes = client.ResponseTypes.Select(rt => rt.Name).ToList(),
-            RedirectUris = client.RedirectUris.Select(s => s.Uri).ToList(),
-            PostLogoutRedirectUris = client.PostLogoutRedirectUris.Select(s => s.Uri).ToList(),
-            RequestUris = client.RequestUris.Select(s => s.Uri).ToList(),
+            ResponseTypes = GetNullableList(client.ResponseTypes.Select(rt => rt.Name).ToList()),
+            RedirectUris = GetNullableList(client.RedirectUris.Select(s => s.Uri).ToList()),
+            PostLogoutRedirectUris = GetNullableList(client.PostLogoutRedirectUris.Select(s => s.Uri).ToList()),
+            RequestUris = GetNullableList(client.RequestUris.Select(s => s.Uri).ToList()),
             BackchannelLogoutUri = client.BackchannelLogoutUri,
             ClientUri = client.ClientUri,
             PolicyUri = client.PolicyUri,
@@ -129,12 +129,12 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             RequireDPoPBoundAccessTokens = client.RequireDPoPBoundAccessTokens,
             SubjectType = client.SubjectType,
             DefaultMaxAge = client.DefaultMaxAge,
-            DefaultAcrValues = client.ClientAuthenticationContextReferences
+            DefaultAcrValues = GetNullableList(client.ClientAuthenticationContextReferences
                 .OrderBy(x => x.Order)
                 .Select(x => x.AuthenticationContextReference)
                 .Select(x => x.Name)
-                .ToList(),
-            Contacts = client.Contacts.Select(c => c.Email).ToList(),
+                .ToList()),
+            Contacts = GetNullableList(client.Contacts.Select(c => c.Email).ToList()),
             AuthorizationCodeExpiration = client.AuthorizationCodeExpiration,
             DeviceCodeExpiration = client.DeviceCodeExpiration,
             AccessTokenExpiration = client.AccessTokenExpiration,
@@ -181,6 +181,11 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.Contacts.Clear();
         client.Scopes.Clear();
         client.ClientAuthenticationContextReferences.Clear();
+    }
+
+    private static IReadOnlyCollection<string>? GetNullableList(IReadOnlyCollection<string> collection)
+    {
+        return collection.Count == 0 ? null : collection;
     }
 
     private static void SetValues(RegisterValidatedRequest request, Client client)
