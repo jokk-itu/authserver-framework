@@ -202,12 +202,12 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.Id, response.ClientId);
         Assert.Empty(response.GrantTypes);
         Assert.Empty(response.Scope);
-        Assert.Empty(response.ResponseTypes);
-        Assert.Empty(response.RedirectUris);
-        Assert.Empty(response.PostLogoutRedirectUris);
-        Assert.Empty(response.RequestUris);
-        Assert.Empty(response.DefaultAcrValues);
-        Assert.Empty(response.Contacts);
+        Assert.Null(response.ResponseTypes);
+        Assert.Null(response.RedirectUris);
+        Assert.Null(response.PostLogoutRedirectUris);
+        Assert.Null(response.RequestUris);
+        Assert.Null(response.DefaultAcrValues);
+        Assert.Null(response.Contacts);
     }
 
     [Fact]
