@@ -844,7 +844,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
-        authorizationGrant.Client.Scopes.Remove(await GetScope(ScopeConstants.Profile));
+        authorizationGrant.Client.Scopes.Remove(await GetScope(ScopeConstants.OpenId));
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
         await SaveChangesAsync();
 
@@ -856,14 +856,14 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 AuthorizationGrantId = authorizationGrant.Id,
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
-                Scope = [ScopeConstants.Profile],
+                Scope = [ScopeConstants.OpenId],
             })
             .Verifiable();
 
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
-            Resource = ["resource"],
+            Resource = ["https://weather.authserver.dk"],
             CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [

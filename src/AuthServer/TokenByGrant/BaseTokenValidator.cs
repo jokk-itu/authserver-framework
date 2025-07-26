@@ -57,11 +57,6 @@ internal abstract class BaseTokenValidator
             }
 
             requestedScopes = isScopeRequested ? scope : grantConsentScopes.Select(x => x.Name).ToList();
-            if (requestedScopes.IsNotSubset(cachedClient.Scopes))
-            {
-                return TokenError.UnauthorizedForScope;
-            }
-
             if (requestedScopes.SelectMany(_ => resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
             {
                 return TokenError.ScopeExceedsConsentedScope;
@@ -74,12 +69,17 @@ internal abstract class BaseTokenValidator
             {
                 return TokenError.UnauthorizedForScope;
             }
+        }
 
-            var doesResourceExist = await _clientRepository.DoesResourcesExist(resource, requestedScopes, cancellationToken);
-            if (!doesResourceExist)
-            {
-                return TokenError.InvalidResource;
-            }
+        if (requestedScopes.IsNotSubset(cachedClient.Scopes))
+        {
+            return TokenError.UnauthorizedForScope;
+        }
+
+        var doesResourceExist = await _clientRepository.DoesResourcesExist(resource, requestedScopes, cancellationToken);
+        if (!doesResourceExist)
+        {
+            return TokenError.InvalidResource;
         }
 
         return new ProcessResult<IReadOnlyCollection<string>, ProcessError>(requestedScopes);

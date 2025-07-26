@@ -944,7 +944,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
-        authorizationGrant.Client.Scopes.Remove(await GetScope(ScopeConstants.Profile));
+        authorizationGrant.Client.Scopes.Remove(await GetScope(ScopeConstants.OpenId));
         var deviceCodeId = authorizationGrant.DeviceCodes.Single().Id;
         await SaveChangesAsync();
 
@@ -957,7 +957,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 AuthorizationGrantId = authorizationGrant.Id,
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
-                Scope = [ScopeConstants.Profile],
+                Scope = [ScopeConstants.OpenId],
                 Resource = []
             })
             .Verifiable();
@@ -965,7 +965,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.DeviceCode,
-            Resource = ["resource"],
+            Resource = ["https://weather.authserver.dk"],
             CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [

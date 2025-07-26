@@ -606,8 +606,8 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Scope = [ScopeConstants.Profile],
-            Resource = ["resource"],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["https://weather.authserver.dk"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -858,7 +858,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new Entities.AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600, jkt);
         await AddEntity(refreshToken);
 
