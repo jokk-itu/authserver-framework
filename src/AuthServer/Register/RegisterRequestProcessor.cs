@@ -343,4 +343,21 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
 
         client.SectorIdentifier = sectorIdentifier;
     }
+
+    private async Task<Client> GetClient(string clientId, CancellationToken cancellationToken)
+    {
+        return await _authorizationDbContext
+            .Set<Client>()
+            .Where(x => x.Id == clientId)
+            .Include(c => c.GrantTypes)
+            .Include(c => c.ResponseTypes)
+            .Include(c => c.RedirectUris)
+            .Include(c => c.PostLogoutRedirectUris)
+            .Include(c => c.RequestUris)
+            .Include(c => c.Contacts)
+            .Include(c => c.Scopes)
+            .Include(x => x.ClientAuthenticationContextReferences)
+            .ThenInclude(x => x.AuthenticationContextReference)
+            .SingleAsync(cancellationToken);
+    }
 }
