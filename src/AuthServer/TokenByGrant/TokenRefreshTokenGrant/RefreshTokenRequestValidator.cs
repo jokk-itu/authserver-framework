@@ -1,31 +1,24 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization.Abstractions;
-using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
-using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.Repositories.Models;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 
-internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>
+internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>
 {
     private readonly AuthorizationDbContext _identityContext;
     private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
-    private readonly IClientAuthenticationService _clientAuthenticationService;
     private readonly ICachedClientStore _cachedClientStore;
-    private readonly IClientRepository _clientRepository;
-    private readonly IConsentRepository _consentGrantRepository;
-    private readonly IDPoPService _dPoPService;
 
     public RefreshTokenRequestValidator(
         AuthorizationDbContext identityContext,
@@ -33,16 +26,13 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
         IClientRepository clientRepository,
-        IConsentRepository consentGrantRepository,
+        IConsentRepository consentRepository,
         IDPoPService dPoPService)
+        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
     {
         _identityContext = identityContext;
         _tokenDecoder = tokenDecoder;
-        _clientAuthenticationService = clientAuthenticationService;
         _cachedClientStore = cachedClientStore;
-        _clientRepository = clientRepository;
-        _consentGrantRepository = consentGrantRepository;
-        _dPoPService = dPoPService;
     }
 
     public async Task<ProcessResult<RefreshTokenValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -62,19 +52,13 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
             return TokenError.InvalidResource;
         }
 
-        if (request.ClientAuthentications.Count != 1)
+        var clientAuthenticationResult = await AuthenticateClient(request.ClientAuthentications, cancellationToken);
+        if (!clientAuthenticationResult.IsSuccess)
         {
-            return TokenError.MultipleOrNoneClientMethod;
-        }
-
-        var clientAuthentication = request.ClientAuthentications.Single();
-        var clientAuthenticationResult = await _clientAuthenticationService.AuthenticateClient(clientAuthentication, cancellationToken);
-        if (!clientAuthenticationResult.IsAuthenticated || string.IsNullOrWhiteSpace(clientAuthenticationResult.ClientId))
-        {
-            return TokenError.InvalidClient;
+            return clientAuthenticationResult.Error!;
         }
         
-        var clientId = clientAuthenticationResult.ClientId!;
+        var clientId = clientAuthenticationResult.Value!;
         RefreshTokenValidationResult? refreshTokenValidationResult;
         if (TokenHelper.IsJsonWebToken(request.RefreshToken))
         {
@@ -91,78 +75,30 @@ internal class RefreshTokenRequestValidator : IRequestValidator<TokenRequest, Re
         }
 
         var cachedClient = await _cachedClientStore.Get(clientId, cancellationToken);
-
         if (cachedClient.GrantTypes.All(x => x != GrantTypeConstants.RefreshToken))
         {
             return TokenError.UnauthorizedForGrantType;
         }
 
-        var isDPoPRequired = cachedClient.RequireDPoPBoundAccessTokens || refreshTokenValidationResult.Jkt is not null;
-        if (isDPoPRequired && string.IsNullOrEmpty(request.DPoP))
+        var dPoPResult = await ValidateDPoP(request.DPoP, cachedClient, refreshTokenValidationResult.Jkt, cancellationToken);
+        if (dPoPResult?.Error is not null)
         {
-            return TokenError.DPoPRequired;
+            return dPoPResult.Error;
         }
 
-        var dPoPValidationResult = new DPoPValidationResult();
-        if (!string.IsNullOrEmpty(request.DPoP))
+        var scopeValidationResult = await ValidateScope(request.Scope, request.Resource, refreshTokenValidationResult.AuthorizationGrantId, cachedClient, cancellationToken);
+        if (!scopeValidationResult.IsSuccess)
         {
-            dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: false })
-            {
-                return TokenError.InvalidDPoP;
-            }
-
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
-            {
-                return TokenError.RenewDPoPNonce(clientId);
-            }
-
-            if (refreshTokenValidationResult.Jkt is not null
-                && dPoPValidationResult.DPoPJkt != refreshTokenValidationResult.Jkt)
-            {
-                return TokenError.InvalidRefreshTokenJktMatch;
-            }
-        }
-
-        IReadOnlyCollection<string> requestedScopes;
-        var isScopeRequested = request.Scope.Count != 0;
-
-        if (cachedClient.RequireConsent)
-        {
-            var grantConsentScopes = await _consentGrantRepository.GetGrantConsentedScopes(refreshTokenValidationResult.AuthorizationGrantId, cancellationToken);
-            if (grantConsentScopes.Count == 0)
-            {
-                return TokenError.ConsentRequired;
-            }
-
-            requestedScopes = isScopeRequested ? request.Scope : grantConsentScopes.Select(x => x.Name).ToList();
-            if (requestedScopes.SelectMany(_ => request.Resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
-            {
-                return TokenError.ScopeExceedsConsentedScope;
-            }
-        }
-        else
-        {
-            requestedScopes = isScopeRequested ? request.Scope : cachedClient.Scopes;
-            if (requestedScopes.IsNotSubset(cachedClient.Scopes))
-            {
-                return TokenError.UnauthorizedForScope;
-            }
-
-            var doesResourceExist = await _clientRepository.DoesResourcesExist(request.Resource, requestedScopes, cancellationToken);
-            if (!doesResourceExist)
-            {
-                return TokenError.InvalidResource;
-            }
+            return scopeValidationResult.Error!;
         }
 
         return new RefreshTokenValidatedRequest
         {
             AuthorizationGrantId = refreshTokenValidationResult.AuthorizationGrantId,
             ClientId = clientId,
-            DPoPJkt = dPoPValidationResult.DPoPJkt,
+            DPoPJkt = dPoPResult?.DPoPJkt,
             Resource = request.Resource,
-            Scope = requestedScopes
+            Scope = scopeValidationResult.Value!
         };
     }
 
