@@ -10,20 +10,14 @@ using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.Extensions;
-using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.TokenDeviceCodeGrant;
-internal class DeviceCodeRequestValidator : IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>
+internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>
 {
     private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly ICodeEncoder<EncodedDeviceCode> _deviceCodeEncoder;
-    private readonly IClientAuthenticationService _clientAuthenticationService;
-    private readonly IClientRepository _clientRepository;
     private readonly ICachedClientStore _cachedEntityStore;
-    private readonly IConsentRepository _consentGrantRepository;
-    private readonly IDPoPService _dPoPService;
 
     public DeviceCodeRequestValidator(
         AuthorizationDbContext authorizationDbContext,
@@ -31,16 +25,13 @@ internal class DeviceCodeRequestValidator : IRequestValidator<TokenRequest, Devi
         IClientAuthenticationService clientAuthenticationService,
         IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentRepository consentGrantRepository,
+        IConsentRepository consentRepository,
         IDPoPService dPoPService)
+        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
     {
         _authorizationDbContext = authorizationDbContext;
         _deviceCodeEncoder = deviceCodeEncoder;
-        _clientAuthenticationService = clientAuthenticationService;
-        _clientRepository = clientRepository;
         _cachedEntityStore = cachedEntityStore;
-        _consentGrantRepository = consentGrantRepository;
-        _dPoPService = dPoPService;
     }
 
     public async Task<ProcessResult<DeviceCodeValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -67,60 +58,19 @@ internal class DeviceCodeRequestValidator : IRequestValidator<TokenRequest, Devi
             return TokenError.InvalidCodeVerifier;
         }
 
-        var isClientAuthenticationMethodInvalid = request.ClientAuthentications.Count != 1;
-        if (isClientAuthenticationMethodInvalid)
+        var clientAuthenticationResult = await AuthenticateClient(request.ClientAuthentications, cancellationToken);
+        if (!clientAuthenticationResult.IsSuccess)
         {
-            return TokenError.MultipleOrNoneClientMethod;
+            return clientAuthenticationResult.Error!;
         }
 
-        var clientAuthentication = request.ClientAuthentications.Single();
-        var clientAuthenticationResult = await _clientAuthenticationService.AuthenticateClient(clientAuthentication, cancellationToken);
-        if (!clientAuthenticationResult.IsAuthenticated || string.IsNullOrWhiteSpace(clientAuthenticationResult.ClientId))
+        var deviceCodeValidationResult = await ValidateDeviceCode(deviceCode, cancellationToken);
+        if (!deviceCodeValidationResult.IsSuccess)
         {
-            return TokenError.InvalidClient;
+            return deviceCodeValidationResult.Error!;
         }
 
-        var deviceCodeQuery = await _authorizationDbContext
-            .Set<DeviceCode>()
-            .Where(x => x.Id == deviceCode.DeviceCodeId)
-            .Select(x => new
-            {
-                DeviceCode = x,
-                Grant = x.DeviceCodeGrant
-            })
-            .SingleOrDefaultAsync(cancellationToken);
-
-        if (deviceCodeQuery is null)
-        {
-            return TokenError.InvalidDeviceCode;
-        }
-
-        if (!Code.IsActive.Compile().Invoke(deviceCodeQuery.DeviceCode))
-        {
-            return TokenError.DeviceCodeExpired;
-        }
-
-        if (!deviceCodeQuery.DeviceCode.IsWithinInterval())
-        {
-            return TokenError.DeviceSlowDown(deviceCode.DeviceCodeId);
-        }
-
-        if (deviceCodeQuery.DeviceCode.RevokedAt is not null)
-        {
-            return TokenError.DeviceAuthorizationDenied;
-        }
-
-        if (deviceCodeQuery.Grant is null)
-        {
-            return TokenError.DeviceAuthorizationPending(deviceCode.DeviceCodeId);
-        }
-
-        if (!AuthorizationGrant.IsActive.Compile().Invoke(deviceCodeQuery.Grant))
-        {
-            return TokenError.InvalidGrant;
-        }
-
-        var clientId = clientAuthenticationResult.ClientId!;
+        var clientId = clientAuthenticationResult.Value!;
         var cachedClient = await _cachedEntityStore.Get(clientId, cancellationToken);
 
         if (cachedClient.GrantTypes.All(x => x != request.GrantType))
@@ -128,70 +78,73 @@ internal class DeviceCodeRequestValidator : IRequestValidator<TokenRequest, Devi
             return TokenError.UnauthorizedForGrantType;
         }
 
-        var isDPoPRequired = cachedClient.RequireDPoPBoundAccessTokens || deviceCode.DPoPJkt is not null;
-        if (isDPoPRequired && string.IsNullOrEmpty(request.DPoP))
+        var dPoPResult = await ValidateDPoP(request.DPoP, cachedClient, deviceCode.DPoPJkt, cancellationToken);
+        if (dPoPResult?.Error is not null)
         {
-            return TokenError.DPoPRequired;
+            return dPoPResult.Error!;
         }
 
-        if (!string.IsNullOrEmpty(request.DPoP))
+        var scopeValidationResult = await ValidateScope(deviceCode.Scope, request.Resource, deviceCodeValidationResult.Value!.DeviceCodeGrant!.Id, cachedClient, cancellationToken);
+        if (!scopeValidationResult.IsSuccess)
         {
-            var dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: false })
-            {
-                return TokenError.InvalidDPoP;
-            }
-
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
-            {
-                return TokenError.RenewDPoPNonce(clientId);
-            }
-
-            if (dPoPValidationResult.DPoPJkt != deviceCode.DPoPJkt)
-            {
-                return TokenError.InvalidDPoPJktMatch;
-            }
-        }
-
-        // Request.Scopes cannot be given during device_code grant
-        var scope = deviceCode.Scope;
-
-        // Check scope again, as the authorized scope can change
-        if (scope.IsNotSubset(cachedClient.Scopes))
-        {
-            return TokenError.UnauthorizedForScope;
-        }
-
-        if (cachedClient.RequireConsent)
-        {
-            var grantConsentScopes = await _consentGrantRepository.GetGrantConsentedScopes(deviceCodeQuery.Grant.Id, cancellationToken);
-            if (grantConsentScopes.Count == 0)
-            {
-                return TokenError.ConsentRequired;
-            }
-
-            if (scope.SelectMany(_ => request.Resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
-            {
-                return TokenError.ScopeExceedsConsentedScope;
-            }
-        }
-        else
-        {
-            var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, scope, cancellationToken);
-            if (!doesResourcesExist)
-            {
-                return TokenError.InvalidResource;
-            }
+            return scopeValidationResult.Error!;
         }
 
         return new DeviceCodeValidatedRequest
         {
             ClientId = clientId,
-            AuthorizationGrantId = deviceCodeQuery.Grant.Id,
+            AuthorizationGrantId = deviceCodeValidationResult.Value!.DeviceCodeGrant.Id,
             DeviceCodeId = deviceCode.DeviceCodeId,
             DPoPJkt = deviceCode.DPoPJkt,
             Resource = request.Resource,
-            Scope = scope
+            Scope = scopeValidationResult.Value!
         };
     }
+
+    private async Task<ProcessResult<DeviceCodeResult, ProcessError>> ValidateDeviceCode(EncodedDeviceCode deviceCode, CancellationToken cancellationToken)
+    {
+        var deviceCodeResult = await _authorizationDbContext
+            .Set<DeviceCode>()
+            .Where(x => x.Id == deviceCode.DeviceCodeId)
+            .Select(x => new
+            {
+                DeviceCode = x,
+                x.DeviceCodeGrant
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (deviceCodeResult is null)
+        {
+            return TokenError.InvalidDeviceCode;
+        }
+
+        if (!Code.IsActive.Compile().Invoke(deviceCodeResult.DeviceCode))
+        {
+            return TokenError.DeviceCodeExpired;
+        }
+
+        if (!deviceCodeResult.DeviceCode.IsWithinInterval())
+        {
+            return TokenError.DeviceSlowDown(deviceCode.DeviceCodeId);
+        }
+
+        if (deviceCodeResult.DeviceCode.RevokedAt is not null)
+        {
+            return TokenError.DeviceAuthorizationDenied;
+        }
+
+        if (deviceCodeResult.DeviceCodeGrant is null)
+        {
+            return TokenError.DeviceAuthorizationPending(deviceCode.DeviceCodeId);
+        }
+
+        if (!AuthorizationGrant.IsActive.Compile().Invoke(deviceCodeResult.DeviceCodeGrant))
+        {
+            return TokenError.InvalidGrant;
+        }
+
+        return new DeviceCodeResult(deviceCodeResult.DeviceCode, deviceCodeResult.DeviceCodeGrant);
+    }
+
+    private sealed record DeviceCodeResult(DeviceCode DeviceCode, DeviceCodeGrant DeviceCodeGrant);
 }
