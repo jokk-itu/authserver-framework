@@ -63,6 +63,7 @@ internal class DeviceCodeRequestHandler : RequestHandler<TokenRequest, DeviceCod
         {
             await _unitOfWork.Begin(cancellationToken);
             await _deviceCodeRepository.UpdateInterval(slowDownProcessError.DeviceCodeId, cancellationToken);
+            await _deviceCodeRepository.UpdatePoll(slowDownProcessError.DeviceCodeId, cancellationToken);
             await _unitOfWork.Commit(cancellationToken);
 
             return slowDownProcessError;

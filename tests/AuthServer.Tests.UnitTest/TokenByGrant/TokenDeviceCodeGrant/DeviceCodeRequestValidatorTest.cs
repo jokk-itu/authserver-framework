@@ -873,62 +873,6 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_UnauthorizedScopeForClient_ExpectUnauthorizedForScope()
-    {
-        // Arrange
-        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
-        var deviceCodeEncoder = new Mock<ICodeEncoder<EncodedDeviceCode>>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(deviceCodeEncoder);
-        });
-
-        var validator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(32);
-        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
-        authorizationGrant.Client.Scopes.Remove(await GetScope(ScopeConstants.Profile));
-        var deviceCodeId = authorizationGrant.DeviceCodes.Single().Id;
-        await SaveChangesAsync();
-
-        deviceCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
-            .Returns(new EncodedDeviceCode
-            {
-                UserCodeId = string.Empty,
-                DeviceCodeId = deviceCodeId,
-                AuthorizationGrantId = authorizationGrant.Id,
-                CodeChallenge = proofKey.CodeChallenge,
-                CodeChallengeMethod = proofKey.CodeChallengeMethod,
-                Scope = [ScopeConstants.Profile],
-                Resource = []
-            })
-            .Verifiable();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.DeviceCode,
-            Resource = ["resource"],
-            CodeVerifier = proofKey.CodeVerifier,
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    authorizationGrant.Client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.UnauthorizedForScope, processResult);
-        deviceCodeEncoder.Verify();
-    }
-
-    [Fact]
     public async Task Validate_NoConsentedScope_ExpectConsentRequired()
     {
         // Arrange
@@ -981,6 +925,62 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(TokenError.ConsentRequired, processResult);
+        deviceCodeEncoder.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_UnauthorizedScopeForClient_ExpectUnauthorizedForScope()
+    {
+        // Arrange
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+        var deviceCodeEncoder = new Mock<ICodeEncoder<EncodedDeviceCode>>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(deviceCodeEncoder);
+        });
+
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var authorizationGrant = await GetAuthorizationGrant(plainSecret);
+        authorizationGrant.Client.Scopes.Remove(await GetScope(ScopeConstants.OpenId));
+        var deviceCodeId = authorizationGrant.DeviceCodes.Single().Id;
+        await SaveChangesAsync();
+
+        deviceCodeEncoder
+            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Returns(new EncodedDeviceCode
+            {
+                UserCodeId = string.Empty,
+                DeviceCodeId = deviceCodeId,
+                AuthorizationGrantId = authorizationGrant.Id,
+                CodeChallenge = proofKey.CodeChallenge,
+                CodeChallengeMethod = proofKey.CodeChallengeMethod,
+                Scope = [ScopeConstants.OpenId],
+                Resource = []
+            })
+            .Verifiable();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.DeviceCode,
+            Resource = ["https://weather.authserver.dk"],
+            CodeVerifier = proofKey.CodeVerifier,
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    authorizationGrant.Client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.UnauthorizedForScope, processResult);
         deviceCodeEncoder.Verify();
     }
 

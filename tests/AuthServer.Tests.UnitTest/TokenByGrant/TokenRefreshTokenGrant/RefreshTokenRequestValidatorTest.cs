@@ -6,7 +6,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
-using AuthServer.PushedAuthorization;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
@@ -505,7 +504,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_DPoPDoesNotMatchRefreshTokenJkt_ExpectInvalidRefreshTokenJktMatch()
+    public async Task Validate_DPoPDoesNotMatchRefreshTokenJkt_ExpectInvalidDPoPJktMatch()
     {
         // Arrange
         var dPoPService = new Mock<IDPoPService>();
@@ -550,7 +549,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(TokenError.InvalidRefreshTokenJktMatch, processResult);
+        Assert.Equal(TokenError.InvalidDPoPJktMatch, processResult);
         dPoPService.Verify();
     }
 
@@ -587,6 +586,41 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(TokenError.ConsentRequired, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_ConsentRequiredWithUnauthorizedScopeForClient_ExpectUnauthorizedForScope()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        client.Scopes.Clear();
+
+        var refreshToken = await GetRefreshToken(client);
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = refreshToken.Reference,
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["https://weather.authserver.dk"],
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.UnauthorizedForScope, processResult);
     }
 
     [Fact]
@@ -667,6 +701,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(16);
         var client = await GetClient(plainSecret);
+        client.Scopes.Clear();
         client.RequireConsent = false;
 
         var refreshToken = await GetRefreshToken(client);
@@ -797,7 +832,9 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         client.GrantTypes.Add(grantType);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var profileScope = await GetScope(ScopeConstants.Profile);
         client.Scopes.Add(openIdScope);
+        client.Scopes.Add(profileScope);
 
         await AddEntity(client);
 
@@ -821,7 +858,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new Entities.AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600, jkt);
         await AddEntity(refreshToken);
 

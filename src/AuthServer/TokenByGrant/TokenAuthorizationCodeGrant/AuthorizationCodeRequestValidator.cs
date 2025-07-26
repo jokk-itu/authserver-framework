@@ -8,23 +8,17 @@ using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
-using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 
-internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>
+internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>
 {
     private readonly AuthorizationDbContext _identityContext;
     private readonly ICodeEncoder<EncodedAuthorizationCode> _authorizationCodeEncoder;
-    private readonly IClientAuthenticationService _clientAuthenticationService;
-    private readonly IClientRepository _clientRepository;
     private readonly ICachedClientStore _cachedEntityStore;
-    private readonly IConsentRepository _consentGrantRepository;
-    private readonly IDPoPService _dPoPService;
 
     public AuthorizationCodeRequestValidator(
         AuthorizationDbContext identityContext,
@@ -32,16 +26,13 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
         IClientAuthenticationService clientAuthenticationService,
         IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentRepository consentGrantRepository,
+        IConsentRepository consentRepository,
         IDPoPService dPoPService)
+        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
     {
         _identityContext = identityContext;
         _authorizationCodeEncoder = authorizationCodeEncoder;
-        _clientAuthenticationService = clientAuthenticationService;
-        _clientRepository = clientRepository;
         _cachedEntityStore = cachedEntityStore;
-        _consentGrantRepository = consentGrantRepository;
-        _dPoPService = dPoPService;
     }
     
     public async Task<ProcessResult<AuthorizationCodeValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -76,17 +67,10 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             return TokenError.InvalidRedirectUri;
         }
 
-        var isClientAuthenticationMethodInvalid = request.ClientAuthentications.Count != 1;
-        if (isClientAuthenticationMethodInvalid)
+        var clientAuthenticationResult = await AuthenticateClient(request.ClientAuthentications, cancellationToken);
+        if (!clientAuthenticationResult.IsSuccess)
         {
-            return TokenError.MultipleOrNoneClientMethod;
-        }
-
-        var clientAuthentication = request.ClientAuthentications.Single();
-        var clientAuthenticationResult = await _clientAuthenticationService.AuthenticateClient(clientAuthentication, cancellationToken);
-        if (!clientAuthenticationResult.IsAuthenticated || string.IsNullOrWhiteSpace(clientAuthenticationResult.ClientId))
-        {
-            return TokenError.InvalidClient;
+            return clientAuthenticationResult.Error!;
         }
 
         var hasActiveGrant = await _identityContext
@@ -103,10 +87,10 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             return TokenError.InvalidGrant;
         }
 
-        var clientId = clientAuthenticationResult.ClientId!;
+        var clientId = clientAuthenticationResult.Value!;
         var cachedClient = await _cachedEntityStore.Get(clientId, cancellationToken);
 
-        if (cachedClient.GrantTypes.All(x => x != request.GrantType))
+        if (cachedClient.GrantTypes.All(x => x != GrantTypeConstants.AuthorizationCode))
         {
             return TokenError.UnauthorizedForGrantType;
         }
@@ -117,60 +101,16 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             return TokenError.UnauthorizedForRedirectUri;
         }
 
-        var isDPoPRequired = cachedClient.RequireDPoPBoundAccessTokens || authorizationCode.DPoPJkt is not null;
-        if (isDPoPRequired && string.IsNullOrEmpty(request.DPoP))
+        var dPoPResult = await ValidateDPoP(request.DPoP, cachedClient, authorizationCode.DPoPJkt, cancellationToken);
+        if (dPoPResult?.Error is not null)
         {
-            return TokenError.DPoPRequired;
+            return dPoPResult.Error;
         }
 
-        if (!string.IsNullOrEmpty(request.DPoP))
+        var scopeValidationResult = await ValidateScope(authorizationCode.Scope, request.Resource, authorizationCode.AuthorizationGrantId, cachedClient, cancellationToken);
+        if (!scopeValidationResult.IsSuccess)
         {
-            var dPoPValidationResult = await _dPoPService.ValidateDPoP(request.DPoP, clientId, cancellationToken);
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: false })
-            {
-                return TokenError.InvalidDPoP;
-            }
-
-            if (dPoPValidationResult is { IsValid: false, RenewDPoPNonce: true })
-            {
-                return TokenError.RenewDPoPNonce(clientId);
-            }
-
-            if (dPoPValidationResult.DPoPJkt != authorizationCode.DPoPJkt)
-            {
-                return TokenError.InvalidDPoPJktMatch;
-            }
-        }
-
-        // Request.Scopes cannot be given during authorization_code grant
-        var scope = authorizationCode.Scope;
-
-        // Check scope again, as the authorized scope can change
-        if (scope.IsNotSubset(cachedClient.Scopes))
-        {
-            return TokenError.UnauthorizedForScope;
-        }
-
-        if (cachedClient.RequireConsent)
-        {
-            var grantConsentScopes = await _consentGrantRepository.GetGrantConsentedScopes(authorizationCode.AuthorizationGrantId, cancellationToken);
-            if (grantConsentScopes.Count == 0)
-            {
-                return TokenError.ConsentRequired;
-            }
-            
-            if (scope.SelectMany(_ => request.Resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
-            {
-                return TokenError.ScopeExceedsConsentedScope;
-            }
-        }
-        else
-        {
-            var doesResourcesExist = await _clientRepository.DoesResourcesExist(request.Resource, scope, cancellationToken);
-            if (!doesResourcesExist)
-            {
-                return TokenError.InvalidResource;
-            }
+            return scopeValidationResult.Error!;
         }
 
         return new AuthorizationCodeValidatedRequest
@@ -180,7 +120,7 @@ internal class AuthorizationCodeRequestValidator : IRequestValidator<TokenReques
             AuthorizationCodeId = authorizationCode.AuthorizationCodeId,
             DPoPJkt = authorizationCode.DPoPJkt,
             Resource = request.Resource,
-            Scope = scope
+            Scope = authorizationCode.Scope
         };
     }
 }

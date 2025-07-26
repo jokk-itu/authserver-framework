@@ -9,7 +9,7 @@ internal class GetRegisterResponse
 	public required string ClientId { get; init; }
 
 	[JsonPropertyName(Parameter.ClientIdIssuedAt)]
-	public DateTime ClientIdIssuedAt { get; init; }
+	public required DateTime ClientIdIssuedAt { get; init; }
 
 	[JsonPropertyName(Parameter.ClientSecret)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

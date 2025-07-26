@@ -136,35 +136,6 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task CreateAuthorizationCodeGrant_ActiveSession_ExpectGrant()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
-        {
-            SubjectType = SubjectType.Public
-        };
-        await AddEntity(client);
-        await AddEntity(session);
-
-        // Act
-        var authorizationGrant = await authorizationGrantRepository.CreateAuthorizationCodeGrant(
-            subjectIdentifier.Id,
-            client.Id,
-            LevelOfAssuranceLow,
-            [AuthenticationMethodReferenceConstants.Password],
-            CancellationToken.None);
-
-        // Assert
-        Assert.Equal(client, authorizationGrant.Client);
-        Assert.Equal(session, authorizationGrant.Session);
-        Assert.Equal(subjectIdentifier.Id, authorizationGrant.Subject);
-    }
-
-    [Fact]
     public async Task CreateAuthorizationCodeGrant_SubjectTypePairwise_ExpectGrant()
     {
         // Arrange
@@ -185,7 +156,68 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
             subjectIdentifier.Id,
             client.Id,
             LevelOfAssuranceLow,
+            [],
+            CancellationToken.None);
+
+        // Assert
+        Assert.Equal(client, authorizationGrant.Client);
+        Assert.NotNull(authorizationGrant.Session);
+        Assert.Equal(PairwiseSubjectHelper.GenerateSubject(sectorIdentifier, subjectIdentifier.Id), authorizationGrant.Subject);
+    }
+
+    [Fact]
+    public async Task CreateDeviceCodeGrant_ActiveSessionWithPasswordAmr_ExpectGrant()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            SubjectType = SubjectType.Public
+        };
+        await AddEntity(session);
+        await AddEntity(client);
+
+        // Act
+        var authorizationGrant = await authorizationGrantRepository.CreateDeviceCodeGrant(
+            subjectIdentifier.Id,
+            client.Id,
+            LevelOfAssuranceLow,
             [AuthenticationMethodReferenceConstants.Password],
+            CancellationToken.None);
+
+        // Assert
+        Assert.Equal(client, authorizationGrant.Client);
+        Assert.Equal(session, authorizationGrant.Session);
+        Assert.Equal(subjectIdentifier.Id, authorizationGrant.Subject);
+        Assert.Single(authorizationGrant.AuthenticationMethodReferences);
+        Assert.Equal(AuthenticationMethodReferenceConstants.Password, authorizationGrant.AuthenticationMethodReferences.Single().Name);
+    }
+
+    [Fact]
+    public async Task CreateDeviceCodeGrant_SubjectTypePairwise_ExpectGrant()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var authorizationGrantRepository = serviceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+        var subjectIdentifier = new SubjectIdentifier();
+        var sectorIdentifier = new SectorIdentifier("https://sector.authserver.dk/uris.json");
+        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            SubjectType = SubjectType.Pairwise,
+            SectorIdentifier = sectorIdentifier
+        };
+        await AddEntity(subjectIdentifier);
+        await AddEntity(client);
+
+        // Act
+        var authorizationGrant = await authorizationGrantRepository.CreateDeviceCodeGrant(
+            subjectIdentifier.Id,
+            client.Id,
+            LevelOfAssuranceLow,
+            [],
             CancellationToken.None);
 
         // Assert

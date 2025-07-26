@@ -48,12 +48,12 @@ internal class RegisterResponse
 	public required int? JwksExpiration { get; init; }
 	public required int? RequestUriExpiration { get; init; }
 	public required int DPoPNonceExpiration { get; init; }
-	public required IReadOnlyCollection<string> DefaultAcrValues { get; init; }
+	public required IReadOnlyCollection<string>? DefaultAcrValues { get; init; }
 	public required IReadOnlyCollection<string> Scope { get; init; }
-	public required IReadOnlyCollection<string> RedirectUris { get; init; }
-	public required IReadOnlyCollection<string> PostLogoutRedirectUris { get; init; }
-	public required IReadOnlyCollection<string> RequestUris { get; init; }
-	public required IReadOnlyCollection<string> ResponseTypes { get; init; }
+	public required IReadOnlyCollection<string>? RedirectUris { get; init; }
+	public required IReadOnlyCollection<string>? PostLogoutRedirectUris { get; init; }
+	public required IReadOnlyCollection<string>? RequestUris { get; init; }
+	public required IReadOnlyCollection<string>? ResponseTypes { get; init; }
 	public required IReadOnlyCollection<string> GrantTypes { get; init; }
-	public required IReadOnlyCollection<string> Contacts { get; init; }
+	public required IReadOnlyCollection<string>? Contacts { get; init; }
 }
