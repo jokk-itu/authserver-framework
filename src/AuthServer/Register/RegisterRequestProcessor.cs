@@ -180,6 +180,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.RequestUris.Clear();
         client.Contacts.Clear();
         client.Scopes.Clear();
+        client.ClientAuthenticationContextReferences.Clear();
     }
 
     private static void SetValues(RegisterValidatedRequest request, Client client)
