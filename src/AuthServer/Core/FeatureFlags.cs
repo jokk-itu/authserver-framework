@@ -21,4 +21,5 @@ public static class FeatureFlags
     public const string Userinfo = "Userinfo";
     public const string DeviceAuthorization = "DeviceAuthorization";
     public const string DeviceCode = "DeviceCode";
+    public const string TokenExchange = "TokenExchange";
 }
