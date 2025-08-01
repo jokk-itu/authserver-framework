@@ -9,4 +9,5 @@ internal class TokenResponse
     public required string Scope { get; init; }
     public string? GrantId { get; init; }
     public required string TokenType { get; init; }
+    public string? IssuedTokenType { get; init; }
 }

@@ -42,7 +42,9 @@ internal class TokenEndpointHandler : IEndpointHandler
             case GrantTypeConstants.ClientCredentials when
                 !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.ClientCredentials):
             case GrantTypeConstants.DeviceCode when
-                !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.DeviceCode):    
+                !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.DeviceCode):
+            case GrantTypeConstants.TokenExchange when
+                !await _featureManagerSnapshot.IsEnabledAsync(FeatureFlags.TokenExchange):
                 return Results.Extensions.OAuthBadRequest(TokenError.UnsupportedGrantType);
         }
 
@@ -58,7 +60,8 @@ internal class TokenEndpointHandler : IEndpointHandler
                 IdToken = response.IdToken,
                 RefreshToken = response.RefreshToken,
                 GrantId = response.GrantId,
-                TokenType = response.TokenType
+                TokenType = response.TokenType,
+                IssuedTokenType = response.IssuedTokenType
             }),
             error =>
             {

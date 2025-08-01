@@ -25,4 +25,7 @@ internal class PostTokenResponse
     
     [JsonPropertyName(Parameter.GrantId)]
     public string? GrantId { get; init; }
+    
+    [JsonPropertyName(Parameter.IssuedTokenType)]
+    public string? IssuedTokenType { get; init; }
 }
