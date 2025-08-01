@@ -21,7 +21,12 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
         var codeVerifier = body.GetValue(Parameter.CodeVerifier);
         var redirectUri = body.GetValue(Parameter.RedirectUri);
         var refreshToken = body.GetValue(Parameter.RefreshToken);
-
+        var requestedTokenType = body.GetValue(Parameter.RequestedTokenType);
+        var subjectToken = body.GetValue(Parameter.SubjectToken);
+        var subjectTokenType = body.GetValue(Parameter.SubjectTokenType);
+        var actorToken = body.GetValue(Parameter.ActorToken);
+        var actorTokenType = body.GetValue(Parameter.ActorTokenType);
+        
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var resource = body.GetCollectionValue(Parameter.Resource);
 
@@ -44,6 +49,11 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
             CodeVerifier = codeVerifier,
             RedirectUri = redirectUri,
             RefreshToken = refreshToken,
+            RequestedTokenType = requestedTokenType,
+            SubjectToken = subjectToken,
+            SubjectTokenType = subjectTokenType,
+            ActorToken = actorToken,
+            ActorTokenType = actorTokenType,
             DPoP = dPoP,
             Scope = scope,
             Resource = resource,
