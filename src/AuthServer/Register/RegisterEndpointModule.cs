@@ -3,15 +3,25 @@ using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Endpoints;
 using AuthServer.Endpoints.Filters;
+using AuthServer.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace AuthServer.Register;
 
 internal class RegisterEndpointModule : IEndpointModule
 {
+    private readonly IOptionsMonitor<EndpointOptions> _endpointOptions;
+
+    public RegisterEndpointModule(
+        IOptionsMonitor<EndpointOptions> endpointOptions)
+    {
+        _endpointOptions = endpointOptions;
+    }
+
     public void RegisterEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
         var postRegisterBuilder = endpointRouteBuilder.MapMethods(
@@ -31,6 +41,11 @@ internal class RegisterEndpointModule : IEndpointModule
             .AddEndpointFilter<NoReferrerFilter>()
             .AddEndpointFilter(new FeatureFilter(FeatureFlags.RegisterPost));
 
+        if (!string.IsNullOrEmpty(_endpointOptions.CurrentValue.ClientRegistrationAuthenticationScheme))
+        {
+            postRegisterBuilder.RequireAuthorization(_endpointOptions.CurrentValue.ClientRegistrationAuthenticationScheme);
+        }
+
         var manageRegisterBuilder = endpointRouteBuilder
             .MapMethods(
                 "connect/register",
@@ -45,7 +60,7 @@ internal class RegisterEndpointModule : IEndpointModule
             .WithGroupName("Register");
 
         manageRegisterBuilder
-            .RequireAuthorization(AuthorizationConstants.Register);
+            .RequireAuthorization(AuthorizationConstants.ClientManagement);
 
         manageRegisterBuilder
             .AddEndpointFilter<NoCacheFilter>()
