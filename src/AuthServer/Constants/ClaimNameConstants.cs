@@ -58,6 +58,12 @@ public static class ClaimNameConstants
     public const string Exp = "exp";
 
     /// <summary>
+    /// NotBefore.
+    /// In UNIX seconds.
+    /// </summary>
+    public const string Nbf = "nbf";
+
+    /// <summary>
     /// Time when the End-User authentication occurred.
     /// </summary>
     public const string AuthTime = "auth_time";
