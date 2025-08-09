@@ -2,6 +2,7 @@
 using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Endpoints.Abstractions;
+using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Options;
 using AuthServer.TokenDecoders.Abstractions;
@@ -122,7 +123,44 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             return null;
         }
 
+        if (!AreLifetimeClaimsValid(jsonWebToken))
+        {
+            return null;
+        }
+
         return jsonWebToken;
+    }
+
+    private bool AreLifetimeClaimsValid(JsonWebToken jsonWebToken)
+    {
+        if (jsonWebToken.IssuedAt > DateTime.UtcNow)
+        {
+            _logger.LogWarning("Token iat claim {IssuedAt} is in the future", jsonWebToken.IssuedAt);
+            return false;
+        }
+
+        var expires = jsonWebToken.ValidTo;
+        if (expires > DateTime.UtcNow.AddSeconds(60))
+        {
+            _logger.LogWarning("Token exp claim {Expires} is more than 60 seconds in the future", expires);
+            return false;
+        }
+
+        var notBefore = jsonWebToken.ValidFrom;
+        if (notBefore < DateTime.UtcNow.AddSeconds(-60))
+        {
+            _logger.LogWarning("Token nbf claim {NotBefore} is more than 60 seconds in the past", notBefore);
+            return false;
+        }
+
+        var issuedAt = jsonWebToken.IssuedAt;
+        if (issuedAt < DateTime.UtcNow.AddSeconds(-60))
+        {
+            _logger.LogWarning("Token iat claim {IssuedAt} is more than 60 seconds in the past", issuedAt);
+            return false;
+        }
+
+        return true;
     }
 
     private async Task<JsonWebKey?> GetJwkHeaderValue(string token)
