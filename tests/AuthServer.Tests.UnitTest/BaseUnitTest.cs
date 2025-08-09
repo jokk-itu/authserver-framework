@@ -137,14 +137,37 @@ public abstract class BaseUnitTest
             userInteraction.EndSessionUri = "https://localhost:5000/logout";
             userInteraction.VerificationUri = "https://localhost:5000/device";
         });
-        services.AddAuthServer((_, contextOptions) =>
-        {
-            contextOptions.UseSqlite(_connection,
-                optionsBuilder =>
-                {
-                    optionsBuilder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-        });
+
+        services
+            .AddAuthServer()
+            .AddCleanupBackgroundServices()
+            .AddJwksHttpClient()
+            .AddLogoutHttpClient()
+            .AddRequestHttpClient()
+            .AddSectorHttpClient()
+            .AddAuthorizationCode()
+            .AddClientCredentials()
+            .AddRefreshToken()
+            .AddDeviceCode()
+            .AddRevocation()
+            .AddIntrospection()
+            .AddDiscovery()
+            .AddJwks()
+            .AddGrantManagementQuery()
+            .AddGrantManagementRevoke()
+            .AddEndSession()
+            .AddUserinfo()
+            .AddRegister()
+            .AddPushedAuthorization()
+            .AddAuthorizationDbContext((_, contextOptions) =>
+            {
+                contextOptions.UseSqlite(_connection,
+                    optionsBuilder =>
+                    {
+                        optionsBuilder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    });
+            });
+
         services.AddScoped<IDistributedCache, InMemoryCache>();
         services.AddScoped<IUserClaimService, UserClaimService>();
         services.AddScoped<IAuthenticatedUserAccessor, AuthenticatedUserAccessor>();

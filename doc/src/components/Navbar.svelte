@@ -18,7 +18,7 @@
   class:hidden={!isMobileMenuOpen}
   class="backdrop-saturate-200 backdrop-blur-md z-50 flex fixed top-0 bottom-0 left-0 right-0 overflow-y-auto"
 >
-  <div class="w-full min-h-full max-w-80 bg-zinc-200">
+  <div class="w-full h-fit max-w-80 bg-zinc-200">
     <div class="px-4 pt-6">
       <button onclick={closeMobileMenu} aria-label="Close mobile menu">
         <svg class="w-4 h-4" viewBox="0 0 24 24">

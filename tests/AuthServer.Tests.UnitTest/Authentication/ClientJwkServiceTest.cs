@@ -142,7 +142,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
                 HttpStatusCode.OK);
 
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientJwks))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
@@ -182,7 +182,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
                 HttpStatusCode.OK);
 
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientJwks))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
@@ -259,7 +259,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
                 HttpStatusCode.OK);
 
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientJwks))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
@@ -297,7 +297,7 @@ public class ClientJwkServiceTest(ITestOutputHelper outputHelper) : BaseUnitTest
                 HttpStatusCode.InternalServerError);
 
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientJwks))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
