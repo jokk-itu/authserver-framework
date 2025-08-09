@@ -21,7 +21,7 @@ internal class ClientSectorService : IClientSectorService
     /// <inheritdoc/>
     public async Task<bool> ContainsSectorDocument(Uri sectorIdentifierUri, IReadOnlyCollection<string> uris, CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.Client);
+        var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.ClientSector);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, sectorIdentifierUri);
         httpRequestMessage.Headers.Add("Accept", MimeTypeConstants.Json);
 

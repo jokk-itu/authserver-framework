@@ -86,7 +86,7 @@ internal class ClientJwkService : IClientJwkService
     {
         try
         {
-            using var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.Client);
+            using var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.ClientJwks);
             var response = await httpClient.GetAsync(jwksUri, cancellationToken);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync(cancellationToken);

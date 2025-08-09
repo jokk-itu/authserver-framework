@@ -25,7 +25,7 @@ public class ClientSectorServiceTest : BaseUnitTest
         {
             var requestHandler = new DelegatingHandlerStub("Server error", MimeTypeConstants.Text, HttpStatusCode.InternalServerError);
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientSector))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
@@ -55,7 +55,7 @@ public class ClientSectorServiceTest : BaseUnitTest
             var sectorDocument = new [] { "https://client.authserver.dk/callback" };
             var requestHandler = new DelegatingHandlerStub(JsonSerializer.Serialize(sectorDocument), MimeTypeConstants.Json, HttpStatusCode.OK);
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientSector))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
@@ -85,7 +85,7 @@ public class ClientSectorServiceTest : BaseUnitTest
             var sectorDocument = new[] { "https://client.authserver.dk/jwks" };
             var requestHandler = new DelegatingHandlerStub(JsonSerializer.Serialize(sectorDocument), MimeTypeConstants.Json, HttpStatusCode.OK);
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientSector))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 

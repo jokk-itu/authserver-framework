@@ -214,7 +214,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         {
             var requestHandler = new DelegatingHandlerStub("Error", "text/plain", HttpStatusCode.InternalServerError);
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientRequest))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
@@ -274,7 +274,7 @@ public class SecureRequestServiceTest : BaseUnitTest
 
         var requestHandler = new DelegatingHandlerStub(requestToken, MimeTypeConstants.OAuthRequestJwt, HttpStatusCode.OK);
         httpClientFactory
-            .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+            .Setup(x => x.CreateClient(HttpClientNameConstants.ClientRequest))
             .Returns(new HttpClient(requestHandler))
             .Verifiable();
 
@@ -348,7 +348,7 @@ public class SecureRequestServiceTest : BaseUnitTest
 
         var requestHandler = new DelegatingHandlerStub(requestToken, MimeTypeConstants.OAuthRequestJwt, HttpStatusCode.OK);
         httpClientFactory
-            .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+            .Setup(x => x.CreateClient(HttpClientNameConstants.ClientRequest))
             .Returns(new HttpClient(requestHandler))
             .Verifiable();
 

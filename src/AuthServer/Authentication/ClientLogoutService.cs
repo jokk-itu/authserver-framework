@@ -50,7 +50,7 @@ internal class ClientLogoutService : IClientLogoutService
             cancellationToken,
             async (logoutRequest, innerToken) =>
             {
-                var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.Client);
+                var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.ClientLogout);
 
                 var body = new Dictionary<string, string>
                 {
