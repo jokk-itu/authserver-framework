@@ -141,7 +141,6 @@ builder.Services.AddAuthServer(
             });
     });
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
 
 
