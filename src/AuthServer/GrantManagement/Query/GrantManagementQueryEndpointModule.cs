@@ -8,27 +8,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AuthServer.GrantManagement;
+namespace AuthServer.GrantManagement.Query;
 
-internal class GrantManagementEndpointModule : IEndpointModule
+internal class GrantManagementQueryEndpointModule : IEndpointModule
 {
     public void RegisterEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        var revokeRouteBuilder = endpointRouteBuilder.MapDelete(
-            "connect/grants/{grant_id}",
-            (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.GrantManagementRevoke)] IEndpointHandler endpointHandler,
-                CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
-
-        revokeRouteBuilder
-            .WithDisplayName("OpenId Connect GrantManagement Revoke")
-            .WithName("OpenId Connect GrantManagement Revoke")
-            .WithDescription("Endpoint to revoke grants")
-            .WithGroupName("GrantManagement")
-            .RequireAuthorization(AuthorizationConstants.GrantManagementRevoke)
-            .AddEndpointFilter<NoCacheFilter>()
-            .AddEndpointFilter<NoReferrerFilter>()
-            .AddEndpointFilter(new FeatureFilter(FeatureFlags.GrantManagementRevoke));
-
         var queryRouteBuilder = endpointRouteBuilder.MapGet(
             "connect/grants/{grant_id}",
             (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.GrantManagementQuery)] IEndpointHandler endpointHandler,

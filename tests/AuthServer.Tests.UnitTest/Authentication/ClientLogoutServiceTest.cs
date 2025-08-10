@@ -24,7 +24,7 @@ public class ClientLogoutServiceTest : BaseUnitTest
         {
             var requestHandler = new DelegatingHandlerStub(HttpStatusCode.InternalServerError);
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientLogout))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 
@@ -56,7 +56,7 @@ public class ClientLogoutServiceTest : BaseUnitTest
         {
             var requestHandler = new DelegatingHandlerStub(HttpStatusCode.OK);
             httpClientFactory
-                .Setup(x => x.CreateClient(HttpClientNameConstants.Client))
+                .Setup(x => x.CreateClient(HttpClientNameConstants.ClientLogout))
                 .Returns(new HttpClient(requestHandler))
                 .Verifiable();
 

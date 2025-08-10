@@ -129,8 +129,28 @@ builder.Services.AddScoped<IUserClaimService, UserClaimService>();
 builder.Services.AddScoped<IAuthenticatedUserAccessor, AuthenticatedUserAccessor>();
 builder.Services.AddScoped<IAuthenticationContextReferenceResolver, AuthenticationContextReferenceResolver>();
 
-builder.Services.AddAuthServer(
-    (_, dbContextConfigurator) =>
+builder.Services
+    .AddAuthServer()
+    .AddCleanupBackgroundServices()
+    .AddJwksHttpClient()
+    .AddLogoutHttpClient()
+    .AddRequestHttpClient()
+    .AddSectorHttpClient()
+    .AddAuthorizationCode()
+    .AddClientCredentials()
+    .AddRefreshToken()
+    .AddDeviceCode()
+    .AddRevocation()
+    .AddIntrospection()
+    .AddDiscovery()
+    .AddJwks()
+    .AddGrantManagementQuery()
+    .AddGrantManagementRevoke()
+    .AddEndSession()
+    .AddUserinfo()
+    .AddRegister()
+    .AddPushedAuthorization()
+    .AddAuthorizationDbContext((_, dbContextConfigurator) =>
     {
         dbContextConfigurator.UseSqlServer(
             builder.Configuration.GetConnectionString("Default"),
@@ -141,7 +161,6 @@ builder.Services.AddAuthServer(
             });
     });
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
 
 

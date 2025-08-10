@@ -129,7 +129,7 @@ internal class SecureRequestService : ISecureRequestService
     public async Task<AuthorizeRequestDto?> GetRequestByReference(Uri requestUri, string clientId,
         ClientTokenAudience audience, CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.Client);
+        var httpClient = _httpClientFactory.CreateClient(HttpClientNameConstants.ClientRequest);
         var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MimeTypeConstants.OAuthRequestJwt));
 
