@@ -75,7 +75,7 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return DeviceAuthorizationError.UnauthorizedForGrant;
         }
 
-        if (!HasValidNonce(request.Nonce))
+        if (!HasValidNonce(request.Nonce, null))
         {
             return DeviceAuthorizationError.InvalidNonce;
         }
@@ -85,12 +85,12 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return DeviceAuthorizationError.ReplayNonce;
         }
 
-        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod))
+        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, null))
         {
             return DeviceAuthorizationError.InvalidCodeChallengeMethod;
         }
 
-        if (!HasValidCodeChallenge(request.CodeChallenge))
+        if (!HasValidCodeChallenge(request.CodeChallenge, null))
         {
             return DeviceAuthorizationError.InvalidCodeChallenge;
         }
@@ -125,7 +125,7 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return DeviceAuthorizationError.InvalidGrantId;
         }
 
-        if (!HasValidDPoP(null, request.DPoP, cachedClient.RequireDPoPBoundAccessTokens))
+        if (!HasValidDPoP(null, request.DPoP, cachedClient.RequireDPoPBoundAccessTokens, null))
         {
             return DeviceAuthorizationError.DPoPRequired;
         }
