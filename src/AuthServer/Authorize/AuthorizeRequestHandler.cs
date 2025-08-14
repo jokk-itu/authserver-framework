@@ -7,17 +7,17 @@ using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.Authorize;
 
-internal class AuthorizeRequestHandler : RequestHandler<AuthorizeRequest, AuthorizeValidatedRequest, string>
+internal class AuthorizeRequestHandler : RequestHandler<AuthorizeRequest, AuthorizeValidatedRequest, AuthorizeResponse>
 {
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest> _requestValidator;
-    private readonly IRequestProcessor<AuthorizeValidatedRequest, string> _requestProcessor;
+    private readonly IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse> _requestProcessor;
     private readonly IClientRepository _clientRepository;
 
     public AuthorizeRequestHandler(
         IUnitOfWork unitOfWork,
         IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest> requestValidator,
-        IRequestProcessor<AuthorizeValidatedRequest, string> requestProcessor,
+        IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse> requestProcessor,
         IClientRepository clientRepository,
         IMetricService metricService)
         : base(metricService)
@@ -28,7 +28,7 @@ internal class AuthorizeRequestHandler : RequestHandler<AuthorizeRequest, Author
         _clientRepository = clientRepository;
     }
 
-    protected override async Task<ProcessResult<string, ProcessError>> ProcessValidatedRequest(AuthorizeValidatedRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<AuthorizeResponse, ProcessError>> ProcessValidatedRequest(AuthorizeValidatedRequest request, CancellationToken cancellationToken)
     {
 	    await _unitOfWork.Begin(cancellationToken);
         var result = await _requestProcessor.Process(request, cancellationToken);

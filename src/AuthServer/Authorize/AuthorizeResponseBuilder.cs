@@ -79,7 +79,9 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
                 GrantId = newRequest.GrantId,
                 GrantManagementAction = newRequest.GrantManagementAction,
                 Scope = newRequest.Scope,
-                AcrValues = newRequest.AcrValues
+                AcrValues = newRequest.AcrValues,
+                Resource = newRequest.Resource,
+                DPoPJkt = newRequest.DPoPJkt
             };
         }
 
@@ -150,6 +152,7 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
         return responseType switch
         {
             ResponseTypeConstants.Code => ResponseModeConstants.Query,
+            ResponseTypeConstants.None => ResponseModeConstants.Query,
             _ => throw new ArgumentException("Unexpected value", nameof(responseType))
         };
     }
