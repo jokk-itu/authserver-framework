@@ -178,11 +178,9 @@ public class AuthorizeResponseBuilderTest : BaseUnitTest
         var redirectUri = new RedirectUri("https://demo.authserver.dk/callback", client);
         await AddEntity(redirectUri);
 
-        var code = CryptographyHelper.GetRandomString(8);
-
         var request = new AuthorizeRequest
         {
-            ResponseType = ResponseTypeConstants.Code,
+            ResponseType = ResponseTypeConstants.None,
             State = CryptographyHelper.GetRandomString(16),
             ClientId = client.Id,
             ResponseMode = ResponseModeConstants.Fragment
@@ -191,10 +189,7 @@ public class AuthorizeResponseBuilderTest : BaseUnitTest
         // Act
         var response = await responseBuilder.BuildResponse(
             request,
-            new Dictionary<string, string>
-            {
-                { "code", code }
-            },
+            new Dictionary<string, string>(),
             CancellationToken.None);
 
         // Assert
@@ -204,7 +199,7 @@ public class AuthorizeResponseBuilderTest : BaseUnitTest
         Assert.False(redirectResult.Permanent);
         Assert.True(redirectResult.PreserveMethod);
         var decodedRedirectUrl = HttpUtility.UrlDecode(redirectResult.Url);
-        Assert.Equal($"{redirectUri.Uri}#code={code}&state={request.State}", decodedRedirectUrl);
+        Assert.Equal($"{redirectUri.Uri}#state={request.State}", decodedRedirectUrl);
     }
 
     [Fact]
