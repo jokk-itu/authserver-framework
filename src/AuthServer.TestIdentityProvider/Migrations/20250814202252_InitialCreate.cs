@@ -691,13 +691,18 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     { 1, "authorization_code" },
                     { 2, "client_credentials" },
                     { 3, "refresh_token" },
-                    { 4, "urn:ietf:params:oauth:grant-type:device_code" }
+                    { 4, "urn:ietf:params:oauth:grant-type:device_code" },
+                    { 5, "urn:ietf:params:oauth:grant-type:token-exchange" }
                 });
 
             migrationBuilder.InsertData(
                 table: "ResponseType",
                 columns: new[] { "Id", "Name" },
-                values: new object[] { 1, "code" });
+                values: new object[,]
+                {
+                    { 1, "code" },
+                    { 2, "none" }
+                });
 
             migrationBuilder.InsertData(
                 table: "Scope",

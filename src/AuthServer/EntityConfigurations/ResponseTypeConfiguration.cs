@@ -21,5 +21,6 @@ internal sealed class ResponseTypeConfiguration : IEntityTypeConfiguration<Respo
             .IsUnique();
 
         builder.HasData(new ResponseTypeSeed(1, ResponseTypeConstants.Code));
+        builder.HasData(new ResponseTypeSeed(2, ResponseTypeConstants.None));
     }
 }

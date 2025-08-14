@@ -713,6 +713,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 4,
                             Name = "urn:ietf:params:oauth:grant-type:device_code"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "urn:ietf:params:oauth:grant-type:token-exchange"
                         });
                 });
 
@@ -843,6 +848,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 1,
                             Name = "code"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "none"
                         });
                 });
 
