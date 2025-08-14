@@ -10,7 +10,6 @@ using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
@@ -518,8 +517,11 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(AuthorizeError.InvalidResponseMode, processResult);
     }
 
-    [Fact]
-    public async Task Validate_InvalidResponseType_ExpectInvalidResponseType()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("invalid_response_type")]
+    public async Task Validate_InvalidResponseType_ExpectInvalidResponseType(string? responseType)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -532,30 +534,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         {
             ClientId = client.Id,
             State = CryptographyHelper.GetRandomString(16),
-            ResponseType = "invalid_response_type"
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(AuthorizeError.InvalidResponseType, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_EmptyResponseType_ExpectInvalidResponseType()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService<
-            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
-
-        var client = await GetClient();
-
-        var request = new AuthorizeRequest
-        {
-            ClientId = client.Id,
-            State = CryptographyHelper.GetRandomString(16)
+            ResponseType = responseType
         };
 
         // Act
@@ -1162,7 +1141,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_MinimalValidRequest_ExpectAuthorizeValidatedRequest()
+    public async Task Validate_MinimalValidRequestWithResponseTypeCode_ExpectAuthorizeValidatedRequest()
     {
         // Arrange
         var authorizeInteractionService = new Mock<IAuthorizeInteractionService>();
@@ -1210,6 +1189,57 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(request.ResponseType, processResult.Value!.ResponseType);
+        Assert.Null(processResult.Value!.RequestUri);
+    }
+
+    [Fact]
+    public async Task Validate_MinimalRequestWithResponseTypeNone_ExpectValidatedRequest()
+    {
+        // Arrange
+        var authorizeInteractionService = new Mock<IAuthorizeInteractionService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(authorizeInteractionService);
+        });
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+        var resource = await GetResource();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.None,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!]
+        };
+
+        const string subjectIdentifier = "subjectIdentifier";
+        const string authorizationGrantId = "authorizationGrantId";
+        authorizeInteractionService
+            .Setup(x => x.GetInteractionResult(request, CancellationToken.None))
+            .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
+            .Verifiable();
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        authorizeInteractionService.Verify();
+
+        Assert.Equal(authorizationGrantId, processResult.Value!.AuthorizationGrantId);
+        Assert.Equal(request.ResponseMode, processResult.Value!.ResponseMode);
+        Assert.Equal(request.CodeChallenge, processResult.Value!.CodeChallenge);
+        Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
+        Assert.Equal(request.Scope, processResult.Value!.Scope);
+        Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Equal(request.ClientId, processResult.Value!.ClientId);
+        Assert.Equal(request.Nonce, processResult.Value!.Nonce);
+        Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(request.ResponseType, processResult.Value!.ResponseType);
         Assert.Null(processResult.Value!.RequestUri);
     }
 
@@ -1270,6 +1300,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(request.ResponseType, processResult.Value!.ResponseType);
         Assert.Equal(request.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Null(processResult.Value!.RequestUri);
     }
@@ -1366,6 +1397,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.ResponseType, processResult.Value!.ResponseType);
         Assert.Equal(authorizeRequestDto.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
         Assert.Null(processResult.Value!.RequestUri);
@@ -1460,6 +1492,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ClientId, processResult.Value!.ClientId);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.RedirectUri, processResult.Value!.RedirectUri);
+        Assert.Equal(authorizeRequestDto.ResponseType, processResult.Value!.ResponseType);
         Assert.Equal(authorizeRequestDto.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
         Assert.Null(processResult.Value!.RequestUri);
@@ -1472,10 +1505,19 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             RequestUriExpiration = 60
         };
         var redirectUri = new RedirectUri("https://webapp.authserver.dk/callback", client);
+        
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
+        
         var grantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);
         client.GrantTypes.Add(grantType);
+
+        var codeResponseType = await GetResponseType(ResponseTypeConstants.Code);
+        client.ResponseTypes.Add(codeResponseType);
+
+        var noneResponseType = await GetResponseType(ResponseTypeConstants.None);
+        client.ResponseTypes.Add(noneResponseType);
+
         await AddEntity(redirectUri);
 
         return client;
@@ -1498,8 +1540,13 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     {
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var redirectUri = new RedirectUri("https://webapp.authserver.dk/callback", client);
+        
         var grantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);
         client.GrantTypes.Add(grantType);
+        
+        var codeResponseType = await GetResponseType(ResponseTypeConstants.Code);
+        client.ResponseTypes.Add(codeResponseType);
+
         await AddEntity(redirectUri);
 
         return client;
@@ -1509,8 +1556,13 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     {
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var redirectUri = new RedirectUri("https://webapp.authserver.dk/callback", client);
+        
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
+
+        var codeResponseType = await GetResponseType(ResponseTypeConstants.Code);
+        client.ResponseTypes.Add(codeResponseType);
+
         await AddEntity(redirectUri);
 
         return client;
@@ -1519,10 +1571,16 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     private async Task<Client> GetClientWithoutRedirectUri()
     {
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
+        
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
+        
         var grantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);
         client.GrantTypes.Add(grantType);
+
+        var codeResponseType = await GetResponseType(ResponseTypeConstants.Code);
+        client.ResponseTypes.Add(codeResponseType);
+
         await AddEntity(client);
 
         return client;
