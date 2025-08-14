@@ -19,9 +19,9 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
     }
 
     [Theory]
-    [InlineData("form_post", HttpStatusCode.OK, "http://localhost")]
-    [InlineData("query", HttpStatusCode.SeeOther, null)]
-    [InlineData("fragment", HttpStatusCode.SeeOther, null)]
+    [InlineData(ResponseModeConstants.FormPost, HttpStatusCode.OK, "http://localhost")]
+    [InlineData(ResponseModeConstants.Query, HttpStatusCode.SeeOther, null)]
+    [InlineData(ResponseModeConstants.Fragment, HttpStatusCode.SeeOther, null)]
     public async Task Authorize_NoPromptWithLoginAndConsentWithRequestObject_ExpectAuthorizationCode(string responseMode, HttpStatusCode statusCode, string? issuer)
     {
         // Arrange
@@ -89,6 +89,42 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         Assert.Equal(HttpStatusCode.SeeOther, authorizeResponse.StatusCode);
         Assert.Equal(registerResponse.RedirectUris!.Single(), authorizeResponse.LocationUri);
         Assert.NotNull(authorizeResponse.Code);
+    }
+
+    [Fact]
+    public async Task Authorize_NoPromptWithGrantAndConsent_ExpectRedirectWithoutAuthorizationCode()
+    {
+        // Arrange
+        var identityProvider = await AddIdentityProviderClient();
+
+        var registerResponse = await RegisterEndpointBuilder
+            .WithRedirectUris(["https://webapp.authserver.dk/"])
+            .WithClientName("webapp")
+            .WithResponseTypes(ResponseTypeConstants.None, ResponseTypeConstants.Code)
+            .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .Post();
+
+        await AddUser();
+        await AddAuthenticationContextReferences();
+
+        var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, ScopeConstants.UserInfo], []);
+
+        // Act
+        var authorizeResponse = await AuthorizeEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithAuthorizeUser(grantId)
+            .WithResponseType(ResponseTypeConstants.None)
+            .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
+            .WithResource([identityProvider.ClientUri!])
+            .Get();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.SeeOther, authorizeResponse.StatusCode);
+        Assert.Equal(registerResponse.RedirectUris!.Single(), authorizeResponse.LocationUri);
+        Assert.Null(authorizeResponse.Code);
+        Assert.Null(authorizeResponse.Error);
+        Assert.Null(authorizeResponse.ErrorDescription);
     }
 
     [Fact]

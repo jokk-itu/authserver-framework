@@ -74,6 +74,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
         return this;
     }
 
+    public RegisterEndpointBuilder WithResponseTypes(params string[] responseTypes)
+    {
+        _registerParameters.Add(Parameter.ResponseTypes, responseTypes);
+        return this;
+    }
+
     public RegisterEndpointBuilder WithGrantTypes(IReadOnlyCollection<string> grantTypes)
     {
         _registerParameters.Add(Parameter.GrantTypes, grantTypes);

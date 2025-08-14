@@ -336,8 +336,8 @@ public class AuthServerBuilder
             .AddScoped<IAuthorizeInteractionService, AuthorizeInteractionService>()
             .AddScoped<IAuthorizeResponseBuilder, AuthorizeResponseBuilder>()
             .AddScoped<IUserAccessor<AuthorizeUser>, AuthorizeUserAccessor>()
-            .AddScoped<IRequestHandler<AuthorizeRequest, string>, AuthorizeRequestHandler>()
-            .AddScoped<IRequestProcessor<AuthorizeValidatedRequest, string>, AuthorizeRequestProcessor>()
+            .AddScoped<IRequestHandler<AuthorizeRequest, AuthorizeResponse>, AuthorizeRequestHandler>()
+            .AddScoped<IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse>, AuthorizeRequestProcessor>()
             .AddScoped<IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>, AuthorizeRequestValidator>();
 
         _services
