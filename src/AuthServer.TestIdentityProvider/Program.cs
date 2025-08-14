@@ -140,6 +140,7 @@ builder.Services
     .AddClientCredentials()
     .AddRefreshToken()
     .AddDeviceCode()
+    .AddTokenExchange()
     .AddRevocation()
     .AddIntrospection()
     .AddDiscovery()

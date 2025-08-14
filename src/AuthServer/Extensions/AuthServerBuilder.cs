@@ -43,6 +43,7 @@ using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 using AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 using AuthServer.TokenByGrant.TokenDeviceCodeGrant;
+using AuthServer.TokenByGrant.TokenExchangeGrant;
 using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
@@ -388,6 +389,18 @@ public class AuthServerBuilder
             .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, DeviceCodeRequestHandler>(GrantTypeConstants.DeviceCode)
             .AddScoped<IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse>, DeviceCodeRequestProcessor>()
             .AddScoped<IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>, DeviceCodeRequestValidator>();
+
+        return this;
+    }
+
+    public AuthServerBuilder AddTokenExchange()
+    {
+        AddToken();
+
+        _services
+            .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, TokenExchangeRequestHandler>(GrantTypeConstants.TokenExchange)
+            .AddScoped<IRequestProcessor<TokenExchangeValidationRequest, TokenResponse>, TokenExchangeRequestProcessor>()
+            .AddScoped<IRequestValidator<TokenRequest, TokenExchangeValidationRequest>, TokenExchangeRequestValidator>();
 
         return this;
     }
