@@ -25,10 +25,10 @@ internal static class PushedAuthorizationError
         new(ErrorCode.InvalidRequest, "response_mode is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidResponseType =
-        new(ErrorCode.InvalidRequest, "response_type is invalid", ResultCode.BadRequest);
+        new(ErrorCode.UnsupportedResponseType, "response_type is invalid", ResultCode.BadRequest);
 
     public static readonly ProcessError UnauthorizedResponseType =
-        new(ErrorCode.UnauthorizedClient, "client is unauthorized for authorization_code", ResultCode.BadRequest);
+        new(ErrorCode.UnauthorizedClient, "client is unauthorized for response_type", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidDisplay =
         new(ErrorCode.InvalidRequest, "display is invalid", ResultCode.BadRequest);

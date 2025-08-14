@@ -3,6 +3,7 @@ using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
+using AuthServer.Cache.Entities;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Options;
@@ -70,109 +71,10 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             request = new PushedAuthorizationRequest(newRequest, request.ClientAuthentications, request.DPoP);
         }
 
-        if (!HasValidState(request.State))
+        var parameterError = await ValidateParameters(request, cachedClient, cancellationToken);
+        if (parameterError is not null)
         {
-            return PushedAuthorizationError.InvalidState;
-        }
-
-        if (!HasValidEmptyRedirectUri(request.RedirectUri, cachedClient))
-        {
-            return PushedAuthorizationError.InvalidRedirectUri;
-        }
-
-        if (!HasValidRedirectUri(request.RedirectUri, cachedClient))
-        {
-            return PushedAuthorizationError.UnauthorizedRedirectUri;
-        }
-
-        if (!HasValidResponseMode(request.ResponseMode))
-        {
-            return PushedAuthorizationError.InvalidResponseMode;
-        }
-
-        if (!HasValidResponseType(request.ResponseType))
-        {
-            return PushedAuthorizationError.InvalidResponseType;
-        }
-
-        if (!HasAuthorizationCodeGrantType(cachedClient))
-        {
-            return PushedAuthorizationError.UnauthorizedResponseType;
-        }
-
-        if (!HasValidDisplay(request.Display))
-        {
-            return PushedAuthorizationError.InvalidDisplay;
-        }
-
-        if (!HasValidNonce(request.Nonce))
-        {
-            return PushedAuthorizationError.InvalidNonce;
-        }
-
-        if (!await HasUniqueNonce(request.Nonce!, cancellationToken))
-        {
-            return PushedAuthorizationError.ReplayNonce;
-        }
-
-        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod))
-        {
-            return PushedAuthorizationError.InvalidCodeChallengeMethod;
-        }
-
-        if (!HasValidCodeChallenge(request.CodeChallenge))
-        {
-            return PushedAuthorizationError.InvalidCodeChallenge;
-        }
-
-        if (!HasValidScope(request.Scope))
-        {
-            return PushedAuthorizationError.InvalidOpenIdScope;
-        }
-
-        if (!HasAuthorizedScope(request.Scope, cachedClient))
-        {
-            return PushedAuthorizationError.UnauthorizedScope;
-        }
-
-        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
-        {
-            return PushedAuthorizationError.InvalidResource;
-        }
-
-        if (!HasValidMaxAge(request.MaxAge))
-        {
-            return PushedAuthorizationError.InvalidMaxAge;
-        }
-
-        if (!await HasValidIdTokenHint(request.IdTokenHint, clientAuthenticationResult.ClientId, cancellationToken))
-        {
-            return PushedAuthorizationError.InvalidIdTokenHint;
-        }
-
-        if (!HasValidPrompt(request.Prompt))
-        {
-            return PushedAuthorizationError.InvalidPrompt;
-        }
-
-        if (!HasValidAcrValues(request.AcrValues))
-        {
-            return PushedAuthorizationError.InvalidAcrValues;
-        }
-        
-        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
-        {
-            return PushedAuthorizationError.InvalidGrantManagement;
-        }
-
-        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
-        {
-            return PushedAuthorizationError.InvalidGrantId;
-        }
-
-        if (!HasValidDPoP(request.DPoPJkt, request.DPoP, cachedClient.RequireDPoPBoundAccessTokens))
-        {
-            return PushedAuthorizationError.DPoPRequired;
+            return parameterError;
         }
 
         var dPoPValidationResult = new DPoPValidationResult();
@@ -218,5 +120,126 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             GrantManagementAction = request.GrantManagementAction,
             DPoPJkt = dPoPValidationResult.DPoPJkt ?? request.DPoPJkt
         };
+    }
+
+    private async Task<ProcessError?> ValidateParameters(PushedAuthorizationRequest request, CachedClient cachedClient, CancellationToken cancellationToken)
+    {
+        var responseParametersValidationResult = ValidateResponseParameters(request, cachedClient);
+        if (responseParametersValidationResult is not null)
+        {
+            return responseParametersValidationResult;
+        }
+
+        if (!HasValidDisplay(request.Display))
+        {
+            return PushedAuthorizationError.InvalidDisplay;
+        }
+
+        if (!HasValidNonce(request.Nonce, request.ResponseType))
+        {
+            return PushedAuthorizationError.InvalidNonce;
+        }
+
+        if (!await HasUniqueNonce(request.Nonce!, cancellationToken))
+        {
+            return PushedAuthorizationError.ReplayNonce;
+        }
+
+        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, request.ResponseType))
+        {
+            return PushedAuthorizationError.InvalidCodeChallengeMethod;
+        }
+
+        if (!HasValidCodeChallenge(request.CodeChallenge, request.ResponseType))
+        {
+            return PushedAuthorizationError.InvalidCodeChallenge;
+        }
+
+        if (!HasValidScope(request.Scope))
+        {
+            return PushedAuthorizationError.InvalidOpenIdScope;
+        }
+
+        if (!HasAuthorizedScope(request.Scope, cachedClient))
+        {
+            return PushedAuthorizationError.UnauthorizedScope;
+        }
+
+        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
+        {
+            return PushedAuthorizationError.InvalidResource;
+        }
+
+        if (!HasValidMaxAge(request.MaxAge))
+        {
+            return PushedAuthorizationError.InvalidMaxAge;
+        }
+
+        if (!await HasValidIdTokenHint(request.IdTokenHint, cachedClient.Id, cancellationToken))
+        {
+            return PushedAuthorizationError.InvalidIdTokenHint;
+        }
+
+        if (!HasValidPrompt(request.Prompt))
+        {
+            return PushedAuthorizationError.InvalidPrompt;
+        }
+
+        if (!HasValidAcrValues(request.AcrValues))
+        {
+            return PushedAuthorizationError.InvalidAcrValues;
+        }
+
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        {
+            return PushedAuthorizationError.InvalidGrantManagement;
+        }
+
+        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
+        {
+            return PushedAuthorizationError.InvalidGrantId;
+        }
+
+        if (!HasValidDPoP(request.DPoPJkt, request.DPoP, cachedClient.RequireDPoPBoundAccessTokens, request.ResponseType))
+        {
+            return PushedAuthorizationError.DPoPRequired;
+        }
+
+        return null;
+    }
+
+    private static ProcessError? ValidateResponseParameters(PushedAuthorizationRequest request, CachedClient cachedClient)
+    {
+        if (!HasValidState(request.State))
+        {
+            return PushedAuthorizationError.InvalidState;
+        }
+
+        if (!HasValidEmptyRedirectUri(request.RedirectUri, cachedClient))
+        {
+            return PushedAuthorizationError.InvalidRedirectUri;
+        }
+
+        if (!HasValidRedirectUri(request.RedirectUri, cachedClient))
+        {
+            return PushedAuthorizationError.UnauthorizedRedirectUri;
+        }
+
+        if (!HasValidResponseMode(request.ResponseMode))
+        {
+            return PushedAuthorizationError.InvalidResponseMode;
+        }
+
+        if (!HasValidResponseType(request.ResponseType))
+        {
+            return PushedAuthorizationError.InvalidResponseType;
+        }
+
+        if (!HasAuthorizedResponseType(request.ResponseType!, cachedClient))
+        {
+            return PushedAuthorizationError.UnauthorizedResponseType;
+        }
+
+        return null;
     }
 }
