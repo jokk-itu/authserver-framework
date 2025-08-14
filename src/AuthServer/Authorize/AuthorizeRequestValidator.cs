@@ -133,6 +133,11 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidResponseType;
         }
 
+        if (!HasAuthorizedResponseType(request.ResponseType!, cachedClient))
+        {
+            return AuthorizeError.UnauthorizedResponseType;
+        }
+
         return null;
     }
 
@@ -188,17 +193,12 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return responseParametersValidationResult;
         }
 
-        if (!HasAuthorizationCodeGrantType(cachedClient))
-        {
-            return AuthorizeError.UnauthorizedResponseType;
-        }
-
         if (!HasValidDisplay(request.Display))
         {
             return AuthorizeError.InvalidDisplay;
         }
 
-        if (!HasValidNonce(request.Nonce))
+        if (!HasValidNonce(request.Nonce, request.ResponseType))
         {
             return AuthorizeError.InvalidNonce;
         }
@@ -208,12 +208,12 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.ReplayNonce;
         }
 
-        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod))
+        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, request.ResponseType))
         {
             return AuthorizeError.InvalidCodeChallengeMethod;
         }
 
-        if (!HasValidCodeChallenge(request.CodeChallenge))
+        if (!HasValidCodeChallenge(request.CodeChallenge, request.ResponseType))
         {
             return AuthorizeError.InvalidCodeChallenge;
         }
@@ -263,7 +263,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidGrantId;
         }
 
-        if (!HasValidDPoP(request.DPoPJkt, null, cachedClient.RequireDPoPBoundAccessTokens))
+        if (!HasValidDPoP(request.DPoPJkt, null, cachedClient.RequireDPoPBoundAccessTokens, request.ResponseType))
         {
             return AuthorizeError.InvalidDPoPJkt;
         }
@@ -307,14 +307,15 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         {
             AuthorizationGrantId = interactionResult.AuthorizationGrantId!,
             GrantManagementAction = request.GrantManagementAction,
+            ResponseType = request.ResponseType!,
             ResponseMode = request.ResponseMode,
-            CodeChallenge = request.CodeChallenge!,
-            CodeChallengeMethod = request.CodeChallengeMethod!,
+            CodeChallenge = request.CodeChallenge,
+            CodeChallengeMethod = request.CodeChallengeMethod,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
             Resource = request.Resource,
             ClientId = request.ClientId!,
-            Nonce = request.Nonce!,
+            Nonce = request.Nonce,
             RedirectUri = request.RedirectUri,
             RequestUri = request.RequestUri,
             DPoPJkt = request.DPoPJkt

@@ -45,8 +45,9 @@ internal class BaseAuthorizeValidator
     protected static bool HasValidResponseType(string? responseType)
         => !string.IsNullOrEmpty(responseType) && ResponseTypeConstants.ResponseTypes.Contains(responseType);
 
-    protected static bool HasAuthorizationCodeGrantType(CachedClient cachedClient)
-        => cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.AuthorizationCode);
+    protected static bool HasAuthorizedResponseType(string responseType, CachedClient cachedClient)
+        => cachedClient.ResponseTypes.Any(x => x == responseType)
+        && (responseType != ResponseTypeConstants.Code || cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.AuthorizationCode));
 
     protected static bool HasDeviceCodeGrantType(CachedClient cachedClient)
         => cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.DeviceCode);
@@ -54,14 +55,14 @@ internal class BaseAuthorizeValidator
     protected static bool HasValidDisplay(string? display)
         => string.IsNullOrEmpty(display) || DisplayConstants.DisplayValues.Contains(display);
 
-    protected static bool HasValidNonce(string? nonce)
-        => !string.IsNullOrEmpty(nonce);
+    protected static bool HasValidNonce(string? nonce, string? responseType)
+        => responseType == ResponseTypeConstants.None || !string.IsNullOrEmpty(nonce);
 
-    protected static bool HasValidCodeChallengeMethod(string? codeChallengeMethod)
-        => ProofKeyHelper.IsCodeChallengeMethodValid(codeChallengeMethod);
+    protected static bool HasValidCodeChallengeMethod(string? codeChallengeMethod, string? responseType)
+        => responseType == ResponseTypeConstants.None || ProofKeyHelper.IsCodeChallengeMethodValid(codeChallengeMethod);
 
-    protected static bool HasValidCodeChallenge(string? codeChallenge)
-        => ProofKeyHelper.IsCodeChallengeValid(codeChallenge);
+    protected static bool HasValidCodeChallenge(string? codeChallenge, string? responseType)
+        => responseType == ResponseTypeConstants.None || ProofKeyHelper.IsCodeChallengeValid(codeChallenge);
 
     protected static bool HasValidScope(IReadOnlyCollection<string> scope)
         => scope.Contains(ScopeConstants.OpenId);
@@ -78,8 +79,8 @@ internal class BaseAuthorizeValidator
     protected bool HasValidAcrValues(IReadOnlyCollection<string> acrValues)
         => acrValues.Count == 0 || acrValues.IsSubset(_discoveryDocumentOptions.Value.AcrValuesSupported);
 
-    protected async Task<bool> HasUniqueNonce(string nonce, CancellationToken cancellationToken)
-        => !await _nonceRepository.IsNonceReplay(nonce, cancellationToken);
+    protected async Task<bool> HasUniqueNonce(string? nonce, CancellationToken cancellationToken)
+        => string.IsNullOrEmpty(nonce) || !await _nonceRepository.IsNonceReplay(nonce, cancellationToken);
 
     protected async Task<bool> HasValidResource(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
         => resources.Count != 0 && await _clientRepository.DoesResourcesExist(resources, scopes, cancellationToken);
@@ -90,8 +91,11 @@ internal class BaseAuthorizeValidator
     protected bool HasValidRequestUriForPushedAuthorization(string? requestUri, bool isRequiredByClient)
         => requestUri?.StartsWith(RequestUriConstants.RequestUriPrefix) == true || (!isRequiredByClient && !_discoveryDocumentOptions.Value.RequirePushedAuthorizationRequests);
 
-    protected static bool HasValidDPoP(string? dPoPJkt, string? dPoP, bool clientRequiresDPoP)
-        => !string.IsNullOrEmpty(dPoPJkt) || !string.IsNullOrEmpty(dPoP) || !clientRequiresDPoP;
+    protected static bool HasValidDPoP(string? dPoPJkt, string? dPoP, bool clientRequiresDPoP, string? responseType)
+        => responseType == ResponseTypeConstants.None
+           || !string.IsNullOrEmpty(dPoPJkt)
+           || !string.IsNullOrEmpty(dPoP)
+           || !clientRequiresDPoP;
 
     protected async Task<bool> HasValidIdTokenHint(string? idTokenHint, string clientId, CancellationToken cancellationToken)
     {
