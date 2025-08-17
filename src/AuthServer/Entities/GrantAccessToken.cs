@@ -3,7 +3,7 @@
 namespace AuthServer.Entities;
 public class GrantAccessToken : GrantToken
 {
-    public GrantAccessToken(AuthorizationGrant authorizationGrant, string audience, string issuer, string? scope, int? expiresAt, string? jkt)
+    public GrantAccessToken(AuthorizationGrant authorizationGrant, string audience, string issuer, string scope, int expiresAt, string? jkt)
         : base(authorizationGrant, TokenType.GrantAccessToken, audience, issuer, scope, expiresAt, jkt)
     {}
 

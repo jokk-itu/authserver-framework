@@ -3,7 +3,7 @@
 namespace AuthServer.Entities;
 public abstract class GrantToken : Token
 {
-    protected GrantToken(AuthorizationGrant authorizationGrant, TokenType tokenType, string audience, string issuer, string? scope, int? expiresAt, string? jkt)
+    protected GrantToken(AuthorizationGrant authorizationGrant, TokenType tokenType, string audience, string issuer, string scope, int expiresAt, string? jkt)
         : base(tokenType, audience, issuer, scope, expiresAt, jkt)
     {
         AuthorizationGrant = authorizationGrant ?? throw new ArgumentNullException(nameof(authorizationGrant));

@@ -3,7 +3,7 @@
 namespace AuthServer.Entities;
 public class ClientAccessToken : ClientToken
 {
-    public ClientAccessToken(Client client, string audience, string issuer, string? scope, int? expiresAt, string? jkt)
+    public ClientAccessToken(Client client, string audience, string issuer, string scope, int expiresAt, string? jkt)
         : base(client, TokenType.ClientAccessToken, audience, issuer, scope, expiresAt, jkt)
     {}
 

@@ -3,7 +3,7 @@
 namespace AuthServer.Entities;
 public abstract class ClientToken : Token
 {
-    protected ClientToken(Client client, TokenType tokenType, string audience, string issuer, string? scope, int? expiresAt, string? jkt)
+    protected ClientToken(Client client, TokenType tokenType, string audience, string issuer, string scope, int? expiresAt, string? jkt)
         : base(tokenType, audience, issuer, scope, expiresAt, jkt)
     {
         Client = client ?? throw new ArgumentNullException(nameof(client));
