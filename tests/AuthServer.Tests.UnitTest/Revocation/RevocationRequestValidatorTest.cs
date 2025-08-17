@@ -1,8 +1,6 @@
 ﻿using AuthServer.Authentication.Models;
 using AuthServer.Constants;
-using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
@@ -191,6 +189,8 @@ public class RevocationRequestValidatorTest : BaseUnitTest
             {
                 { ClaimNameConstants.Jti, token.Id },
                 { ClaimNameConstants.ClientId, secondClient.Id },
+                { ClaimNameConstants.Sub, secondClient.Id },
+                { ClaimNameConstants.Scope, ScopeConstants.OpenId },
             },
             SigningCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription()),
             Issuer = token.Issuer,
@@ -246,7 +246,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.IsType<RevocationValidatedRequest>(processResult.Value);
-        Assert.Equal(token.Reference, processResult.Value.Token);
+        Assert.Equal(token.Id.ToString(), processResult.Value.Jti);
     }
 
     [Fact]
@@ -272,6 +272,8 @@ public class RevocationRequestValidatorTest : BaseUnitTest
             {
                 { ClaimNameConstants.Jti, token.Id },
                 { ClaimNameConstants.ClientId, client.Id },
+                { ClaimNameConstants.Sub, client.Id },
+                { ClaimNameConstants.Scope, ScopeConstants.OpenId },
             },
             SigningCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription()),
             Issuer = token.Issuer,
@@ -295,6 +297,6 @@ public class RevocationRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.IsType<RevocationValidatedRequest>(processResult.Value);
-        Assert.Equal(jwt, processResult.Value.Token);
+        Assert.Equal(token.Id.ToString(), processResult.Value.Jti);
     }
 }

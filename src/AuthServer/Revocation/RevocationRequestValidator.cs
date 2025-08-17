@@ -1,30 +1,22 @@
-﻿using AuthServer.Authentication;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
-using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.Entities;
 using AuthServer.Extensions;
-using AuthServer.Helpers;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
-using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.Revocation;
 internal class RevocationRequestValidator : IRequestValidator<RevocationRequest, RevocationValidatedRequest>
 {
-    private readonly AuthorizationDbContext _identityContext;
-    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _serverIssuedTokenDecoder;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly IClientAuthenticationService _clientAuthenticationService;
 
     public RevocationRequestValidator(
-        AuthorizationDbContext identityContext,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> serverIssuedTokenDecoder,
+        IServerTokenDecoder serverTokenDecoder,
         IClientAuthenticationService clientAuthenticationService)
     {
-        _identityContext = identityContext;
-        _serverIssuedTokenDecoder = serverIssuedTokenDecoder;
+        _serverTokenDecoder = serverTokenDecoder;
         _clientAuthenticationService = clientAuthenticationService;
     }
 
@@ -68,57 +60,29 @@ internal class RevocationRequestValidator : IRequestValidator<RevocationRequest,
             return RevocationError.InvalidClient;
         }
 
-        string? clientIdFromToken;
-        if (TokenHelper.IsJsonWebToken(token))
-        {
-            clientIdFromToken = await GetClientIdFromStructuredToken(token, cancellationToken);
-        }
-        else
-        {
-            clientIdFromToken = await GetClientIdFromReferenceToken(token, cancellationToken);
-        }
-
-        if (!string.IsNullOrWhiteSpace(clientIdFromToken) && clientAuthenticationResult.ClientId != clientIdFromToken)
+        var tokenValidationResult = await ValidateToken(token, cancellationToken);
+        if (tokenValidationResult is not null && clientAuthenticationResult.ClientId != tokenValidationResult.ClientId)
         {
             return RevocationError.ClientIdDoesNotMatchToken;
         }
 
         return new RevocationValidatedRequest
         {
-            Token = token
+            Jti = tokenValidationResult?.Jti
         };
     }
 
-    private async Task<string?> GetClientIdFromStructuredToken(string token, CancellationToken cancellationToken)
+    private async Task<TokenValidationResult?> ValidateToken(string token, CancellationToken cancellationToken)
     {
-        var validatedToken = await _serverIssuedTokenDecoder.Validate(token, new ServerIssuedTokenDecodeArguments
+        var validatedToken = await _serverTokenDecoder.Validate(token, new ServerTokenDecodeArguments
         {
             ValidateLifetime = false,
             Audiences = [],
             TokenTypes = [TokenTypeHeaderConstants.AccessToken, TokenTypeHeaderConstants.RefreshToken]
         }, cancellationToken);
 
-        if (validatedToken is null)
-        {
-            return null;
-        }
-
-        validatedToken.TryGetClaim(ClaimNameConstants.ClientId, out var claim);
-        return claim?.Value;
+        return validatedToken is null ? null : new TokenValidationResult(validatedToken.Jti, validatedToken.ClientId);
     }
 
-    private async Task<string?> GetClientIdFromReferenceToken(string token, CancellationToken cancellationToken)
-    {
-        var clientToken = await _identityContext
-            .Set<Token>()
-            .Where(x => x.Reference == token)
-            .Select(x => new
-            {
-                ClientIdFromGrant = (x as GrantToken)!.AuthorizationGrant.Client.Id,
-                ClientId = (x as ClientAccessToken)!.Client.Id
-            })
-            .SingleOrDefaultAsync(cancellationToken: cancellationToken);
-
-        return clientToken?.ClientIdFromGrant ?? clientToken?.ClientId;
-    }
+    private record TokenValidationResult(string Jti, string ClientId);
 }
