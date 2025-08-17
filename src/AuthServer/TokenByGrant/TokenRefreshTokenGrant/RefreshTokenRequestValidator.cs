@@ -17,12 +17,12 @@ namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>
 {
     private readonly AuthorizationDbContext _identityContext;
-    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly ICachedClientStore _cachedClientStore;
 
     public RefreshTokenRequestValidator(
         AuthorizationDbContext identityContext,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
+        IServerTokenDecoder serverTokenDecoder,
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
         IClientRepository clientRepository,
@@ -31,7 +31,7 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
         : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
     {
         _identityContext = identityContext;
-        _tokenDecoder = tokenDecoder;
+        _serverTokenDecoder = serverTokenDecoder;
         _cachedClientStore = cachedClientStore;
     }
 
@@ -59,16 +59,7 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
         }
         
         var clientId = clientAuthenticationResult.Value!;
-        RefreshTokenValidationResult? refreshTokenValidationResult;
-        if (TokenHelper.IsJsonWebToken(request.RefreshToken))
-        {
-            refreshTokenValidationResult = await ValidateStructuredToken(clientId, request.RefreshToken, cancellationToken);
-        }
-        else
-        {
-            refreshTokenValidationResult = await ValidateReferenceToken(request.RefreshToken, cancellationToken);
-        }
-
+        var refreshTokenValidationResult = await ValidateRefreshToken(clientId, request.RefreshToken, cancellationToken);
         if (refreshTokenValidationResult is null)
         {
             return TokenError.InvalidRefreshToken;
@@ -102,22 +93,9 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
         };
     }
 
-    private async Task<RefreshTokenValidationResult?> ValidateReferenceToken(string refreshToken, CancellationToken cancellationToken)
+    private async Task<RefreshTokenValidationResult?> ValidateRefreshToken(string clientId, string refreshToken, CancellationToken cancellationToken)
     {
-        var refreshTokenValidationResult = await _identityContext
-            .Set<RefreshToken>()
-            .Where(x => x.Reference == refreshToken)
-            .Where(Token.IsActive)
-            .OfType<RefreshToken>()
-            .Select(x => new RefreshTokenValidationResult(x.AuthorizationGrant.Id, x.Jkt))
-            .SingleOrDefaultAsync(cancellationToken: cancellationToken);
-
-        return refreshTokenValidationResult;
-    }
-
-    private async Task<RefreshTokenValidationResult?> ValidateStructuredToken(string clientId, string refreshToken, CancellationToken cancellationToken)
-    {
-        var validatedToken = await _tokenDecoder.Validate(refreshToken, new ServerIssuedTokenDecodeArguments
+        var validatedToken = await _serverTokenDecoder.Validate(refreshToken, new ServerTokenDecodeArguments
         {
             ValidateLifetime = true,
             Audiences = [clientId],
@@ -129,17 +107,14 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
             return null;
         }
 
-        var authorizationGrantId = validatedToken.Claims.Single(x => x.Type == ClaimNameConstants.GrantId).Value;
-        var jkt = validatedToken.Claims.SingleOrDefault(x => x.Type == ClaimNameConstants.Jkt)?.Value;
-        var jti = Guid.Parse(validatedToken.Claims.Single(x => x.Type == ClaimNameConstants.Jti).Value);
-
+        var jti = Guid.Parse(validatedToken.Jti);
         var isActive = await _identityContext
             .Set<RefreshToken>()
             .Where(x => x.Id == jti)
             .Where(Token.IsActive)
             .AnyAsync(cancellationToken: cancellationToken);
 
-        return isActive ? new RefreshTokenValidationResult(authorizationGrantId, jkt) : null;
+        return isActive ? new RefreshTokenValidationResult(validatedToken.GrantId!, validatedToken.Jkt) : null;
     }
 
     private sealed record RefreshTokenValidationResult(string AuthorizationGrantId, string? Jkt);
