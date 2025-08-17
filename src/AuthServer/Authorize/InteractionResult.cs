@@ -1,8 +1,10 @@
 ﻿using AuthServer.Constants;
+using AuthServer.Core;
 using AuthServer.Core.Request;
+using AuthServer.Metrics;
 
 namespace AuthServer.Authorize;
-internal class InteractionResult
+internal record InteractionResult
 {
     public static readonly InteractionResult LoginErrorResult = new(AuthorizeError.LoginRequired, false);
     public static readonly InteractionResult ConsentErrorResult = new(AuthorizeError.ConsentRequired, false);
@@ -31,6 +33,7 @@ internal class InteractionResult
     public bool RedirectToInteraction { get; private init; }
     public string? SubjectIdentifier { get; private init; }
     public string? AuthorizationGrantId { get; private init; }
+    public AuthenticationKind? AuthenticationKind { get; init; }
 
     public bool IsSuccessful => Error is null && !string.IsNullOrEmpty(SubjectIdentifier);
 
@@ -42,4 +45,20 @@ internal class InteractionResult
     public static InteractionResult LoginResult(string? prompt) => prompt == PromptConstants.None ? LoginErrorResult : LoginRedirectResult;
     public static InteractionResult ConsentResult(string? prompt) => prompt == PromptConstants.None ? ConsentErrorResult : ConsentRedirectResult;
     public static InteractionResult SelectAccountResult(string? prompt) => prompt == PromptConstants.None ? SelectAccountErrorResult : SelectAccountRedirectResult;
+
+    public string GetPrompt()
+    {
+        if (Error is null)
+        {
+            return PromptConstants.None;
+        }
+
+        return Error!.Error switch
+        {
+            ErrorCode.AccountSelectionRequired => PromptConstants.SelectAccount,
+            ErrorCode.LoginRequired => PromptConstants.Login,
+            ErrorCode.ConsentRequired => PromptConstants.Consent,
+            _ => throw new InvalidOperationException($"Prompt cannot be deduced from Error {Error.Error}")
+        };
+    }
 }

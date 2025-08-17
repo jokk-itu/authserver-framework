@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize.Abstractions;
@@ -6,6 +7,7 @@ using AuthServer.Cache.Entities;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
+using AuthServer.Metrics.Abstractions;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
@@ -19,6 +21,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IAuthorizeInteractionService _authorizeInteractionService;
     private readonly ISecureRequestService _secureRequestService;
+    private readonly IMetricService _metricService;
 
     public AuthorizeRequestValidator(
         ICachedClientStore cachedClientStore,
@@ -28,12 +31,14 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         INonceRepository nonceRepository,
         IClientRepository clientRepository,
-        IAuthorizationGrantRepository authorizationGrantRepository)
         : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
+        IAuthorizationGrantRepository authorizationGrantRepository,
+        IMetricService metricService)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;
         _secureRequestService = secureRequestService;
+        _metricService = metricService;
     }
 
     public async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> Validate(AuthorizeRequest request,
@@ -274,7 +279,16 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
     // This must first be deduced after successful validation of all input from the request
     private async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> ValidateForInteraction(AuthorizeRequest request, CancellationToken cancellationToken)
     {
+        var stopWatch = Stopwatch.StartNew();
         var interactionResult = await _authorizeInteractionService.GetInteractionResult(request, cancellationToken);
+        stopWatch.Stop();
+
+        _metricService.AddAuthorizeInteraction(
+            stopWatch.ElapsedMilliseconds,
+            request.ClientId!,
+            interactionResult.GetPrompt(),
+            interactionResult.AuthenticationKind);
+
         if (!interactionResult.IsSuccessful)
         {
             var interactionError = interactionResult.Error!;
