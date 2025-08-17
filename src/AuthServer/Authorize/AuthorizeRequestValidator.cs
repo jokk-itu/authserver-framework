@@ -25,15 +25,15 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
 
     public AuthorizeRequestValidator(
         ICachedClientStore cachedClientStore,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
+        IServerTokenDecoder serverTokenDecoder,
         IAuthorizeInteractionService authorizeInteractionService,
         ISecureRequestService secureRequestService,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         INonceRepository nonceRepository,
         IClientRepository clientRepository,
-        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
         IAuthorizationGrantRepository authorizationGrantRepository,
         IMetricService metricService)
+        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;

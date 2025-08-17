@@ -9,7 +9,6 @@ using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +25,7 @@ internal class AuthorizeService : IAuthorizeService
     private readonly IAuthorizeResponseBuilder _authorizeResponseBuilder;
     private readonly IAuthenticatedUserAccessor _authenticatedUserAccessor;
     private readonly IUserAccessor<AuthorizeUser> _authorizeUserAccessor;
-    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
 
     public AuthorizeService(
         IConsentRepository consentRepository,
@@ -38,7 +37,7 @@ internal class AuthorizeService : IAuthorizeService
         IAuthorizeResponseBuilder authorizeResponseBuilder,
         IAuthenticatedUserAccessor authenticatedUserAccessor,
         IUserAccessor<AuthorizeUser> authorizeUserAccessor,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder)
+        IServerTokenDecoder serverTokenDecoder)
     {
         _consentRepository = consentRepository;
         _authorizationGrantRepository = authorizationGrantRepository;
@@ -49,7 +48,7 @@ internal class AuthorizeService : IAuthorizeService
         _authorizeResponseBuilder = authorizeResponseBuilder;
         _authenticatedUserAccessor = authenticatedUserAccessor;
         _authorizeUserAccessor = authorizeUserAccessor;
-        _tokenDecoder = tokenDecoder;
+        _serverTokenDecoder = serverTokenDecoder;
     }
 
     /// <inheritdoc/>
@@ -141,7 +140,7 @@ internal class AuthorizeService : IAuthorizeService
     }
 
     /// <inheritdoc/>
-    public async Task<SubjectDto> GetSubject(AuthorizeRequestDto authorizeRequestDto)
+    public async Task<SubjectDto> GetSubject(AuthorizeRequestDto authorizeRequestDto, CancellationToken cancellationToken)
     {
         var authorizeUser = _authorizeUserAccessor.TryGetUser();
         if (authorizeUser is not null)
@@ -156,11 +155,11 @@ internal class AuthorizeService : IAuthorizeService
         if (authorizeRequestDto.IdTokenHint is not null)
         {
             // only read the token, as it has already been validated previously
-            var idToken = await _tokenDecoder.Read(authorizeRequestDto.IdTokenHint);
+            var idTokenResult = await _serverTokenDecoder.Read(authorizeRequestDto.IdTokenHint, cancellationToken);
             return new SubjectDto
             {
-                Subject = idToken.Subject,
-                GrantId = idToken.GetClaim(Parameter.GrantId).Value
+                Subject = idTokenResult.Subject,
+                GrantId = idTokenResult.GrantId!
             };
         }
 

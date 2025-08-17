@@ -16,18 +16,18 @@ internal class ClientAuthenticationService : IClientAuthenticationService
 {
     private readonly ILogger<ClientAuthenticationService> _logger;
     private readonly ICachedClientStore _cachedClientStore;
-    private readonly ITokenDecoder<ClientIssuedTokenDecodeArguments> _clientIssuedTokenDecoder;
+    private readonly IClientTokenDecoder _clientTokenDecoder;
     private readonly IMetricService _metricService;
 
     public ClientAuthenticationService(
         ILogger<ClientAuthenticationService> logger,
         ICachedClientStore cachedClientStore,
-        ITokenDecoder<ClientIssuedTokenDecodeArguments> clientIssuedTokenDecoder,
+        IClientTokenDecoder clientTokenDecoder,
         IMetricService metricService)
     {
         _logger = logger;
         _cachedClientStore = cachedClientStore;
-        _clientIssuedTokenDecoder = clientIssuedTokenDecoder;
+        _clientTokenDecoder = clientTokenDecoder;
         _metricService = metricService;
     }
 
@@ -116,7 +116,7 @@ internal class ClientAuthenticationService : IClientAuthenticationService
         var clientId = clientAssertionAuthentication.ClientId;
         if (string.IsNullOrWhiteSpace(clientId))
         {
-            var unvalidatedToken = await _clientIssuedTokenDecoder.Read(clientAssertionAuthentication.ClientAssertion);
+            var unvalidatedToken = await _clientTokenDecoder.Read(clientAssertionAuthentication.ClientAssertion);
             clientId = unvalidatedToken.Issuer;
         }
 
@@ -139,9 +139,9 @@ internal class ClientAuthenticationService : IClientAuthenticationService
         {
             algorithms.Add(client.TokenEndpointAuthEncryptionEnc.GetDescription());
         }
-        var validatedToken = await _clientIssuedTokenDecoder.Validate(
+        var validatedToken = await _clientTokenDecoder.Validate(
             clientAssertionAuthentication.ClientAssertion,
-            new ClientIssuedTokenDecodeArguments
+            new ClientTokenDecodeArguments
             {
                 TokenType = TokenTypeHeaderConstants.PrivateKeyToken,
                 Algorithms = algorithms,

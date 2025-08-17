@@ -75,12 +75,12 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
     public async Task AuthenticateClient_TokenValidationFails_NotAuthenticated()
     {
         // Arrange
-        var tokenDecoder = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoder = new Mock<IClientTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             tokenDecoder
                 .Setup(x => x.Validate(
-                    It.IsAny<string>(), It.IsAny<ClientIssuedTokenDecodeArguments>(), It.IsAny<CancellationToken>()))
+                    It.IsAny<string>(), It.IsAny<ClientTokenDecodeArguments>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((JsonWebToken?)null)
                 .Verifiable();
 
@@ -111,7 +111,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
     public async Task AuthenticateClient_ValidSignedAssertionWithoutClientId_Authenticated()
     {
         // Arrange
-        var tokenDecoder = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoder = new Mock<IClientTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(tokenDecoder);
@@ -133,7 +133,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
 
         tokenDecoder
             .Setup(x => x.Validate(token,
-                It.Is<ClientIssuedTokenDecodeArguments>(a =>
+                It.Is<ClientTokenDecodeArguments>(a =>
                     a.ValidateLifetime && a.TokenType == TokenTypeHeaderConstants.PrivateKeyToken &&
                     a.ClientId == client.Id && a.Audience == ClientTokenAudience.TokenEndpoint),
                 It.IsAny<CancellationToken>()))
@@ -159,7 +159,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
     public async Task AuthenticateClient_ValidEncryptedAssertionWithClientId_Authenticated()
     {
         // Arrange
-        var tokenDecoder = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoder = new Mock<IClientTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(tokenDecoder);
@@ -179,7 +179,7 @@ public class ClientAssertionAuthenticationTest(ITestOutputHelper outputHelper) :
 
         tokenDecoder
             .Setup(x => x.Validate(token,
-                It.Is<ClientIssuedTokenDecodeArguments>(a =>
+                It.Is<ClientTokenDecodeArguments>(a =>
                     a.ValidateLifetime && a.TokenType == TokenTypeHeaderConstants.PrivateKeyToken &&
                     a.ClientId == client.Id && a.Audience == ClientTokenAudience.TokenEndpoint),
                 It.IsAny<CancellationToken>()))

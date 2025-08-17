@@ -24,13 +24,13 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         ICachedClientStore cachedClientStore,
         IClientAuthenticationService clientAuthenticationService,
         INonceRepository nonceRepository,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
+        IServerTokenDecoder serverTokenDecoder,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         ISecureRequestService secureRequestService,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository,
         IDPoPService dPoPService)
-        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
+        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
     {
         _cachedClientStore = cachedClientStore;
         _clientAuthenticationService = clientAuthenticationService;

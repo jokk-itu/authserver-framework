@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
 using AuthServer.Authentication.Abstractions;
+using AuthServer.Metrics;
 
 namespace AuthServer.Tests.UnitTest.Authorize.Interaction;
 
@@ -53,7 +54,8 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthorizeUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -96,7 +98,8 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthorizeUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -141,7 +144,8 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthorizeUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -181,7 +185,8 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
+        var expectedInteractionResult = InteractionResult.UnmetAuthenticationRequirementResult with { AuthenticationKind = AuthenticationKind.AuthorizeUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -223,7 +228,8 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
+        var expectedInteractionResult = InteractionResult.UnmetAuthenticationRequirementResult with { AuthenticationKind = AuthenticationKind.AuthorizeUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -259,7 +265,8 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.InvalidGrantId, interactionResult);
+        var expectedInteractionResult = InteractionResult.InvalidGrantId with { AuthenticationKind = AuthenticationKind.AuthorizeUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authorizeUserAccessorMock.Verify();
     }
@@ -336,8 +343,8 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.ConsentResult(prompt), interactionResult);
-        Assert.False(interactionResult.IsSuccessful);
+        var expectedInteractionResult = InteractionResult.ConsentResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthorizeUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         authorizeUserAccessorMock.Verify();
     }
 

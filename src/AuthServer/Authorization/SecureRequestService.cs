@@ -14,7 +14,7 @@ namespace AuthServer.Authorization;
 
 internal class SecureRequestService : ISecureRequestService
 {
-    private readonly ITokenDecoder<ClientIssuedTokenDecodeArguments> _tokenDecoder;
+    private readonly IClientTokenDecoder _clientTokenDecoder;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<SecureRequestService> _logger;
     private readonly IClientRepository _clientRepository;
@@ -23,13 +23,13 @@ internal class SecureRequestService : ISecureRequestService
     private AuthorizeRequestDto? _cachedAuthorizeRequestObjectDto;
 
     public SecureRequestService(
-        ITokenDecoder<ClientIssuedTokenDecodeArguments> tokenDecoder,
+        IClientTokenDecoder clientTokenDecoder,
         IHttpClientFactory httpClientFactory,
         ILogger<SecureRequestService> logger,
         IClientRepository clientRepository,
         ICachedClientStore cachedClientStore)
     {
-        _tokenDecoder = tokenDecoder;
+        _clientTokenDecoder = clientTokenDecoder;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _clientRepository = clientRepository;
@@ -60,9 +60,9 @@ internal class SecureRequestService : ISecureRequestService
             algorithms.Add(client.RequestObjectEncryptionEnc.GetDescription());
         }
 
-        var jsonWebToken = await _tokenDecoder.Validate(
+        var jsonWebToken = await _clientTokenDecoder.Validate(
             requestObject,
-            new ClientIssuedTokenDecodeArguments
+            new ClientTokenDecodeArguments
             {
                 ValidateLifetime = true,
                 Algorithms = algorithms.AsReadOnly(),

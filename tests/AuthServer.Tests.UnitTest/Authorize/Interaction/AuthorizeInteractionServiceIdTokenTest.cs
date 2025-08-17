@@ -1,13 +1,14 @@
-﻿using AuthServer.Authorize.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorize;
+using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Metrics;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
-using AuthServer.Authentication.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.Authorize.Interaction;
 
@@ -19,7 +20,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
     }
 
     [Theory]
-    [InlineData("none")]
+    [InlineData(PromptConstants.None)]
     [InlineData(null)]
     public async Task GetInteractionResult_IdTokenHintExpiredGrant_ExpectLogin(string? prompt)
     {
@@ -51,12 +52,13 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.IdToken };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
     [Theory]
-    [InlineData("none")]
+    [InlineData(PromptConstants.None)]
     [InlineData(null)]
     public async Task GetInteractionResult_IdTokenMaxAgeExceeded_ExpectLogin(string? prompt)
     {
@@ -94,12 +96,13 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.IdToken };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
     [Theory]
-    [InlineData("none")]
+    [InlineData(PromptConstants.None)]
     [InlineData(null)]
     public async Task GetInteractionResult_IdTokenDefaultMaxAgeExceeded_ExpectLogin(string? prompt)
     {
@@ -136,7 +139,8 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.IdToken };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
@@ -175,7 +179,8 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
+        var expectedInteractionResult = InteractionResult.UnmetAuthenticationRequirementResult with { AuthenticationKind = AuthenticationKind.IdToken };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
@@ -216,7 +221,8 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
+        var expectedInteractionResult = InteractionResult.UnmetAuthenticationRequirementResult with { AuthenticationKind = AuthenticationKind.IdToken };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
@@ -251,7 +257,8 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.InvalidGrantId, interactionResult);
+        var expectedInteractionResult = InteractionResult.InvalidGrantId with { AuthenticationKind = AuthenticationKind.IdToken };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 
@@ -294,7 +301,7 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
     }
 
     [Theory]
-    [InlineData("none")]
+    [InlineData(PromptConstants.None)]
     [InlineData(null)]
     public async Task GetInteractionResult_IdTokenHintConsentRequired_ExpectConsent(string? prompt)
     {
@@ -327,7 +334,8 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.ConsentResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.ConsentResult(prompt) with { AuthenticationKind = AuthenticationKind.IdToken };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
     }
 

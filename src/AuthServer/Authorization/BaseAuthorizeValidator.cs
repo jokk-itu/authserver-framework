@@ -12,14 +12,14 @@ namespace AuthServer.Authorization;
 internal class BaseAuthorizeValidator
 {
     private readonly INonceRepository _nonceRepository;
-    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
+    private readonly IServerTokenDecoder _tokenDecoder;
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IClientRepository _clientRepository;
 
     public BaseAuthorizeValidator(
         INonceRepository nonceRepository,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
+        IServerTokenDecoder tokenDecoder,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository)
@@ -106,7 +106,7 @@ internal class BaseAuthorizeValidator
 
         var validatedToken = await _tokenDecoder.Validate(
             idTokenHint,
-            new ServerIssuedTokenDecodeArguments
+            new ServerTokenDecodeArguments
             {
                 ValidateLifetime = true,
                 TokenTypes = [TokenTypeHeaderConstants.IdToken],

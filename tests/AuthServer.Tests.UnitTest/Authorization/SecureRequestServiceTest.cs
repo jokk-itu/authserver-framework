@@ -40,7 +40,7 @@ public class SecureRequestServiceTest : BaseUnitTest
     {
         // Arrange
         const string token = "invalid_token";
-        var tokenDecoderMock = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoderMock = new Mock<IClientTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(tokenDecoderMock);
@@ -56,7 +56,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         tokenDecoderMock
             .Setup(x => x.Validate(
                 token,
-                It.Is<ClientIssuedTokenDecodeArguments>(
+                It.Is<ClientTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
@@ -79,7 +79,7 @@ public class SecureRequestServiceTest : BaseUnitTest
     public async Task GetRequestObject_ValidToken_ExpectDtoWithValues()
     {
         // Arrange
-        var tokenDecoderMock = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoderMock = new Mock<IClientTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(tokenDecoderMock);
@@ -97,7 +97,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         tokenDecoderMock
             .Setup(x => x.Validate(
                 requestToken,
-                It.Is<ClientIssuedTokenDecodeArguments>(
+                It.Is<ClientTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
@@ -145,7 +145,7 @@ public class SecureRequestServiceTest : BaseUnitTest
     public async Task GetRequestObject_ValidToken_ExpectDtoWithoutValues()
     {
         // Arrange
-        var tokenDecoderMock = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoderMock = new Mock<IClientTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(tokenDecoderMock);
@@ -162,7 +162,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         tokenDecoderMock
             .Setup(x => x.Validate(
                 requestToken,
-                It.Is<ClientIssuedTokenDecodeArguments>(
+                It.Is<ClientTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Count == 2 &&
@@ -241,7 +241,7 @@ public class SecureRequestServiceTest : BaseUnitTest
     public async Task GetRequestByReference_ValidToken_ExpectDtoWithValues()
     {
         // Arrange
-        var tokenDecoderMock = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoderMock = new Mock<IClientTokenDecoder>();
         var httpClientFactory = new Mock<IHttpClientFactory>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -261,7 +261,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         tokenDecoderMock
             .Setup(x => x.Validate(
                 requestToken,
-                It.Is<ClientIssuedTokenDecodeArguments>(
+                It.Is<ClientTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
@@ -316,7 +316,7 @@ public class SecureRequestServiceTest : BaseUnitTest
     public async Task GetRequestByReference_ValidToken_ExpectDtoWithoutValues()
     {
         // Arrange
-        var tokenDecoderMock = new Mock<ITokenDecoder<ClientIssuedTokenDecodeArguments>>();
+        var tokenDecoderMock = new Mock<IClientTokenDecoder>();
         var httpClientFactory = new Mock<IHttpClientFactory>();
         var serviceProvider = BuildServiceProvider(services =>
         {
@@ -335,7 +335,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         tokenDecoderMock
             .Setup(x => x.Validate(
                 requestToken,
-                It.Is<ClientIssuedTokenDecodeArguments>(
+                It.Is<ClientTokenDecodeArguments>(
                     y =>
                         y.ValidateLifetime &&
                         y.Algorithms.Single() == SigningAlg.RsaSha256.GetDescription() &&
