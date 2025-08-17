@@ -1,10 +1,7 @@
-using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
-using AuthServer.Helpers;
-using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,14 +10,14 @@ namespace AuthServer.GrantManagement;
 internal class GrantManagementRequestValidator : IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest>
 {
     private readonly AuthorizationDbContext _authorizationDbContext;
-    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
 
     public GrantManagementRequestValidator(
         AuthorizationDbContext authorizationDbContext,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder)
+        IServerTokenDecoder serverTokenDecoder)
     {
         _authorizationDbContext = authorizationDbContext;
-        _tokenDecoder = tokenDecoder;
+        _serverTokenDecoder = serverTokenDecoder;
     }
     
     public async Task<ProcessResult<GrantManagementValidatedRequest, ProcessError>> Validate(GrantManagementRequest request, CancellationToken cancellationToken)
@@ -32,6 +29,7 @@ internal class GrantManagementRequestValidator : IRequestValidator<GrantManageme
 
         var clientIdFromGrant = await _authorizationDbContext
             .Set<AuthorizationGrant>()
+            .Where(AuthorizationGrant.IsActive)
             .Where(x => x.Id == request.GrantId)
             .Select(x => x.Client.Id)
             .SingleOrDefaultAsync(cancellationToken);
@@ -41,23 +39,9 @@ internal class GrantManagementRequestValidator : IRequestValidator<GrantManageme
             return GrantManagementError.NotFoundGrantId;
         }
 
-        string clientIdFromToken;
-        if (TokenHelper.IsJsonWebToken(request.AccessToken))
-        {
-            // only read because the token has already been validated
-            var token = await _tokenDecoder.Read(request.AccessToken);
-            clientIdFromToken = token.GetClaim(ClaimNameConstants.ClientId).Value;
-        }
-        else
-        {
-            clientIdFromToken = await _authorizationDbContext
-                .Set<GrantAccessToken>()
-                .Where(x => x.Reference == request.AccessToken)
-                .Select(x => x.AuthorizationGrant.Client.Id)
-                .SingleAsync(cancellationToken);
-        }
+        var tokenResult = await _serverTokenDecoder.Read(request.AccessToken, cancellationToken);
 
-        if (clientIdFromGrant != clientIdFromToken)
+        if (clientIdFromGrant != tokenResult.ClientId)
         {
             return GrantManagementError.InvalidGrant;
         }
