@@ -87,8 +87,8 @@ public class AuthServerBuilder
     private void AddEncoders()
     {
         _services
-            .AddScoped<ITokenDecoder<ServerIssuedTokenDecodeArguments>, ServerIssuedTokenDecoder>()
-            .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
+            .AddScoped<IServerTokenDecoder, ServerTokenDecoder>()
+            .AddScoped<IClientTokenDecoder, ClientTokenDecoder >()
             .AddScoped<ICodeEncoder<EncodedAuthorizationCode>, CodeEncoder<EncodedAuthorizationCode>>()
             .AddScoped<ICodeEncoder<EncodedDeviceCode>, CodeEncoder<EncodedDeviceCode>>();
     }
