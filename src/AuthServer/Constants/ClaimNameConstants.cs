@@ -46,6 +46,18 @@ public static class ClaimNameConstants
     public const string Amr = "amr";
 
     /// <summary>
+    /// Actor object.
+    /// Contains a subject referring to an actor who uses the token containing this claim.
+    /// </summary>
+    public const string Act = "act";
+
+    /// <summary>
+    /// Actor object.
+    /// Contains a subject referring to an actor who may act using the token containing this claim.
+    /// </summary>
+    public const string MayAct = "may_act";
+
+    /// <summary>
     /// Authorized party.
     /// The party to which the id_token was issued.
     /// </summary>

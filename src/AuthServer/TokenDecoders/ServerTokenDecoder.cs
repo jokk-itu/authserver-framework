@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using AuthServer.Constants;
+﻿using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Extensions;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
 
 namespace AuthServer.TokenDecoders;
 
@@ -118,7 +118,9 @@ internal class ServerTokenDecoder : IServerTokenDecoder
             TokenDecryptionKeys = _jwkDocumentOptions.Value.EncryptionKeys.Select(x => x.Key),
             ValidateLifetime = arguments.ValidateLifetime,
             ValidateAudience = arguments.Audiences.Count != 0,
-            ValidateIssuer = true
+            ValidateIssuer = true,
+            NameClaimType = ClaimNameConstants.Name,
+            RoleClaimType = ClaimNameConstants.Roles
         };
 
         var handler = new JsonWebTokenHandler();
@@ -176,7 +178,9 @@ internal class ServerTokenDecoder : IServerTokenDecoder
                 ClientIdFromGrantToken = (x as GrantToken)!.AuthorizationGrant.Client.Id,
                 GrantId = (x as GrantToken)!.AuthorizationGrant.Id,
                 SessionId = (x as GrantToken)!.AuthorizationGrant.Session.Id,
-                Subject = (x as GrantToken)!.AuthorizationGrant.Subject
+                Subject = (x as GrantToken)!.AuthorizationGrant.Subject,
+                SubjectActor = x.SubjectActor,
+                SubjectMayAct = x.SubjectMayAct
             })
             .SingleOrDefaultAsync(cancellationToken);
     }
@@ -192,7 +196,19 @@ internal class ServerTokenDecoder : IServerTokenDecoder
             Scope = tokenQuery.Token.Scope!.Split(' '),
             GrantId = tokenQuery.GrantId,
             Jkt = tokenQuery.Token.Jkt,
-            Sid = tokenQuery.SessionId
+            Sid = tokenQuery.SessionId,
+            Act = tokenQuery.SubjectActor is not null
+                ? new ActDto
+                {
+                    Sub = tokenQuery.SubjectActor
+                }
+                : null,
+            MayAct = tokenQuery.SubjectMayAct is not null
+                ? new ActDto
+                {
+                    Sub = tokenQuery.SubjectMayAct
+                }
+                : null
         };
     }
 
@@ -200,8 +216,19 @@ internal class ServerTokenDecoder : IServerTokenDecoder
     {
         jsonWebToken.TryGetPayloadValue<string>(ClaimNameConstants.Sid, out var sid);
         jsonWebToken.TryGetPayloadValue<string>(ClaimNameConstants.GrantId, out var grantId);
-        jsonWebToken.TryGetPayloadValue<string>(ClaimNameConstants.Jkt, out var jkt);
         jsonWebToken.TryGetPayloadValue<string>(ClaimNameConstants.Scope, out var scope);
+
+        jsonWebToken.TryGetPayloadValue<Dictionary<string, object>>(ClaimNameConstants.Act, out var act);
+        object? subjectActor = null;
+        act?.TryGetValue(ClaimNameConstants.Sub, out subjectActor);
+
+        jsonWebToken.TryGetPayloadValue<Dictionary<string, object>>(ClaimNameConstants.MayAct, out var mayAct);
+        object? subjectMayAct = null;
+        mayAct?.TryGetValue(ClaimNameConstants.Sub, out subjectMayAct);
+
+        jsonWebToken.TryGetPayloadValue<Dictionary<string, object>>(ClaimNameConstants.Cnf, out var cnf);
+        object? jkt = null;
+        cnf?.TryGetValue(ClaimNameConstants.Jkt, out jkt);
 
         return new TokenResult
         {
@@ -211,8 +238,20 @@ internal class ServerTokenDecoder : IServerTokenDecoder
             Typ = jsonWebToken.GetHeaderValue<string>(JwtHeaderParameterNames.Typ),
             Scope = scope?.Split(' ') ?? [],
             GrantId = grantId,
-            Jkt = jkt,
-            Sid = sid
+            Jkt = jkt?.ToString(),
+            Sid = sid,
+            Act = subjectActor is not null
+                ? new ActDto
+                {
+                    Sub = subjectActor.ToString()!
+                }
+                : null,
+            MayAct = subjectMayAct is not null
+                ? new ActDto
+                {
+                    Sub = subjectMayAct.ToString()!
+                }
+                : null
         };
     }
 
@@ -224,5 +263,7 @@ internal class ServerTokenDecoder : IServerTokenDecoder
         public string? SessionId { get; init; }
         public string? GrantId { get; init; }
         public required Token Token { get; init; }
+        public string? SubjectActor { get; init; }
+        public string? SubjectMayAct { get; init; }
     };
 }

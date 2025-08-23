@@ -112,7 +112,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         Assert.NotNull(tokenResult);
         Assert.Equal(client.Id, tokenResult.ClientId);
         Assert.Equal(accessToken.Id.ToString(), tokenResult.Jti);
-        Assert.Equal(client.Id, tokenResult.Subject);
+        Assert.Equal(client.Id, tokenResult.Sub);
         Assert.Equal(TokenTypeHeaderConstants.AccessToken, tokenResult.Typ);
         Assert.Equal(accessToken.Scope!.Split(' '), tokenResult.Scope);
         Assert.Null(tokenResult.GrantId);
@@ -422,7 +422,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_JwsClientAccessToken_ExpectTokenResult()
+    public async Task Validate_JwsDPoPBoundClientAccessToken_ExpectTokenResult()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -436,6 +436,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var jti = Guid.NewGuid().ToString();
         var subject = Guid.NewGuid().ToString();
         var scope = ScopeConstants.OpenId;
+        var jkt = "jkt";
         var jwt = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = DiscoveryDocument.Issuer,
@@ -451,6 +452,12 @@ public class ServerTokenDecoderTest : BaseUnitTest
                 { ClaimNameConstants.Jti, jti },
                 { ClaimNameConstants.Sub, subject },
                 { ClaimNameConstants.Scope, scope },
+                {
+                    ClaimNameConstants.Cnf, new Dictionary<string, object>
+                    {
+                        { ClaimNameConstants.Jkt, jkt }
+                    }
+                }
             }
         });
 
@@ -469,12 +476,14 @@ public class ServerTokenDecoderTest : BaseUnitTest
         Assert.NotNull(tokenResult);
         Assert.Equal(clientId, tokenResult.ClientId);
         Assert.Equal(jti, tokenResult.Jti);
-        Assert.Equal(subject, tokenResult.Subject);
+        Assert.Equal(subject, tokenResult.Sub);
         Assert.Equal(TokenTypeHeaderConstants.AccessToken, tokenResult.Typ);
         Assert.Equal(scope.Split(' '), tokenResult.Scope);
         Assert.Null(tokenResult.GrantId);
-        Assert.Null(tokenResult.Jkt);
+        Assert.Equal(jkt, tokenResult.Jkt);
         Assert.Null(tokenResult.Sid);
+        Assert.Null(tokenResult.Act);
+        Assert.Null(tokenResult.MayAct);
     }
 
     [Fact]
@@ -497,6 +506,8 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var scope = ScopeConstants.OpenId;
         var grantId = Guid.NewGuid().ToString();
         var sid = Guid.NewGuid().ToString();
+        var act = Guid.NewGuid().ToString();
+        var mayAct = Guid.NewGuid().ToString();
         var jwt = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = DiscoveryDocument.Issuer,
@@ -515,6 +526,18 @@ public class ServerTokenDecoderTest : BaseUnitTest
                 { ClaimNameConstants.Scope, scope },
                 { ClaimNameConstants.GrantId, grantId },
                 { ClaimNameConstants.Sid, sid },
+                {
+                    ClaimNameConstants.Act, new Dictionary<string, object>
+                    {
+                        { ClaimNameConstants.Sub, act }
+                    }
+                },
+                {
+                    ClaimNameConstants.MayAct, new Dictionary<string, object>
+                    {
+                        { ClaimNameConstants.Sub, mayAct }
+                    }
+                }
             }
         });
 
@@ -533,12 +556,16 @@ public class ServerTokenDecoderTest : BaseUnitTest
         Assert.NotNull(tokenResult);
         Assert.Equal(clientId, tokenResult.ClientId);
         Assert.Equal(jti, tokenResult.Jti);
-        Assert.Equal(subject, tokenResult.Subject);
+        Assert.Equal(subject, tokenResult.Sub);
         Assert.Equal(TokenTypeHeaderConstants.AccessToken, tokenResult.Typ);
         Assert.Equal(scope.Split(' '), tokenResult.Scope);
         Assert.Equal(grantId, tokenResult.GrantId);
         Assert.Null(tokenResult.Jkt);
         Assert.Equal(sid, tokenResult.Sid);
+        Assert.NotNull(tokenResult.Act);
+        Assert.Equal(act, tokenResult.Act.Sub);
+        Assert.NotNull(tokenResult.MayAct);
+        Assert.Equal(mayAct, tokenResult.MayAct.Sub);
     }
 
     [Theory]
@@ -551,7 +578,10 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var tokenDecoder = serviceProvider.GetRequiredService<IServerTokenDecoder>();
 
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt);
+        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt)
+        {
+            Jkt = "jkt"
+        };
         await AddEntity(accessToken);
 
         // Act
@@ -569,12 +599,14 @@ public class ServerTokenDecoderTest : BaseUnitTest
         Assert.NotNull(tokenResult);
         Assert.Equal(client.Id, tokenResult.ClientId);
         Assert.Equal(accessToken.Id.ToString(), tokenResult.Jti);
-        Assert.Equal(client.Id, tokenResult.Subject);
+        Assert.Equal(client.Id, tokenResult.Sub);
         Assert.Equal(TokenTypeHeaderConstants.AccessToken, tokenResult.Typ);
         Assert.Equal(accessToken.Scope!.Split(' '), tokenResult.Scope);
         Assert.Null(tokenResult.GrantId);
-        Assert.Null(tokenResult.Jkt);
+        Assert.Equal(accessToken.Jkt, tokenResult.Jkt);
         Assert.Null(tokenResult.Sid);
+        Assert.Null(tokenResult.Act);
+        Assert.Null(tokenResult.MayAct);
     }
 
     [Theory]
@@ -591,7 +623,11 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var grant = new AuthorizationCodeGrant(session, client, subject.Id, levelOfAssurance);
-        var accessToken = new GrantAccessToken(grant, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt);
+        var accessToken = new GrantAccessToken(grant, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt)
+        {
+            SubjectActor = Guid.NewGuid().ToString(),
+            SubjectMayAct = Guid.NewGuid().ToString()
+        };
         await AddEntity(accessToken);
 
         // Act
@@ -609,11 +645,15 @@ public class ServerTokenDecoderTest : BaseUnitTest
         Assert.NotNull(tokenResult);
         Assert.Equal(client.Id, tokenResult.ClientId);
         Assert.Equal(accessToken.Id.ToString(), tokenResult.Jti);
-        Assert.Equal(subject.Id, tokenResult.Subject);
+        Assert.Equal(subject.Id, tokenResult.Sub);
         Assert.Equal(TokenTypeHeaderConstants.AccessToken, tokenResult.Typ);
         Assert.Equal(accessToken.Scope!.Split(' '), tokenResult.Scope);
         Assert.Equal(grant.Id, tokenResult.GrantId);
         Assert.Null(tokenResult.Jkt);
         Assert.Equal(session.Id, tokenResult.Sid);
+        Assert.NotNull(tokenResult.Act);
+        Assert.Equal(accessToken.SubjectActor, tokenResult.Act.Sub);
+        Assert.NotNull(tokenResult.MayAct);
+        Assert.Equal(accessToken.SubjectMayAct, tokenResult.MayAct.Sub);
     }
 }

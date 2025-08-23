@@ -9,4 +9,6 @@ internal class TokenResult
     public string? GrantId { get; init; }
     public string? Sid { get; init; }
     public string? Jkt { get; init; }
+    public ActDto? Act { get; init; }
+    public ActDto? MayAct { get; init; }
 }
