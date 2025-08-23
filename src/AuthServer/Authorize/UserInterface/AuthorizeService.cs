@@ -158,7 +158,7 @@ internal class AuthorizeService : IAuthorizeService
             var idTokenResult = await _serverTokenDecoder.Read(authorizeRequestDto.IdTokenHint, cancellationToken);
             return new SubjectDto
             {
-                Subject = idTokenResult.Subject,
+                Subject = idTokenResult.Sub,
                 GrantId = idTokenResult.GrantId!
             };
         }

@@ -85,7 +85,7 @@ internal class EndSessionRequestValidator : IRequestValidator<EndSessionRequest,
             return EndSessionError.InvalidIdToken;
         }
 
-        var subjectIdentifier = token.Subject;
+        var subjectIdentifier = token.Sub;
         var sessionId = token.Sid;
 
         var unauthorizedClientError = await ValidateClientAuthorizedForPostLogoutRedirectUri(token.ClientId, request, cancellationToken);

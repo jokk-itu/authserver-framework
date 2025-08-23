@@ -186,7 +186,7 @@ internal class ServerTokenDecoder : IServerTokenDecoder
         return new TokenResult
         {
             ClientId = tokenQuery.ClientIdFromClientToken ?? tokenQuery.ClientIdFromGrantToken!,
-            Subject = tokenQuery.Subject ?? tokenQuery.ClientIdFromClientToken!,
+            Sub = tokenQuery.Subject ?? tokenQuery.ClientIdFromClientToken!,
             Jti = tokenQuery.Token.Id.ToString(),
             Typ = TokenHelper.MapToTokenTypHeader(tokenQuery.Token.TokenType),
             Scope = tokenQuery.Token.Scope!.Split(' '),
@@ -207,7 +207,7 @@ internal class ServerTokenDecoder : IServerTokenDecoder
         {
             ClientId = jsonWebToken.GetPayloadValue<string>(ClaimNameConstants.ClientId),
             Jti = jsonWebToken.GetPayloadValue<string>(ClaimNameConstants.Jti),
-            Subject = jsonWebToken.GetPayloadValue<string>(ClaimNameConstants.Sub),
+            Sub = jsonWebToken.GetPayloadValue<string>(ClaimNameConstants.Sub),
             Typ = jsonWebToken.GetHeaderValue<string>(JwtHeaderParameterNames.Typ),
             Scope = scope?.Split(' ') ?? [],
             GrantId = grantId,

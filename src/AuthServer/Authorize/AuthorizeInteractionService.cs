@@ -77,7 +77,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         if (!string.IsNullOrEmpty(authorizeRequest.IdTokenHint))
         {
             var idTokenResult = await _serverTokenDecoder.Read(authorizeRequest.IdTokenHint, cancellationToken);
-            var subject = idTokenResult.Subject;
+            var subject = idTokenResult.Sub;
             var grantId = authorizeRequest.GrantId ?? idTokenResult.GrantId;
 
             _logger.LogDebug("Deducing Prompt from id_token with subject {Subject} and grant {AuthorizationGrantId}", subject, grantId);
