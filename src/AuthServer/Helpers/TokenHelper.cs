@@ -42,6 +42,7 @@ internal static class TokenHelper
         {
             TokenType.ClientAccessToken => TokenTypeHeaderConstants.AccessToken,
             TokenType.GrantAccessToken => TokenTypeHeaderConstants.AccessToken,
+            TokenType.RegistrationToken => TokenTypeHeaderConstants.AccessToken,
             TokenType.RefreshToken => TokenTypeHeaderConstants.RefreshToken,
             _ => throw new ArgumentException($"Token type {tokenType} is not supported", nameof(tokenType))
         };
