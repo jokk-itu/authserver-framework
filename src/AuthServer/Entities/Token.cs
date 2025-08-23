@@ -35,6 +35,9 @@ public abstract class Token : Entity<Guid>
     public string Issuer { get; private init; }
     public DateTime? RevokedAt { get; set; }
     public string? Jkt { get; init; }
+    public string? SubjectActor { get; init; }
+    public string? SubjectMayAct { get; init; }
+
     public void Revoke()
     {
         RevokedAt ??= DateTime.UtcNow;

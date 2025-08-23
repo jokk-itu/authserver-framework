@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250814202252_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250823185955_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1025,6 +1025,14 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Scope")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SubjectActor")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SubjectMayAct")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 

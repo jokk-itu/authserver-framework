@@ -40,6 +40,14 @@ internal sealed class TokenConfiguration : IEntityTypeConfiguration<Token>
             .HasMaxLength(64);
 
         builder
+            .Property(x => x.SubjectActor)
+            .HasMaxLength(255);
+
+        builder
+            .Property(x => x.SubjectMayAct)
+            .HasMaxLength(255);
+
+        builder
             .HasIndex(x => x.Reference)
             .IsUnique();
     }

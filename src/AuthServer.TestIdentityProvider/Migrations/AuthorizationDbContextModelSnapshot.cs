@@ -1025,6 +1025,14 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("SubjectActor")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SubjectMayAct")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<int>("TokenType")
                         .HasColumnType("int");
 
