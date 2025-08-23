@@ -820,7 +820,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, "aud", "iss", null, 3600, null);
+        var token = new ClientAccessToken(client, "aud", "iss", ScopeConstants.OpenId, 3600);
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -851,7 +851,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, null);
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600);
         token.Revoke();
         await AddEntity(token);
 
@@ -883,7 +883,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, null);
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600);
         typeof(Token)
             .GetProperty(nameof(Token.IssuedAt))!
             .SetValue(token, DateTime.UtcNow.AddSeconds(60));
@@ -918,7 +918,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, null);
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600);
         typeof(Token)
             .GetProperty(nameof(Token.ExpiresAt))!
             .SetValue(token, DateTime.UtcNow.AddSeconds(-60));
@@ -953,7 +953,10 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, "jkt");
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600)
+        {
+            Jkt = "jkt"
+        };
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -984,7 +987,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, null);
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600);
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -1015,7 +1018,10 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, "jkt");
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600)
+        {
+            Jkt = "jkt"
+        };
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -1050,7 +1056,10 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
             services.AddScopedMock(dPoPService);
         });
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, "jkt");
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600)
+        {
+            Jkt = "jkt"
+        };
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -1098,7 +1107,10 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
             services.AddScopedMock(dPoPService);
         });
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, "jkt");
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600)
+        {
+            Jkt = "jkt"
+        };
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -1148,7 +1160,10 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
             services.AddScopedMock(dPoPService);
         });
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, "jkt");
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600)
+        {
+            Jkt = "jkt"
+        };
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -1197,7 +1212,10 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
             services.AddScopedMock(dPoPService);
         });
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, "jkt");
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600)
+        {
+            Jkt = "jkt"
+        };
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -1248,7 +1266,10 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         });
         const string jkt = "jkt";
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", null, 3600, jkt);
+        var token = new ClientAccessToken(client, DiscoveryDocument.Issuer, "iss", ScopeConstants.OpenId, 3600)
+        {
+            Jkt = jkt
+        };
         await AddEntity(token);
 
         var httpContext = new DefaultHttpContext
@@ -1308,7 +1329,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
-        var token = new GrantAccessToken(authorizationGrant, DiscoveryDocument.Issuer, DiscoveryDocument.Issuer, "scope", 300, null);
+        var token = new GrantAccessToken(authorizationGrant, DiscoveryDocument.Issuer, DiscoveryDocument.Issuer, ScopeConstants.OpenId, 300);
         await AddEntity(token);
 
         userClaimService

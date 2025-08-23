@@ -102,7 +102,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var tokenDecoder = serviceProvider.GetRequiredService<IServerTokenDecoder>();
 
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, client.AccessTokenExpiration, null);
+        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, client.AccessTokenExpiration);
         await AddEntity(accessToken);
 
         // Act
@@ -164,7 +164,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var tokenDecoder = serviceProvider.GetRequiredService<IServerTokenDecoder>();
 
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, -30, null);
+        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, -30);
         await AddEntity(accessToken);
 
         // Act
@@ -226,7 +226,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var tokenDecoder = serviceProvider.GetRequiredService<IServerTokenDecoder>();
 
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, client.AccessTokenExpiration, null);
+        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, client.AccessTokenExpiration);
         await AddEntity(accessToken);
 
         // Act
@@ -324,7 +324,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var tokenDecoder = serviceProvider.GetRequiredService<IServerTokenDecoder>();
 
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, client.AccessTokenExpiration, null);
+        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, client.AccessTokenExpiration);
         await AddEntity(accessToken);
 
         // Act
@@ -551,7 +551,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var tokenDecoder = serviceProvider.GetRequiredService<IServerTokenDecoder>();
 
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt, null);
+        var accessToken = new ClientAccessToken(client, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt);
         await AddEntity(accessToken);
 
         // Act
@@ -591,7 +591,7 @@ public class ServerTokenDecoderTest : BaseUnitTest
         var client = new Client("app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var grant = new AuthorizationCodeGrant(session, client, subject.Id, levelOfAssurance);
-        var accessToken = new GrantAccessToken(grant, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt, null);
+        var accessToken = new GrantAccessToken(grant, "resource1", DiscoveryDocument.Issuer, ScopeConstants.OpenId, accessTokenExpiresAt);
         await AddEntity(accessToken);
 
         // Act

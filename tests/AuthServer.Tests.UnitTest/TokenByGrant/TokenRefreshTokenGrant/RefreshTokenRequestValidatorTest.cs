@@ -859,7 +859,10 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
-        var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600, jkt);
+        var refreshToken = new RefreshToken(authorizationGrant, client.Id, DiscoveryDocument.Issuer, ScopeConstants.OpenId, expiration ?? 3600)
+        {
+            Jkt = jkt
+        };
         await AddEntity(refreshToken);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);

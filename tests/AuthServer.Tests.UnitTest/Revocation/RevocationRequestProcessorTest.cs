@@ -24,7 +24,7 @@ public class RevocationRequestProcessorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var revocationRequestProcessor = serviceProvider.GetRequiredService<IRequestProcessor<RevocationValidatedRequest, Unit>>();
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
+        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
         // Act
@@ -44,7 +44,7 @@ public class RevocationRequestProcessorTest : BaseUnitTest
         var serviceProvider = BuildServiceProvider();
         var revocationRequestProcessor = serviceProvider.GetRequiredService<IRequestProcessor<RevocationValidatedRequest, Unit>>();
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
+        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1);
         token.Revoke();
         var revokedAt = token.RevokedAt;
         await AddEntity(token);
@@ -68,7 +68,7 @@ public class RevocationRequestProcessorTest : BaseUnitTest
         var revocationRequestProcessor = serviceProvider.GetRequiredService<IRequestProcessor<RevocationValidatedRequest, Unit>>();
 
         var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
+        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
         var tokenHandler = new JsonWebTokenHandler();

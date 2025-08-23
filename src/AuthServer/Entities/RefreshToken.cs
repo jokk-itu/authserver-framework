@@ -3,8 +3,8 @@
 namespace AuthServer.Entities;
 public class RefreshToken : GrantToken
 {
-    public RefreshToken(AuthorizationGrant authorizationGrant, string audience, string issuer, string scope, int expiresAt, string? jkt)
-        : base(authorizationGrant, TokenType.RefreshToken, audience, issuer, scope, expiresAt, jkt)
+    public RefreshToken(AuthorizationGrant authorizationGrant, string audience, string issuer, string scope, int expiresAt)
+        : base(authorizationGrant, TokenType.RefreshToken, audience, issuer, scope, expiresAt)
     {}
 
 #pragma warning disable CS8618

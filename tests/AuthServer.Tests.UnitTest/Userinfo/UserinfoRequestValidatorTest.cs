@@ -75,7 +75,7 @@ public class UserinfoRequestValidatorTest : BaseUnitTest
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
         var grantAccessToken = new GrantAccessToken(authorizationGrant, client.ClientUri, DiscoveryDocument.Issuer,
-            $"{ScopeConstants.OpenId} {ScopeConstants.UserInfo}", 1, null);
+            $"{ScopeConstants.OpenId} {ScopeConstants.UserInfo}", 1);
 
         await AddEntity(grantAccessToken);
 
