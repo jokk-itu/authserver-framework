@@ -11,7 +11,8 @@
         [ new RowCellDefinition('OpenId Connect', 'https://openid.net/specs/openid-connect-core-1_0.html'), new RowCellDefinition('Core specification for OpenId Connect') ],
         [ new RowCellDefinition('Token Introspection', 'https://datatracker.ietf.org/doc/html/rfc7662'), new RowCellDefinition('Specification for introspecting tokens') ],
         [ new RowCellDefinition("DPoP", "https://datatracker.ietf.org/doc/html/rfc9449"), new RowCellDefinition("Specification for sender constraining tokens using DPoP") ],
-        [ new RowCellDefinition('Step up authentication', 'https://datatracker.ietf.org/doc/html/rfc9470/'), new RowCellDefinition('Step up authentication specification') ]
+        [ new RowCellDefinition('Step up authentication', 'https://datatracker.ietf.org/doc/html/rfc9470/'), new RowCellDefinition('Step up authentication specification') ],
+        [ new RowCellDefinition("Token Exchange", "https://datatracker.ietf.org/doc/html/rfc8693"), new RowCellDefinition("Specification to exchange tokens") ]
     ];
 
     let requestHeaders: string[] = ["Name", "Description"];
@@ -37,6 +38,8 @@
         [ new RowCellDefinition("auth_time"), new RowCellDefinition("Unix timestamp of when the end-user authenticated. This is optional.") ],
         [ new RowCellDefinition("acr"), new RowCellDefinition("The AuthenticationContextReference used when the end-user authenticated. This is optional.") ],
         [ new RowCellDefinition("cnf"), new RowCellDefinition("Object with one field, which is jkt. That is the thumbprint of the DPoP if the token is sender-constrained. This is optional.") ],
+        [ new RowCellDefinition("act"), new RowCellDefinition("Object with one field, which is sub. That is the subject of the actor using the token on behalf of the tokens subject. This is optional.") ],
+        [ new RowCellDefinition("may_act"), new RowCellDefinition("Object with one field, which is sub. That is the subject of the actor allowed to use the token on behalf of the tokens subject. This is optional.") ],
         [ new RowCellDefinition("access_control"), new RowCellDefinition("Object with end-user claims used for authorization purposes. This is optional.") ],
     ]
 </script>
@@ -112,6 +115,14 @@ Cache-Control: no-cache, no-store
   "cnf":
   {
     "jkt": "ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
+  },
+  "act":
+  {
+    "sub": "dca0964b-aaa0-4822-8c55-9c8828f80b5a"
+  },
+  "may_act":
+  {
+    "sub": "6279c8b3-7f7e-48ef-96cc-649a7e5da7f6"
   },
   "access_control":
   {
