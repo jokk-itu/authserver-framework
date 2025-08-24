@@ -179,5 +179,7 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
         Assert.NotNull(response.JwtId);
         Assert.Null(response.AccessControl);
         Assert.Null(response.Cnf);
+        Assert.Null(response.Act);
+        Assert.Null(response.MayAct);
     }
 }

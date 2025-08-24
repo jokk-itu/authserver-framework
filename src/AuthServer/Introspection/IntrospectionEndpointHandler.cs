@@ -43,7 +43,19 @@ internal class IntrospectionEndpointHandler : IEndpointHandler
                     : new ConfirmationDto
                     {
                         Jkt = response.Jkt
-                    }
+                    },
+                Act = response.SubjectActor is null
+                    ? null
+                    : new ActorDto
+                    {
+                        Sub = response.SubjectActor
+                    },
+                MayAct = response.SubjectMayAct is null
+                    ? null
+                    : new MayActDto
+                    {
+                        Sub = response.SubjectMayAct
+                    },
             }),
             error => Results.Extensions.OAuthBadRequest(error));
     }

@@ -63,6 +63,14 @@ internal class PostIntrospectionResponse
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ConfirmationDto? Cnf { get; init; }
 
+    [JsonPropertyName(Parameter.Actor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ActorDto? Act { get; init; }
+
+    [JsonPropertyName(Parameter.MayAct)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MayActDto? MayAct { get; init; }
+
     [JsonPropertyName(Parameter.AccessControl)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, object>? AccessControl { get; init; }
