@@ -193,7 +193,11 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
         var tokenScope = string.Join(' ', [ScopeConstants.OpenId, ScopeConstants.Address]);
-        var token = new GrantAccessToken(authorizationGrant, weatherClient.ClientUri!, DiscoveryDocument.Issuer, tokenScope, 3600);
+        var token = new GrantAccessToken(authorizationGrant, weatherClient.ClientUri!, DiscoveryDocument.Issuer, tokenScope, 3600)
+        {
+            SubjectActor = Guid.NewGuid().ToString(),
+            SubjectMayAct = Guid.NewGuid().ToString()
+        };
         await AddEntity(token);
 
         var introspectionValidatedRequest = new IntrospectionValidatedRequest
@@ -227,6 +231,9 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
 
         Assert.NotNull(introspectionResponse.AccessControl);
         Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(introspectionResponse.AccessControl[ClaimNameConstants.Roles].ToString()!));
+
+        Assert.Equal(token.SubjectActor, introspectionResponse.SubjectActor);
+        Assert.Equal(token.SubjectMayAct, introspectionResponse.SubjectMayAct);
     }
 
     [Fact]
@@ -282,5 +289,7 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Null(introspectionResponse.Acr);
         Assert.Null(introspectionResponse.AccessControl);
         Assert.Equal(token.Jkt, introspectionResponse.Jkt);
+        Assert.Null(introspectionResponse.SubjectActor);
+        Assert.Null(introspectionResponse.SubjectMayAct);
     }
 }

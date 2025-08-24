@@ -109,6 +109,8 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
             AuthTime = query.AuthTime?.ToUnixTimeSeconds(),
             Acr = query.Acr,
             Jkt = query.Token.Jkt,
+            SubjectActor = query.Token.SubjectActor,
+            SubjectMayAct = query.Token.SubjectMayAct,
             AccessControl = accessControl
         };
     }
