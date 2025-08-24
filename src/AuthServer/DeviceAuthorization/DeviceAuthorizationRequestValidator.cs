@@ -115,7 +115,7 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return DeviceAuthorizationError.InvalidAcrValues;
         }
         
-        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
         {
             return DeviceAuthorizationError.InvalidGrantManagement;
         }

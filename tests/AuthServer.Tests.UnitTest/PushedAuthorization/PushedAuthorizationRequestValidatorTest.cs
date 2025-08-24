@@ -8,6 +8,7 @@ using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.PushedAuthorization;
 using AuthServer.Tests.Core;
+using AuthServer.Tests.UnitTest.TokenBuilders;
 using AuthServer.TokenDecoders;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -805,6 +806,45 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             Resource = [resource.ClientUri!],
             GrantManagementAction = grantManagementAction,
             GrantId = grantId
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(PushedAuthorizationError.InvalidGrantManagement, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_GrantManagementActionWithPublicClient_ExpectInvalidGrantManagement()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        client.TokenEndpointAuthMethod = TokenEndpointAuthMethod.None;
+
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+        var resource = await GetResource();
+
+        var request = new PushedAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientIdAuthentication(client.Id)
+            ],
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            GrantManagementAction = GrantManagementActionConstants.Create
         };
 
         // Act

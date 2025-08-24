@@ -498,6 +498,44 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_GrantManagementActionWithPublicClient_ExpectInvalidGrantManagement()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        client.TokenEndpointAuthMethod = TokenEndpointAuthMethod.None;
+
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+
+        var resource = await GetResource();
+
+        var request = new DeviceAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientIdAuthentication(client.Id)
+            ],
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            GrantManagementAction = GrantManagementActionConstants.Create
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(DeviceAuthorizationError.InvalidGrantManagement, processResult.Error);
+    }
+
+    [Fact]
     public async Task Validate_InvalidGrantId_ExpectInvalidGrantId()
     {
         // Arrange

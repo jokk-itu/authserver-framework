@@ -258,7 +258,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidAcrValues;
         }
 
-        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
         {
             return AuthorizeError.InvalidGrantManagement;
         }

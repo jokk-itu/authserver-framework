@@ -987,6 +987,38 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_GrantManagementWithPublicClient_ExpectInvalidGrantManagement()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+        client.TokenEndpointAuthMethod = TokenEndpointAuthMethod.None;
+        var resource = await GetResource();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            GrantManagementAction = GrantManagementActionConstants.Create
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.InvalidGrantManagement, processResult);
+    }
+
+    [Fact]
     public async Task Validate_InvalidGrantId_ExpectInvalidGrantId()
     {
         // Arrange

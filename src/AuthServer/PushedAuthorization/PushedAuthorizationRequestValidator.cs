@@ -190,7 +190,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return PushedAuthorizationError.InvalidAcrValues;
         }
 
-        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
         {
             return PushedAuthorizationError.InvalidGrantManagement;
         }

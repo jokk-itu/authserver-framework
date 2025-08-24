@@ -1,5 +1,6 @@
 ﻿using AuthServer.Cache.Entities;
 using AuthServer.Constants;
+using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Options;
@@ -116,10 +117,16 @@ internal class BaseAuthorizeValidator
         return validatedToken is not null;
     }
 
-    protected bool HasValidGrantManagementAction(string? grantId, string? grantManagementAction)
+    protected bool HasValidGrantManagementAction(string? grantId, string? grantManagementAction, CachedClient cachedClient)
     {
         if (string.IsNullOrEmpty(grantManagementAction)
             && _discoveryDocumentOptions.Value.GrantManagementActionRequired)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(grantManagementAction)
+            && cachedClient.TokenEndpointAuthMethod == TokenEndpointAuthMethod.None)
         {
             return false;
         }
