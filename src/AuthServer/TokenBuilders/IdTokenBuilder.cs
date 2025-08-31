@@ -87,6 +87,14 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             { ClaimNameConstants.Acr, query.AuthenticationContextReference }
         };
 
+        if (!string.IsNullOrEmpty(arguments.SubjectActor))
+        {
+            claims.Add(ClaimNameConstants.Act, new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Sub, arguments.SubjectActor }
+            });
+        }
+
         var userClaims = query.RequireIdTokenClaims
             ? await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken)
             : [];

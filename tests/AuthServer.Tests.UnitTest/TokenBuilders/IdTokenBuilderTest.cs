@@ -1,4 +1,5 @@
-﻿using AuthServer.Authentication.Abstractions;
+﻿using System.Text.Json;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
@@ -37,12 +38,14 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         });
         var idTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<IdTokenArguments>>();
         var authorizationGrant = await GetAuthorizationGrant(signingAlg);
+        const string subjectActor = "subjectActor";
 
         // Act
         var token = await idTokenBuilder.BuildToken(new IdTokenArguments
         {
             AuthorizationGrantId = authorizationGrant.Id,
-            Scope = [ ScopeConstants.OpenId, ScopeConstants.Profile ]
+            Scope = [ ScopeConstants.OpenId, ScopeConstants.Profile ],
+            SubjectActor = subjectActor
         }, CancellationToken.None);
 
         // Assert
@@ -69,6 +72,10 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         Assert.Equal(LevelOfAssuranceLow, validatedTokenResult.Claims[ClaimNameConstants.Acr].ToString());
         Assert.Equal(AuthenticationMethodReferenceConstants.Password, validatedTokenResult.Claims[ClaimNameConstants.Amr].ToString());
         Assert.NotNull(validatedTokenResult.Claims[ClaimNameConstants.Jti]);
+
+        var act = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Act].ToString()!);
+        Assert.NotNull(act);
+        Assert.Equal(subjectActor, act[ClaimNameConstants.Sub].ToString());
     }
 
     [Theory]
