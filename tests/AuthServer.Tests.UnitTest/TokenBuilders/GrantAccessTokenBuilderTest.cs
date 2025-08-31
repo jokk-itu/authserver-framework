@@ -41,6 +41,7 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         Assert.Equal(ScopeConstants.OpenId, token.Scope);
         Assert.NotNull(token.ExpiresAt);
         Assert.Equal("https://localhost:5000", token.Audience);
+        Assert.Null(token.SubjectActor);
     }
 
     [Theory]
@@ -65,10 +66,12 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
         var resource = new[] { "https://localhost:5000", "https://localhost:5001" };
         const string jkt = "jkt";
+        const string subjectActor = "subjectActor";
         var accessToken = await grantAccessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = authorizationGrant.Id,
             Jkt = jkt,
+            SubjectActor = subjectActor,
             Scope = scope,
             Resource = resource
         }, CancellationToken.None);
@@ -99,21 +102,22 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         Assert.Equal(authorizationGrant.AuthenticationContextReference.Name, validatedTokenResult.Claims[ClaimNameConstants.Acr].ToString());
         Assert.Equal(authorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds().ToString(), validatedTokenResult.Claims[ClaimNameConstants.AuthTime].ToString());
 
-        var accessControl = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.AccessControl].ToString()!);
+        var accessControl = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.AccessControl].ToString()!);
         Assert.NotNull(accessControl);
         Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(accessControl[ClaimNameConstants.Roles].ToString()!));
 
-        var confirmation = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Cnf].ToString()!);
+        var confirmation = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Cnf].ToString()!);
         Assert.NotNull(confirmation);
         Assert.Equal(jkt, confirmation[ClaimNameConstants.Jkt].ToString());
+
+        var act = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Act].ToString()!);
+        Assert.NotNull(act);
+        Assert.Equal(subjectActor, act[ClaimNameConstants.Sub].ToString());
     }
 
     private async Task<AuthorizationGrant> GetAuthorizationGrant(bool requireReferenceToken)
     {
-        var openIdScope = await IdentityContext
-            .Set<Scope>()
-            .SingleAsync(x => x.Name == ScopeConstants.OpenId);
-
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
         var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             RequireReferenceToken = requireReferenceToken,
