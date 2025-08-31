@@ -36,7 +36,7 @@ internal class DiscoveryEndpointHandler : IEndpointHandler
             OpPolicyUri = DiscoveryDocument.OpPolicyUri,
             OpTosUri = DiscoveryDocument.OpTosUri,
             AuthorizationEndpoint = await Filter(_endpointResolver.AuthorizationEndpoint, FeatureFlags.Authorize),
-            TokenEndpoint = await Filter(_endpointResolver.TokenEndpoint, FeatureFlags.AuthorizationCode, FeatureFlags.RefreshToken, FeatureFlags.ClientCredentials, FeatureFlags.DeviceCode),
+            TokenEndpoint = await Filter(_endpointResolver.TokenEndpoint, FeatureFlags.AuthorizationCode, FeatureFlags.RefreshToken, FeatureFlags.ClientCredentials, FeatureFlags.DeviceCode, FeatureFlags.TokenExchange),
             UserinfoEndpoint = await Filter(_endpointResolver.UserinfoEndpoint, FeatureFlags.Userinfo),
             JwksUri = await Filter(_endpointResolver.JwksEndpoint, FeatureFlags.Jwks),
             RegistrationEndpoint = await Filter(_endpointResolver.RegistrationEndpoint, FeatureFlags.RegisterGet, FeatureFlags.RegisterDelete, FeatureFlags.RegisterPost, FeatureFlags.RegisterPut),
