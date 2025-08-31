@@ -62,6 +62,14 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             { ClaimNameConstants.Sub, arguments.ClientId }
         };
 
+        if (!string.IsNullOrEmpty(arguments.SubjectActor))
+        {
+            claims.Add(ClaimNameConstants.Act, new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Sub, arguments.SubjectActor }
+            });
+        }
+
         if (!string.IsNullOrEmpty(arguments.Jkt))
         {
             var confirmation = new Dictionary<string, object>
@@ -97,7 +105,8 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             string.Join(' ', arguments.Scope),
             client.AccessTokenExpiration)
         {
-            Jkt = arguments.Jkt
+            Jkt = arguments.Jkt,
+           SubjectActor = arguments.SubjectActor
         };
 
         await _identityContext.Set<ClientAccessToken>().AddAsync(accessToken);

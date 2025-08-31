@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using AuthServer.Constants;
+﻿using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.TokenBuilders;
@@ -8,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.TokenBuilders;
@@ -21,7 +21,7 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         var serviceProvider = BuildServiceProvider();
         var accessTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<ClientAccessTokenArguments>>();
         var client = await GetClient(true);
-
+        
         // Act
         var accessToken = await accessTokenBuilder.BuildToken(new ClientAccessTokenArguments
         {
@@ -39,6 +39,7 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(ScopeConstants.OpenId, token.Scope);
         Assert.NotNull(token.ExpiresAt);
         Assert.Equal("https://localhost:5000", token.Audience);
+        Assert.Null(token.SubjectActor);
     }
 
     [Theory]
@@ -56,19 +57,21 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         // Arrange
         TokenSigningAlg = signingAlg;
         var serviceProvider = BuildServiceProvider();
-        var grantAccessTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<ClientAccessTokenArguments>>();
+        var accessTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<ClientAccessTokenArguments>>();
         var client = await GetClient(false);
 
         // Act
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
         var resource = new[] { "https://localhost:5000", "https://localhost:5001" };
         const string jkt = "jkt";
-        var accessToken = await grantAccessTokenBuilder.BuildToken(new ClientAccessTokenArguments
+        const string subjectActor = "subjectActor";
+        var accessToken = await accessTokenBuilder.BuildToken(new ClientAccessTokenArguments
         {
             ClientId = client.Id,
             Scope = scope,
             Resource = resource,
-            Jkt = jkt
+            Jkt = jkt,
+            SubjectActor = subjectActor
         }, CancellationToken.None);
         await IdentityContext.SaveChangesAsync();
 
@@ -92,9 +95,13 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(client.Id, validatedTokenResult.Claims[ClaimNameConstants.Sub].ToString());
         Assert.Equal(resource, validatedTokenResult.Claims[ClaimNameConstants.Aud]);
 
-        var confirmation = JsonSerializer.Deserialize<IDictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Cnf].ToString()!);
+        var confirmation = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Cnf].ToString()!);
         Assert.NotNull(confirmation);
         Assert.Equal(jkt, confirmation[ClaimNameConstants.Jkt].ToString());
+
+        var act = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Act].ToString()!);
+        Assert.NotNull(act);
+        Assert.Equal(subjectActor, act[ClaimNameConstants.Sub].ToString());
     }
 
     private async Task<Client> GetClient(bool requireReferenceToken)
