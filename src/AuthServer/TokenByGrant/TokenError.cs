@@ -77,4 +77,31 @@ internal static class TokenError
 
     public static ProcessError RenewDPoPNonce(string clientId) =>
         new RenewDPoPNonceProcessError(clientId, ErrorCode.UseDPoPNonce, "dpop does not contain valid nonce", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidRequestedTokenType =
+        new(ErrorCode.InvalidRequest, "requested_token_type is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidActorTokenAndActorTokenType =
+        new(ErrorCode.InvalidRequest, "actor_token and actor_token_type are mutually inclusive", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidActorTokenType =
+        new(ErrorCode.InvalidRequest, "actor_token_type is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidSubjectToken =
+        new(ErrorCode.InvalidRequest, "subject_token is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidSubjectTokenType =
+        new(ErrorCode.InvalidRequest, "subject_token_type is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidSubjectTokenForRequestedTokenType =
+        new(ErrorCode.InvalidRequest, "requested_token_type requires a subject_token with a grant", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidActorToken =
+        new(ErrorCode.InvalidRequest, "actor_token is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError ActorIsUnauthorizedForSubjectToken =
+        new(ErrorCode.InvalidRequest, "actor is not authorized to use subject_token", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidDPoPForRequestedTokenType =
+        new(ErrorCode.InvalidRequest, "dpop is invalid for requested_token_type", ResultCode.BadRequest);
 }

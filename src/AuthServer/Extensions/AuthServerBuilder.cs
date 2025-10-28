@@ -399,8 +399,8 @@ public class AuthServerBuilder
 
         _services
             .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, TokenExchangeRequestHandler>(GrantTypeConstants.TokenExchange)
-            .AddScoped<IRequestProcessor<TokenExchangeValidationRequest, TokenResponse>, TokenExchangeRequestProcessor>()
-            .AddScoped<IRequestValidator<TokenRequest, TokenExchangeValidationRequest>, TokenExchangeRequestValidator>();
+            .AddScoped<IRequestProcessor<TokenExchangeValidatedRequest, TokenResponse>, TokenExchangeRequestProcessor>()
+            .AddScoped<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>, TokenExchangeRequestValidator>();
 
         return this;
     }
