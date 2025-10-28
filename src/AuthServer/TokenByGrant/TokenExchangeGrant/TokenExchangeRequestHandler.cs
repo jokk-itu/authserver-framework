@@ -1,21 +1,56 @@
-﻿using AuthServer.Core.Request;
+﻿using AuthServer.Authorization.Models;
+using AuthServer.Core.Abstractions;
+using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
+using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.TokenByGrant.TokenExchangeGrant;
-internal class TokenExchangeRequestHandler : RequestHandler<TokenRequest, TokenExchangeValidationRequest, TokenResponse>
+internal class TokenExchangeRequestHandler : RequestHandler<TokenRequest, TokenExchangeValidatedRequest, TokenResponse>
 {
-    public TokenExchangeRequestHandler(IMetricService metricService)
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly INonceRepository _nonceRepository;
+    private readonly IRequestValidator<TokenRequest, TokenExchangeValidatedRequest> _requestValidator;
+    private readonly IRequestProcessor<TokenExchangeValidatedRequest, TokenResponse> _requestProcessor;
+
+    public TokenExchangeRequestHandler(
+        IMetricService metricService,
+        IUnitOfWork unitOfWork,
+        INonceRepository nonceRepository,
+        IRequestValidator<TokenRequest, TokenExchangeValidatedRequest> requestValidator,
+        IRequestProcessor<TokenExchangeValidatedRequest, TokenResponse> requestProcessor)
         : base(metricService)
     {
+        _unitOfWork = unitOfWork;
+        _nonceRepository = nonceRepository;
+        _requestValidator = requestValidator;
+        _requestProcessor = requestProcessor;
     }
 
-    protected override Task<ProcessResult<TokenResponse, ProcessError>> ProcessValidatedRequest(TokenExchangeValidationRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<TokenResponse, ProcessError>> ProcessValidatedRequest(TokenExchangeValidatedRequest request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _unitOfWork.Begin(cancellationToken);
+        var response = await _requestProcessor.Process(request, cancellationToken);
+        await _unitOfWork.Commit(cancellationToken);
+        return response;
     }
 
-    protected override Task<ProcessResult<TokenExchangeValidationRequest, ProcessError>> ValidateRequest(TokenRequest request, CancellationToken cancellationToken)
+    protected override async Task<ProcessResult<TokenExchangeValidatedRequest, ProcessError>> ValidateRequest(TokenRequest request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var response = await _requestValidator.Validate(request, cancellationToken);
+        if (response is
+            {
+                IsSuccess: false,
+                Error: RenewDPoPNonceProcessError dPoPNonceProcessError
+            })
+        {
+            await _unitOfWork.Begin(cancellationToken);
+            var dPoPNonce = await _nonceRepository.CreateDPoPNonce(dPoPNonceProcessError.ClientId, cancellationToken);
+            await _unitOfWork.Commit(cancellationToken);
+
+            return new DPoPNonceProcessError(dPoPNonce, dPoPNonceProcessError.Error,
+                dPoPNonceProcessError.ErrorDescription, dPoPNonceProcessError.ResultCode);
+        }
+
+        return response;
     }
 }
