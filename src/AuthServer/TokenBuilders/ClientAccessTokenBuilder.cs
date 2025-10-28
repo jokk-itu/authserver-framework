@@ -106,7 +106,7 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             client.AccessTokenExpiration)
         {
             Jkt = arguments.Jkt,
-           SubjectActor = arguments.SubjectActor
+            SubjectActor = arguments.SubjectActor
         };
 
         await _identityContext.Set<ClientAccessToken>().AddAsync(accessToken);
