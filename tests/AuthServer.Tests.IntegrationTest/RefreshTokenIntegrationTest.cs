@@ -132,11 +132,12 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.NotNull(refreshResponse);
-        Assert.Equal(weatherReadScope, refreshResponse.Response!.Scope);
-        Assert.Equal(TokenTypeSchemaConstants.Bearer, refreshResponse.Response!.TokenType);
-        Assert.Null(refreshResponse.Response!.RefreshToken);
-        Assert.NotNull(refreshResponse.Response!.IdToken);
-        Assert.NotNull(refreshResponse.Response!.AccessToken);
-        Assert.Equal(registerResponse.AccessTokenExpiration, refreshResponse.Response!.ExpiresIn);
+        Assert.NotNull(refreshResponse.Response);
+        Assert.Equal(weatherReadScope, refreshResponse.Response.Scope);
+        Assert.Equal(TokenTypeSchemaConstants.Bearer, refreshResponse.Response.TokenType);
+        Assert.Null(refreshResponse.Response.RefreshToken);
+        Assert.NotNull(refreshResponse.Response.IdToken);
+        Assert.NotNull(refreshResponse.Response.AccessToken);
+        Assert.Equal(registerResponse.AccessTokenExpiration, refreshResponse.Response.ExpiresIn);
     }
 }
