@@ -178,6 +178,26 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
             return TokenError.InvalidSubjectTokenType;
         }
 
+        if (request.Scope.Count == 0 && request.RequestedTokenType == TokenTypeIdentifier.AccessToken)
+        {
+            return TokenError.InvalidScope;
+        }
+
+        if (request.Scope.Count != 0 && request.RequestedTokenType == TokenTypeIdentifier.IdToken)
+        {
+            return TokenError.InvalidScopeForIdToken;
+        }
+
+        if (request.Resource.Count == 0 && request.RequestedTokenType == TokenTypeIdentifier.AccessToken)
+        {
+            return TokenError.InvalidResource;
+        }
+
+        if (request.Resource.Count != 0 && request.RequestedTokenType == TokenTypeIdentifier.IdToken)
+        {
+            return TokenError.InvalidResourceForIdToken;
+        }
+
         return null;
     }
 

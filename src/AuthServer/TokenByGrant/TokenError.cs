@@ -104,4 +104,11 @@ internal static class TokenError
 
     public static readonly ProcessError InvalidDPoPForRequestedTokenType =
         new(ErrorCode.InvalidRequest, "dpop is invalid for requested_token_type", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidScopeForIdToken =
+        new(ErrorCode.InvalidRequest, "scope is not supported for id_token", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidResourceForIdToken =
+        new(ErrorCode.InvalidTarget, "resource is not supported for id_token", ResultCode.BadRequest);
+
 }
