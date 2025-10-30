@@ -26,6 +26,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
     {
     }
 
+    public RegisterEndpointBuilder WithAccessTokenExpiration(int accessTokenExpiration)
+    {
+        _registerParameters.Add(Parameter.AccessTokenExpiration, accessTokenExpiration);
+        return this;
+    }
+
     public RegisterEndpointBuilder WithUserinfoSignedResponseAlg(SigningAlg signingAlg)
     {
         _registerParameters.Add(Parameter.UserinfoSignedResponseAlg, signingAlg.GetDescription());
