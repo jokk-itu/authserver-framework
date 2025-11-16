@@ -12,6 +12,7 @@ using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenExchangeGrant;
 using AuthServer.TokenByGrant.TokenExchangeGrant.Abstractions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
@@ -172,7 +173,7 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_NoClientAuthentication_ExpectMultipleOrNoneClientMethod()
+    public async Task Validate_ScopeNotInRequestForAccessToken_ExpectInvalidScope()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -185,6 +186,103 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             RequestedTokenType = TokenTypeIdentifier.AccessToken,
             SubjectToken = "subject_token",
             SubjectTokenType = TokenTypeIdentifier.AccessToken
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidScope, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_ScopeInRequestForIdToken_ExpectInvalidScopeForIdToken()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.TokenExchange,
+            RequestedTokenType = TokenTypeIdentifier.IdToken,
+            SubjectToken = "subject_token",
+            SubjectTokenType = TokenTypeIdentifier.AccessToken,
+            Scope = [ScopeConstants.OpenId]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidScopeForIdToken, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_ResourceNotInRequestForAccessToken_ExpectInvalidResource()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.TokenExchange,
+            RequestedTokenType = TokenTypeIdentifier.AccessToken,
+            SubjectToken = "subject_token",
+            SubjectTokenType = TokenTypeIdentifier.AccessToken,
+            Scope = [ScopeConstants.OpenId]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidResource, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_ResourceInRequestForIdToken_ExpectInvalidResourceForIdToken()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.TokenExchange,
+            RequestedTokenType = TokenTypeIdentifier.IdToken,
+            SubjectToken = "subject_token",
+            SubjectTokenType = TokenTypeIdentifier.AccessToken,
+            Resource = ["resource"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.InvalidResourceForIdToken, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_NoClientAuthentication_ExpectMultipleOrNoneClientMethod()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.TokenExchange,
+            RequestedTokenType = TokenTypeIdentifier.AccessToken,
+            SubjectToken = "subject_token",
+            SubjectTokenType = TokenTypeIdentifier.AccessToken,
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -211,7 +309,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientIdAuthentication("clientId")
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -243,7 +343,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -273,7 +375,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -305,7 +409,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -371,7 +477,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -406,7 +514,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -473,7 +583,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -516,7 +628,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -562,7 +676,9 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = ["resource"]
         };
 
         // Act
@@ -573,7 +689,7 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_ClientRequiresConsentWithoutConsent_ExpectConsentRequired()
+    public async Task Validate_ActorClientDoesNotRequireConsent_ExpectUnauthorizedForScope()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -581,70 +697,8 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
 
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var client = await GetActorClient(plainSecret);
-
-        var subjectToken = await GetGrantSubjectToken();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.TokenExchange,
-            RequestedTokenType = TokenTypeIdentifier.AccessToken,
-            SubjectToken = subjectToken.Reference,
-            SubjectTokenType = TokenTypeIdentifier.AccessToken,
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.ConsentRequired, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ClientRequiresConsentWithExceededScope_ExpectScopeExceedsConsentedScope()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(32);
-        var client = await GetActorClient(plainSecret);
-
-        var subjectToken = await GetConsentedGrantSubjectToken();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.TokenExchange,
-            RequestedTokenType = TokenTypeIdentifier.AccessToken,
-            SubjectToken = subjectToken.Reference,
-            SubjectTokenType = TokenTypeIdentifier.AccessToken,
-            Scope = [ScopeConstants.UserInfo],
-            ClientAuthentications =
-            [
-                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.ScopeExceedsConsentedScope, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ClientDoesNotRequireConsent_ExpectUnauthorizedForScope()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(32);
-        var client = await GetActorClient(plainSecret);
-
+        client.Scopes.Clear();
+        var resourceClient = await GetResourceClient();
         var subjectToken = await GetClientSubjectToken();
 
         var request = new TokenRequest
@@ -654,6 +708,7 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             SubjectToken = subjectToken.Reference,
             SubjectTokenType = TokenTypeIdentifier.AccessToken,
             Scope = [ScopeConstants.UserInfo],
+            Resource = [resourceClient.ClientUri!],
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
@@ -668,7 +723,115 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_ResourceIsNotAuthorizedForScope_ExpectInvalidResource()
+    public async Task Validate_SubjectTokenClientRequiresConsentWithoutConsent_ExpectConsentRequired()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var client = await GetActorClient(plainSecret);
+        var resourceClient = await GetResourceClient();
+        var subjectToken = await GetGrantSubjectToken();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.TokenExchange,
+            RequestedTokenType = TokenTypeIdentifier.AccessToken,
+            SubjectToken = subjectToken.Reference,
+            SubjectTokenType = TokenTypeIdentifier.AccessToken,
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resourceClient.ClientUri!]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.ConsentRequired, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_SubjectTokenClientRequiresConsentWithExceededScope_ExpectScopeExceedsConsentedScope()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var client = await GetActorClient(plainSecret);
+
+        var subjectToken = await GetConsentedGrantSubjectToken();
+
+        var resource = await IdentityContext
+            .Set<Client>()
+            .Where(x => x.ClientUri == "https://localhost:5000/api")
+            .SingleAsync();
+
+        resource.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
+        await SaveChangesAsync();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.TokenExchange,
+            RequestedTokenType = TokenTypeIdentifier.AccessToken,
+            SubjectToken = subjectToken.Reference,
+            SubjectTokenType = TokenTypeIdentifier.AccessToken,
+            Scope = [ScopeConstants.UserInfo],
+            Resource = [resource.ClientUri!],
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.ScopeExceedsConsentedScope, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_SubjectTokenClientDoesNotRequireConsent_ExpectUnauthorizedForScope()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(32);
+        var client = await GetActorClient(plainSecret);
+        var resourceClient = await GetResourceClient();
+        resourceClient.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
+        var subjectToken = await GetClientSubjectToken();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.TokenExchange,
+            RequestedTokenType = TokenTypeIdentifier.AccessToken,
+            SubjectToken = subjectToken.Reference,
+            SubjectTokenType = TokenTypeIdentifier.AccessToken,
+            Scope = [ScopeConstants.UserInfo],
+            Resource = [resourceClient.ClientUri!],
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(TokenError.UnauthorizedForScope, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_SubjectTokenResourceIsNotAuthorizedForScope_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -686,7 +849,7 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             SubjectToken = subjectToken.Reference,
             SubjectTokenType = TokenTypeIdentifier.AccessToken,
             Scope = [ScopeConstants.OpenId],
-            Resource = ["https://localhost:5000/api"],
+            Resource = ["unknown_resource"],
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
@@ -840,8 +1003,6 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
             RequestedTokenType = TokenTypeIdentifier.IdToken,
             SubjectToken = subjectToken.Reference,
             SubjectTokenType = TokenTypeIdentifier.AccessToken,
-            Scope = [ScopeConstants.OpenId],
-            Resource = ["https://localhost:5000/api"],
             ClientAuthentications =
             [
                 new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
@@ -857,8 +1018,8 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
         Assert.NotNull(processResult.Value!.SubjectToken);
         Assert.Null(processResult.Value!.ActorToken);
         Assert.Null(processResult.Value!.Jkt);
-        Assert.Equal(request.Scope, processResult.Value!.Scope);
-        Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Empty(processResult.Value!.Scope);
+        Assert.Empty(processResult.Value!.Resource);
     }
 
     [Fact]
@@ -952,6 +1113,8 @@ public class TokenExchangeRequestValidatorTest : BaseUnitTest
         var client = new Client("actor-web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         client.SetSecret(CryptographyHelper.HashPassword(plainSecret));
         client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.TokenExchange));
+        client.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        client.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
         await AddEntity(client);
         return client;
     }

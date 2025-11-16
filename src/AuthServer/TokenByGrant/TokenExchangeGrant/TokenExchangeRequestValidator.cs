@@ -120,11 +120,17 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
 
         if (request.RequestedTokenType == TokenTypeIdentifier.AccessToken)
         {
-            var subjectTokenClient = await _cachedClientStore.Get(subjectTokenResult.ClientId, cancellationToken);
-            var scopeValidationResult = await ValidateScope(request.Scope, request.Resource, subjectTokenResult.GrantId, subjectTokenClient, cancellationToken);
-            if (!scopeValidationResult.IsSuccess)
+            var actorClientScopeValidationResult = await ValidateScope(request.Scope, request.Resource, null, cachedClient, cancellationToken);
+            if (!actorClientScopeValidationResult.IsSuccess)
             {
-                return scopeValidationResult.Error!;
+                return actorClientScopeValidationResult.Error!;
+            }
+
+            var subjectTokenClient = await _cachedClientStore.Get(subjectTokenResult.ClientId, cancellationToken);
+            var subjectTokenClientScopeValidationResult = await ValidateScope(request.Scope, request.Resource, subjectTokenResult.GrantId, subjectTokenClient, cancellationToken);
+            if (!subjectTokenClientScopeValidationResult.IsSuccess)
+            {
+                return subjectTokenClientScopeValidationResult.Error!;
             }
         }
 
