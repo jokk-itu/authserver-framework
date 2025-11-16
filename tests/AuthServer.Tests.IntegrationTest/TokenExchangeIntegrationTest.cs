@@ -198,8 +198,6 @@ public class TokenExchangeIntegrationTest : BaseIntegrationTest
             .WithClientId(impersonatorClientRegisterResponse.ClientId)
             .WithClientSecret(impersonatorClientRegisterResponse.ClientSecret!)
             .WithGrantType(GrantTypeConstants.TokenExchange)
-            .WithResource([weatherClient.ClientUri!])
-            .WithScope([weatherReadScope])
             .WithRequestedTokenType(TokenTypeIdentifier.IdToken)
             .WithSubjectToken(originalClientTokenResponse.Response!.AccessToken)
             .WithSubjectTokenType(TokenTypeIdentifier.AccessToken)
@@ -218,7 +216,7 @@ public class TokenExchangeIntegrationTest : BaseIntegrationTest
         Assert.Null(tokenExchangeResponse.Response.RefreshToken);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenExchangeResponse.Response.TokenType);
         Assert.Equal(3600, tokenExchangeResponse.Response.ExpiresIn);
-        Assert.Equal(weatherReadScope, tokenExchangeResponse.Response.Scope);
+        Assert.Null(tokenExchangeResponse.Response.Scope);
         Assert.Equal(grantId, tokenExchangeResponse.Response.GrantId);
     }
 }

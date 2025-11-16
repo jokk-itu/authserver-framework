@@ -6,7 +6,7 @@ internal class TokenResponse
     public string? RefreshToken { get; init; }
     public string? IdToken { get; init; }
     public required long ExpiresIn { get; init; }
-    public required string Scope { get; init; }
+    public string? Scope { get; init; }
     public string? GrantId { get; init; }
     public required string TokenType { get; init; }
     public string? IssuedTokenType { get; init; }

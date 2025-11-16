@@ -21,7 +21,7 @@ internal class PostTokenResponse
     public required long ExpiresIn { get; init; }
 
     [JsonPropertyName(Parameter.Scope)]
-    public required string Scope { get; init; }
+    public string? Scope { get; init; }
     
     [JsonPropertyName(Parameter.GrantId)]
     public string? GrantId { get; init; }

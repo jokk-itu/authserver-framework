@@ -82,7 +82,7 @@ internal class TokenExchangeRequestProcessor : IRequestProcessor<TokenExchangeVa
             TokenType = tokenType,
             IssuedTokenType = request.RequestedTokenType,
             GrantId = request.SubjectToken.GrantId,
-            Scope = string.Join(' ', request.Scope)
+            Scope = request.Scope.Count == 0 ? null : string.Join(' ', request.Scope)
         };
     }
 }
