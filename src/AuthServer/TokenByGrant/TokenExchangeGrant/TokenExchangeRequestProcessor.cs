@@ -61,7 +61,8 @@ internal class TokenExchangeRequestProcessor : IRequestProcessor<TokenExchangeVa
                 {
                     AuthorizationGrantId = request.SubjectToken.GrantId!,
                     Scope = request.Scope,
-                    SubjectActor = request.ActorToken?.Sub
+                    SubjectActor = request.ActorToken?.Sub,
+                    EncyptorClientId = request.ActorToken?.ClientId
                 },
                 cancellationToken);
         }

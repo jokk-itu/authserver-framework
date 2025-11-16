@@ -1,12 +1,18 @@
-﻿using AuthServer.Constants;
+﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Extensions;
 using AuthServer.Helpers;
+using AuthServer.Tests.Core;
+using AuthServer.TokenBuilders.Abstractions;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenExchangeGrant;
 using AuthServer.TokenDecoders;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Moq;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenExchangeGrant;
@@ -249,6 +255,14 @@ public class TokenExchangeRequestProcessorTest : BaseUnitTest
         var subjectTokenGrant = await GetSubjectTokenAuthorizationCodeGrant();
         var resourceClient = await GetResourceClient();
         var actorTokenClient = await GetActorTokenClient();
+        actorTokenClient.IdTokenSignedResponseAlg = SigningAlg.EcdsaSha256;
+        actorTokenClient.IdTokenEncryptedResponseAlg = EncryptionAlg.EcdhEsA128KW;
+        actorTokenClient.IdTokenEncryptedResponseEnc = EncryptionEnc.Aes128CbcHmacSha256;
+        actorTokenClient.Jwks = ClientJwkBuilder.GetClientJwks(
+            actorTokenClient.IdTokenSignedResponseAlg.Value,
+            actorTokenClient.IdTokenEncryptedResponseAlg.Value).PublicJwks;
+
+        await SaveChangesAsync();
 
         var validatedRequest = new TokenExchangeValidatedRequest
         {
@@ -285,6 +299,7 @@ public class TokenExchangeRequestProcessorTest : BaseUnitTest
         Assert.Equal(validatedRequest.RequestedTokenType, tokenResponse.IssuedTokenType);
         Assert.Equal(subjectTokenGrant.Id, tokenResponse.GrantId);
         Assert.Equal(string.Join(' ', validatedRequest.Scope), tokenResponse.Scope);
+        Assert.True(TokenHelper.IsJwe(tokenResponse.AccessToken));
     }
 
     private async Task<Client> GetSubjectTokenClient()

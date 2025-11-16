@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
-using AuthServer.Authentication.Abstractions;
+﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
+using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
@@ -14,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace AuthServer.TokenBuilders;
 
@@ -54,12 +55,12 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
         var query = await _identityContext
             .Set<AuthorizationGrant>()
             .Where(x => x.Id == arguments.AuthorizationGrantId)
-            .Select(x => new
+            .Select(x => new IdTokenBuildEntity
             {
                 AuthTime = x.UpdatedAuthTime,
                 ClientId = x.Client.Id,
-                x.Client.RequireConsent,
-                x.Client.RequireIdTokenClaims,
+                RequireConsent = x.Client.RequireConsent,
+                RequireIdTokenClaims = x.Client.RequireIdTokenClaims,
                 SessionId = x.Session.Id,
                 SubjectIdentifier = x.Session.SubjectIdentifier.Id,
                 GrantSubject = x.Subject,
@@ -99,20 +100,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             ? await _userClaimService.GetClaims(query.SubjectIdentifier, cancellationToken)
             : [];
 
-        IReadOnlyCollection<string> authorizedClaims;
-        if (!query.RequireIdTokenClaims)
-        {
-            authorizedClaims = [];
-        }
-        else if (query.RequireConsent)
-        {
-            authorizedClaims = await _consentGrantRepository.GetGrantConsentedClaims(arguments.AuthorizationGrantId, cancellationToken);
-        }
-        else
-        {
-            authorizedClaims = await _clientRepository.GetAuthorizedClaims(query.ClientId, cancellationToken);
-        }
-
+        var authorizedClaims = await GetAuthorizedClaims(arguments, query, cancellationToken);
         foreach (var userClaim in userClaims.Where(x => authorizedClaims.Contains(x.Type)))
         {
             claims.Add(userClaim.Type, userClaim.Value);
@@ -129,24 +117,76 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
             NotBefore = now,
             Issuer = _discoveryDocumentOptions.Value.Issuer,
             SigningCredentials = signingCredentials,
+            EncryptingCredentials = await GetEncryptingCredentials(arguments, query, cancellationToken),
             TokenType = TokenTypeHeaderConstants.IdToken,
             Claims = claims
         };
-
-        if (query.EncryptionAlg is not null &&
-            query.EncryptionEnc is not null)
-        {
-            tokenDescriptor.EncryptingCredentials = await _tokenSecurityService.GetEncryptingCredentials(
-                query.ClientId,
-                query.EncryptionAlg.Value,
-                query.EncryptionEnc.Value,
-                cancellationToken);
-        }
 
         var tokenHandler = new JsonWebTokenHandler();
         var jwt = tokenHandler.CreateToken(tokenDescriptor);
         stopWatch.Stop();
         _metricService.AddBuiltToken(stopWatch.ElapsedMilliseconds, TokenTypeTag.IdToken, TokenStructureTag.Jwt);
         return jwt;
+    }
+
+    private async Task<EncryptingCredentials?> GetEncryptingCredentials(IdTokenArguments idTokenArguments, IdTokenBuildEntity idTokenBuildEntity, CancellationToken cancellationToken)
+    {
+        var clientId = idTokenBuildEntity.ClientId;
+        var encryptionAlg = idTokenBuildEntity.EncryptionAlg;
+        var encryptionEnc = idTokenBuildEntity.EncryptionEnc;
+
+        if (idTokenArguments.EncyptorClientId is not null)
+        {
+            var encryptorClient = (await _identityContext
+                .Set<Client>()
+                .FindAsync([idTokenArguments.EncyptorClientId], cancellationToken))!;
+
+            encryptionAlg = encryptorClient.IdTokenEncryptedResponseAlg;
+            encryptionEnc = encryptorClient.IdTokenEncryptedResponseEnc;
+            clientId = encryptorClient.Id;
+        }
+
+        if (encryptionAlg is not null && encryptionEnc is not null)
+        {
+            return await _tokenSecurityService.GetEncryptingCredentials(
+                clientId,
+                encryptionAlg.Value,
+                encryptionEnc.Value,
+                cancellationToken);
+        }
+
+        return null;
+    }
+
+    private async Task<IReadOnlyCollection<string>> GetAuthorizedClaims(IdTokenArguments idTokenArguments, IdTokenBuildEntity idTokenBuildEntity, CancellationToken cancellationToken)
+    {
+        if (!idTokenBuildEntity.RequireIdTokenClaims)
+        {
+            return [];
+        }
+
+        if (idTokenBuildEntity.RequireConsent)
+        {
+            return await _consentGrantRepository.GetGrantConsentedClaims(idTokenArguments.AuthorizationGrantId, cancellationToken);
+        }
+
+        return await _clientRepository.GetAuthorizedClaims(idTokenBuildEntity.ClientId, cancellationToken);
+    }
+
+    private sealed class IdTokenBuildEntity
+    {
+        public required DateTime AuthTime { get; init; }
+        public required string ClientId { get; init; }
+        public required bool RequireConsent { get; init; }
+        public required bool RequireIdTokenClaims { get; init; }
+        public required string SessionId { get; init; }
+        public required string SubjectIdentifier { get; init; }
+        public required string GrantSubject { get; init; }
+        public SigningAlg? SigningAlg { get; init; }
+        public EncryptionAlg? EncryptionAlg { get; init; }
+        public EncryptionEnc? EncryptionEnc { get; init; }
+        public required AuthorizationGrantNonce Nonce { get; init; }
+        public required IEnumerable<string> AuthenticationMethodReferences { get; init; }
+        public required string AuthenticationContextReference { get; init; }
     }
 }
