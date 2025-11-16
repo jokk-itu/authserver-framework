@@ -16,11 +16,14 @@
     let specificationRows: RowCellDefinition[][] = [
         [ new RowCellDefinition('OAuth2.1', 'https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/'), new RowCellDefinition('Core specification for OAuth') ],
         [ new RowCellDefinition('OpenId Connect', 'https://openid.net/specs/openid-connect-core-1_0.html'), new RowCellDefinition('Core specification for OpenId Connect') ],
+        [ new RowCellDefinition('Device Authorization', 'https://datatracker.ietf.org/doc/html/rfc8628'), new RowCellDefinition('Specification for device authorization') ],
+        [ new RowCellDefinition("Token Exchange", "https://datatracker.ietf.org/doc/html/rfc8693"), new RowCellDefinition("Specification to exchange tokens") ],
         [ new RowCellDefinition('JWT', 'https://datatracker.ietf.org/doc/html/rfc7519'), new RowCellDefinition('JsonWebToken specification') ],
         [ new RowCellDefinition('JWS', 'https://datatracker.ietf.org/doc/html/rfc7515'), new RowCellDefinition('JsonWebSignature specification') ],
         [ new RowCellDefinition('JWE', 'https://datatracker.ietf.org/doc/html/rfc7516'), new RowCellDefinition('JsonbWebEncryption specification') ],
         [ new RowCellDefinition('Resource', 'https://datatracker.ietf.org/doc/html/rfc8707/'), new RowCellDefinition('Resource indicators specification') ],
-        [ new RowCellDefinition('Step up authentication', 'https://datatracker.ietf.org/doc/html/rfc9470/'), new RowCellDefinition('Step up authentication specification') ]
+        [ new RowCellDefinition('Step up authentication', 'https://datatracker.ietf.org/doc/html/rfc9470/'), new RowCellDefinition('Step up authentication specification') ],
+        [ new RowCellDefinition("DPoP", "https://datatracker.ietf.org/doc/html/rfc9449"), new RowCellDefinition("Specification for sender constraining tokens using DPoP") ]
     ];
 
     let accessTokenHeaders: string[] = ["Name", "Description"];
@@ -60,7 +63,14 @@
         [ new RowCellDefinition("redirect_uri"), new RowCellDefinition("The redirect_uri provided during authorization") ],
         [ new RowCellDefinition("refresh_token"), new RowCellDefinition("The refresh_token grant which is used in the refresh_token grant type") ],
         [ new RowCellDefinition("scope"), new RowCellDefinition("The scope which the token is authorized for") ],
-        [ new RowCellDefinition("resource"), new RowCellDefinition("The resource URIs which the token is authorized to") ]
+        [ new RowCellDefinition("resource"), new RowCellDefinition("The resource URIs which the token is authorized to") ],
+        [ new RowCellDefinition("device_code"), new RowCellDefinition("The device code received from initiating device authorization") ],
+        [ new RowCellDefinition("dpop"), new RowCellDefinition("The dpop token used to bind the access token") ],
+        [ new RowCellDefinition("requested_token_type"), new RowCellDefinition("The type of token to receive from token exchange") ],
+        [ new RowCellDefinition("subject_token"), new RowCellDefinition("The token to exchange") ],
+        [ new RowCellDefinition("subject_token_type"), new RowCellDefinition("The type of token to exchange") ],
+        [ new RowCellDefinition("actor_token"), new RowCellDefinition("The token to bind delegation with the exchanged token") ],
+        [ new RowCellDefinition("actor_token_type"), new RowCellDefinition("The type of token to bind delegation with the exchanged token") ],
     ];
 
     let responseHeaders: string[] = ["Name", "Description"];
@@ -71,6 +81,8 @@
         [ new RowCellDefinition("expires_in"), new RowCellDefinition("Unix time of when the access_token expires") ],
         [ new RowCellDefinition("scope"), new RowCellDefinition("Space delimitied string of scopes, which the access_token is authorized for") ],
         [ new RowCellDefinition("grant_id"), new RowCellDefinition("The identifier of the grant, from where the access_token comes from.") ],
+        [ new RowCellDefinition("token_type"), new RowCellDefinition("The type of usage of the access token received") ],
+        [ new RowCellDefinition("issued_token_type"), new RowCellDefinition("The type of token received in the access token field") ],
         [ new RowCellDefinition("error"), new RowCellDefinition("The code of the error") ],
         [ new RowCellDefinition("error_description"), new RowCellDefinition("The description of the error") ]
     ];
