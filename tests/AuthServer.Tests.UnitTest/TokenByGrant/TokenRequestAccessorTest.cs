@@ -31,6 +31,11 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 			{ Parameter.CodeVerifier, value },
 			{ Parameter.RedirectUri, value },
 			{ Parameter.RefreshToken, value },
+			{ Parameter.RequestedTokenType, value },
+			{ Parameter.SubjectToken, value },
+			{ Parameter.SubjectTokenType, value },
+			{ Parameter.ActorToken, value },
+			{ Parameter.ActorTokenType, value },
 			{ Parameter.ClientId, value },
 			{ Parameter.ClientSecret, value },
 			{ Parameter.ClientAssertion, value },
@@ -57,6 +62,11 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		Assert.Equal(expectedValue, request.CodeVerifier);
 		Assert.Equal(expectedValue, request.RedirectUri);
 		Assert.Equal(expectedValue, request.RefreshToken);
+		Assert.Equal(expectedValue, request.RequestedTokenType);
+		Assert.Equal(expectedValue, request.SubjectToken);
+		Assert.Equal(expectedValue, request.SubjectTokenType);
+		Assert.Equal(expectedValue, request.ActorToken);
+		Assert.Equal(expectedValue, request.ActorTokenType);
 		Assert.Equal(expectedValue, request.DPoP);
 		Assert.Empty(request.ClientAuthentications);
 	}
@@ -76,6 +86,11 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 			{ Parameter.CodeVerifier, value },
 			{ Parameter.RedirectUri, value },
 			{ Parameter.RefreshToken, value },
+			{ Parameter.RequestedTokenType, value },
+			{ Parameter.SubjectToken, value },
+			{ Parameter.SubjectTokenType, value },
+			{ Parameter.ActorToken, value },
+			{ Parameter.ActorTokenType, value },
 			{ Parameter.ClientId, value },
             { Parameter.DPoP, value }
 		};
@@ -100,6 +115,11 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		Assert.Equal(value, request.CodeVerifier);
 		Assert.Equal(value, request.RedirectUri);
 		Assert.Equal(value, request.RefreshToken);
+		Assert.Equal(value, request.RequestedTokenType);
+		Assert.Equal(value, request.SubjectToken);
+		Assert.Equal(value, request.SubjectTokenType);
+		Assert.Equal(value, request.ActorToken);
+		Assert.Equal(value, request.ActorTokenType);
         Assert.Equal(value, request.DPoP);
 
         Assert.Single(request.ClientAuthentications);

@@ -1,8 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using AuthServer.Authentication.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Helpers;
+using AuthServer.Metrics;
+using AuthServer.Metrics.Abstractions;
 using AuthServer.Options;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -11,26 +14,29 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthServer.TokenDecoders;
-internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeArguments>
+internal class ClientTokenDecoder : IClientTokenDecoder
 {
-    private readonly ILogger<ClientIssuedTokenDecoder> _logger;
+    private readonly ILogger<ClientTokenDecoder> _logger;
     private readonly ITokenReplayCache _tokenReplayCache;
     private readonly IClientJwkService _clientJwkService;
+    private readonly IMetricService _metricService;
     private readonly IOptionsSnapshot<JwksDocument> _jwkDocumentOptions;
     private readonly IEndpointResolver _endpointResolver;
 
-    public ClientIssuedTokenDecoder(
+    public ClientTokenDecoder(
         IOptionsSnapshot<JwksDocument> jwkDocumentOptions,
         IEndpointResolver endpointResolver,
-        ILogger<ClientIssuedTokenDecoder> logger,
+        ILogger<ClientTokenDecoder> logger,
         ITokenReplayCache tokenReplayCache,
-        IClientJwkService clientJwkService)
+        IClientJwkService clientJwkService,
+        IMetricService metricService)
     {
         _jwkDocumentOptions = jwkDocumentOptions;
         _endpointResolver = endpointResolver;
         _logger = logger;
         _tokenReplayCache = tokenReplayCache;
         _clientJwkService = clientJwkService;
+        _metricService = metricService;
     }
 
     public async Task<JsonWebToken> Read(string token)
@@ -60,8 +66,9 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
         throw new ArgumentException("Not a valid JWT", nameof(token));
     }
 
-    public async Task<JsonWebToken?> Validate(string token, ClientIssuedTokenDecodeArguments arguments, CancellationToken cancellationToken)
+    public async Task<JsonWebToken?> Validate(string token, ClientTokenDecodeArguments arguments, CancellationToken cancellationToken)
     {
+        var stopWatch = Stopwatch.StartNew();
         IEnumerable<JsonWebKey> issuerSigningKeys;
         if (arguments.UseJwkHeaderSignatureValidation)
         {
@@ -81,10 +88,19 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             issuerSigningKeys = await _clientJwkService.GetSigningKeys(arguments.ClientId, cancellationToken);
         }
 
-        return await Validate(token, arguments, issuerSigningKeys);
+        var jsonWebToken = await Validate(token, arguments, issuerSigningKeys);
+        stopWatch.Stop();
+
+        TokenTypeTag? tokenTypeTag = jsonWebToken is null
+            ? null
+            : TokenHelper.MapTokenTypHeaderToTokenTypeTag(arguments.TokenType);
+
+        _metricService.AddValidateClientToken(stopWatch.ElapsedMilliseconds, tokenTypeTag);
+
+        return jsonWebToken;
     }
 
-    private async Task<JsonWebToken?> Validate(string token, ClientIssuedTokenDecodeArguments arguments,
+    private async Task<JsonWebToken?> Validate(string token, ClientTokenDecodeArguments arguments,
         IEnumerable<JsonWebKey> issuerSigningKeys)
     {
         var tokenValidationParameters = new TokenValidationParameters
@@ -122,7 +138,44 @@ internal class ClientIssuedTokenDecoder : ITokenDecoder<ClientIssuedTokenDecodeA
             return null;
         }
 
+        if (!AreLifetimeClaimsValid(jsonWebToken))
+        {
+            return null;
+        }
+
         return jsonWebToken;
+    }
+
+    private bool AreLifetimeClaimsValid(JsonWebToken jsonWebToken)
+    {
+        if (jsonWebToken.IssuedAt > DateTime.UtcNow)
+        {
+            _logger.LogWarning("Token iat claim {IssuedAt} is in the future", jsonWebToken.IssuedAt);
+            return false;
+        }
+
+        var expires = jsonWebToken.ValidTo;
+        if (expires > DateTime.UtcNow.AddSeconds(60))
+        {
+            _logger.LogWarning("Token exp claim {Expires} is more than 60 seconds in the future", expires);
+            return false;
+        }
+
+        var notBefore = jsonWebToken.ValidFrom;
+        if (notBefore < DateTime.UtcNow.AddSeconds(-60))
+        {
+            _logger.LogWarning("Token nbf claim {NotBefore} is more than 60 seconds in the past", notBefore);
+            return false;
+        }
+
+        var issuedAt = jsonWebToken.IssuedAt;
+        if (issuedAt < DateTime.UtcNow.AddSeconds(-60))
+        {
+            _logger.LogWarning("Token iat claim {IssuedAt} is more than 60 seconds in the past", issuedAt);
+            return false;
+        }
+
+        return true;
     }
 
     private async Task<JsonWebKey?> GetJwkHeaderValue(string token)

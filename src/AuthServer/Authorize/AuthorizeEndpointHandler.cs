@@ -12,14 +12,14 @@ namespace AuthServer.Authorize;
 internal class AuthorizeEndpointHandler : IEndpointHandler
 {
     private readonly IRequestAccessor<AuthorizeRequest> _requestAccessor;
-    private readonly IRequestHandler<AuthorizeRequest, string> _requestHandler;
+    private readonly IRequestHandler<AuthorizeRequest, AuthorizeResponse> _requestHandler;
     private readonly IAuthorizeResponseBuilder _authorizeResponseBuilder;
     private readonly IOptionsSnapshot<UserInteraction> _userInteractionOptions;
     private readonly IUserAccessor<AuthorizeUser> _authorizeUserAccessor;
 
     public AuthorizeEndpointHandler(
         IRequestAccessor<AuthorizeRequest> requestAccessor,
-        IRequestHandler<AuthorizeRequest, string> requestHandler,
+        IRequestHandler<AuthorizeRequest, AuthorizeResponse> requestHandler,
         IAuthorizeResponseBuilder authorizeResponseBuilder,
         IOptionsSnapshot<UserInteraction> userInteractionOptions,
         IUserAccessor<AuthorizeUser> authorizeUserAccessor)
@@ -37,12 +37,22 @@ internal class AuthorizeEndpointHandler : IEndpointHandler
         var response = await _requestHandler.Handle(request, cancellationToken);
 
         return await response.Match(
-            async code =>
+            async result =>
             {
                 // remove the authorized user to reset the interaction flow
                 _authorizeUserAccessor.ClearUser();
-                return await _authorizeResponseBuilder.BuildResponse(request,
-                    new Dictionary<string, string> { { Parameter.Code, code } }, httpContext.Response, cancellationToken);
+
+                var additionalParameters = new Dictionary<string, string>();
+                if (result.AuthorizationCode is not null)
+                {
+                    additionalParameters.Add(Parameter.Code, result.AuthorizationCode);
+                }
+
+                return await _authorizeResponseBuilder.BuildResponse(
+                    request,
+                    additionalParameters,
+                    httpContext.Response,
+                    cancellationToken);
             },
             async error =>
             {

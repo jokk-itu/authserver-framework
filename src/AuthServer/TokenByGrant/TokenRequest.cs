@@ -11,6 +11,11 @@ internal class TokenRequest
     public string? RedirectUri { get; init; }
     public string? RefreshToken { get; init; }
     public string? DPoP { get; init; }
+    public string? RequestedTokenType { get; init; }
+    public string? SubjectToken { get; init; }
+    public string? SubjectTokenType { get; init; }
+    public string? ActorToken { get; init; }
+    public string? ActorTokenType { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
     public IReadOnlyCollection<ClientAuthentication> ClientAuthentications { get; init; } = [];

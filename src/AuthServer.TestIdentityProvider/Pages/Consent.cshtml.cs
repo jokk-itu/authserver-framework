@@ -51,7 +51,7 @@ public class ConsentModel : PageModel
 
         var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
 
-        var subject = await _authorizeService.GetSubject(request);
+        var subject = await _authorizeService.GetSubject(request, cancellationToken);
         var consentGrantDto = await _authorizeService.GetConsentGrantDto(subject.Subject, clientId, cancellationToken);
         
         var requestedScope = request.Scope.ToList();
@@ -84,7 +84,7 @@ public class ConsentModel : PageModel
         var clientId = query.Get(Parameter.ClientId)!;
         var requestUri = query.Get(Parameter.RequestUri)!;
         var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
-        var subject = await _authorizeService.GetSubject(request);
+        var subject = await _authorizeService.GetSubject(request, cancellationToken);
         await _authorizeService.HandleConsent(subject.Subject, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
 
         return Redirect(ReturnUrl);

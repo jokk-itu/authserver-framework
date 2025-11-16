@@ -117,6 +117,8 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             .Set<AuthorizationGrant>()
             .Include(x => x.AuthenticationContextReference)
             .Include(x => x.Client)
+            .ThenInclude(x => x.ClientAuthenticationContextReferences)
+            .ThenInclude(x => x.AuthenticationContextReference)
             .Include(x => x.Session)
             .ThenInclude(x => x.SubjectIdentifier)
             .Where(AuthorizationGrant.IsActive)

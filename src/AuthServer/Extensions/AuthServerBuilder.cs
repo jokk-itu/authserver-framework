@@ -43,6 +43,7 @@ using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 using AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 using AuthServer.TokenByGrant.TokenDeviceCodeGrant;
+using AuthServer.TokenByGrant.TokenExchangeGrant;
 using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
@@ -86,8 +87,8 @@ public class AuthServerBuilder
     private void AddEncoders()
     {
         _services
-            .AddScoped<ITokenDecoder<ServerIssuedTokenDecodeArguments>, ServerIssuedTokenDecoder>()
-            .AddScoped<ITokenDecoder<ClientIssuedTokenDecodeArguments>, ClientIssuedTokenDecoder>()
+            .AddScoped<IServerTokenDecoder, ServerTokenDecoder>()
+            .AddScoped<IClientTokenDecoder, ClientTokenDecoder >()
             .AddScoped<ICodeEncoder<EncodedAuthorizationCode>, CodeEncoder<EncodedAuthorizationCode>>()
             .AddScoped<ICodeEncoder<EncodedDeviceCode>, CodeEncoder<EncodedDeviceCode>>();
     }
@@ -336,8 +337,8 @@ public class AuthServerBuilder
             .AddScoped<IAuthorizeInteractionService, AuthorizeInteractionService>()
             .AddScoped<IAuthorizeResponseBuilder, AuthorizeResponseBuilder>()
             .AddScoped<IUserAccessor<AuthorizeUser>, AuthorizeUserAccessor>()
-            .AddScoped<IRequestHandler<AuthorizeRequest, string>, AuthorizeRequestHandler>()
-            .AddScoped<IRequestProcessor<AuthorizeValidatedRequest, string>, AuthorizeRequestProcessor>()
+            .AddScoped<IRequestHandler<AuthorizeRequest, AuthorizeResponse>, AuthorizeRequestHandler>()
+            .AddScoped<IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse>, AuthorizeRequestProcessor>()
             .AddScoped<IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>, AuthorizeRequestValidator>();
 
         _services
@@ -388,6 +389,18 @@ public class AuthServerBuilder
             .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, DeviceCodeRequestHandler>(GrantTypeConstants.DeviceCode)
             .AddScoped<IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse>, DeviceCodeRequestProcessor>()
             .AddScoped<IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>, DeviceCodeRequestValidator>();
+
+        return this;
+    }
+
+    public AuthServerBuilder AddTokenExchange()
+    {
+        AddToken();
+
+        _services
+            .AddKeyedScoped<IRequestHandler<TokenRequest, TokenResponse>, TokenExchangeRequestHandler>(GrantTypeConstants.TokenExchange)
+            .AddScoped<IRequestProcessor<TokenExchangeValidatedRequest, TokenResponse>, TokenExchangeRequestProcessor>()
+            .AddScoped<IRequestValidator<TokenRequest, TokenExchangeValidatedRequest>, TokenExchangeRequestValidator>();
 
         return this;
     }

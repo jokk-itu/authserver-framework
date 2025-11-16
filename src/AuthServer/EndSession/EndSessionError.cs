@@ -7,9 +7,6 @@ internal static class EndSessionError
     public static readonly ProcessError InvalidIdToken =
         new(ErrorCode.InvalidRequest, "invalid id_token_hint", ResultCode.BadRequest);
 
-    public static readonly ProcessError MismatchingClientId =
-        new(ErrorCode.InvalidRequest, "client_id does not match id_token_hint", ResultCode.BadRequest);
-
     public static readonly ProcessError InvalidClientId =
         new(ErrorCode.InvalidRequest, "invalid client_id", ResultCode.BadRequest);
 

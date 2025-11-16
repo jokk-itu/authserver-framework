@@ -77,6 +77,12 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
         return this;
     }
 
+    public AuthorizeEndpointBuilder WithResponseType(string responseType)
+    {
+        _parameters.Add(new(Parameter.ResponseType, responseType));
+        return this;
+    }
+
     public AuthorizeEndpointBuilder WithAuthorizeUser(string authorizationGrantId)
     {
         var dataProtector = _dataProtectionProvider.CreateProtector(AuthorizeUserAccessor.DataProtectorName);
@@ -201,12 +207,18 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
 
     private void SetDefaultValues()
     {
-        if (_parameters.All(x => x.Key != Parameter.CodeChallenge))
+        if (_parameters.All(x => x.Key != Parameter.ResponseType))
+        {
+            _parameters.Add(new(Parameter.ResponseType, ResponseTypeConstants.Code));
+        }
+
+        var hasResponseTypeCode = _parameters.Any(x => x is { Key: Parameter.ResponseType, Value: ResponseTypeConstants.Code });
+        if (_parameters.All(x => x.Key != Parameter.CodeChallenge) && hasResponseTypeCode)
         {
             _parameters.Add(new(Parameter.CodeChallenge, ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge));
         }
 
-        if (_parameters.All(x => x.Key != Parameter.CodeChallengeMethod))
+        if (_parameters.All(x => x.Key != Parameter.CodeChallengeMethod) && hasResponseTypeCode)
         {
             _parameters.Add(new(Parameter.CodeChallengeMethod, CodeChallengeMethodConstants.S256));
         }
@@ -216,14 +228,9 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
             _parameters.Add(new(Parameter.State, CryptographyHelper.GetRandomString(16)));
         }
 
-        if (_parameters.All(x => x.Key != Parameter.Nonce))
+        if (_parameters.All(x => x.Key != Parameter.Nonce) && hasResponseTypeCode)
         {
             _parameters.Add(new(Parameter.Nonce, CryptographyHelper.GetRandomString(16)));
-        }
-
-        if (_parameters.All(x => x.Key != Parameter.ResponseType))
-        {
-            _parameters.Add(new(Parameter.ResponseType, ResponseTypeConstants.Code));
         }
 
         if (_parameters.All(x => x.Key != Parameter.Scope))

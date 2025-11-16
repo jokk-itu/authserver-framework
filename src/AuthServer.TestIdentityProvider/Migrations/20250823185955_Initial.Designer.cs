@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20250715140441_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250823185955_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -716,6 +716,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 4,
                             Name = "urn:ietf:params:oauth:grant-type:device_code"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "urn:ietf:params:oauth:grant-type:token-exchange"
                         });
                 });
 
@@ -846,6 +851,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         {
                             Id = 1,
                             Name = "code"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "none"
                         });
                 });
 
@@ -1015,6 +1025,14 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Scope")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SubjectActor")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SubjectMayAct")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 

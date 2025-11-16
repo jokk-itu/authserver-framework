@@ -14,18 +14,18 @@ internal class EndSessionRequestValidator : IRequestValidator<EndSessionRequest,
 {
     private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly IUserAccessor<EndSessionUser> _endSessionUserAccessor;
-    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _tokenDecoder;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly ICachedClientStore _cachedClientStore;
 
     public EndSessionRequestValidator(
         AuthorizationDbContext authorizationDbContext,
         IUserAccessor<EndSessionUser> endSessionUserAccessor,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
+        IServerTokenDecoder serverTokenDecoder,
         ICachedClientStore cachedClientStore)
     {
         _authorizationDbContext = authorizationDbContext;
         _endSessionUserAccessor = endSessionUserAccessor;
-        _tokenDecoder = tokenDecoder;
+        _serverTokenDecoder = serverTokenDecoder;
         _cachedClientStore = cachedClientStore;
     }
 
@@ -73,7 +73,7 @@ internal class EndSessionRequestValidator : IRequestValidator<EndSessionRequest,
 
     private async Task<ProcessResult<EndSessionValidatedRequest, ProcessError>> ValidateRequestForIdTokenHint(EndSessionRequest request, CancellationToken cancellationToken)
     {
-        var token = await _tokenDecoder.Validate(request.IdTokenHint!, new ServerIssuedTokenDecodeArguments
+        var token = await _serverTokenDecoder.Validate(request.IdTokenHint!, new ServerTokenDecodeArguments
         {
             ValidateLifetime = false,
             TokenTypes = [TokenTypeHeaderConstants.IdToken],
@@ -85,17 +85,10 @@ internal class EndSessionRequestValidator : IRequestValidator<EndSessionRequest,
             return EndSessionError.InvalidIdToken;
         }
 
-        var audience = token.Audiences.Single();
-        if (!string.IsNullOrEmpty(request.ClientId)
-            && audience != request.ClientId)
-        {
-            return EndSessionError.MismatchingClientId;
-        }
+        var subjectIdentifier = token.Sub;
+        var sessionId = token.Sid;
 
-        var subjectIdentifier = token.Subject;
-        var sessionId = token.GetClaim(ClaimNameConstants.Sid).Value;
-
-        var unauthorizedClientError = await ValidateClientAuthorizedForPostLogoutRedirectUri(audience, request, cancellationToken);
+        var unauthorizedClientError = await ValidateClientAuthorizedForPostLogoutRedirectUri(token.ClientId, request, cancellationToken);
         if (unauthorizedClientError is not null)
         {
             return unauthorizedClientError;
@@ -105,7 +98,7 @@ internal class EndSessionRequestValidator : IRequestValidator<EndSessionRequest,
         {
             SubjectIdentifier = subjectIdentifier,
             SessionId = sessionId,
-            ClientId = audience,
+            ClientId = token.ClientId,
             LogoutAtIdentityProvider = true
         };
     }

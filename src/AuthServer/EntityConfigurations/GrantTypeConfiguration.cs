@@ -24,6 +24,7 @@ internal sealed class GrantTypeConfiguration : IEntityTypeConfiguration<GrantTyp
             new GrantTypeSeed(1, GrantTypeConstants.AuthorizationCode),
             new GrantTypeSeed(2, GrantTypeConstants.ClientCredentials),
             new GrantTypeSeed(3, GrantTypeConstants.RefreshToken),
-            new GrantTypeSeed(4, GrantTypeConstants.DeviceCode));
+            new GrantTypeSeed(4, GrantTypeConstants.DeviceCode),
+            new GrantTypeSeed(5, GrantTypeConstants.TokenExchange));
     }
 }

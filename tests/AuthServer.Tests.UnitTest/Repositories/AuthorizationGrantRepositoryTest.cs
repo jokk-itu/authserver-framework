@@ -78,7 +78,7 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
             .SetValue(authorizationGrant, originalAuthTime);
 
         authorizationGrant.AuthenticationMethodReferences.Add(authenticationMethodReference);
-        var grantAccessToken = new GrantAccessToken(authorizationGrant, "aud", "iss", ScopeConstants.UserInfo, 300, null);
+        var grantAccessToken = new GrantAccessToken(authorizationGrant, "aud", "iss", ScopeConstants.UserInfo, 300);
         await AddEntity(grantAccessToken);
 
         // Act
@@ -309,24 +309,21 @@ public class AuthorizationGrantRepositoryTest : BaseUnitTest
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            3600,
-            null);
+            3600);
 
         var inactiveGrantAccessToken = new GrantAccessToken(
             authorizationGrant,
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            -3600,
-            null);
+            -3600);
 
         var revokedGrantAccessToken = new GrantAccessToken(
             authorizationGrant,
             DiscoveryDocument.Issuer,
             DiscoveryDocument.Issuer,
             ScopeConstants.UserInfo,
-            3600,
-            null);
+            3600);
         
         revokedGrantAccessToken.Revoke();
 

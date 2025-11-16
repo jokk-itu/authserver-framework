@@ -18,11 +18,11 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Process_ClientWithoutConsentAndWithRequestUri_ExpectAuthorizationCode()
+    public async Task Process_ClientWithoutConsentAndWithRequestUri_ExpectAuthorizeResponseWithAuthorizationCode()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var processor = serviceProvider.GetRequiredService<IRequestProcessor<AuthorizeValidatedRequest, string>>();
+        var processor = serviceProvider.GetRequiredService<IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse>>();
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
@@ -45,20 +45,22 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             CodeChallenge = proofKey.CodeChallenge,
             CodeChallengeMethod = proofKey.CodeChallengeMethod,
             Nonce = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
             AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId]
         };
 
         // Act
-        var authorizationCode = await processor.Process(request, CancellationToken.None);
+        var authorizeResponse = await processor.Process(request, CancellationToken.None);
         await SaveChangesAsync();
 
         // Assert
         Assert.NotNull(authorizeMessage.RedeemedAt);
-        Assert.NotNull(authorizationCode);
+        Assert.NotNull(authorizeResponse);
+        Assert.NotNull(authorizeResponse.AuthorizationCode);
         Assert.Single(authorizationGrant.Nonces);
         Assert.Single(authorizationGrant.AuthorizationCodes);
-        Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().RawValue);
+        Assert.Equal(authorizeResponse.AuthorizationCode, authorizationGrant.AuthorizationCodes.Single().RawValue);
     }
 
     [Theory]
@@ -67,11 +69,11 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
     [InlineData(GrantManagementActionConstants.Create)]
     [InlineData(GrantManagementActionConstants.Replace)]
     [InlineData(GrantManagementActionConstants.Merge)]
-    public async Task Process_ClientWithConsent_ExpectAuthorizationCode(string? grantManagementAction)
+    public async Task Process_ClientWithConsent_ExpectAuthorizeResponseWithAuthorizationCode(string? grantManagementAction)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var processor = serviceProvider.GetRequiredService<IRequestProcessor<AuthorizeValidatedRequest, string>>();
+        var processor = serviceProvider.GetRequiredService<IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse>>();
 
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
@@ -103,20 +105,68 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId],
+            ResponseType = ResponseTypeConstants.Code,
             Resource = ["https://weather.authserver.dk"],
             GrantManagementAction = grantManagementAction,
             DPoPJkt = CryptographyHelper.GetRandomString(16)
         };
 
         // Act
-        var authorizationCode = await processor.Process(request, CancellationToken.None);
+        var authorizeResponse = await processor.Process(request, CancellationToken.None);
         await SaveChangesAsync();
 
         // Assert
-        Assert.NotNull(authorizationCode);
+        Assert.NotNull(authorizeResponse);
+        Assert.NotNull(authorizeResponse.AuthorizationCode);
         Assert.Single(authorizationGrant.Nonces);
         Assert.Single(authorizationGrant.AuthorizationCodes);
-        Assert.Equal(authorizationCode, authorizationGrant.AuthorizationCodes.Single().RawValue);
+        Assert.Equal(authorizeResponse.AuthorizationCode, authorizationGrant.AuthorizationCodes.Single().RawValue);
         Assert.Single(authorizationGrant.AuthorizationGrantConsents);
+    }
+
+    [Fact]
+    public async Task Process_ClientWithConsent_ExpectAuthorizeResponseWithoutAuthorizationCode()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var processor = serviceProvider.GetRequiredService<IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse>>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var session = new Session(subjectIdentifier);
+        var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            AuthorizationCodeExpiration = 60
+        };
+        var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
+        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
+        await AddEntity(authorizationGrant);
+
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        await AddEntity(scopeConsent);
+
+        var weatherClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        weatherClient.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        await AddEntity(weatherClient);
+
+        var request = new AuthorizeValidatedRequest
+        {
+            ClientId = client.Id,
+            AuthorizationGrantId = authorizationGrant.Id,
+            Scope = [ScopeConstants.OpenId],
+            ResponseType = ResponseTypeConstants.None,
+            Resource = ["https://weather.authserver.dk"],
+        };
+
+        // Act
+        var authorizeResponse = await processor.Process(request, CancellationToken.None);
+        await SaveChangesAsync();
+
+        // Assert
+        Assert.NotNull(authorizeResponse);
+        Assert.Null(authorizeResponse.AuthorizationCode);
     }
 }

@@ -3,8 +3,8 @@
 namespace AuthServer.Entities;
 public class ClientAccessToken : ClientToken
 {
-    public ClientAccessToken(Client client, string audience, string issuer, string? scope, int? expiresAt, string? jkt)
-        : base(client, TokenType.ClientAccessToken, audience, issuer, scope, expiresAt, jkt)
+    public ClientAccessToken(Client client, string audience, string issuer, string scope, int expiresAt)
+        : base(client, TokenType.ClientAccessToken, audience, issuer, scope, expiresAt)
     {}
 
 #pragma warning disable CS8618

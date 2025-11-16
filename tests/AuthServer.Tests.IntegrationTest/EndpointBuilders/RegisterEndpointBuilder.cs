@@ -26,6 +26,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
     {
     }
 
+    public RegisterEndpointBuilder WithAccessTokenExpiration(int accessTokenExpiration)
+    {
+        _registerParameters.Add(Parameter.AccessTokenExpiration, accessTokenExpiration);
+        return this;
+    }
+
     public RegisterEndpointBuilder WithUserinfoSignedResponseAlg(SigningAlg signingAlg)
     {
         _registerParameters.Add(Parameter.UserinfoSignedResponseAlg, signingAlg.GetDescription());
@@ -71,6 +77,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
     public RegisterEndpointBuilder WithClientName(string clientName)
     {
         _registerParameters.Add(Parameter.ClientName, clientName);
+        return this;
+    }
+
+    public RegisterEndpointBuilder WithResponseTypes(params string[] responseTypes)
+    {
+        _registerParameters.Add(Parameter.ResponseTypes, responseTypes);
         return this;
     }
 

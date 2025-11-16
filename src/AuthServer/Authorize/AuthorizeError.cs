@@ -21,10 +21,10 @@ internal static class AuthorizeError
         new(ErrorCode.InvalidRequest, "response_mode is invalid", ResultCode.Redirect);
 
     public static readonly ProcessError InvalidResponseType =
-        new(ErrorCode.InvalidRequest, "response_type is invalid", ResultCode.Redirect);
+        new(ErrorCode.UnsupportedResponseType, "response_type is invalid", ResultCode.Redirect);
 
     public static readonly ProcessError UnauthorizedResponseType =
-        new(ErrorCode.UnauthorizedClient, "client is unauthorized for authorization_code", ResultCode.Redirect);
+        new(ErrorCode.UnauthorizedClient, "client is unauthorized for response_type", ResultCode.Redirect);
 
     public static readonly ProcessError InvalidDisplay =
         new(ErrorCode.InvalidRequest, "display is invalid", ResultCode.Redirect);

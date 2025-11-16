@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -588,8 +588,10 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     NotBefore = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Audience = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Issuer = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Jkt = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Jkt = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    SubjectActor = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    SubjectMayAct = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     AuthorizationGrantId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
@@ -691,13 +693,18 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     { 1, "authorization_code" },
                     { 2, "client_credentials" },
                     { 3, "refresh_token" },
-                    { 4, "urn:ietf:params:oauth:grant-type:device_code" }
+                    { 4, "urn:ietf:params:oauth:grant-type:device_code" },
+                    { 5, "urn:ietf:params:oauth:grant-type:token-exchange" }
                 });
 
             migrationBuilder.InsertData(
                 table: "ResponseType",
                 columns: new[] { "Id", "Name" },
-                values: new object[] { 1, "code" });
+                values: new object[,]
+                {
+                    { 1, "code" },
+                    { 2, "none" }
+                });
 
             migrationBuilder.InsertData(
                 table: "Scope",

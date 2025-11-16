@@ -8,7 +8,7 @@ using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.Authorize;
 
-internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedRequest, string>
+internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse>
 {
     private readonly ICodeEncoder<EncodedAuthorizationCode> _authorizationCodeEncoder;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
@@ -27,7 +27,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
         _consentGrantRepository = consentGrantRepository;
     }
 
-    public async Task<string> Process(AuthorizeValidatedRequest request, CancellationToken cancellationToken)
+    public async Task<AuthorizeResponse> Process(AuthorizeValidatedRequest request, CancellationToken cancellationToken)
     {
         if (request.RequestUri is not null)
         {
@@ -39,29 +39,8 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             }
         }
 
-        var authorizationGrant = (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId, cancellationToken))!;
-
-        var authorizationCode = new AuthorizationCode(authorizationGrant, authorizationGrant.Client.AuthorizationCodeExpiration!.Value);
-        var nonce = new AuthorizationGrantNonce(request.Nonce, request.Nonce.Sha256(), authorizationGrant);
-
-        authorizationGrant.AuthorizationCodes.Add(authorizationCode);
-        authorizationGrant.Nonces.Add(nonce);
-
-        var encodedAuthorizationCode = _authorizationCodeEncoder.Encode(
-            new EncodedAuthorizationCode
-            {
-                AuthorizationGrantId = authorizationGrant.Id,
-                AuthorizationCodeId = authorizationCode.Id,
-                Scope = request.Scope,
-                RedirectUri = request.RedirectUri,
-                DPoPJkt = request.DPoPJkt,
-                CodeChallenge = request.CodeChallenge,
-                CodeChallengeMethod = request.CodeChallengeMethod
-            });
-
-        authorizationCode.SetRawValue(encodedAuthorizationCode);
-
-        if (authorizationGrant.Client.RequireConsent)
+        var authorizationCodeGrant = (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId, cancellationToken))!;
+        if (authorizationCodeGrant.Client.RequireConsent)
         {
             if (string.IsNullOrEmpty(request.GrantManagementAction) || request.GrantManagementAction == GrantManagementActionConstants.Create)
             {
@@ -76,6 +55,39 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
                 await _consentGrantRepository.ReplaceGrantConsent(request.AuthorizationGrantId, request.Scope, request.Resource, cancellationToken);
             }
         }
+
+        if (request.ResponseType == ResponseTypeConstants.Code)
+        {
+            return new AuthorizeResponse
+            {
+                AuthorizationCode = GetAuthorizationCode(request, authorizationCodeGrant)
+            };
+        }
+
+        return new AuthorizeResponse();
+    }
+
+    private string GetAuthorizationCode(AuthorizeValidatedRequest request, AuthorizationCodeGrant authorizationCodeGrant)
+    {
+        var authorizationCode = new AuthorizationCode(authorizationCodeGrant, authorizationCodeGrant.Client.AuthorizationCodeExpiration!.Value);
+        var nonce = new AuthorizationGrantNonce(request.Nonce!, request.Nonce!.Sha256(), authorizationCodeGrant);
+
+        authorizationCodeGrant.AuthorizationCodes.Add(authorizationCode);
+        authorizationCodeGrant.Nonces.Add(nonce);
+
+        var encodedAuthorizationCode = _authorizationCodeEncoder.Encode(
+            new EncodedAuthorizationCode
+            {
+                AuthorizationGrantId = authorizationCodeGrant.Id,
+                AuthorizationCodeId = authorizationCode.Id,
+                Scope = request.Scope,
+                RedirectUri = request.RedirectUri,
+                DPoPJkt = request.DPoPJkt,
+                CodeChallenge = request.CodeChallenge!,
+                CodeChallengeMethod = request.CodeChallengeMethod!
+            });
+
+        authorizationCode.SetRawValue(encodedAuthorizationCode);
 
         return encodedAuthorizationCode;
     }

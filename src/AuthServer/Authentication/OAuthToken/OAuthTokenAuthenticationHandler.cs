@@ -3,55 +3,49 @@ using AuthServer.Authorization.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.TokenDecoders;
+using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using Claim = System.Security.Claims.Claim;
 
 namespace AuthServer.Authentication.OAuthToken;
 internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthTokenAuthenticationOptions>
 {
-    private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly IUserClaimService _userClaimService;
-    private readonly IOptionsMonitor<JwksDocument> _jwksDocumentOptions;
     private readonly IOptionsMonitor<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IDPoPService _dPoPService;
     private readonly INonceRepository _nonceRepository;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly IUnitOfWork _unitOfWork;
 
     public OAuthTokenAuthenticationHandler(
         IOptionsMonitor<OAuthTokenAuthenticationOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        AuthorizationDbContext authorizationDbContext,
         IUserClaimService userClaimService,
-        IOptionsMonitor<JwksDocument> jwksDocumentOptions,
         IOptionsMonitor<DiscoveryDocument> discoveryDocumentOptions,
         IDPoPService dPoPService,
         INonceRepository nonceRepository,
+        IServerTokenDecoder serverTokenDecoder,
         IUnitOfWork unitOfWork)
         : base(options, logger, encoder)
     {
-        _authorizationDbContext = authorizationDbContext;
         _userClaimService = userClaimService;
-        _jwksDocumentOptions = jwksDocumentOptions;
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _dPoPService = dPoPService;
         _nonceRepository = nonceRepository;
+        _serverTokenDecoder = serverTokenDecoder;
         _unitOfWork = unitOfWork;
     }
 
@@ -75,16 +69,7 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
             return AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidRequest, "token is null", scheme));
         }
 
-        ClaimsIdentity? claimsIdentity;
-        AuthenticateResult? result;
-        if (TokenHelper.IsJsonWebToken(token))
-        {
-            (claimsIdentity, result) = await AuthenticateJsonWebToken(token, scheme);
-        }
-        else
-        {
-            (claimsIdentity, result) = await AuthenticateReferenceToken(token, scheme);
-        }
+        var (claimsIdentity, result) = await AuthenticateToken(token, scheme, Request.HttpContext.RequestAborted);
 
         if (result is not null)
         {
@@ -195,123 +180,51 @@ internal class OAuthTokenAuthenticationHandler : AuthenticationHandler<OAuthToke
         }
     }
 
-    private async Task<(ClaimsIdentity?, AuthenticateResult?)> AuthenticateReferenceToken(string token, string scheme)
+    private async Task<(ClaimsIdentity?, AuthenticateResult?)> AuthenticateToken(string token, string scheme, CancellationToken cancellationToken)
     {
-        var query = await _authorizationDbContext
-            .Set<Token>()
-            .Where(t => t.Reference == token)
-            .Select(t => new
+        var tokenResult = await _serverTokenDecoder.Validate(
+            token,
+            new ServerTokenDecodeArguments
             {
-                Token = t,
-                ClientIdFromClientToken = (t as ClientToken)!.Client.Id,
-                ClientIdFromGrantToken = (t as GrantToken)!.AuthorizationGrant.Client.Id,
-                GrantId = (t as GrantToken)!.AuthorizationGrant.Id,
-                SubjectIdentifier = (t as GrantToken)!.AuthorizationGrant.Session.SubjectIdentifier.Id,
-                (t as GrantToken)!.AuthorizationGrant.Subject,
-                SessionId = (t as GrantToken)!.AuthorizationGrant.Session.Id
-            })
-            .SingleOrDefaultAsync();
+                Audiences = [],
+                TokenTypes = [ TokenTypeHeaderConstants.AccessToken ],
+                ValidateLifetime = true
+            },
+            cancellationToken);
 
-        if (query is null)
+        if (tokenResult is null)
         {
-            Logger.LogDebug("Token {Token} does not exist", token);
-            return (null, AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidToken, "token does not exist", scheme)));
+            var authenticateResult = AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidToken, "token is not valid", scheme));
+            return (null, authenticateResult);
         }
 
-        if (!query.Token.Audience.Split(' ').Contains(_discoveryDocumentOptions.CurrentValue.Issuer))
+        var dPoPAuthenticateResult = await ValidateDPoP(token, tokenResult.ClientId, tokenResult.Jkt, scheme);
+        if (dPoPAuthenticateResult is not null)
         {
-            return (null, AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidToken, "token does not have AuthServer as audience", scheme)));
+            return (null, dPoPAuthenticateResult);
         }
 
-        if (query.Token.RevokedAt != null)
+        var claims = new List<Claim>
         {
-            return (null, AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidToken, "token is revoked", scheme)));
+            new(ClaimNameConstants.Scope, string.Join(' ', tokenResult.Scope)),
+            new(ClaimNameConstants.ClientId, tokenResult.ClientId),
+            new(ClaimNameConstants.Sub, tokenResult.Sub)
+        };
+
+        if (tokenResult.GrantId is not null)
+        {
+            claims.Add(new Claim(ClaimNameConstants.GrantId, tokenResult.GrantId));
         }
 
-        if (query.Token.IssuedAt > DateTime.UtcNow)
+        if (tokenResult.Sid is not null)
         {
-            return (null, AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidToken, "token is not yet active", scheme)));
-        }
+            claims.Add(new Claim(ClaimNameConstants.Sid, tokenResult.Sid));
 
-        if (query.Token.ExpiresAt < DateTime.UtcNow)
-        {
-            return (null, AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidToken, "token has expired", scheme)));
-        }
-
-        var clientId = query.Token is GrantAccessToken
-            ? query.ClientIdFromGrantToken
-            : query.ClientIdFromClientToken;
-
-        var dPoPAuthenticationResult = await ValidateDPoP(token, clientId, query.Token.Jkt, scheme);
-        if (dPoPAuthenticationResult is not null)
-        {
-            return (null, dPoPAuthenticationResult);
-        }
-
-        var claims = new List<Claim>();
-        if (query.Token.Scope is not null)
-        {
-            claims.Add(new Claim(ClaimNameConstants.Scope, query.Token.Scope));
-        }
-
-        claims.Add(new Claim(ClaimNameConstants.ClientId, clientId));
-
-        if (query.Token is GrantToken)
-        {
-            claims.Add(new Claim(ClaimNameConstants.GrantId, query.GrantId));
-            claims.Add(new Claim(ClaimNameConstants.Sid, query.SessionId));
-            claims.Add(new Claim(ClaimNameConstants.Sub, query.Subject));
-
-            var userClaims = await _userClaimService.GetClaims(query.SubjectIdentifier, CancellationToken.None);
+            var userClaims = await _userClaimService.GetClaims(tokenResult.Sub, CancellationToken.None);
             claims.AddRange(userClaims);
-        }
-        else if (query.Token is ClientToken)
-        {
-            claims.Add(new Claim(ClaimNameConstants.Sub, query.ClientIdFromClientToken));
         }
 
         return (new ClaimsIdentity(claims), null);
-    }
-
-    private async Task<(ClaimsIdentity?, AuthenticateResult?)> AuthenticateJsonWebToken(string token, string scheme)
-    {
-        var tokenHandler = new JsonWebTokenHandler();
-        var tokenSigningKey = _jwksDocumentOptions.CurrentValue.GetTokenSigningKey();
-        var tokenValidationParameters = new TokenValidationParameters
-        {
-            ClockSkew = TimeSpan.FromSeconds(0),
-            IssuerSigningKey = tokenSigningKey.Key,
-            ValidIssuer = _discoveryDocumentOptions.CurrentValue.Issuer,
-            ValidAudience = _discoveryDocumentOptions.CurrentValue.Issuer,
-            ValidTypes = [TokenTypeHeaderConstants.AccessToken],
-            ValidAlgorithms = [tokenSigningKey.Alg.GetDescription()],
-            RoleClaimType = ClaimNameConstants.Roles,
-            NameClaimType = ClaimNameConstants.Name
-        };
-        var validationResult = await tokenHandler.ValidateTokenAsync(token, tokenValidationParameters);
-        if (!validationResult.IsValid)
-        {
-            Logger.LogWarning(validationResult.Exception, "Token validation failed");
-            return (null, AuthenticateResult.Fail(new OAuthTokenException(ErrorCode.InvalidToken, "token is not valid", scheme)));
-        }
-
-        var clientId = validationResult.Claims[ClaimNameConstants.ClientId].ToString()!;
-
-        string? jkt = null;
-        if (validationResult.Claims.TryGetValue(ClaimNameConstants.Cnf, out var cnfClaim)
-            && cnfClaim is JsonElement jsonElement
-            && jsonElement.TryGetProperty(ClaimNameConstants.Jkt, out var jktNode))
-        {
-            jkt = jktNode!.ToString();
-        }
-
-        var dPoPAuthenticationResult = await ValidateDPoP(token, clientId, jkt, scheme);
-        if (dPoPAuthenticationResult is not null)
-        {
-            return (null, dPoPAuthenticationResult);
-        }
-
-        return (validationResult.ClaimsIdentity, null);
     }
 
     private async Task<AuthenticateResult?> ValidateDPoP(string token, string clientId, string? jkt, string scheme)

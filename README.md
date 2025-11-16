@@ -8,6 +8,7 @@ The following grant types are supported:
 - Refresh Token
 - Client Credentials
 - Device Code
+- Token Exchange
 
 The following additional specifications are supported:
 - OAuth 2.1
@@ -24,7 +25,8 @@ The following additional specifications are supported:
 - DPoP
 - Pushed Authorization
 - GrantManagement
-- OAuth DeviceCode
+- OAuth Device Authorization Grant
+- OAuth Token Exchange
 
 ## Pipeline runs
 

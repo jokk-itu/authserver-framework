@@ -1,5 +1,8 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using AuthServer.Constants;
+using AuthServer.Enums;
+using AuthServer.Metrics;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -7,6 +10,44 @@ namespace AuthServer.Helpers;
 
 internal static class TokenHelper
 {
+    public static string MapTokenTypeIdentifierToTokenTypHeader(string tokenTypeIdentifier)
+    {
+        return tokenTypeIdentifier switch
+        {
+            TokenTypeIdentifier.AccessToken => TokenTypeHeaderConstants.AccessToken,
+            TokenTypeIdentifier.IdToken => TokenTypeHeaderConstants.IdToken,
+            _ => throw new ArgumentException($"token type {tokenTypeIdentifier} is unknown", nameof(tokenTypeIdentifier))
+        };
+    }
+
+    public static TokenTypeTag MapTokenTypHeaderToTokenTypeTag(string typHeader)
+    {
+        return typHeader switch
+        {
+            TokenTypeHeaderConstants.AccessToken => TokenTypeTag.AccessToken,
+            TokenTypeHeaderConstants.RefreshToken => TokenTypeTag.RefreshToken,
+            TokenTypeHeaderConstants.IdToken => TokenTypeTag.IdToken,
+            TokenTypeHeaderConstants.UserinfoToken => TokenTypeTag.UserinfoToken,
+            TokenTypeHeaderConstants.DPoPToken => TokenTypeTag.DPoPToken,
+            TokenTypeHeaderConstants.LogoutToken => TokenTypeTag.LogoutToken,
+            TokenTypeHeaderConstants.PrivateKeyToken => TokenTypeTag.ClientAssertion,
+            TokenTypeHeaderConstants.RequestObjectToken => TokenTypeTag.RequestObject,
+            _ => throw new ArgumentException($"token typ header is unknown {typHeader}", nameof(typHeader))
+        };
+    }
+
+    public static string MapToTokenTypHeader(TokenType tokenType)
+    {
+        return tokenType switch
+        {
+            TokenType.ClientAccessToken => TokenTypeHeaderConstants.AccessToken,
+            TokenType.GrantAccessToken => TokenTypeHeaderConstants.AccessToken,
+            TokenType.RegistrationToken => TokenTypeHeaderConstants.AccessToken,
+            TokenType.RefreshToken => TokenTypeHeaderConstants.RefreshToken,
+            _ => throw new ArgumentException($"Token type {tokenType} is not supported", nameof(tokenType))
+        };
+    }
+
     public static bool IsJws(string token)
     {
         return JwtTokenUtilities.RegexJws.IsMatch(token);

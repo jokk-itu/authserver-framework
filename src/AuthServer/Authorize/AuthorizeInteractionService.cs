@@ -1,9 +1,9 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorize.Abstractions;
-using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Extensions;
+using AuthServer.Metrics;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
@@ -13,29 +13,26 @@ namespace AuthServer.Authorize;
 
 internal class AuthorizeInteractionService : IAuthorizeInteractionService
 {
-    private readonly ITokenDecoder<ServerIssuedTokenDecodeArguments> _serverIssuedTokenDecoder;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly IUserAccessor<AuthorizeUser> _userAccessor;
     private readonly IAuthenticatedUserAccessor _authenticatedUserAccessor;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IConsentRepository _consentGrantRepository;
-    private readonly ICachedClientStore _cachedClientStore;
     private readonly ILogger<AuthorizeInteractionService> _logger;
 
     public AuthorizeInteractionService(
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> serverIssuedTokenDecoder,
+        IServerTokenDecoder serverTokenDecoder,
         IUserAccessor<AuthorizeUser> userAccessor,
         IAuthenticatedUserAccessor authenticatedUserAccessor,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IConsentRepository consentGrantRepository,
-        ICachedClientStore cachedClientStore,
         ILogger<AuthorizeInteractionService> logger)
     {
-        _serverIssuedTokenDecoder = serverIssuedTokenDecoder;
+        _serverTokenDecoder = serverTokenDecoder;
         _userAccessor = userAccessor;
         _authenticatedUserAccessor = authenticatedUserAccessor;
         _authorizationGrantRepository = authorizationGrantRepository;
         _consentGrantRepository = consentGrantRepository;
-        _cachedClientStore = cachedClientStore;
         _logger = logger;
     }
 
@@ -48,7 +45,8 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         {
             _logger.LogDebug("Deducing prompt from interaction with {@User}", authorizeUser);
             var grantId = authorizeRequest.GrantId ?? authorizeUser.AuthorizationGrantId;
-            return await GetPrompt(authorizeUser with { AuthorizationGrantId = grantId}, authorizeRequest, cancellationToken);
+            var prompt = await GetPrompt(authorizeUser with { AuthorizationGrantId = grantId}, authorizeRequest, cancellationToken);
+            return prompt with{ AuthenticationKind = AuthenticationKind.AuthorizeUser };
         }
 
         /*
@@ -78,13 +76,14 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         // id_token_hint overrides cookies, and only deduces prompt none, if validation succeeds
         if (!string.IsNullOrEmpty(authorizeRequest.IdTokenHint))
         {
-            var decodedIdToken = await _serverIssuedTokenDecoder.Read(authorizeRequest.IdTokenHint);
-            var subject = decodedIdToken.Subject;
-            var grantId = authorizeRequest.GrantId ?? decodedIdToken.GetClaim(ClaimNameConstants.GrantId).Value;
+            var idTokenResult = await _serverTokenDecoder.Read(authorizeRequest.IdTokenHint, cancellationToken);
+            var subject = idTokenResult.Sub;
+            var grantId = authorizeRequest.GrantId ?? idTokenResult.GrantId;
 
             _logger.LogDebug("Deducing Prompt from id_token with subject {Subject} and grant {AuthorizationGrantId}", subject, grantId);
 
-            return await GetPrompt(new AuthorizeUser(subject, false, grantId), authorizeRequest, cancellationToken);
+            var prompt = await GetPrompt(new AuthorizeUser(subject, false, grantId), authorizeRequest, cancellationToken);
+            return prompt with { AuthenticationKind = AuthenticationKind.IdToken };
         }
 
         var authenticatedUsers = await _authenticatedUserAccessor.CountAuthenticatedUsers();
@@ -103,7 +102,8 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
 
                 _logger.LogDebug("Deducing Prompt from one authenticated user {@User}", authenticatedUser);
 
-                return await GetPrompt(new AuthorizeUser(subject, false, grantId), authorizeRequest, cancellationToken);
+                var prompt = await GetPrompt(new AuthorizeUser(subject, false, grantId), authorizeRequest, cancellationToken);
+                return prompt with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
         }
     }
 
@@ -122,7 +122,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
             return maxAgePrompt;
         }
 
-        var acrPrompt = await GetPromptAcr(authorizationGrant, authorizeRequest, cancellationToken);
+        var acrPrompt = GetPromptAcr(authorizationGrant, authorizeRequest);
         if (acrPrompt is not null)
         {
             return acrPrompt;
@@ -151,10 +151,12 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         return InteractionResult.Success(authorizeUser.SubjectIdentifier, authorizeUser.AuthorizationGrantId);
     }
 
-    private async Task<InteractionResult?> GetPromptAcr(AuthorizationGrant authorizationGrant, AuthorizeRequest authorizeRequest, CancellationToken cancellationToken)
+    private InteractionResult? GetPromptAcr(AuthorizationGrant authorizationGrant, AuthorizeRequest authorizeRequest)
     {
         var performedAuthenticationContextReference = authorizationGrant.AuthenticationContextReference.Name;
-        var defaultAuthenticationContextReferences = (await _cachedClientStore.Get(authorizeRequest.ClientId!, cancellationToken))!.DefaultAcrValues;
+        var defaultAuthenticationContextReferences = authorizationGrant.Client.ClientAuthenticationContextReferences
+            .Select(x => x.AuthenticationContextReference.Name)
+            .ToList();
 
         if (authorizeRequest.AcrValues.Count != 0 && !authorizeRequest.AcrValues.Contains(performedAuthenticationContextReference))
         {

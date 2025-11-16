@@ -61,6 +61,8 @@ public interface IAuthorizeService
     /// <summary>
     /// Get the subject from AuthorizeUser, IdTokenHint or AuthenticatedUser.
     /// </summary>
+    /// <param name="authorizeRequestDto"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<SubjectDto> GetSubject(AuthorizeRequestDto authorizeRequestDto);
+    Task<SubjectDto> GetSubject(AuthorizeRequestDto authorizeRequestDto, CancellationToken cancellationToken);
 }

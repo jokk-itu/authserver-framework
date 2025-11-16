@@ -149,6 +149,7 @@ public abstract class BaseUnitTest
             .AddClientCredentials()
             .AddRefreshToken()
             .AddDeviceCode()
+            .AddTokenExchange()
             .AddRevocation()
             .AddIntrospection()
             .AddDiscovery()

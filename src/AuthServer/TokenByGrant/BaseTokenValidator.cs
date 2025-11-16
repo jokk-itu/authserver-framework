@@ -65,10 +65,6 @@ internal abstract class BaseTokenValidator
         else
         {
             requestedScopes = isScopeRequested ? scope : cachedClient.Scopes;
-            if (requestedScopes.IsNotSubset(cachedClient.Scopes))
-            {
-                return TokenError.UnauthorizedForScope;
-            }
         }
 
         if (requestedScopes.IsNotSubset(cachedClient.Scopes))

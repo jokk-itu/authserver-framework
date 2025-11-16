@@ -1,10 +1,11 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authentication.Models;
-using AuthServer.Authorize.Abstractions;
 using AuthServer.Authorize;
+using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Metrics;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -124,13 +125,14 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
 
     [Theory]
-    [InlineData("none")]
+    [InlineData(PromptConstants.None)]
     [InlineData(null)]
     public async Task GetInteractionResult_OneAuthenticatedUserMaxAgeExceeded_ExpectLogin(string? prompt)
     {
@@ -174,7 +176,8 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
@@ -226,7 +229,8 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.LoginResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.LoginResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
@@ -273,7 +277,8 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
+        var expectedInteractionResult = InteractionResult.UnmetAuthenticationRequirementResult with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
@@ -322,7 +327,8 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.UnmetAuthenticationRequirementResult, interactionResult);
+        var expectedInteractionResult = InteractionResult.UnmetAuthenticationRequirementResult with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
@@ -369,7 +375,8 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.InvalidGrantId, interactionResult);
+        var expectedInteractionResult = InteractionResult.InvalidGrantId with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }
@@ -460,7 +467,8 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
             }, CancellationToken.None);
 
         // Assert
-        Assert.Equal(InteractionResult.ConsentResult(prompt), interactionResult);
+        var expectedInteractionResult = InteractionResult.ConsentResult(prompt) with { AuthenticationKind = AuthenticationKind.AuthenticatedUser };
+        Assert.Equal(expectedInteractionResult, interactionResult);
         Assert.False(interactionResult.IsSuccessful);
         authenticateUserAccessorMock.Verify();
     }

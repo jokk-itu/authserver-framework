@@ -101,7 +101,9 @@ public class JwtBuilder
             { ClaimNameConstants.Sid, sessionId },
             { ClaimNameConstants.GrantId, grantId },
             { ClaimNameConstants.Acr, acr },
-            { ClaimNameConstants.Amr, JsonSerializer.SerializeToElement(amr) }
+            { ClaimNameConstants.Amr, JsonSerializer.SerializeToElement(amr) },
+            { ClaimNameConstants.ClientId, clientId },
+            { ClaimNameConstants.Jti, Guid.NewGuid() }
         };
 
         return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
@@ -126,7 +128,10 @@ public class JwtBuilder
         var claims = new Dictionary<string, object>
         {
             { ClaimNameConstants.Jti, jti },
-            { ClaimNameConstants.GrantId, authorizationGrantId }
+            { ClaimNameConstants.GrantId, authorizationGrantId },
+            { ClaimNameConstants.ClientId, clientId },
+            { ClaimNameConstants.Sub, Guid.NewGuid() },
+            { ClaimNameConstants.Scope, ScopeConstants.OpenId },
         };
 
         return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
@@ -150,7 +155,10 @@ public class JwtBuilder
         
         var claims = new Dictionary<string, object>
         {
-            { ClaimNameConstants.ClientId, clientId }
+            { ClaimNameConstants.ClientId, clientId },
+            { ClaimNameConstants.Sub, clientId },
+            { ClaimNameConstants.Jti, Guid.NewGuid() },
+            { ClaimNameConstants.Scope, ScopeConstants.OpenId }
         };
 
         if (jkt is not null)

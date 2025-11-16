@@ -11,12 +11,14 @@ internal sealed class MetricService : IMetricService, IDisposable
     private readonly Meter _meter;
 
     private readonly Counter<int> _tokenBuiltAmount;
-    private readonly Counter<int> _tokenDecodedAmount;
+    private readonly Counter<int> _validateServerTokenAmount;
+    private readonly Counter<int> _validateClientTokenAmount;
     private readonly Counter<int> _tokenIntrospectedAmount;
     private readonly Counter<int> _tokenRevokedAmount;
 
     private readonly Histogram<double> _tokenBuildTime;
-    private readonly Histogram<double> _tokenDecodedTime;
+    private readonly Histogram<double> _validateServerTokenTime;
+    private readonly Histogram<double> _validateClientTokenTime;
 
     private readonly Histogram<double> _clientAuthenticationTime;
 
@@ -32,12 +34,14 @@ internal sealed class MetricService : IMetricService, IDisposable
         _meter = meterFactory.Create("AuthServer");
 
         _tokenBuiltAmount = _meter.CreateCounter<int>("authserver.token.built.count", "The amount of tokens built.");
-        _tokenDecodedAmount = _meter.CreateCounter<int>("authserver.token.decoded.count", "The amount of token decoded.");
+        _validateServerTokenAmount = _meter.CreateCounter<int>("authserver.token.server.validate.count", "The amount of server tokens validated.");
+        _validateClientTokenAmount = _meter.CreateCounter<int>("authserver.token.client.validate.count", "The amount of client tokens validated.");
         _tokenIntrospectedAmount = _meter.CreateCounter<int>("authserver.token.introspected.count", "The amount of tokens introspected.");
         _tokenRevokedAmount = _meter.CreateCounter<int>("authserver.token.revoked.count", "The amount of tokens revoked.");
 
         _tokenBuildTime = _meter.CreateHistogram<double>("authserver.token.built.duration", "The time it takes for a token to be built.");
-        _tokenDecodedTime = _meter.CreateHistogram<double>("authserver.token.decoded.duration", "The time it takes for a token to be decoded.");
+        _validateServerTokenTime = _meter.CreateHistogram<double>("authserver.token.server.validate.duration", "The time it takes for a server token to be validated.");
+        _validateClientTokenTime = _meter.CreateHistogram<double>("authserver.token.client.validate.duration", "The time it takes for a client token to be validated.");
 
         _clientAuthenticationTime = _meter.CreateHistogram<double>("authserver.client.authenticated.duration", "The time it takes for a client to be authenticated.");
 
@@ -62,16 +66,27 @@ internal sealed class MetricService : IMetricService, IDisposable
         _tokenBuildTime.Record(durationMilliseconds, tags);
     }
 
-    public void AddDecodedToken(long durationMilliseconds, TokenTypeTag tokenTypeTag, TokenStructureTag tokenStructureTag)
+    public void AddValidateServerToken(long durationMilliseconds, TokenTypeTag? tokenTypeTag, TokenStructureTag tokenStructureTag)
     {
         var tags = new[]
         {
-            new KeyValuePair<string, object?>("typ", tokenTypeTag.GetDescription()),
+            new KeyValuePair<string, object?>("typ", tokenTypeTag?.GetDescription()),
             new KeyValuePair<string, object?>("structure", tokenStructureTag.GetDescription())
         };
 
-        _tokenDecodedAmount.Add(1, tags);
-        _tokenDecodedTime.Record(durationMilliseconds, tags);
+        _validateServerTokenAmount.Add(1, tags);
+        _validateServerTokenTime.Record(durationMilliseconds, tags);
+    }
+
+    public void AddValidateClientToken(long durationMilliseconds, TokenTypeTag? tokenTypeTag)
+    {
+        var tags = new[]
+        {
+            new KeyValuePair<string, object?>("typ", tokenTypeTag?.GetDescription())
+        };
+
+        _validateClientTokenAmount.Add(1, tags);
+        _validateClientTokenTime.Record(durationMilliseconds, tags);
     }
 
     public void AddIntrospectedToken(TokenTypeTag tokenTypeTag)
@@ -89,7 +104,7 @@ internal sealed class MetricService : IMetricService, IDisposable
         _clientAuthenticationTime.Record(durationMilliseconds, new KeyValuePair<string, object?>(ClientId, clientId));
     }
 
-    public void AddAuthorizeInteraction(long durationMilliseconds, string clientId, string prompt, AuthenticationKind authenticationKind)
+    public void AddAuthorizeInteraction(long durationMilliseconds, string clientId, string prompt, AuthenticationKind? authenticationKind)
     {
         _authorizeInteractionTime.Record(
             durationMilliseconds,

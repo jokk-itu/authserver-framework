@@ -88,6 +88,14 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             { ClaimNameConstants.AccessControl, accessControl }
         };
 
+        if (!string.IsNullOrEmpty(arguments.SubjectActor))
+        {
+            claims.Add(ClaimNameConstants.Act, new Dictionary<string, object>
+            {
+                { ClaimNameConstants.Sub, arguments.SubjectActor }
+            });
+        }
+
         if (!string.IsNullOrEmpty(arguments.Jkt))
         {
             var confirmation = new Dictionary<string, object>
@@ -119,7 +127,11 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
     {
         var accessToken = new GrantAccessToken(grantQuery.AuthorizationGrant,
             string.Join(' ', arguments.Resource), _discoveryDocumentOptions.Value.Issuer,
-            string.Join(' ', arguments.Scope), grantQuery.Client.AccessTokenExpiration, arguments.Jkt);
+            string.Join(' ', arguments.Scope), grantQuery.Client.AccessTokenExpiration)
+        {
+            Jkt = arguments.Jkt,
+            SubjectActor = arguments.SubjectActor
+        };
 
         await _identityContext.Set<GrantAccessToken>().AddAsync(accessToken);
         return accessToken.Reference;

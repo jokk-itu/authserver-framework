@@ -28,6 +28,36 @@ public class TokenEndpointBuilder : EndpointBuilder<TokenEndpointBuilder>
     {
     }
 
+    public TokenEndpointBuilder WithRequestedTokenType(string requestedTokenType)
+    {
+        _parameters.Add(new(Parameter.RequestedTokenType, requestedTokenType));
+        return this;
+    }
+
+    public TokenEndpointBuilder WithSubjectToken(string subjectToken)
+    {
+        _parameters.Add(new(Parameter.SubjectToken, subjectToken));
+        return this;
+    }
+
+    public TokenEndpointBuilder WithSubjectTokenType(string subjectTokenType)
+    {
+        _parameters.Add(new(Parameter.SubjectTokenType, subjectTokenType));
+        return this;
+    }
+
+    public TokenEndpointBuilder WithActorToken(string actorToken)
+    {
+        _parameters.Add(new(Parameter.ActorToken, actorToken));
+        return this;
+    }
+
+    public TokenEndpointBuilder WithActorTokenType(string actorTokenType)
+    {
+        _parameters.Add(new(Parameter.ActorTokenType, actorTokenType));
+        return this;
+    }
+
     public TokenEndpointBuilder WithCodeVerifier(string codeVerifier)
     {
         _parameters.Add(new(Parameter.CodeVerifier, codeVerifier));

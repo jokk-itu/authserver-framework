@@ -16,5 +16,7 @@ internal class IntrospectionResponse
     public long? AuthTime { get; init; }
     public string? Acr { get; init; }
     public string? Jkt { get; init; }
+    public string? SubjectActor { get; init; }
+    public string? SubjectMayAct { get; init; }
     public IDictionary<string, object>? AccessControl { get; init; }
 }

@@ -1,8 +1,6 @@
 ﻿using AuthServer.Authentication.Models;
 using AuthServer.Constants;
-using AuthServer.Core;
 using AuthServer.Core.Abstractions;
-using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
@@ -145,7 +143,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         await AddEntity(client);
 
         var secondClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
+        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
         var revocationRequest = new RevocationRequest
@@ -180,7 +178,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         await AddEntity(client);
 
         var secondClient = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
+        var token = new ClientAccessToken(secondClient, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
         var key = JwksDocument.GetTokenSigningKey();
@@ -191,6 +189,8 @@ public class RevocationRequestValidatorTest : BaseUnitTest
             {
                 { ClaimNameConstants.Jti, token.Id },
                 { ClaimNameConstants.ClientId, secondClient.Id },
+                { ClaimNameConstants.Sub, secondClient.Id },
+                { ClaimNameConstants.Scope, ScopeConstants.OpenId },
             },
             SigningCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription()),
             Issuer = token.Issuer,
@@ -228,7 +228,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
-        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
+        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
         var revocationRequest = new RevocationRequest
@@ -246,7 +246,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.IsType<RevocationValidatedRequest>(processResult.Value);
-        Assert.Equal(token.Reference, processResult.Value.Token);
+        Assert.Equal(token.Id.ToString(), processResult.Value.Jti);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public class RevocationRequestValidatorTest : BaseUnitTest
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
-        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1, null);
+        var token = new ClientAccessToken(client, "resource", DiscoveryDocument.Issuer, "scope", 1);
         await AddEntity(token);
 
         var key = JwksDocument.GetTokenSigningKey();
@@ -272,6 +272,8 @@ public class RevocationRequestValidatorTest : BaseUnitTest
             {
                 { ClaimNameConstants.Jti, token.Id },
                 { ClaimNameConstants.ClientId, client.Id },
+                { ClaimNameConstants.Sub, client.Id },
+                { ClaimNameConstants.Scope, ScopeConstants.OpenId },
             },
             SigningCredentials = new SigningCredentials(key.Key, key.Alg.GetDescription()),
             Issuer = token.Issuer,
@@ -295,6 +297,6 @@ public class RevocationRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.IsType<RevocationValidatedRequest>(processResult.Value);
-        Assert.Equal(jwt, processResult.Value.Token);
+        Assert.Equal(token.Id.ToString(), processResult.Value.Jti);
     }
 }

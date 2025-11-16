@@ -18,7 +18,7 @@ internal class DPoPService : IDPoPService
 {
     private readonly IEndpointResolver _endpointResolver;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ITokenDecoder<ClientIssuedTokenDecodeArguments> _clientTokenDecoder;
+    private readonly IClientTokenDecoder _clientTokenDecoder;
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly ILogger<DPoPService> _logger;
     private readonly INonceRepository _nonceRepository;
@@ -26,7 +26,7 @@ internal class DPoPService : IDPoPService
     public DPoPService(
         IEndpointResolver endpointResolver,
         IHttpContextAccessor httpContextAccessor,
-        ITokenDecoder<ClientIssuedTokenDecodeArguments> clientTokenDecoder,
+        IClientTokenDecoder clientTokenDecoder,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         ILogger<DPoPService> logger,
         INonceRepository nonceRepository)
@@ -47,7 +47,7 @@ internal class DPoPService : IDPoPService
 
         var validatedDPoPToken = await _clientTokenDecoder.Validate(
             dPoP,
-            new ClientIssuedTokenDecodeArguments
+            new ClientTokenDecodeArguments
             {
                 ClientId = clientId,
                 Algorithms = _discoveryDocumentOptions.Value.DPoPSigningAlgValuesSupported.ToList(),

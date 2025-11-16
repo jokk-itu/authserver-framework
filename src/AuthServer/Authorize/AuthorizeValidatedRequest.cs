@@ -4,11 +4,12 @@ internal class AuthorizeValidatedRequest
 {
     public required string ClientId { get; init; }
     public required string AuthorizationGrantId { get; init; }
+    public required string ResponseType { get; init; }
     public string? GrantManagementAction { get; init; }
     public string? RedirectUri { get; init; }
-    public required string CodeChallenge { get; init; }
-    public required string CodeChallengeMethod { get; init; }
-    public required string Nonce { get; init; }
+    public string? CodeChallenge { get; init; }
+    public string? CodeChallengeMethod { get; init; }
+    public string? Nonce { get; init; }
     public string? ResponseMode { get; init; }
     public string? RequestUri { get; init; }
     public string? DPoPJkt { get; init; }

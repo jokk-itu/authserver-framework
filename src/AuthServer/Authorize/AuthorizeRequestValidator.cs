@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize.Abstractions;
@@ -6,6 +7,7 @@ using AuthServer.Cache.Entities;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
+using AuthServer.Metrics.Abstractions;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
@@ -19,21 +21,24 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
     private readonly ICachedClientStore _cachedClientStore;
     private readonly IAuthorizeInteractionService _authorizeInteractionService;
     private readonly ISecureRequestService _secureRequestService;
+    private readonly IMetricService _metricService;
 
     public AuthorizeRequestValidator(
         ICachedClientStore cachedClientStore,
-        ITokenDecoder<ServerIssuedTokenDecodeArguments> tokenDecoder,
+        IServerTokenDecoder serverTokenDecoder,
         IAuthorizeInteractionService authorizeInteractionService,
         ISecureRequestService secureRequestService,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         INonceRepository nonceRepository,
         IClientRepository clientRepository,
-        IAuthorizationGrantRepository authorizationGrantRepository)
-        : base(nonceRepository, tokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
+        IAuthorizationGrantRepository authorizationGrantRepository,
+        IMetricService metricService)
+        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;
         _secureRequestService = secureRequestService;
+        _metricService = metricService;
     }
 
     public async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> Validate(AuthorizeRequest request,
@@ -133,6 +138,11 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidResponseType;
         }
 
+        if (!HasAuthorizedResponseType(request.ResponseType!, cachedClient))
+        {
+            return AuthorizeError.UnauthorizedResponseType;
+        }
+
         return null;
     }
 
@@ -188,17 +198,12 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return responseParametersValidationResult;
         }
 
-        if (!HasAuthorizationCodeGrantType(cachedClient))
-        {
-            return AuthorizeError.UnauthorizedResponseType;
-        }
-
         if (!HasValidDisplay(request.Display))
         {
             return AuthorizeError.InvalidDisplay;
         }
 
-        if (!HasValidNonce(request.Nonce))
+        if (!HasValidNonce(request.Nonce, request.ResponseType))
         {
             return AuthorizeError.InvalidNonce;
         }
@@ -208,12 +213,12 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.ReplayNonce;
         }
 
-        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod))
+        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, request.ResponseType))
         {
             return AuthorizeError.InvalidCodeChallengeMethod;
         }
 
-        if (!HasValidCodeChallenge(request.CodeChallenge))
+        if (!HasValidCodeChallenge(request.CodeChallenge, request.ResponseType))
         {
             return AuthorizeError.InvalidCodeChallenge;
         }
@@ -253,7 +258,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidAcrValues;
         }
 
-        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction))
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
         {
             return AuthorizeError.InvalidGrantManagement;
         }
@@ -263,7 +268,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.InvalidGrantId;
         }
 
-        if (!HasValidDPoP(request.DPoPJkt, null, cachedClient.RequireDPoPBoundAccessTokens))
+        if (!HasValidDPoP(request.DPoPJkt, null, cachedClient.RequireDPoPBoundAccessTokens, request.ResponseType))
         {
             return AuthorizeError.InvalidDPoPJkt;
         }
@@ -274,7 +279,16 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
     // This must first be deduced after successful validation of all input from the request
     private async Task<ProcessResult<AuthorizeValidatedRequest, ProcessError>> ValidateForInteraction(AuthorizeRequest request, CancellationToken cancellationToken)
     {
+        var stopWatch = Stopwatch.StartNew();
         var interactionResult = await _authorizeInteractionService.GetInteractionResult(request, cancellationToken);
+        stopWatch.Stop();
+
+        _metricService.AddAuthorizeInteraction(
+            stopWatch.ElapsedMilliseconds,
+            request.ClientId!,
+            interactionResult.GetPrompt(),
+            interactionResult.AuthenticationKind);
+
         if (!interactionResult.IsSuccessful)
         {
             var interactionError = interactionResult.Error!;
@@ -307,14 +321,15 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         {
             AuthorizationGrantId = interactionResult.AuthorizationGrantId!,
             GrantManagementAction = request.GrantManagementAction,
+            ResponseType = request.ResponseType!,
             ResponseMode = request.ResponseMode,
-            CodeChallenge = request.CodeChallenge!,
-            CodeChallengeMethod = request.CodeChallengeMethod!,
+            CodeChallenge = request.CodeChallenge,
+            CodeChallengeMethod = request.CodeChallengeMethod,
             Scope = request.Scope,
             AcrValues = request.AcrValues,
             Resource = request.Resource,
             ClientId = request.ClientId!,
-            Nonce = request.Nonce!,
+            Nonce = request.Nonce,
             RedirectUri = request.RedirectUri,
             RequestUri = request.RequestUri,
             DPoPJkt = request.DPoPJkt
