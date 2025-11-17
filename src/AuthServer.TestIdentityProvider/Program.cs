@@ -122,6 +122,7 @@ builder.Services
         options.ConsentUri = identity.GetValue<string>("ConsentUri")!;
         options.LoginUri = identity.GetValue<string>("LoginUri")!;
         options.EndSessionUri = identity.GetValue<string>("EndSessionUri")!;
+        options.VerificationUri = identity.GetValue<string>("VerificationUri");
     });
 
 builder.Services.AddSingleton<IDistributedCache, InMemoryCache>();
