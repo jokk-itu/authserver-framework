@@ -18,7 +18,6 @@ class DeveloperLink extends Link {
 
 export const developerLinks = [
     new DeveloperLink('Architecture', '/architecture'),
-    new DeveloperLink('Datamodel', '/datamodel'),
     new DeveloperLink('Setup', '/setup'),
     new DeveloperLink('Client Authentication', '/client-authentication'),
     new DeveloperLink('Discovery', '/discovery'),
