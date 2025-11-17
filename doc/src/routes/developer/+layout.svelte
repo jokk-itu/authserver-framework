@@ -16,5 +16,5 @@
     </nav>
 
     <!-- documentation page -->
-    <div class="flex-auto w-full"><slot /></div>
+    <div class="flex-auto w-full overflow-auto"><slot /></div>
 </div>
