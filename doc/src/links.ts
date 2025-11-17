@@ -18,7 +18,6 @@ class DeveloperLink extends Link {
 
 export const developerLinks = [
     new DeveloperLink('Architecture', '/architecture'),
-    new DeveloperLink('Datamodel', '/datamodel'),
     new DeveloperLink('Setup', '/setup'),
     new DeveloperLink('Client Authentication', '/client-authentication'),
     new DeveloperLink('Discovery', '/discovery'),
@@ -26,11 +25,14 @@ export const developerLinks = [
     new DeveloperLink('PKCE', '/pkce'),
     new DeveloperLink('Subject Type', '/subject-type'),
     new DeveloperLink('Resource', '/resource'),
+    new DeveloperLink('JAR', '/jar'),
     new DeveloperLink('DPoP', '/dpop'),
     new DeveloperLink('Token', '/token'),
     new DeveloperLink('Client Credentials', '/client-credentials'),
     new DeveloperLink('Authorization Code', '/authorization-code'),
     new DeveloperLink('Refresh Token', '/refresh-token'),
+    new DeveloperLink('Token Exchange', '/token-exchange'),
+    new DeveloperLink('Device Authorization', '/device-authorization'),
     new DeveloperLink('Token Revocation', '/token-revocation'),
     new DeveloperLink('Token Introspection', '/token-introspection'),
     new DeveloperLink('Grant Management', '/grant-management')

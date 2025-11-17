@@ -37,6 +37,9 @@
         [ new RowCellDefinition("client_id"), new RowCellDefinition("Identifier of the client, which requested the token") ],
         [ new RowCellDefinition("auth_time"), new RowCellDefinition("Unix time of the subjects authentication") ],
         [ new RowCellDefinition("acr"), new RowCellDefinition("String of the authentication context reference from when the subject authenticated") ],
+        [ new RowCellDefinition("cnf"), new RowCellDefinition("Object with one field, which is jkt. That is the thumbprint of the DPoP if the token is sender-constrained") ],
+        [ new RowCellDefinition("act"), new RowCellDefinition("Object with one field, which is sub. That is the subject of the actor using the token on behalf of the tokens subject") ],
+        [ new RowCellDefinition("may_act"), new RowCellDefinition("Object with one field, which is sub. That is the subject of the actor allowed to use the token on behalf of the tokens subject") ],
         [ new RowCellDefinition("access_control"), new RowCellDefinition("Custom object of permission claims belonging to the subject") ],
     ];
 
@@ -53,6 +56,8 @@
         [ new RowCellDefinition("acr"), new RowCellDefinition("String of the authentication context reference from when the subject authenticated") ],
         [ new RowCellDefinition("amr"), new RowCellDefinition("List of strings of the authentication method references from when the subject authenticated") ],
         [ new RowCellDefinition("azp"), new RowCellDefinition("Identifier of the client, which is the authorized party") ],
+        [ new RowCellDefinition("act"), new RowCellDefinition("Object with one field, which is sub. That is the subject of the actor using the token on behalf of the tokens subject") ],
+        [ new RowCellDefinition("may_act"), new RowCellDefinition("Object with one field, which is sub. That is the subject of the actor allowed to use the token on behalf of the tokens subject") ],
     ];
 
     let requestHeaders: string[] = ["Name", "Description"];
