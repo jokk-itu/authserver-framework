@@ -32,6 +32,7 @@ export const developerLinks = [
     new DeveloperLink('Authorization Code', '/authorization-code'),
     new DeveloperLink('Refresh Token', '/refresh-token'),
     new DeveloperLink('Token Exchange', '/token-exchange'),
+    new DeveloperLink('Device Authorization', '/device-authorization'),
     new DeveloperLink('Token Revocation', '/token-revocation'),
     new DeveloperLink('Token Introspection', '/token-introspection'),
     new DeveloperLink('Grant Management', '/grant-management')
