@@ -42,6 +42,7 @@ internal class RegisterValidatedRequest
 	public int? DeviceCodeExpiration { get; set; }
 	public int AccessTokenExpiration { get; set; }
 	public int? RefreshTokenExpiration { get; set; }
+	public int? IdTokenExpiration { get; set; }
 	public int? ClientSecretExpiration { get; set; }
 	public int? JwksExpiration { get; set; }
 	public int? RequestUriExpiration { get; set; }

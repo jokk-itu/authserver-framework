@@ -966,6 +966,31 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(RegisterError.InvalidRefreshTokenExpiration, processResult);
     }
 
+    [Theory]
+    [InlineData(59)]
+    [InlineData(86401)]
+    public async Task Validate_InvalidIdTokenExpiration_ExpectInvalidIdTokenExpiration(int expiration)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            IdTokenExpiration = expiration
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidIdTokenExpiration, processResult);   
+    }
+
     [Fact]
     public async Task Validate_InvalidClientSecretExpiration_ExpectInvalidClientSecretExpiration()
     {
