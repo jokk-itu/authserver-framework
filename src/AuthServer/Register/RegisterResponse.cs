@@ -44,6 +44,7 @@ internal class RegisterResponse
 	public required int? DeviceCodeExpiration { get; init; }
 	public required int AccessTokenExpiration { get; init; }
 	public required int? RefreshTokenExpiration { get; init; }
+	public required int? IdTokenExpiration { get; init; }
 	public required int? ClientSecretExpiration { get; init; }
 	public required int? JwksExpiration { get; init; }
 	public required int? RequestUriExpiration { get; init; }

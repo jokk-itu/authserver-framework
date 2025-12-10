@@ -150,6 +150,10 @@ internal class GetRegisterResponse
 	[JsonPropertyName(Parameter.RefreshTokenExpiration)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? RefreshTokenExpiration { get; init; }
+	
+	[JsonPropertyName(Parameter.IdTokenExpiration)]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public int? IdTokenExpiration { get; init; }
 
 	[JsonPropertyName(Parameter.ClientSecretExpiration)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

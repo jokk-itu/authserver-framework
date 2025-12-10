@@ -57,6 +57,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             DefaultMaxAge = 600,
             InitiateLoginUri = "https://webapp.authserver.dk/remote-login",
             RefreshTokenExpiration = 86400,
+            IdTokenExpiration = 3600,
             RequireReferenceToken = false,
             RequireSignedRequestObject = true,
             RequirePushedAuthorizationRequests = true,
@@ -140,6 +141,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(request.DeviceCodeExpiration, response.DeviceCodeExpiration);
         Assert.Equal(request.AccessTokenExpiration, response.AccessTokenExpiration);
         Assert.Equal(request.RefreshTokenExpiration, response.RefreshTokenExpiration);
+        Assert.Equal(request.IdTokenExpiration, response.IdTokenExpiration);
         Assert.Equal(request.JwksExpiration, response.JwksExpiration);
         Assert.Equal(request.RequestUriExpiration, response.RequestUriExpiration);
         Assert.Equal(request.DPoPNonceExpiration, response.DPoPNonceExpiration);
@@ -272,6 +274,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.DeviceCodeExpiration, response.DeviceCodeExpiration);
         Assert.Equal(client.AccessTokenExpiration, response.AccessTokenExpiration);
         Assert.Equal(client.RefreshTokenExpiration, response.RefreshTokenExpiration);
+        Assert.Equal(client.IdTokenExpiration, response.IdTokenExpiration);
         Assert.Equal(client.DPoPNonceExpiration, response.DPoPNonceExpiration);
         Assert.Equal(client.JwksExpiration, response.JwksExpiration);
         Assert.Equal(client.RequestUriExpiration, response.RequestUriExpiration);
@@ -341,6 +344,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             DeviceCodeExpiration = 300,
             AccessTokenExpiration = 600,
             RefreshTokenExpiration = 86400,
+            IdTokenExpiration = 3600,
             SecretExpiration = 86400 * 30,
             JwksExpiration = 86400 * 30,
             RequestUriExpiration = 60,
