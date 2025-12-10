@@ -128,6 +128,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     SecretExpiration = table.Column<int>(type: "int", nullable: true),
                     AccessTokenExpiration = table.Column<int>(type: "int", nullable: false),
                     RefreshTokenExpiration = table.Column<int>(type: "int", nullable: true),
+                    IdTokenExpiration = table.Column<int>(type: "int", nullable: true),
                     AuthorizationCodeExpiration = table.Column<int>(type: "int", nullable: true),
                     DeviceCodeExpiration = table.Column<int>(type: "int", nullable: true),
                     RequestUriExpiration = table.Column<int>(type: "int", nullable: true),

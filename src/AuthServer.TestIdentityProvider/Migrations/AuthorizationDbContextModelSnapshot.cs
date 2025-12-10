@@ -451,6 +451,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Property<int?>("IdTokenEncryptedResponseEnc")
                         .HasColumnType("int");
 
+                    b.Property<int?>("IdTokenExpiration")
+                        .HasColumnType("int");
+
                     b.Property<int?>("IdTokenSignedResponseAlg")
                         .HasColumnType("int");
 

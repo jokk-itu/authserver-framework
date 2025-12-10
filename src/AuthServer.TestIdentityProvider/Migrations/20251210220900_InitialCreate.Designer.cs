@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20251119210911_InitialCreate")]
+    [Migration("20251210220900_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -452,6 +452,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("IdTokenEncryptedResponseEnc")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdTokenExpiration")
                         .HasColumnType("int");
 
                     b.Property<int?>("IdTokenSignedResponseAlg")
