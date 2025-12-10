@@ -169,7 +169,8 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
         {
             IdTokenSignedResponseAlg = signingAlg,
             SubjectType = SubjectType.Pairwise,
-            RequireIdTokenClaims = true
+            RequireIdTokenClaims = true,
+            IdTokenExpiration = 3600
         };
 
         client.Scopes.Add(openIdScope);
@@ -221,6 +222,7 @@ public class IdTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitTest(o
             IdTokenSignedResponseAlg = signingAlg,
             IdTokenEncryptedResponseAlg = encryptionAlg,
             IdTokenEncryptedResponseEnc = encryptionEnc,
+            IdTokenExpiration = 3600,
             SubjectType = SubjectType.Pairwise,
             Jwks = clientJwks,
             RequireIdTokenClaims = false,
