@@ -285,6 +285,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.DeviceCodeExpiration, value },
             { Parameter.AccessTokenExpiration, value },
             { Parameter.RefreshTokenExpiration, value },
+            { Parameter.IdTokenExpiration, value },
             { Parameter.ClientSecretExpiration, value },
             { Parameter.JwksExpiration, value },
             { Parameter.RequestUriExpiration, value },
@@ -333,6 +334,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.DeviceCodeExpiration);
         Assert.Equal(expectedValue, request.AccessTokenExpiration);
         Assert.Equal(expectedValue, request.RefreshTokenExpiration);
+        Assert.Equal(expectedValue, request.IdTokenExpiration);
         Assert.Equal(expectedValue, request.ClientSecretExpiration);
         Assert.Equal(expectedValue, request.JwksExpiration);
         Assert.Equal(expectedValue, request.RequestUriExpiration);
