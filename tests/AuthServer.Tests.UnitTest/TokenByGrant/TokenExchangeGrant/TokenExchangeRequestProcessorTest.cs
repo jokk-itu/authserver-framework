@@ -237,7 +237,7 @@ public class TokenExchangeRequestProcessorTest : BaseUnitTest
 
         // Assert
         Assert.NotNull(tokenResponse.AccessToken);
-        Assert.Equal(3600, tokenResponse.ExpiresIn);
+        Assert.Equal(subjectTokenGrant.Client.IdTokenExpiration!.Value, tokenResponse.ExpiresIn);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
         Assert.Equal(validatedRequest.RequestedTokenType, tokenResponse.IssuedTokenType);
         Assert.Equal(subjectTokenGrant.Id, tokenResponse.GrantId);
@@ -315,7 +315,8 @@ public class TokenExchangeRequestProcessorTest : BaseUnitTest
         var session = new Session(subjectIdentifier);
         var client = new Client("subject-web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
-            IdTokenSignedResponseAlg = SigningAlg.RsaSha256
+            IdTokenSignedResponseAlg = SigningAlg.RsaSha256,
+            IdTokenExpiration = 3600
         };
         var levelOfAssurance = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationCodeGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);

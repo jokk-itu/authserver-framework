@@ -40,6 +40,7 @@ internal class RegisterRequest
     public int? DeviceCodeExpiration { get; init; }
     public int? AccessTokenExpiration { get; init; }
     public int? RefreshTokenExpiration { get; init; }
+    public int? IdTokenExpiration { get; init; }
     public int? ClientSecretExpiration { get; init; }
     public int? JwksExpiration { get; init; }
     public int? RequestUriExpiration { get; init; }

@@ -159,6 +159,12 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return refreshTokenExpirationError;
         }
 
+        var idTokenExpirationError = ValidateIdTokenExpiration(request, validatedRequest);
+        if (idTokenExpirationError is not null)
+        {
+            return idTokenExpirationError;
+        }
+
         var clientSecretExpirationError = ValidateClientSecretExpiration(request, validatedRequest);
         if (clientSecretExpirationError is not null)
         {
@@ -991,6 +997,36 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         validatedRequest.RefreshTokenExpiration = request.RefreshTokenExpiration;
+        return null;
+    }
+
+    /// <summary>
+    /// IdTokenExpiration is OPTIONAL.
+    /// Default value is 3600.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="validatedRequest"></param>
+    /// <returns></returns>
+    private static ProcessError? ValidateIdTokenExpiration(RegisterRequest request,
+        RegisterValidatedRequest validatedRequest)
+    {
+        if (request.IdTokenExpiration is null)
+        {
+            validatedRequest.IdTokenExpiration =
+                validatedRequest.GrantTypes.IsIntersected(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes)
+                    ? 3600 // defaulted to 1 hour
+                    : null;
+
+            return null;
+        }
+
+        // between 60 seconds and 1 day
+        if (request.IdTokenExpiration is < 60 or > 86400)
+        {
+            return RegisterError.InvalidIdTokenExpiration;
+        }
+
+        validatedRequest.IdTokenExpiration = request.IdTokenExpiration;
         return null;
     }
 

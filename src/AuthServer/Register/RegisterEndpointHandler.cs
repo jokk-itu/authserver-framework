@@ -65,6 +65,7 @@ internal class RegisterEndpointHandler : IEndpointHandler
                             DeviceCodeExpiration = client.DeviceCodeExpiration,
                             AccessTokenExpiration = client.AccessTokenExpiration,
                             RefreshTokenExpiration = client.RefreshTokenExpiration,
+                            IdTokenExpiration = client.IdTokenExpiration,
                             ClientSecretExpiration = client.ClientSecretExpiration,
                             JwksExpiration = client.JwksExpiration,
                             RequestUriExpiration = client.RequestUriExpiration,

@@ -8,6 +8,7 @@ internal class CachedClient
     public required string? SecretHash { get; init; }
     public required DateTime? SecretExpiresAt { get; init; }
     public required int AccessTokenExpiration { get; init; }
+    public required int? IdTokenExpiration { get; init; }
     public required int? DeviceCodeExpiration { get; init; }
     public required string? ClientUri { get; init; }
     public required string? LogoUri { get; init; }

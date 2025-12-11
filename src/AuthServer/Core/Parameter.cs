@@ -121,6 +121,7 @@ public static class Parameter
     public const string DeviceCodeExpiration = "device_code_expiration";
     public const string AccessTokenExpiration = "access_token_expiration";
     public const string RefreshTokenExpiration = "refresh_token_expiration";
+    public const string IdTokenExpiration = "id_token_expiration";
     public const string ClientSecretExpiration = "client_secret_expiration";
     public const string JwksExpiration = "jwks_expiration";
     public const string RequestUriExpiration = "request_uri_expiration";

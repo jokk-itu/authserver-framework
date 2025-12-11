@@ -139,6 +139,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             DeviceCodeExpiration = client.DeviceCodeExpiration,
             AccessTokenExpiration = client.AccessTokenExpiration,
             RefreshTokenExpiration = client.RefreshTokenExpiration,
+            IdTokenExpiration = client.IdTokenExpiration,
             ClientSecretExpiration = client.SecretExpiration,
             JwksExpiration = client.JwksExpiration,
             RequestUriExpiration = client.RequestUriExpiration,
@@ -212,6 +213,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.DeviceCodeExpiration = request.DeviceCodeExpiration;
         client.AccessTokenExpiration = request.AccessTokenExpiration;
         client.RefreshTokenExpiration = request.RefreshTokenExpiration;
+        client.IdTokenExpiration = request.IdTokenExpiration;
         client.SecretExpiration = request.ClientSecretExpiration;
         client.JwksExpiration = request.JwksExpiration;
         client.RequestUriExpiration = request.RequestUriExpiration;

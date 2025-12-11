@@ -69,7 +69,7 @@ internal class TokenExchangeRequestProcessor : IRequestProcessor<TokenExchangeVa
 
         var cachedClient = await _cachedClientStore.Get(request.SubjectToken.ClientId, cancellationToken);
         var expiresIn = request.RequestedTokenType == TokenTypeIdentifier.IdToken
-            ? 3600
+            ? cachedClient.IdTokenExpiration!.Value
             : cachedClient.AccessTokenExpiration;
 
         var tokenType = request.Jkt is null

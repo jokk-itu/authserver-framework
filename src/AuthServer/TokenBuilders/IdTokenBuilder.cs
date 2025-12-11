@@ -61,6 +61,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
                 ClientId = x.Client.Id,
                 RequireConsent = x.Client.RequireConsent,
                 RequireIdTokenClaims = x.Client.RequireIdTokenClaims,
+                IdTokenExpiration = x.Client.IdTokenExpiration!.Value,
                 SessionId = x.Session.Id,
                 SubjectIdentifier = x.Session.SubjectIdentifier.Id,
                 GrantSubject = x.Subject,
@@ -113,7 +114,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             IssuedAt = now,
-            Expires = now.AddHours(1),
+            Expires = now.AddSeconds(query.IdTokenExpiration),
             NotBefore = now,
             Issuer = _discoveryDocumentOptions.Value.Issuer,
             SigningCredentials = signingCredentials,
@@ -179,6 +180,7 @@ internal class IdTokenBuilder : ITokenBuilder<IdTokenArguments>
         public required string ClientId { get; init; }
         public required bool RequireConsent { get; init; }
         public required bool RequireIdTokenClaims { get; init; }
+        public required int IdTokenExpiration { get; init; }
         public required string SessionId { get; init; }
         public required string SubjectIdentifier { get; init; }
         public required string GrantSubject { get; init; }

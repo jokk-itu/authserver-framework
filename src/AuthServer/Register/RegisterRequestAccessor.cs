@@ -74,6 +74,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
         var deviceCodeExpiration = json.GetIntValue(Parameter.DeviceCodeExpiration);
 		var accessTokenExpiration = json.GetIntValue(Parameter.AccessTokenExpiration);
 		var refreshTokenExpiration = json.GetIntValue(Parameter.RefreshTokenExpiration);
+		var idTokenExpiration = json.GetIntValue(Parameter.IdTokenExpiration);
 		var clientSecretExpiration = json.GetIntValue(Parameter.ClientSecretExpiration);
 		var jwksExpiration = json.GetIntValue(Parameter.JwksExpiration);
         var requestUriExpiration = json.GetIntValue(Parameter.RequestUriExpiration);
@@ -129,6 +130,7 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 			DeviceCodeExpiration = deviceCodeExpiration,
 			AccessTokenExpiration = accessTokenExpiration,
 			RefreshTokenExpiration = refreshTokenExpiration,
+			IdTokenExpiration = idTokenExpiration,
 			ClientSecretExpiration = clientSecretExpiration,
 			JwksExpiration = jwksExpiration,
 			RequestUriExpiration = requestUriExpiration,

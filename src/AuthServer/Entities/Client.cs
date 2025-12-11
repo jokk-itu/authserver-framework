@@ -55,6 +55,11 @@ public class Client : Entity<string>
     /// Refresh token lifetime in seconds.
     /// </summary>
     public int? RefreshTokenExpiration { get; set; }
+    
+    /// <summary>
+    /// Id token lifetime in seconds.
+    /// </summary>
+    public int? IdTokenExpiration { get; set; }
 
     /// <summary>
     /// Authorization code lifetime in seconds.

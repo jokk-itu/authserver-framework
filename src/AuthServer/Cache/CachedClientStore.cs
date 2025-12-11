@@ -87,6 +87,7 @@ internal class CachedClientStore : ICachedClientStore
             SecretHash = client.SecretHash,
             SecretExpiresAt = client.SecretExpiresAt,
             AccessTokenExpiration = client.AccessTokenExpiration,
+            IdTokenExpiration = client.IdTokenExpiration,
             DeviceCodeExpiration = client.DeviceCodeExpiration,
             ClientUri = client.ClientUri,
             LogoUri = client.LogoUri,
