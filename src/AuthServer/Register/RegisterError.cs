@@ -94,7 +94,7 @@ internal static class RegisterError
     public static readonly ProcessError InvalidRefreshTokenExpiration =
         new(ErrorCode.InvalidClientMetadata, "invalid refresh_token_expiration", ResultCode.BadRequest);
 
-    public static ProcessError InvalidIdTokenExpiration =
+    public static readonly ProcessError InvalidIdTokenExpiration =
         new(ErrorCode.InvalidClientMetadata, "invalid id_token_expiration", ResultCode.BadRequest);
 
     public static readonly ProcessError InvalidClientSecretExpiration =
