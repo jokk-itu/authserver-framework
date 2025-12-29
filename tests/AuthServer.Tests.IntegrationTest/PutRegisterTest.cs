@@ -4,13 +4,8 @@ using System.Text;
 using System.Text.Json;
 using AuthServer.Constants;
 using AuthServer.Core;
-using AuthServer.Entities;
-using AuthServer.Enums;
 using AuthServer.Register;
-using AuthServer.TokenBuilders;
-using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
@@ -26,27 +21,20 @@ public class PutRegisterTest : BaseIntegrationTest
     public async Task PutRegister_DefaultValues_ExpectDefaultValuedClient()
     {
         // Arrange
-        var databaseContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        databaseContext.Add(client);
-        await databaseContext.SaveChangesAsync();
-
-        var registrationTokenBuilder = ServiceProvider.GetRequiredService<ITokenBuilder<RegistrationTokenArguments>>();
-        var registrationToken = await registrationTokenBuilder.BuildToken(new RegistrationTokenArguments
-        {
-            ClientId = client.Id
-        }, CancellationToken.None);
-        await databaseContext.SaveChangesAsync();
+        var client = await RegisterEndpointBuilder
+            .WithRedirectUris(["https://webapp.authserver.dk/callback"])
+            .WithClientName("webapp")
+            .Post();
 
         var arguments = new Dictionary<string, object>
         {
             { Parameter.ClientName, "webapp" },
             { Parameter.RedirectUris, new[] { "https://webapp.authserver.dk/callback" } }
         };
-        var request = new HttpRequestMessage(HttpMethod.Put, $"connect/register?client_id={client.Id}")
+        var request = new HttpRequestMessage(HttpMethod.Put, $"connect/register?client_id={client.ClientId}")
         {
             Content = new StringContent(JsonSerializer.Serialize(arguments), Encoding.UTF8, MimeTypeConstants.Json),
-            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", registrationToken) }
+            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", client.RegistrationAccessToken) }
         };
         var httpClient = GetHttpClient();
 
