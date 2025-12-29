@@ -42,7 +42,7 @@ internal class SessionRepository : ISessionRepository
                 cancellationToken);
 
         var session = (await _authorizationDbContext.FindAsync<Session>([sessionId], cancellationToken))!;
-        session?.Revoke();
+        session.Revoke();
 
         _logger.LogDebug(
             "Revoked Session {SessionId}, AuthorizationGrants {AffectedGrants} and Tokens {AffectedTokens}",
