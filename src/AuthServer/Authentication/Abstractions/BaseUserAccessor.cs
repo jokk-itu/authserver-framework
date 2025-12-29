@@ -25,7 +25,7 @@ internal abstract class BaseUserAccessor<TUser> : IUserAccessor<TUser> where TUs
             HttpOnly = true,
             IsEssential = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.Lax,
             MaxAge = TimeSpan.FromMinutes(5)
         };
     }
