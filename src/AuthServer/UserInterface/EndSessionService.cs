@@ -1,7 +1,8 @@
 ﻿using AuthServer.Authentication.Abstractions;
-using AuthServer.EndSession.UserInterface.Abstractions;
+using AuthServer.EndSession;
+using AuthServer.UserInterface.Abstractions;
 
-namespace AuthServer.EndSession.UserInterface;
+namespace AuthServer.UserInterface;
 
 internal class EndSessionService : IEndSessionService
 {

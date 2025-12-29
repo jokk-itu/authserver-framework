@@ -6,8 +6,6 @@ using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.OAuthToken;
 using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
-using AuthServer.Authorize.UserInterface;
-using AuthServer.Authorize.UserInterface.Abstractions;
 using AuthServer.BackgroundServices;
 using AuthServer.Cache;
 using AuthServer.Cache.Abstractions;
@@ -22,8 +20,7 @@ using AuthServer.Discovery;
 using AuthServer.Endpoints;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.EndSession;
-using AuthServer.EndSession.UserInterface;
-using AuthServer.EndSession.UserInterface.Abstractions;
+using AuthServer.Entities;
 using AuthServer.GrantManagement;
 using AuthServer.GrantManagement.Query;
 using AuthServer.GrantManagement.Revoke;
@@ -48,6 +45,8 @@ using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using AuthServer.Userinfo;
+using AuthServer.UserInterface;
+using AuthServer.UserInterface.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -334,6 +333,8 @@ public class AuthServerBuilder
             .AddKeyedScoped<IEndpointHandler, AuthorizeEndpointHandler>(EndpointNameConstants.Authorize)
             .AddSingleton<IEndpointModule, AuthorizeEndpointModule>()
             .AddScoped<IAuthorizeService, AuthorizeService>()
+            .AddScoped<IAuthorizationCodeGrantService, AuthorizationCodeGrantService>()
+            .AddScoped<IConsentGrantService, ConsentGrantService>()
             .AddScoped<IAuthorizeInteractionService, AuthorizeInteractionService>()
             .AddScoped<IAuthorizeResponseBuilder, AuthorizeResponseBuilder>()
             .AddScoped<IUserAccessor<AuthorizeUser>, AuthorizeUserAccessor>()
@@ -381,6 +382,7 @@ public class AuthServerBuilder
             .AddScoped<IRequestAccessor<DeviceAuthorizationRequest>, DeviceAuthorizationRequestAccessor>()
             .AddKeyedScoped<IEndpointHandler, DeviceAuthorizationEndpointHandler>(EndpointNameConstants.DeviceAuthorization)
             .AddSingleton<IEndpointModule, DeviceAuthorizationEndpointModule>()
+            .AddScoped<IDeviceCodeGrantService, DeviceCodeGrantService>()
             .AddScoped<IRequestHandler<DeviceAuthorizationRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestHandler>()
             .AddScoped<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>, DeviceAuthorizationRequestValidator>()
             .AddScoped<IRequestProcessor<DeviceAuthorizationValidatedRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestProcessor>();
