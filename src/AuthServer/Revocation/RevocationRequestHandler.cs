@@ -1,6 +1,7 @@
 ﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.Revocation;
 internal class RevocationRequestHandler : RequestHandler<RevocationRequest, RevocationValidatedRequest, Unit>
@@ -13,8 +14,9 @@ internal class RevocationRequestHandler : RequestHandler<RevocationRequest, Revo
         IUnitOfWork unitOfWork,
         IRequestValidator<RevocationRequest, RevocationValidatedRequest> requestValidator,
         IRequestProcessor<RevocationValidatedRequest, Unit> requestProcessor,
-        IMetricService metricService)
-        : base(metricService)
+        IMetricService metricService,
+        ILogger<RequestHandler<RevocationRequest, RevocationValidatedRequest, Unit>> logger)
+        : base(metricService, logger)
     {
 	    _unitOfWork = unitOfWork;
         _requestValidator = requestValidator;
