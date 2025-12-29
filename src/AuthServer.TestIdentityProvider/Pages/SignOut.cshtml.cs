@@ -34,11 +34,10 @@ public class SignOutModel : PageModel
         return Redirect(ReturnUrl);
     }
 
-    public async Task<IActionResult> OnPostDecline(string returnUrl, CancellationToken cancellationToken)
+    public IActionResult OnPostDecline(string returnUrl, CancellationToken cancellationToken)
     {
         ReturnUrl = returnUrl ?? Url.Content("~/");
 
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         _endSessionService.SetUser(UserConstants.SubjectIdentifier, false);
         return Redirect(ReturnUrl);
     }
