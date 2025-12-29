@@ -3,6 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.TokenByGrant.TokenExchangeGrant;
 internal class TokenExchangeRequestHandler : RequestHandler<TokenRequest, TokenExchangeValidatedRequest, TokenResponse>
@@ -17,8 +18,9 @@ internal class TokenExchangeRequestHandler : RequestHandler<TokenRequest, TokenE
         IUnitOfWork unitOfWork,
         INonceRepository nonceRepository,
         IRequestValidator<TokenRequest, TokenExchangeValidatedRequest> requestValidator,
-        IRequestProcessor<TokenExchangeValidatedRequest, TokenResponse> requestProcessor)
-        : base(metricService)
+        IRequestProcessor<TokenExchangeValidatedRequest, TokenResponse> requestProcessor,
+        ILogger<RequestHandler<TokenRequest, TokenExchangeValidatedRequest, TokenResponse>> logger)
+        : base(metricService, logger)
     {
         _unitOfWork = unitOfWork;
         _nonceRepository = nonceRepository;

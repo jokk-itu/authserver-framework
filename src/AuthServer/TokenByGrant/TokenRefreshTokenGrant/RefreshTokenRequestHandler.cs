@@ -3,6 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 internal class RefreshTokenRequestHandler : RequestHandler<TokenRequest, RefreshTokenValidatedRequest, TokenResponse>
@@ -17,8 +18,9 @@ internal class RefreshTokenRequestHandler : RequestHandler<TokenRequest, Refresh
         IRequestValidator<TokenRequest, RefreshTokenValidatedRequest> requestValidator,
         IRequestProcessor<RefreshTokenValidatedRequest, TokenResponse> refreshTokenProcessor,
         INonceRepository nonceRepository,
-        IMetricService metricService)
-        : base(metricService)
+        IMetricService metricService,
+        ILogger<RequestHandler<TokenRequest, RefreshTokenValidatedRequest, TokenResponse>> logger)
+        : base(metricService, logger)
     {
 	    _unitOfWork = unitOfWork;
 	    _requestValidator = requestValidator;

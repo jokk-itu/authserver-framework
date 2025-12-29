@@ -3,6 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.DeviceAuthorization;
 
@@ -18,8 +19,9 @@ internal class DeviceAuthorizationRequestHandler : RequestHandler<DeviceAuthoriz
         IRequestProcessor<DeviceAuthorizationValidatedRequest, DeviceAuthorizationResponse> requestProcessor,
         IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest> requestValidator,
         INonceRepository nonceRepository,
-        IUnitOfWork unitOfWork)
-        : base(metricService)
+        IUnitOfWork unitOfWork,
+        ILogger<RequestHandler<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest, DeviceAuthorizationResponse>> logger)
+        : base(metricService, logger)
     {
         _requestProcessor = requestProcessor;
         _requestValidator = requestValidator;

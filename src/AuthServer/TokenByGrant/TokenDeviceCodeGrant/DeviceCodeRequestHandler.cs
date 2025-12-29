@@ -3,6 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.TokenByGrant.TokenDeviceCodeGrant;
 
@@ -20,8 +21,9 @@ internal class DeviceCodeRequestHandler : RequestHandler<TokenRequest, DeviceCod
         IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse> requestProcessor,
         IUnitOfWork unitOfWork,
         INonceRepository nonceRepository,
-        IDeviceCodeRepository deviceCodeRepository)
-        : base(metricService)
+        IDeviceCodeRepository deviceCodeRepository,
+        ILogger<RequestHandler<TokenRequest, DeviceCodeValidatedRequest, TokenResponse>> logger)
+        : base(metricService, logger)
     {
         _requestValidator = requestValidator;
         _requestProcessor = requestProcessor;

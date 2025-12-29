@@ -3,6 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 internal class AuthorizationCodeRequestHandler : RequestHandler<TokenRequest, AuthorizationCodeValidatedRequest, TokenResponse>
@@ -17,8 +18,9 @@ internal class AuthorizationCodeRequestHandler : RequestHandler<TokenRequest, Au
         IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest> requestValidator,
         INonceRepository nonceRepository,
         IUnitOfWork unitOfWork,
-        IMetricService metricService)
-        : base(metricService)
+        IMetricService metricService,
+        ILogger<RequestHandler<TokenRequest, AuthorizationCodeValidatedRequest, TokenResponse>> logger)
+        : base(metricService, logger)
     {
         _requestProcessor = requestProcessor;
         _requestValidator = requestValidator;

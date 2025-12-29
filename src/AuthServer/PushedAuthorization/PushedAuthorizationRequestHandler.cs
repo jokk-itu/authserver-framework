@@ -3,6 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.PushedAuthorization;
 
@@ -24,8 +25,9 @@ internal class PushedAuthorizationRequestHandler : RequestHandler<PushedAuthoriz
         IRequestValidator<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest> requestValidator,
         IRequestProcessor<PushedAuthorizationValidatedRequest, PushedAuthorizationResponse> requestProcessor,
         INonceRepository nonceRepository,
-        IUnitOfWork unitOfWork)
-        : base(metricService)
+        IUnitOfWork unitOfWork,
+        ILogger<RequestHandler<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest, PushedAuthorizationResponse>> logger)
+        : base(metricService, logger)
     {
         _requestValidator = requestValidator;
         _requestProcessor = requestProcessor;

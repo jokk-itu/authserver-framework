@@ -1,6 +1,7 @@
 ﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.Introspection;
 
@@ -12,8 +13,9 @@ internal class IntrospectionRequestHandler : RequestHandler<IntrospectionRequest
     public IntrospectionRequestHandler(
 		IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse> requestProcessor,
 		IRequestValidator<IntrospectionRequest, IntrospectionValidatedRequest> requestValidator,
-        IMetricService metricService)
-        : base(metricService)
+        IMetricService metricService,
+        ILogger<RequestHandler<IntrospectionRequest, IntrospectionValidatedRequest, IntrospectionResponse>> logger)
+        : base(metricService, logger)
     {
 	    _requestProcessor = requestProcessor;
         _requestValidator = requestValidator;
