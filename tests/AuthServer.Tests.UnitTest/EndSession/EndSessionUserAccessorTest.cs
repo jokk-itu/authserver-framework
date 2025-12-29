@@ -13,9 +13,18 @@ namespace AuthServer.Tests.UnitTest.EndSession;
 
 public class EndSessionUserAccessorTest : BaseUnitTest
 {
+    private readonly CookieOptions cookieOptions;
+
     public EndSessionUserAccessorTest(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
+        cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Lax
+        };
     }
 
     [Fact]
@@ -32,7 +41,7 @@ public class EndSessionUserAccessorTest : BaseUnitTest
 
         var endSessionUser = new EndSessionUser(Guid.NewGuid().ToString(), true);
         var encryptedEndSessionUser = GetEncryptedAuthorizeCookie(dataProtector, endSessionUser);
-        httpContextAccessor.HttpContext.Response.Cookies.Append(EndSessionUserAccessor.Cookie, encryptedEndSessionUser);
+        httpContextAccessor.HttpContext.Response.Cookies.Append(EndSessionUserAccessor.Cookie, encryptedEndSessionUser, cookieOptions);
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => endSessionUserAccessor.SetUser(endSessionUser));
@@ -75,7 +84,7 @@ public class EndSessionUserAccessorTest : BaseUnitTest
 
         var endSessionUser = new EndSessionUser(Guid.NewGuid().ToString(), true);
         var encryptedEndSessionUser = GetEncryptedAuthorizeCookie(dataProtector, endSessionUser);
-        httpContextAccessor.HttpContext.Response.Cookies.Append(EndSessionUserAccessor.Cookie, encryptedEndSessionUser);
+        httpContextAccessor.HttpContext.Response.Cookies.Append(EndSessionUserAccessor.Cookie, encryptedEndSessionUser, cookieOptions);
 
         // Act
         var otherUser = new EndSessionUser(Guid.NewGuid().ToString(), true);
