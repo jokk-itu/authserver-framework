@@ -1,5 +1,5 @@
-using AuthServer.EndSession.UserInterface.Abstractions;
 using AuthServer.Tests.Core;
+using AuthServer.UserInterface.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
