@@ -8,7 +8,7 @@ namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
 public class UserinfoEndpointBuilder : EndpointBuilder<UserinfoEndpointBuilder>
 {
-    private string _token;
+    private string? _token;
 
     public UserinfoEndpointBuilder(
         HttpClient httpClient,

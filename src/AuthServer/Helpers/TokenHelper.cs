@@ -120,7 +120,8 @@ internal static class TokenHelper
 
     public static X509SecurityKey ConvertToX509(JsonWebKey jsonWebKey)
     {
-        return new X509SecurityKey(new X509Certificate2(Convert.FromBase64String(jsonWebKey.X5c[0])));
+        var certificate = X509CertificateLoader.LoadCertificate(Convert.FromBase64String(jsonWebKey.X5c[0]));
+        return new X509SecurityKey(certificate);
     }
 
     private static ECCurve GetNamedECCurve(string curveId)
