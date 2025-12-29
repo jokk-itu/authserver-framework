@@ -191,6 +191,10 @@ internal class GetDiscoveryResponse
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? BackchannelLogoutSupported { get; init; }
 
+    [JsonPropertyName("backchannel_logout_session_supported")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? BackchannelLogoutSessionSupported { get; init; }
+
     [JsonPropertyName("require_request_uri_registration")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? RequireRequestUriRegistration { get; init; }

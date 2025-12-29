@@ -85,6 +85,7 @@ public class DiscoveryIntegrationTest : BaseIntegrationTest
 
         Assert.True(getDiscoveryResponse.AuthorizationResponseIssParameterSupported);
         Assert.True(getDiscoveryResponse.BackchannelLogoutSupported);
+        Assert.True(getDiscoveryResponse.BackchannelLogoutSessionSupported);
         Assert.True(getDiscoveryResponse.RequireRequestUriRegistration);
         Assert.False(getDiscoveryResponse.ClaimsParameterSupported);
         Assert.True(getDiscoveryResponse.RequestParameterSupported);

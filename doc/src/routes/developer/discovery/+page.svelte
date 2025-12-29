@@ -61,6 +61,7 @@
 
         [ new RowCellDefinition('authorization_response_iss_parameter_supported'), new RowCellDefinition('Is the iss parameter in authorization responses supported by authserver') ],
         [ new RowCellDefinition('backchannel_logout_supported'), new RowCellDefinition('Is backchannel logout supported by authserver') ],
+        [ new RowCellDefinition('backchannel_logout_session_supported'), new RowCellDefinition('Is session id in backchannel logout supported by authserver') ],
         [ new RowCellDefinition('require_request_uri_registration'), new RowCellDefinition('Is request uri registration required by authserver') ],
         [ new RowCellDefinition('claims_parameter_supported'), new RowCellDefinition('Is claims parameter supported by authserver') ],
         [ new RowCellDefinition('request_parameter_supported'), new RowCellDefinition('Is request parameter supported by authserver') ],
