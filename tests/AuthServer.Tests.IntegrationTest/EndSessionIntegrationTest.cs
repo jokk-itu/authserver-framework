@@ -1,6 +1,7 @@
 ﻿using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using AuthServer.Constants;
 using AuthServer.Helpers;
 using Xunit.Abstractions;
 
@@ -14,12 +15,25 @@ public class EndSessionIntegrationTest : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task EndSession_WithoutPostLogoutRedirectUri_ExpectOk()
+    public async Task EndSession_LogoutAtIdentityProvider_ExpectOk()
     {
-       // Act
-       var endSessionResponse = await EndSessionEndpointBuilder
-           .WithEndSessionUser(UserConstants.SubjectIdentifier, false)
-           .Get();
+        // Arrange
+        var registerResponse = await RegisterEndpointBuilder
+            .WithRedirectUris(["https://webapp.authserver.dk/"])
+            .WithClientName("webapp")
+            .Post();
+
+        await AddAuthenticationContextReferences();
+        await AddUser();
+        await CreateAuthorizationCodeGrant(
+            registerResponse.ClientId,
+            [AuthenticationMethodReferenceConstants.Password]);
+
+        // Act
+        var endSessionResponse = await EndSessionEndpointBuilder
+            .WithClientId(registerResponse.ClientId)
+            .WithEndSessionUser(UserConstants.SubjectIdentifier, true)
+            .Get();
 
        // Assert
        Assert.Equal(HttpStatusCode.OK, endSessionResponse.StatusCode);
@@ -35,6 +49,12 @@ public class EndSessionIntegrationTest : BaseIntegrationTest
             .WithClientName("webapp")
             .WithPostLogoutRedirectUris([postLogoutRedirectUri])
             .Post();
+
+        await AddAuthenticationContextReferences();
+        await AddUser();
+        await CreateAuthorizationCodeGrant(
+            registerResponse.ClientId,
+            [AuthenticationMethodReferenceConstants.Password]);
 
         // Act
         var state = CryptographyHelper.GetRandomString(16);
