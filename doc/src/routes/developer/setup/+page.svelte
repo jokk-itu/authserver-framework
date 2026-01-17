@@ -148,29 +148,74 @@ builder.Services.AddOptions<CleanupOptions>(options =>
     </CodeBlock>
 </Section>
 <Section title="Interfaces">
-    <p>The interface IDistributedCache in namespace AuthServer.Cache.Abstractions must be implemented.
+    <b>AuthServer.Cache.Abstractions.IDistributedCache</b>
+    <p>
         Its purpose is to act as a distributed cache for multi instance deployments.
         If you only have a single instance, then an in-memory cache implementation is sufficient.
         The cache only contains keys and values.
     </p>
+    <p>An implementation is required for the interface, as the cache is a core component of the framework.</p>
+    <p>An example implementation using Redis.StackExchange can be seen below.</p>
+    <CodeBlock>
+        {`
+using AuthServer.Cache.Abstractions;
+using System.Text.Json;
+
+namespace CustomAuthServer.Cache;
+public class DistributedCache : IDistributedCache
+{
+    private readonly ConnectionMultiplexer _connectionMultiplexer;
+
+    // The ConnectionMultiplexer is setup in the DependencyInjection container
+    public DistributedCache(ConnectionMultiplexer connectionMultiplexer)
+    {
+        _connectionMultiplexer = connectionMultiplexer;
+    }
+
+    public virtual Task<T?> Get<T>(string key, CancellationToken cancellationToken) where T : class
+    {
+        var database = _connectionMultiplexer.GetDatabase();
+        return await database.StringGetAsync(key);
+    }
+
+    public virtual Task Add<T>(string key, T entity, DateTime? expiresOn, CancellationToken cancellationToken) where T : class
+    {
+        var database = _connectionMultiplexer.GetDatabase();
+        await database.StringSetAsync(key, JsonSerializer.Serialize(entity));
+    }
+
+    public virtual Task Delete(string key, CancellationToken cancellationToken)
+    {
+        var database = _connectionMultiplexer.GetDatabase();
+        await database.KeyDeleteAsync(key);
+    }
+}
+        `}
+    </CodeBlock>
     <br>
-    <p>The interface IUserClaimService in namespace AuthServer.Authentication.Abstractions must be implemented.
+    <b>AuthServer.Authentication.Abstractions.IUserClaimService</b>
+    <p>
         Its purpose is to return end user's claims, such that they can be used in tokens and at the userinfo endpoint.
         This should connect to your datastore, where you persist information about end users.
     </p>
+    <p>An implementation is required if end users are supported in your custom AuthServer implementation.</p>
     <br>
-    <p>The interface IAuthenticatedUserAccessor in namespace AuthServer.Authentication.Abstractions must be implemented.
+    <b>AuthServer.Authentication.Abstractions.IAuthenticatedUserAccessor</b>
+    <p>
         Its purpose is to provide access to currently authenticated identities, in the user's browser.
         This is needed to determine if SSO can be performed, or if the user must choose which identity to login with.
         This can be implemented using the cookie authentication handler provided through AspNet.Core.
     </p>
+    <p>An implementation is required if end users are supported in your custom AuthServer implementation.</p>
     <br>
-    <p>The interface IAuthenticationContextReferenceResolver in namespace AuthServer.Authorize.Abstractions must be implemented.
-        Its purpose is to return a AuthenticationContextReference from an AuthenticationMethodReference.
+    <b>AuthServer.Authorize.Abstractions.IAuthenticationContextReferenceResolver</b>
+    <p>
+        Its purpose is to return an AuthenticationContextReference from an AuthenticationMethodReference.
     </p>
     <br>
-    <p>The interface IExtendedTokenExchangeRequestValidator in namespace AuthServer.TokenByGrant.TokenExchangeGrant.Abstractions can be implemented.
-        Its purpose is to extend validation during token exchange grant type at the token endpoint.
+    <b>AuthServer.TokenByGrant.TokenExchangeGrant.Abstractions.IExtendedTokenExchangeRequestValidator</b>
+    <p>
+        Its purpose is to allow for customizing validation during token exchange grant type at the token endpoint.
     </p>
 </Section>
 <Section title="Startup">
@@ -236,7 +281,7 @@ VALUES
 `}
     </CodeBlock>
     <p>
-        Custom Scopes must be added. The following example inserts a single row
+        Custom Scopes can be added. The following example inserts a single row
         in the Scope table.
     </p>
     <CodeBlock>
