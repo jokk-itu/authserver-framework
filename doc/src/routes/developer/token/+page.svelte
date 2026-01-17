@@ -7,9 +7,11 @@
 
     let grantTypeHeaders: string[] = ["Name", "Description"];
     let grantTypeRows: RowCellDefinition[][] = [
-        [ new RowCellDefinition('Authorization Code'), new RowCellDefinition('Use a code in exchange of tokens.') ],
+        [ new RowCellDefinition('Authorization Code'), new RowCellDefinition('Use an authorization code in exchange of tokens.') ],
         [ new RowCellDefinition('Refresh Token'), new RowCellDefinition('Use a refresh token in exchange of tokens.') ],
-        [ new RowCellDefinition('Client Credentials'), new RowCellDefinition('Use client authentication in exchange of tokens.') ]
+        [ new RowCellDefinition('Client Credentials'), new RowCellDefinition('Use client authentication in exchange of tokens.') ],
+        [ new RowCellDefinition('Device Authorization'), new RowCellDefinition('Use a device code in exchange of tokens.') ],
+        [ new RowCellDefinition('Token Exchange'), new RowCellDefinition('Use a subject token in exchange of a new token.') ]
     ];
 
     let specificationHeaders: string[] = ["Name", "Description"];
