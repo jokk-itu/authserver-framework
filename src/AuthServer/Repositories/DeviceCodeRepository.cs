@@ -1,6 +1,7 @@
 ﻿using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.Repositories;
 internal class DeviceCodeRepository : IDeviceCodeRepository
@@ -22,5 +23,15 @@ internal class DeviceCodeRepository : IDeviceCodeRepository
     {
         var deviceCode = (await _authorizationDbContext.FindAsync<DeviceCode>([deviceCodeId], cancellationToken))!;
         deviceCode.UpdatePoll();
+    }
+
+    public async Task<DeviceCode?> GetDeviceCode(string userCode, CancellationToken cancellationToken)
+    {
+        return await _authorizationDbContext
+            .Set<UserCode>()
+            .Where(x => x.Value == userCode)
+            .Where(UserCode.IsActive)
+            .Select(x => x.DeviceCode)
+            .SingleOrDefaultAsync(cancellationToken);
     }
 }
