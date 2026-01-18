@@ -60,7 +60,12 @@ internal class AuthorizationCodeGrantService : IAuthorizationCodeGrantService
                 amr,
                 cancellationToken);
 
-            _authorizeUserAccessor.SetUser(new AuthorizeUser(subjectIdentifier, false, grantId));
+            var authorizeUser = new AuthorizeUser(
+                subjectIdentifier,
+                false,
+                grantId);
+
+            _authorizeUserAccessor.SetUser(authorizeUser);
 
             return grantId;
         }
