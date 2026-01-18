@@ -20,7 +20,6 @@ using AuthServer.Discovery;
 using AuthServer.Endpoints;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.EndSession;
-using AuthServer.Entities;
 using AuthServer.GrantManagement;
 using AuthServer.GrantManagement.Query;
 using AuthServer.GrantManagement.Revoke;
@@ -112,7 +111,8 @@ public class AuthServerBuilder
             .AddScoped<ITokenRepository, TokenRepository>()
             .AddScoped<INonceRepository, NonceRepository>()
             .AddScoped<ISessionRepository, SessionRepository>()
-            .AddScoped<IDeviceCodeRepository, DeviceCodeRepository>();
+            .AddScoped<IDeviceCodeRepository, DeviceCodeRepository>()
+            .AddScoped<IUserCodeRepository, UserCodeRepository>();
     }
 
     private void AddOptions()
