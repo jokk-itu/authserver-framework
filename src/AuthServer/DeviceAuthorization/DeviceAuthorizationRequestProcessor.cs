@@ -42,6 +42,7 @@ internal class DeviceAuthorizationRequestProcessor : IRequestProcessor<DeviceAut
 
         var encodedDeviceCode = _deviceCodeEncoder.Encode(new EncodedDeviceCode
         {
+            ClientId = request.ClientId,
             AuthorizationGrantId = request.AuthorizationGrantId,
             GrantManagementAction = request.GrantManagementAction,
             CodeChallengeMethod = request.CodeChallengeMethod,
