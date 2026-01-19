@@ -22,7 +22,7 @@ internal class DeviceCodeRequestHandler : RequestHandler<TokenRequest, DeviceCod
         IUnitOfWork unitOfWork,
         INonceRepository nonceRepository,
         IDeviceCodeRepository deviceCodeRepository,
-        ILogger<RequestHandler<TokenRequest, DeviceCodeValidatedRequest, TokenResponse>> logger)
+        ILogger<DeviceCodeRequestHandler> logger)
         : base(metricService, logger)
     {
         _requestValidator = requestValidator;

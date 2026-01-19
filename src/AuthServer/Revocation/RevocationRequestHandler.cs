@@ -15,7 +15,7 @@ internal class RevocationRequestHandler : RequestHandler<RevocationRequest, Revo
         IRequestValidator<RevocationRequest, RevocationValidatedRequest> requestValidator,
         IRequestProcessor<RevocationValidatedRequest, Unit> requestProcessor,
         IMetricService metricService,
-        ILogger<RequestHandler<RevocationRequest, RevocationValidatedRequest, Unit>> logger)
+        ILogger<RevocationRequestHandler> logger)
         : base(metricService, logger)
     {
 	    _unitOfWork = unitOfWork;

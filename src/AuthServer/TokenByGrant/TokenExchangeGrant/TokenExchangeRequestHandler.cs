@@ -19,7 +19,7 @@ internal class TokenExchangeRequestHandler : RequestHandler<TokenRequest, TokenE
         INonceRepository nonceRepository,
         IRequestValidator<TokenRequest, TokenExchangeValidatedRequest> requestValidator,
         IRequestProcessor<TokenExchangeValidatedRequest, TokenResponse> requestProcessor,
-        ILogger<RequestHandler<TokenRequest, TokenExchangeValidatedRequest, TokenResponse>> logger)
+        ILogger<TokenExchangeRequestHandler> logger)
         : base(metricService, logger)
     {
         _unitOfWork = unitOfWork;

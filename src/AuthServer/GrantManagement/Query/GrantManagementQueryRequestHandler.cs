@@ -13,7 +13,7 @@ internal class GrantManagementQueryRequestHandler : RequestHandler<GrantManageme
         IMetricService metricService,
         IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest> requestValidator,
         IRequestProcessor<GrantManagementValidatedRequest, GrantResponse> requestProcessor,
-        ILogger<RequestHandler<GrantManagementRequest, GrantManagementValidatedRequest, GrantResponse>> logger)
+        ILogger<GrantManagementQueryRequestHandler> logger)
         : base(metricService, logger)
     {
         _requestValidator = requestValidator;

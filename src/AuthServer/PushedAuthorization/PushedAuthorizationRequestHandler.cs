@@ -26,7 +26,7 @@ internal class PushedAuthorizationRequestHandler : RequestHandler<PushedAuthoriz
         IRequestProcessor<PushedAuthorizationValidatedRequest, PushedAuthorizationResponse> requestProcessor,
         INonceRepository nonceRepository,
         IUnitOfWork unitOfWork,
-        ILogger<RequestHandler<PushedAuthorizationRequest, PushedAuthorizationValidatedRequest, PushedAuthorizationResponse>> logger)
+        ILogger<PushedAuthorizationRequestHandler> logger)
         : base(metricService, logger)
     {
         _requestValidator = requestValidator;

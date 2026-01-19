@@ -16,7 +16,7 @@ internal class GrantManagementRevokeRequestHandler : RequestHandler<GrantManagem
         IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest> requestValidator,
         IRequestProcessor<GrantManagementValidatedRequest, Unit> requestProcessor,
         IUnitOfWork unitOfWork,
-        ILogger<RequestHandler<GrantManagementRequest, GrantManagementValidatedRequest, Unit>> logger)
+        ILogger<GrantManagementRevokeRequestHandler> logger)
         : base(metricService, logger)
     {
         _requestValidator = requestValidator;

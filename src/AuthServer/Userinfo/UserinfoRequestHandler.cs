@@ -13,7 +13,7 @@ internal class UserinfoRequestHandler : RequestHandler<UserinfoRequest, Userinfo
 	    IRequestProcessor<UserinfoValidatedRequest, string> userinfoProcessor,
         IRequestValidator<UserinfoRequest, UserinfoValidatedRequest> requestValidator,
         IMetricService metricService,
-        ILogger<RequestHandler<UserinfoRequest, UserinfoValidatedRequest, string>> logger)
+        ILogger<UserinfoRequestHandler> logger)
         : base(metricService, logger)
     {
         _userinfoProcessor = userinfoProcessor;

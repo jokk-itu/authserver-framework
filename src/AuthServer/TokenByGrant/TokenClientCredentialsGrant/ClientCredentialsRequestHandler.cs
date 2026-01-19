@@ -19,7 +19,7 @@ internal class ClientCredentialsRequestHandler : RequestHandler<TokenRequest, Cl
         IRequestProcessor<ClientCredentialsValidatedRequest, TokenResponse> requestProcessor,
         INonceRepository nonceRepository,
         IMetricService metricService,
-        ILogger<RequestHandler<TokenRequest, ClientCredentialsValidatedRequest, TokenResponse>> logger)
+        ILogger<ClientCredentialsRequestHandler> logger)
         : base(metricService, logger)
     {
 	    _unitOfWork = unitOfWork;

@@ -17,7 +17,7 @@ internal class RegisterRequestHandler : RequestHandler<RegisterRequest, Register
         IRequestValidator<RegisterRequest, RegisterValidatedRequest> requestValidator,
         IRequestProcessor<RegisterValidatedRequest, ProcessResult<RegisterResponse, Unit>> registerProcessor,
         IMetricService metricService,
-        ILogger<RequestHandler<RegisterRequest, RegisterValidatedRequest, ProcessResult<RegisterResponse, Unit>>> logger)
+        ILogger<RegisterRequestHandler> logger)
         : base(metricService, logger)
     {
         _unitOfWork = unitOfWork;

@@ -19,7 +19,7 @@ internal class RefreshTokenRequestHandler : RequestHandler<TokenRequest, Refresh
         IRequestProcessor<RefreshTokenValidatedRequest, TokenResponse> refreshTokenProcessor,
         INonceRepository nonceRepository,
         IMetricService metricService,
-        ILogger<RequestHandler<TokenRequest, RefreshTokenValidatedRequest, TokenResponse>> logger)
+        ILogger<RefreshTokenRequestHandler> logger)
         : base(metricService, logger)
     {
 	    _unitOfWork = unitOfWork;

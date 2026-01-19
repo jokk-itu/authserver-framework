@@ -21,7 +21,7 @@ internal class AuthorizeRequestHandler : RequestHandler<AuthorizeRequest, Author
         IRequestProcessor<AuthorizeValidatedRequest, AuthorizeResponse> requestProcessor,
         IClientRepository clientRepository,
         IMetricService metricService,
-        ILogger<RequestHandler<AuthorizeRequest, AuthorizeValidatedRequest, AuthorizeResponse>> logger)
+        ILogger<AuthorizeRequestHandler> logger)
         : base(metricService, logger)
     {
 	    _unitOfWork = unitOfWork;

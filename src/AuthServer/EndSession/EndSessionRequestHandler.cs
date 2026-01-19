@@ -15,7 +15,7 @@ internal class EndSessionRequestHandler : RequestHandler<EndSessionRequest, EndS
         IRequestValidator<EndSessionRequest, EndSessionValidatedRequest> requestValidator,
         IRequestProcessor<EndSessionValidatedRequest, Unit> requestProcessor,
         IMetricService metricService,
-        ILogger<RequestHandler<EndSessionRequest, EndSessionValidatedRequest, Unit>> logger)
+        ILogger<EndSessionRequestHandler> logger)
         : base(metricService, logger)
     {
         _unitOfWork = unitOfWork;

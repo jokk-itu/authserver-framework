@@ -19,7 +19,7 @@ internal class AuthorizationCodeRequestHandler : RequestHandler<TokenRequest, Au
         INonceRepository nonceRepository,
         IUnitOfWork unitOfWork,
         IMetricService metricService,
-        ILogger<RequestHandler<TokenRequest, AuthorizationCodeValidatedRequest, TokenResponse>> logger)
+        ILogger<AuthorizationCodeRequestHandler> logger)
         : base(metricService, logger)
     {
         _requestProcessor = requestProcessor;

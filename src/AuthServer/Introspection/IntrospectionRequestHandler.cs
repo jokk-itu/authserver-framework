@@ -14,7 +14,7 @@ internal class IntrospectionRequestHandler : RequestHandler<IntrospectionRequest
 		IRequestProcessor<IntrospectionValidatedRequest, IntrospectionResponse> requestProcessor,
 		IRequestValidator<IntrospectionRequest, IntrospectionValidatedRequest> requestValidator,
         IMetricService metricService,
-        ILogger<RequestHandler<IntrospectionRequest, IntrospectionValidatedRequest, IntrospectionResponse>> logger)
+        ILogger<IntrospectionRequestHandler> logger)
         : base(metricService, logger)
     {
 	    _requestProcessor = requestProcessor;

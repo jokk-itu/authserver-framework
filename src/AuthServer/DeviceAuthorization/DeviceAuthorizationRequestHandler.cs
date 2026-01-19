@@ -20,7 +20,7 @@ internal class DeviceAuthorizationRequestHandler : RequestHandler<DeviceAuthoriz
         IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest> requestValidator,
         INonceRepository nonceRepository,
         IUnitOfWork unitOfWork,
-        ILogger<RequestHandler<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest, DeviceAuthorizationResponse>> logger)
+        ILogger<DeviceAuthorizationRequestHandler> logger)
         : base(metricService, logger)
     {
         _requestProcessor = requestProcessor;
