@@ -111,11 +111,22 @@ Cache-Control: no-cache, no-store
     <p>The protected resource can exchange the token with the required privilege required using token exchange.</p>
 </Section>
 <Section title="Impersonating an end user">
-    <p>Explain the use case of impersonating an end user and using the may_act claim.</p>
+    <p>
+        If an end user needs to impersonate another end user, then audit and authorization can be needed.
+        Token delegation can be used, to make sure the actor token is bound to the issued token.
+        The request can be made more secure, by setting the "may_act" claim in the subject token, and its value is the subject claim of the actor token.
+        This makes sure only the authorized end user can act on another users behalf.
+    </p>
 </Section>
 <Section title="DPoP bound exchanged token">
-    <p>Explain how to DPoP bound and how it works</p>
+    <p>
+        Token exchange supports DPoP binding the issued token.
+        The token is bound using the client requesting the token exchange.
+    </p>
 </Section>
 <Section title="Id token encryption">
-    <p>Explain that the client invoking the endpoint, is used as the encryptor for the id token.</p>
+    <p>
+        Token exchange supports encrypting the issued token, if the requested type is id_token.
+        The keys of the client requesting the token exchange, will be used to encrypt the token.
+    </p>
 </Section>

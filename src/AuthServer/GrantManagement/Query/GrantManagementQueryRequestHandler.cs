@@ -1,6 +1,7 @@
 ﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.GrantManagement.Query;
 internal class GrantManagementQueryRequestHandler : RequestHandler<GrantManagementRequest, GrantManagementValidatedRequest, GrantResponse>
@@ -11,8 +12,9 @@ internal class GrantManagementQueryRequestHandler : RequestHandler<GrantManageme
     public GrantManagementQueryRequestHandler(
         IMetricService metricService,
         IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest> requestValidator,
-        IRequestProcessor<GrantManagementValidatedRequest, GrantResponse> requestProcessor)
-        : base(metricService)
+        IRequestProcessor<GrantManagementValidatedRequest, GrantResponse> requestProcessor,
+        ILogger<GrantManagementQueryRequestHandler> logger)
+        : base(metricService, logger)
     {
         _requestValidator = requestValidator;
         _requestProcessor = requestProcessor;

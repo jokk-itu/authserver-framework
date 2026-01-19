@@ -1,6 +1,7 @@
 ﻿using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.Userinfo;
 internal class UserinfoRequestHandler : RequestHandler<UserinfoRequest, UserinfoValidatedRequest, string>
@@ -11,8 +12,9 @@ internal class UserinfoRequestHandler : RequestHandler<UserinfoRequest, Userinfo
     public UserinfoRequestHandler(
 	    IRequestProcessor<UserinfoValidatedRequest, string> userinfoProcessor,
         IRequestValidator<UserinfoRequest, UserinfoValidatedRequest> requestValidator,
-        IMetricService metricService)
-        : base(metricService)
+        IMetricService metricService,
+        ILogger<UserinfoRequestHandler> logger)
+        : base(metricService, logger)
     {
         _userinfoProcessor = userinfoProcessor;
         _requestValidator = requestValidator;

@@ -1,4 +1,6 @@
-﻿namespace AuthServer.Repositories.Abstractions;
+﻿using AuthServer.Entities;
+
+namespace AuthServer.Repositories.Abstractions;
 internal interface IDeviceCodeRepository
 {
     /// <summary>
@@ -16,4 +18,12 @@ internal interface IDeviceCodeRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task UpdatePoll(string deviceCodeId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userCode"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<DeviceCode?> GetDeviceCode(string userCode, CancellationToken cancellationToken);
 }

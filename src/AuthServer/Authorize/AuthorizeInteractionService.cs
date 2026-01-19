@@ -5,7 +5,6 @@ using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Metrics;
 using AuthServer.Repositories.Abstractions;
-using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -78,7 +77,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         {
             var idTokenResult = await _serverTokenDecoder.Read(authorizeRequest.IdTokenHint, cancellationToken);
             var subject = idTokenResult.Sub;
-            var grantId = authorizeRequest.GrantId ?? idTokenResult.GrantId;
+            var grantId = (authorizeRequest.GrantId ?? idTokenResult.GrantId)!;
 
             _logger.LogDebug("Deducing Prompt from id_token with subject {Subject} and grant {AuthorizationGrantId}", subject, grantId);
 
@@ -96,7 +95,13 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
                 _logger.LogDebug("Multiple authenticated users, deducing prompt {Prompt}", PromptConstants.SelectAccount);
                 return InteractionResult.SelectAccountResult(authorizeRequest.Prompt);
             default:
-                var authenticatedUser = (await _authenticatedUserAccessor.GetAuthenticatedUser())!;
+                var authenticatedUser = await _authenticatedUserAccessor.GetAuthenticatedUser();
+                if (authenticatedUser is null)
+                {
+                    _logger.LogWarning("Deduced one authenticated user, but the user is null. Deducing prompt {Prompt}", PromptConstants.Login);
+                    return InteractionResult.LoginRedirectResult;
+                }
+                
                 var subject = authenticatedUser.SubjectIdentifier;
                 var grantId = authorizeRequest.GrantId ?? authenticatedUser.AuthorizationGrantId;
 
@@ -178,7 +183,7 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
         var hasMaxAge = int.TryParse(authorizeRequest.MaxAge, out var parsedMaxAge);
         var maxAge = hasMaxAge ? parsedMaxAge : authorizationGrant.Client.DefaultMaxAge;
 
-        if (maxAge is not null && authorizationGrant.UpdatedAuthTime.AddSeconds(maxAge.Value) < DateTime.UtcNow)
+        if (maxAge is not null && authorizationGrant.UpdatedAuthTime.AddSeconds(maxAge.Value) < DateTimeOffset.UtcNow)
         {
             _logger.LogDebug("MaxAge {MaxAge} has been reached for grant {GrantId}, deducing prompt {Prompt}", maxAge, authorizationGrant.Id, PromptConstants.Login);
             return InteractionResult.LoginResult(authorizeRequest.Prompt);

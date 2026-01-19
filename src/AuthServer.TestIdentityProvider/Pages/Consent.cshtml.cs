@@ -4,7 +4,7 @@ using System.Web;
 using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Helpers;
-using AuthServer.Authorize.UserInterface.Abstractions;
+using AuthServer.UserInterface.Abstractions;
 
 namespace AuthServer.TestIdentityProvider.Pages;
 
@@ -12,10 +12,14 @@ namespace AuthServer.TestIdentityProvider.Pages;
 public class ConsentModel : PageModel
 {
     private readonly IAuthorizeService _authorizeService;
+    private readonly IConsentGrantService _consentGrantService;
 
-    public ConsentModel(IAuthorizeService authorizeService)
+    public ConsentModel(
+        IAuthorizeService authorizeService,
+        IConsentGrantService consentGrantService)
     {
         _authorizeService = authorizeService;
+        _consentGrantService = consentGrantService;
     }
 
     [BindProperty] public InputModel Input { get; set; }
@@ -52,7 +56,7 @@ public class ConsentModel : PageModel
         var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
 
         var subject = await _authorizeService.GetSubject(request, cancellationToken);
-        var consentGrantDto = await _authorizeService.GetConsentGrantDto(subject.Subject, clientId, cancellationToken);
+        var consentGrantDto = await _consentGrantService.GetConsentGrantDto(subject.Subject, clientId, cancellationToken);
         
         var requestedScope = request.Scope.ToList();
 
@@ -85,7 +89,7 @@ public class ConsentModel : PageModel
         var requestUri = query.Get(Parameter.RequestUri)!;
         var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
         var subject = await _authorizeService.GetSubject(request, cancellationToken);
-        await _authorizeService.HandleConsent(subject.Subject, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
+        await _consentGrantService.HandleConsent(subject.Subject, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
 
         return Redirect(ReturnUrl);
     }

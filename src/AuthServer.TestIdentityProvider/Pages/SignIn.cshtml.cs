@@ -1,9 +1,9 @@
 using System.Security.Claims;
 using System.Web;
-using AuthServer.Authorize.UserInterface.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Tests.Core;
+using AuthServer.UserInterface.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +15,14 @@ namespace AuthServer.TestIdentityProvider.Pages;
 public class SignInModel : PageModel
 {
     private readonly IAuthorizeService _authorizeService;
+    private readonly IAuthorizationCodeGrantService _authorizationCodeGrantService;
 
-    public SignInModel(IAuthorizeService authorizeService)
+    public SignInModel(
+        IAuthorizeService authorizeService,
+        IAuthorizationCodeGrantService authorizationCodeGrantService)
     {
         _authorizeService = authorizeService;
+        _authorizationCodeGrantService = authorizationCodeGrantService;
     }
 
     [BindProperty]
@@ -52,7 +56,7 @@ public class SignInModel : PageModel
             var requestUri = query.Get(Parameter.RequestUri)!;
             var clientId = query.Get(Parameter.ClientId)!;
             var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
-            await _authorizeService.HandleAuthorizationGrant(UserConstants.SubjectIdentifier, request, [AuthenticationMethodReferenceConstants.Password], cancellationToken);
+            await _authorizationCodeGrantService.HandleAuthorizationCodeGrant(UserConstants.SubjectIdentifier, request, [AuthenticationMethodReferenceConstants.Password], cancellationToken);
 
             var claimsIdentity = new ClaimsIdentity(
                 [new Claim(ClaimNameConstants.Sub, UserConstants.SubjectIdentifier)],

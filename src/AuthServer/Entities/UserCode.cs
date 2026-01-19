@@ -1,4 +1,5 @@
-﻿using AuthServer.Core;
+﻿using System.Linq.Expressions;
+using AuthServer.Core;
 
 namespace AuthServer.Entities;
 public class UserCode : Entity<string>
@@ -18,6 +19,9 @@ public class UserCode : Entity<string>
     public string Value { get; private init; }
     public DateTime? RedeemedAt { get; private set; }
     public DeviceCode DeviceCode { get; private init; }
+
+    public static readonly Expression<Func<UserCode, bool>> IsActive =
+        x => x.RedeemedAt == null;
 
     public void Redeem()
     {

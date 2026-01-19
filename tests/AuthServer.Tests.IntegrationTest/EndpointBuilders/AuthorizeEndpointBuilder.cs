@@ -24,7 +24,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
 
     private bool _isProtectedWithRequestParameter;
     private string? _privateJwks;
-    private string _clientId;
+    private string? _clientId;
 
     private readonly List<CookieHeaderValue> _cookies = [];
 
@@ -248,13 +248,13 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
 
         var requestObject = JwtBuilder.GetRequestObjectJwt(
             _parameters.ToDictionary(x => x.Key, object (x) => x.Value),
-            _clientId,
+            _clientId!,
             _privateJwks!,
             ClientTokenAudience.AuthorizationEndpoint);
 
         _parameters.Clear();
         _parameters.Add(new(Parameter.Request, requestObject));
-        _parameters.Add(new(Parameter.ClientId, _clientId));
+        _parameters.Add(new(Parameter.ClientId, _clientId!));
     }
 
     public sealed record AuthorizeResponse

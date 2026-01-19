@@ -98,6 +98,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = string.Empty,
                 UserCodeId = string.Empty,
                 DeviceCodeId = string.Empty,
                 AuthorizationGrantId = string.Empty,
@@ -140,6 +141,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = string.Empty,
                 UserCodeId = string.Empty,
                 DeviceCodeId = string.Empty,
                 AuthorizationGrantId = string.Empty,
@@ -183,6 +185,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = string.Empty,
                 UserCodeId = string.Empty,
                 DeviceCodeId = string.Empty,
                 AuthorizationGrantId = string.Empty,
@@ -234,6 +237,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = "invalid_device_code_id",
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -293,6 +297,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -349,6 +354,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -405,6 +411,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -469,6 +476,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -525,6 +533,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -581,6 +590,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -639,6 +649,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -696,6 +707,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -763,6 +775,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -827,6 +840,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -896,6 +910,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -952,6 +967,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -1008,6 +1024,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -1062,6 +1079,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -1119,6 +1137,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,
@@ -1179,6 +1198,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
             {
+                ClientId = authorizationGrant.Client.Id,
                 UserCodeId = string.Empty,
                 DeviceCodeId = deviceCodeId,
                 AuthorizationGrantId = authorizationGrant.Id,

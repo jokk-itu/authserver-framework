@@ -3,6 +3,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Repositories.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 internal class ClientCredentialsRequestHandler : RequestHandler<TokenRequest, ClientCredentialsValidatedRequest, TokenResponse>
@@ -17,8 +18,9 @@ internal class ClientCredentialsRequestHandler : RequestHandler<TokenRequest, Cl
         IRequestValidator<TokenRequest, ClientCredentialsValidatedRequest> requestValidator,
         IRequestProcessor<ClientCredentialsValidatedRequest, TokenResponse> requestProcessor,
         INonceRepository nonceRepository,
-        IMetricService metricService)
-        : base(metricService)
+        IMetricService metricService,
+        ILogger<ClientCredentialsRequestHandler> logger)
+        : base(metricService, logger)
     {
 	    _unitOfWork = unitOfWork;
 	    _requestValidator = requestValidator;

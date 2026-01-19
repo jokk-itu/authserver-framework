@@ -8,7 +8,7 @@ using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Options;
-using AuthServer.Repositories.Abstractions;
+using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,8 +22,8 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly IClientJwkService _clientJwkService;
     private readonly ILogger<RegisterRequestValidator> _logger;
-    private readonly ITokenRepository _tokenRepository;
     private readonly IClientSectorService _clientSectorService;
+    private readonly IServerTokenDecoder _serverTokenDecoder;
 
     private DiscoveryDocument DiscoveryDocument => _discoveryDocumentOptions.Value;
 
@@ -32,15 +32,15 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         AuthorizationDbContext authorizationDbContext,
         IClientJwkService clientJwkService,
         ILogger<RegisterRequestValidator> logger,
-        ITokenRepository tokenRepository,
-        IClientSectorService clientSectorService)
+        IClientSectorService clientSectorService,
+        IServerTokenDecoder serverTokenDecoder)
     {
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _authorizationDbContext = authorizationDbContext;
         _clientJwkService = clientJwkService;
         _logger = logger;
-        _tokenRepository = tokenRepository;
         _clientSectorService = clientSectorService;
+        _serverTokenDecoder = serverTokenDecoder;
     }
 
     public async Task<ProcessResult<RegisterValidatedRequest, ProcessError>> Validate(RegisterRequest request,
@@ -1372,27 +1372,23 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return null;
         }
 
-        /* ClientId is REQUIRED */
+        // ClientId is REQUIRED
         var clientId = request.ClientId;
         if (string.IsNullOrEmpty(clientId))
         {
             return RegisterError.InvalidClientId;
         }
 
-        /* RegistrationAccessToken is REQUIRED */
+        // RegistrationAccessToken is REQUIRED
         var registrationAccessToken = request.RegistrationAccessToken;
         if (string.IsNullOrEmpty(registrationAccessToken))
         {
             return RegisterError.InvalidRegistrationAccessToken;
         }
 
-        var token = await _tokenRepository.GetActiveRegistrationToken(registrationAccessToken, cancellationToken);
-        if (token is null)
-        {
-            return RegisterError.InvalidRegistrationAccessToken;
-        }
-
-        if (token.Client.Id != clientId)
+        // Token is read, because it has already been validated
+        var token = await _serverTokenDecoder.Read(registrationAccessToken, cancellationToken);
+        if (token.ClientId != clientId)
         {
             return RegisterError.MismatchingClientId;
         }

@@ -20,18 +20,6 @@ internal class TokenRepository : ITokenRepository
         _logger = logger;
     }
 
-	/// <inheritdoc/>
-	public async Task<RegistrationToken?> GetActiveRegistrationToken(string registrationAccessToken, CancellationToken cancellationToken)
-	{
-		return await _authorizationDbContext
-			.Set<RegistrationToken>()
-			.Where(t => t.Reference == registrationAccessToken)
-			.Where(Token.IsActive)
-			.OfType<RegistrationToken>()
-			.Include(t => t.Client)
-			.SingleOrDefaultAsync(cancellationToken);
-	}
-
     /// <inheritdoc/>
     public async Task RevokeExpiredTokens(int batchSize, CancellationToken cancellationToken)
     {

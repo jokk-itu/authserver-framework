@@ -1,6 +1,7 @@
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace AuthServer.GrantManagement.Revoke;
 
@@ -14,8 +15,9 @@ internal class GrantManagementRevokeRequestHandler : RequestHandler<GrantManagem
         IMetricService metricService,
         IRequestValidator<GrantManagementRequest, GrantManagementValidatedRequest> requestValidator,
         IRequestProcessor<GrantManagementValidatedRequest, Unit> requestProcessor,
-        IUnitOfWork unitOfWork)
-        : base(metricService)
+        IUnitOfWork unitOfWork,
+        ILogger<GrantManagementRevokeRequestHandler> logger)
+        : base(metricService, logger)
     {
         _requestValidator = requestValidator;
         _requestProcessor = requestProcessor;

@@ -5,8 +5,9 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Register;
-using AuthServer.Repositories.Abstractions;
 using AuthServer.Tests.Core;
+using AuthServer.TokenDecoders;
+using AuthServer.TokenDecoders.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
@@ -71,38 +72,13 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     [InlineData("GET")]
     [InlineData("PUT")]
     [InlineData("DELETE")]
-    public async Task Validate_GivenRegistrationAccessTokenIsInactive_ExpectInvalidRegistrationAccessToken(string httpMethod)
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator =
-            serviceProvider.GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
-
-        var request = new RegisterRequest
-        {
-            Method = HttpMethod.Parse(httpMethod),
-            ClientId = "clientId",
-            RegistrationAccessToken = "inactiveToken"
-        };
-
-        // Act
-        var processError = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(RegisterError.InvalidRegistrationAccessToken, processError);
-    }
-
-    [Theory]
-    [InlineData("GET")]
-    [InlineData("PUT")]
-    [InlineData("DELETE")]
     public async Task Validate_ClientIdDoesNotMatchToken_ExpectMismatchingClientId(string httpMethod)
     {
         // Arrange
-        var tokenRepository = new Mock<ITokenRepository>();
+        var serverTokenDecoder = new Mock<IServerTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(tokenRepository);
+            services.AddScopedMock(serverTokenDecoder);
         });
         var validator =
             serviceProvider.GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
@@ -114,20 +90,29 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         var request = new RegisterRequest
         {
             Method = HttpMethod.Parse(httpMethod),
-            ClientId = "clientId",
+            ClientId = "client_id",
             RegistrationAccessToken = registrationToken.Reference
         };
 
-        tokenRepository
-            .Setup(x => x.GetActiveRegistrationToken(request.RegistrationAccessToken, CancellationToken.None))
-            .ReturnsAsync(registrationToken)
+        var tokenResult = new TokenResult
+        {
+            ClientId = client.Id,
+            Jti = registrationToken.Id.ToString(),
+            Sub = client.Id,
+            Scope = [registrationToken.Scope!],
+            Typ = TokenTypeHeaderConstants.AccessToken
+        };
+
+        serverTokenDecoder
+            .Setup(x => x.Read(request.RegistrationAccessToken, CancellationToken.None))
+            .ReturnsAsync(tokenResult)
             .Verifiable();
 
         // Act
         var processError = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        tokenRepository.Verify();
+        serverTokenDecoder.Verify();
         Assert.Equal(RegisterError.MismatchingClientId, processError);
     }
 
@@ -137,10 +122,10 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     public async Task Validate_ValidRequestForDeleteAndGet_ExpectRegisterValidatedRequest(string httpMethod)
     {
         // Arrange
-        var tokenRepository = new Mock<ITokenRepository>();
+        var serverTokenDecoder = new Mock<IServerTokenDecoder>();
         var serviceProvider = BuildServiceProvider(services =>
         {
-            services.AddScopedMock(tokenRepository);
+            services.AddScopedMock(serverTokenDecoder);
         });
         var validator =
             serviceProvider.GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
@@ -156,16 +141,25 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             RegistrationAccessToken = registrationToken.Reference
         };
 
-        tokenRepository
-            .Setup(x => x.GetActiveRegistrationToken(request.RegistrationAccessToken, CancellationToken.None))
-            .ReturnsAsync(registrationToken)
+        var tokenResult = new TokenResult
+        {
+            ClientId = client.Id,
+            Jti = registrationToken.Id.ToString(),
+            Sub = client.Id,
+            Scope = [registrationToken.Scope!],
+            Typ = TokenTypeHeaderConstants.AccessToken
+        };
+
+        serverTokenDecoder
+            .Setup(x => x.Read(request.RegistrationAccessToken, CancellationToken.None))
+            .ReturnsAsync(tokenResult)
             .Verifiable();
 
         // Act
         var processError = await validator.Validate(request, CancellationToken.None);
 
         // Assert
-        tokenRepository.Verify();
+        serverTokenDecoder.Verify();
         Assert.Equal(request.Method, processError.Value!.Method);
         Assert.Equal(request.ClientId, processError.Value!.ClientId);
         Assert.Equal(request.RegistrationAccessToken, processError.Value!.RegistrationAccessToken);

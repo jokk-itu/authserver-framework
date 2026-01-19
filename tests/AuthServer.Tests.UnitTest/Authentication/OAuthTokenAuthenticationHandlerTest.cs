@@ -103,7 +103,7 @@ public class OAuthTokenAuthenticationHandlerTest : BaseUnitTest
             {
                 Headers =
                 {
-                    Authorization = "Bearer token"
+                    Authorization = $"Bearer {token}"
                 }
             },
             RequestServices = serviceProvider

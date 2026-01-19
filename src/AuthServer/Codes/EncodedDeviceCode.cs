@@ -2,6 +2,7 @@ namespace AuthServer.Codes;
 
 internal class EncodedDeviceCode
 {
+    public required string ClientId { get; init; }
     public string? AuthorizationGrantId { get; init; }
     public string? GrantManagementAction { get; init; }
     public required string DeviceCodeId { get; init; }

@@ -79,6 +79,7 @@ internal class DiscoveryEndpointHandler : IEndpointHandler
             DPoPSigningAlgValuesSupported = DiscoveryDocument.DPoPSigningAlgValuesSupported,
             AuthorizationResponseIssParameterSupported = true,
             BackchannelLogoutSupported = true,
+            BackchannelLogoutSessionSupported = true,
             RequireRequestUriRegistration = true,
             ClaimsParameterSupported = false,
             RequestParameterSupported = true,

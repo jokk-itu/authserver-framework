@@ -13,9 +13,18 @@ namespace AuthServer.Tests.UnitTest.Authorize;
 
 public class AuthorizeUserAccessorTest : BaseUnitTest
 {
+    private readonly CookieOptions cookieOptions;
+
     public AuthorizeUserAccessorTest(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
+        cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Lax
+        };
     }
 
     [Fact]
@@ -32,7 +41,7 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
 
         var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
         var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
-        httpContextAccessor.HttpContext.Response.Cookies.Append(AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser);
+        httpContextAccessor.HttpContext.Response.Cookies.Append(AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser, cookieOptions);
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => authorizeUserAccessor.SetUser(authorizeUser));
@@ -75,7 +84,7 @@ public class AuthorizeUserAccessorTest : BaseUnitTest
 
         var authorizeUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());
         var encryptedAuthorizeUser = GetEncryptedAuthorizeCookie(dataProtector, authorizeUser);
-        httpContextAccessor.HttpContext.Response.Cookies.Append(AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser);
+        httpContextAccessor.HttpContext.Response.Cookies.Append(AuthorizeUserAccessor.Cookie, encryptedAuthorizeUser, cookieOptions);
 
         // Act
         var otherUser = new AuthorizeUser(Guid.NewGuid().ToString(), true, Guid.NewGuid().ToString());

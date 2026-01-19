@@ -2,9 +2,6 @@
 using System.Net.Http.Headers;
 using AuthServer.Core;
 using AuthServer.Entities;
-using AuthServer.Enums;
-using AuthServer.TokenBuilders;
-using AuthServer.TokenBuilders.Abstractions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,21 +19,14 @@ public class DeleteRegisterTest : BaseIntegrationTest
     public async Task DeleteRegister_DeleteClient_ExpectDeleted()
     {
         // Arrange
-        var databaseContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
-        var client = new Client("webapp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        databaseContext.Add(client);
-        await databaseContext.SaveChangesAsync();
+        var client = await RegisterEndpointBuilder
+            .WithRedirectUris(["https://webapp.authserver.dk/callback"])
+            .WithClientName("webapp")
+            .Post();
 
-        var registrationTokenBuilder = ServiceProvider.GetRequiredService<ITokenBuilder<RegistrationTokenArguments>>();
-        var registrationToken = await registrationTokenBuilder.BuildToken(new RegistrationTokenArguments
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"connect/register?client_id={client.ClientId}")
         {
-            ClientId = client.Id
-        }, CancellationToken.None);
-        await databaseContext.SaveChangesAsync();
-
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"connect/register?client_id={client.Id}")
-        {
-            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", registrationToken) }
+            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", client.RegistrationAccessToken) }
         };
         var httpClient = GetHttpClient();
 
@@ -46,6 +36,8 @@ public class DeleteRegisterTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Null(await databaseContext.Set<Client>().SingleOrDefaultAsync(c => c.Id == client.Id));
+
+        var databaseContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        Assert.Null(await databaseContext.Set<Client>().SingleOrDefaultAsync(c => c.Id == client.ClientId));
     }
 }
