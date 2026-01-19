@@ -1,0 +1,1 @@
+import{f as m,a as s}from"./BHF9wNqu.js";import"./CU9afjlv.js";import{c as i,r as n}from"./DL6eumzt.js";import{s as d}from"./BqRdp-zL.js";var e=m('<div class="p-4 my-2 rounded-lg bg-sky-700 font-medium text-cyan-200"><!></div>');function c(r,a){var o=e(),t=i(o);d(t,a,"default",{}),n(o),s(r,o)}export{c as I};
