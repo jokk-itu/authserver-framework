@@ -31,7 +31,7 @@ internal class DeviceCodeGrantService : IDeviceCodeGrantService
         {
             var grant = await _authorizationGrantRepository.CreateDeviceCodeGrant(
                 subjectIdentifier,
-                deviceAuthorizeDto.ClientId!,
+                deviceAuthorizeDto.ClientId,
                 acr,
                 amr,
                 cancellationToken);
