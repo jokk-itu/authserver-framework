@@ -173,20 +173,22 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         var authenticationContextResolver = ServiceProvider.GetRequiredService<IAuthenticationContextReferenceResolver>();
         var acr = await authenticationContextResolver.ResolveAuthenticationContextReference(amr, CancellationToken.None);
 
-        var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
-        var grant = await authorizationGrantRepository.CreateDeviceCodeGrant(
-            UserConstants.SubjectIdentifier,
-            clientId,
-            acr,
-            amr,
-            CancellationToken.None);
-
         var authorizationDbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
         var deviceCode = await authorizationDbContext
             .Set<UserCode>()
             .Where(x => x.Value == userCode)
             .Select(x => x.DeviceCode)
             .SingleAsync();
+
+        var authorizationGrantRepository = ServiceProvider.GetRequiredService<IAuthorizationGrantRepository>();
+        var grant = await authorizationGrantRepository.CreateDeviceCodeGrant(
+            UserConstants.SubjectIdentifier,
+            clientId,
+            deviceCode.Id,
+            acr,
+            amr,
+            CancellationToken.None);
+        
 
         grant.DeviceCodes.Add(deviceCode);
 

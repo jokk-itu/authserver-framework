@@ -54,7 +54,7 @@ internal class AuthorizationCodeGrantService : IAuthorizationCodeGrantService
         {
             var grantId = request.GrantId!;
 
-            await _authorizationGrantRepository.UpdateAuthorizationGrant(
+            await _authorizationGrantRepository.UpdateAuthorizationCodeGrant(
                 grantId,
                 acr,
                 amr,

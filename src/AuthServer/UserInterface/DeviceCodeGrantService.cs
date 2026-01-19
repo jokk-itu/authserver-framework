@@ -32,6 +32,7 @@ internal class DeviceCodeGrantService : IDeviceCodeGrantService
             var grant = await _authorizationGrantRepository.CreateDeviceCodeGrant(
                 subjectIdentifier,
                 deviceAuthorizeDto.ClientId,
+                deviceAuthorizeDto.DeviceCodeId,
                 acr,
                 amr,
                 cancellationToken);
@@ -46,8 +47,9 @@ internal class DeviceCodeGrantService : IDeviceCodeGrantService
                 throw new ArgumentException("AuthorizationGrantId must not be null", nameof(deviceAuthorizeDto));
             }
 
-            await _authorizationGrantRepository.UpdateAuthorizationGrant(
+            await _authorizationGrantRepository.UpdateDeviceCodeGrant(
                 grantId,
+                deviceAuthorizeDto.DeviceCodeId,
                 acr,
                 amr,
                 cancellationToken);

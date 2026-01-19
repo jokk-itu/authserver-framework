@@ -34,31 +34,38 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
     }
 
     /// <inheritdoc/>
-    public async Task UpdateAuthorizationGrant(
+    public async Task UpdateAuthorizationCodeGrant(
         string authorizationGrantId,
         string authenticationContextReference,
         IReadOnlyCollection<string> authenticationMethodReferences,
         CancellationToken cancellationToken)
     {
-        var authorizationGrant = await _identityContext
-            .Set<AuthorizationGrant>()
+        var authorizationCodeGrant = await _identityContext
+            .Set<AuthorizationCodeGrant>()
             .Where(x => x.Id == authorizationGrantId)
             .Include(x => x.AuthenticationMethodReferences)
             .SingleAsync(cancellationToken);
 
-        var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
-        var amr = await GetAuthenticationMethodReferences(authenticationMethodReferences, cancellationToken);
+        await UpdateAuthorizationGrant(authorizationCodeGrant, authenticationContextReference, authenticationMethodReferences, cancellationToken);
 
-        authorizationGrant.UpdateAuthTime();
-        authorizationGrant.AuthenticationContextReference = acr;
-        authorizationGrant.AuthenticationMethodReferences.Clear();
+        await _identityContext.SaveChangesAsync(cancellationToken);
+    }
 
-        foreach (var reference in amr)
-        {
-            authorizationGrant.AuthenticationMethodReferences.Add(reference);
-        }
+    /// <inheritdoc/>
+    public async Task UpdateDeviceCodeGrant(string deviceCodeGrantId, string deviceCodeId,
+        string authenticationContextReference, IReadOnlyCollection<string> authenticationMethodReferences,
+        CancellationToken cancellationToken)
+    {
+        var deviceCodeGrant = await _identityContext
+            .Set<DeviceCodeGrant>()
+            .Where(x => x.Id == deviceCodeGrantId)
+            .Include(x => x.AuthenticationMethodReferences)
+            .SingleAsync(cancellationToken);
 
-        await RevokeTokens(authorizationGrantId, cancellationToken);
+        var deviceCode = (await _identityContext.Set<DeviceCode>().FindAsync([deviceCodeId], cancellationToken))!;
+        deviceCodeGrant.DeviceCodes.Add(deviceCode);
+
+        await UpdateAuthorizationGrant(deviceCodeGrant, authenticationContextReference, authenticationMethodReferences, cancellationToken);
 
         await _identityContext.SaveChangesAsync(cancellationToken);
     }
@@ -77,19 +84,20 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
         var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
         var amr = await GetAuthenticationMethodReferences(authenticationMethodReferences, cancellationToken);
 
-        var newGrant = new AuthorizationCodeGrant(session, client, subject, acr)
+        var authorizationCodeGrant = new AuthorizationCodeGrant(session, client, subject, acr)
         {
             AuthenticationMethodReferences = amr
         };
-        await _identityContext.AddAsync(newGrant, cancellationToken);
+        await _identityContext.AddAsync(authorizationCodeGrant, cancellationToken);
         await _identityContext.SaveChangesAsync(cancellationToken);
-        return newGrant;
+        return authorizationCodeGrant;
     }
 
     /// <inheritdoc/>
     public async Task<DeviceCodeGrant> CreateDeviceCodeGrant(
         string subjectIdentifier,
         string clientId,
+        string deviceCodeId,
         string authenticationContextReference,
         IReadOnlyCollection<string> authenticationMethodReferences,
         CancellationToken cancellationToken)
@@ -100,14 +108,17 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
         var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
         var amr = await GetAuthenticationMethodReferences(authenticationMethodReferences, cancellationToken);
 
-        var newGrant = new DeviceCodeGrant(session, client, subject, acr)
+        var deviceCodeGrant = new DeviceCodeGrant(session, client, subject, acr)
         {
             AuthenticationMethodReferences = amr
         };
 
-        await _identityContext.AddAsync(newGrant, cancellationToken);
+        var deviceCode = (await _identityContext.Set<DeviceCode>().FindAsync([deviceCodeId], cancellationToken))!;
+        deviceCodeGrant.DeviceCodes.Add(deviceCode);
+
+        await _identityContext.AddAsync(deviceCodeGrant, cancellationToken);
         await _identityContext.SaveChangesAsync(cancellationToken);
-        return newGrant;
+        return deviceCodeGrant;
     }
 
     /// <inheritdoc/>
@@ -159,6 +170,23 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             "Revoked {Amount} grants in {ElapsedTime} milliseconds",
             affectedGrants,
             timer.ElapsedMilliseconds);
+    }
+
+    private async Task UpdateAuthorizationGrant(AuthorizationGrant authorizationGrant, string authenticationContextReference, IReadOnlyCollection<string> authenticationMethodReferences, CancellationToken cancellationToken)
+    {
+        var acr = await GetAuthenticationContextReference(authenticationContextReference, cancellationToken);
+        var amr = await GetAuthenticationMethodReferences(authenticationMethodReferences, cancellationToken);
+
+        authorizationGrant.UpdateAuthTime();
+        authorizationGrant.AuthenticationContextReference = acr;
+        authorizationGrant.AuthenticationMethodReferences.Clear();
+
+        foreach (var reference in amr)
+        {
+            authorizationGrant.AuthenticationMethodReferences.Add(reference);
+        }
+
+        await RevokeTokens(authorizationGrant.Id, cancellationToken);
     }
 
     private async Task<int> RevokeTokens(string authorizationGrantId, CancellationToken cancellationToken)
