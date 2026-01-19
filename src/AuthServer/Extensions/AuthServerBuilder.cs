@@ -383,6 +383,7 @@ public class AuthServerBuilder
             .AddKeyedScoped<IEndpointHandler, DeviceAuthorizationEndpointHandler>(EndpointNameConstants.DeviceAuthorization)
             .AddSingleton<IEndpointModule, DeviceAuthorizationEndpointModule>()
             .AddScoped<IDeviceCodeGrantService, DeviceCodeGrantService>()
+            .AddScoped<IDeviceAuthorizeService, DeviceAuthorizeService>()
             .AddScoped<IRequestHandler<DeviceAuthorizationRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestHandler>()
             .AddScoped<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>, DeviceAuthorizationRequestValidator>()
             .AddScoped<IRequestProcessor<DeviceAuthorizationValidatedRequest, DeviceAuthorizationResponse>, DeviceAuthorizationRequestProcessor>();
