@@ -96,7 +96,7 @@
 
       <!-- right side -->
       <div class="flex items-center space-x-1">
-        <a href="https://github.com/jokk-itu/authserver" target="_blank">
+        <a href="https://github.com/jokk-itu/authserver-framework" target="_blank">
           <img
             src="{base}/github.svg"
             alt="Github"
