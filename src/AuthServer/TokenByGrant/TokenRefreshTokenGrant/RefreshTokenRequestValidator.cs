@@ -5,22 +5,17 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.Entities;
-using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
-using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 
 internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>
 {
-    private readonly AuthorizationDbContext _identityContext;
     private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly ICachedClientStore _cachedClientStore;
 
     public RefreshTokenRequestValidator(
-        AuthorizationDbContext identityContext,
         IServerTokenDecoder serverTokenDecoder,
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
@@ -29,7 +24,6 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
         IDPoPService dPoPService)
         : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
     {
-        _identityContext = identityContext;
         _serverTokenDecoder = serverTokenDecoder;
         _cachedClientStore = cachedClientStore;
     }
@@ -101,19 +95,9 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
             TokenTypes = [TokenTypeHeaderConstants.RefreshToken]
         }, cancellationToken);
 
-        if (validatedToken is null)
-        {
-            return null;
-        }
-
-        var jti = Guid.Parse(validatedToken.Jti);
-        var isActive = await _identityContext
-            .Set<RefreshToken>()
-            .Where(x => x.Id == jti)
-            .Where(Token.IsActive)
-            .AnyAsync(cancellationToken: cancellationToken);
-
-        return isActive ? new RefreshTokenValidationResult(validatedToken.GrantId!, validatedToken.Jkt) : null;
+        return validatedToken is not null
+            ? new RefreshTokenValidationResult(validatedToken.GrantId!, validatedToken.Jkt)
+            : null;
     }
 
     private sealed record RefreshTokenValidationResult(string AuthorizationGrantId, string? Jkt);

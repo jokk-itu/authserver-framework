@@ -72,14 +72,29 @@ internal class ServerTokenDecoder : IServerTokenDecoder
     /// <inheritdoc/>
     public async Task<TokenResult?> Validate(string token, ServerTokenDecodeArguments arguments, CancellationToken cancellationToken)
     {
-        TokenTypeTag? tokenTypeTag;
         var stopWatch = Stopwatch.StartNew();
         if (TokenHelper.IsJsonWebToken(token))
+        {
+            var jwtResult = await ValidateJsonWebToken(token, arguments, stopWatch);
+            if (jwtResult?.Typ != TokenTypeHeaderConstants.RefreshToken)
+            {
+                return jwtResult;
+            }
+
+            // If the token is a refresh token, we also try to validate its reference
+            token = jwtResult.Jti;
+        }
+
+        return await ValidateReferenceToken(token, arguments, stopWatch, cancellationToken);
+    }
+
+    private async Task<TokenResult?> ValidateJsonWebToken(string token, ServerTokenDecodeArguments arguments,
+        Stopwatch stopWatch)
         {
             var jsonWebTokenTokenResult = await ValidateJsonWebToken(token, arguments);
             stopWatch.Stop();
 
-            tokenTypeTag = jsonWebTokenTokenResult is null
+        TokenTypeTag? tokenTypeTag = jsonWebTokenTokenResult is null
                 ? null
                 : TokenHelper.MapTokenTypHeaderToTokenTypeTag(jsonWebTokenTokenResult.Typ);
 
@@ -91,10 +106,13 @@ internal class ServerTokenDecoder : IServerTokenDecoder
             return jsonWebTokenTokenResult;
         }
 
+    private async Task<TokenResult?> ValidateReferenceToken(string token, ServerTokenDecodeArguments arguments,
+        Stopwatch stopWatch, CancellationToken cancellationToken)
+    {
         var referenceTokenResult = await ValidateReferenceToken(token, arguments, cancellationToken);
         stopWatch.Stop();
 
-        tokenTypeTag = referenceTokenResult is null
+        TokenTypeTag? tokenTypeTag = referenceTokenResult is null
             ? null
             : TokenHelper.MapTokenTypHeaderToTokenTypeTag(referenceTokenResult.Typ);
 
