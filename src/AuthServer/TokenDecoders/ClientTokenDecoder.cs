@@ -21,10 +21,12 @@ internal class ClientTokenDecoder : IClientTokenDecoder
     private readonly IClientJwkService _clientJwkService;
     private readonly IMetricService _metricService;
     private readonly IOptionsSnapshot<JwksDocument> _jwkDocumentOptions;
+    private readonly IOptionsSnapshot<TokenValidationOptions> _tokenValidationOptions;
     private readonly IEndpointResolver _endpointResolver;
 
     public ClientTokenDecoder(
         IOptionsSnapshot<JwksDocument> jwkDocumentOptions,
+        IOptionsSnapshot<TokenValidationOptions> tokenValidationOptions,
         IEndpointResolver endpointResolver,
         ILogger<ClientTokenDecoder> logger,
         ITokenReplayCache tokenReplayCache,
@@ -32,6 +34,7 @@ internal class ClientTokenDecoder : IClientTokenDecoder
         IMetricService metricService)
     {
         _jwkDocumentOptions = jwkDocumentOptions;
+        _tokenValidationOptions = tokenValidationOptions;
         _endpointResolver = endpointResolver;
         _logger = logger;
         _tokenReplayCache = tokenReplayCache;
@@ -105,7 +108,7 @@ internal class ClientTokenDecoder : IClientTokenDecoder
     {
         var tokenValidationParameters = new TokenValidationParameters
         {
-            ClockSkew = new TimeSpan(0),
+            ClockSkew = _tokenValidationOptions.Value.ClockSkew,
             ValidTypes = [arguments.TokenType],
             ValidIssuer = arguments.ClientId,
             ValidAudiences = [GetAudience(arguments.Audience)],
@@ -155,23 +158,16 @@ internal class ClientTokenDecoder : IClientTokenDecoder
         }
 
         var expires = jsonWebToken.ValidTo;
-        if (expires > DateTime.UtcNow.AddSeconds(60))
+        if (expires > DateTime.UtcNow.Add(_tokenValidationOptions.Value.ClientTokenLifetimeWindow))
         {
-            _logger.LogWarning("Token exp claim {Expires} is more than 60 seconds in the future", expires);
+            _logger.LogWarning("Token exp claim {Expires} is too far in the future", expires);
             return false;
         }
 
         var notBefore = jsonWebToken.ValidFrom;
-        if (notBefore < DateTime.UtcNow.AddSeconds(-60))
+        if (notBefore < DateTime.UtcNow.Subtract(_tokenValidationOptions.Value.ClientTokenLifetimeWindow))
         {
-            _logger.LogWarning("Token nbf claim {NotBefore} is more than 60 seconds in the past", notBefore);
-            return false;
-        }
-
-        var issuedAt = jsonWebToken.IssuedAt;
-        if (issuedAt < DateTime.UtcNow.AddSeconds(-60))
-        {
-            _logger.LogWarning("Token iat claim {IssuedAt} is more than 60 seconds in the past", issuedAt);
+            _logger.LogWarning("Token nbf claim {NotBefore} is too far in the past", notBefore);
             return false;
         }
 

@@ -121,6 +121,7 @@ public class AuthServerBuilder
     {
         _services
             .ConfigureOptions<PostConfigureDiscoveryDocumentOptions>()
+            .ConfigureOptions<PostConfigureTokenValidationOptions>()
             .ConfigureOptions<ValidateDiscoveryDocumentOptions>()
             .ConfigureOptions<ValidateJwksDocument>()
             .ConfigureOptions<ValidateUserInteractionOptions>();
