@@ -10,7 +10,9 @@ using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AuthServer.TokenByGrant.TokenDeviceCodeGrant;
 internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>
@@ -18,6 +20,7 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
     private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly ICodeEncoder<EncodedDeviceCode> _deviceCodeEncoder;
     private readonly ICachedClientStore _cachedEntityStore;
+    private readonly IOptionsMonitor<TokenValidationOptions> _tokenValidationOptions;
 
     public DeviceCodeRequestValidator(
         AuthorizationDbContext authorizationDbContext,
@@ -28,6 +31,7 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
         IConsentRepository consentRepository,
         IDPoPService dPoPService)
         : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
+        IOptionsMonitor<TokenValidationOptions> tokenValidationOptions,
     {
         _authorizationDbContext = authorizationDbContext;
         _deviceCodeEncoder = deviceCodeEncoder;
@@ -118,7 +122,12 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             return TokenError.InvalidDeviceCode;
         }
 
-        if (!Code.IsActive.Compile().Invoke(deviceCodeResult.DeviceCode))
+        if (deviceCodeResult.DeviceCode.RedeemedAt is not null)
+        {
+            return TokenError.DeviceCodeRedeemed;
+        }
+
+        if (deviceCodeResult.DeviceCode.ExpiresAt.Add(_tokenValidationOptions.CurrentValue.ClockSkew) < DateTime.UtcNow)
         {
             return TokenError.DeviceCodeExpired;
         }

@@ -69,6 +69,9 @@ internal static class TokenError
     public static readonly ProcessError DeviceCodeExpired =
         new(ErrorCode.ExpiredToken, "device_code has expired", ResultCode.BadRequest);
 
+    public static readonly ProcessError DeviceCodeRedeemed =
+        new(ErrorCode.InvalidRequest, "device_code has been redeemed", ResultCode.BadRequest);
+
     public static SlowDownProcessError DeviceSlowDown(string deviceCodeId) =>
         new(deviceCodeId, ErrorCode.SlowDown, "device authorization is pending", ResultCode.BadRequest);
 
