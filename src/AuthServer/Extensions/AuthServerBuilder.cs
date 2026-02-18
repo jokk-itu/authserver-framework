@@ -113,7 +113,8 @@ public class AuthServerBuilder
             .AddScoped<INonceRepository, NonceRepository>()
             .AddScoped<ISessionRepository, SessionRepository>()
             .AddScoped<IDeviceCodeRepository, DeviceCodeRepository>()
-            .AddScoped<IUserCodeRepository, UserCodeRepository>();
+            .AddScoped<IUserCodeRepository, UserCodeRepository>()
+            .AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
     }
 
     private void AddOptions()
