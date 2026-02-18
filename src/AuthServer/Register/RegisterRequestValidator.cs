@@ -1092,8 +1092,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         if (request.RequestUriExpiration is null)
         {
             validatedRequest.RequestUriExpiration =
-                validatedRequest.GrantTypes.Contains(GrantTypeConstants.AuthorizationCode)
-                && validatedRequest.TokenEndpointAuthMethod != TokenEndpointAuthMethod.None
+                validatedRequest.GrantTypes.IsIntersected(GrantTypeConstants.OpenIdConnectInitiatingGrantTypes)
                     ? 300
                     : null;
 

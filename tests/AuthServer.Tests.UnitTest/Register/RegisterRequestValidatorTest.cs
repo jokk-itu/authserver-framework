@@ -1517,6 +1517,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.GrantTypes, validatedRequest.Value!.GrantTypes);
         Assert.Equal(3600, validatedRequest.Value!.AccessTokenExpiration);
         Assert.Equal(300, validatedRequest.Value!.DPoPNonceExpiration);
+        Assert.Equal(300, validatedRequest.Value.RequestUriExpiration);
     }
 
     [Fact]
