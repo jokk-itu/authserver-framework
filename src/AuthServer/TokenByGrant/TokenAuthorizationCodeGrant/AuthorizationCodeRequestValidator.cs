@@ -7,21 +7,18 @@ using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.Entities;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
-using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
 
 internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>
 {
-    private readonly AuthorizationDbContext _identityContext;
     private readonly ICodeEncoder<EncodedAuthorizationCode> _authorizationCodeEncoder;
     private readonly ICachedClientStore _cachedEntityStore;
+    private readonly IAuthorizationCodeRepository _authorizationCodeRepository;
 
     public AuthorizationCodeRequestValidator(
-        AuthorizationDbContext identityContext,
         ICodeEncoder<EncodedAuthorizationCode> authorizationCodeEncoder,
         IClientAuthenticationService clientAuthenticationService,
         IClientRepository clientRepository,
@@ -29,10 +26,11 @@ internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestV
         IConsentRepository consentRepository,
         IDPoPService dPoPService)
         : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
+        IAuthorizationCodeRepository authorizationCodeRepository,
     {
-        _identityContext = identityContext;
         _authorizationCodeEncoder = authorizationCodeEncoder;
         _cachedEntityStore = cachedEntityStore;
+        _authorizationCodeRepository = authorizationCodeRepository;
     }
     
     public async Task<ProcessResult<AuthorizationCodeValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -73,16 +71,8 @@ internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestV
             return clientAuthenticationResult.Error!;
         }
 
-        var hasActiveGrant = await _identityContext
-            .Set<AuthorizationCodeGrant>()
-            .Where(x => x.Id == authorizationCode.AuthorizationGrantId)
-            .Where(x => x.AuthorizationCodes
-                .AsQueryable()
-                .Where(y => y.Id == authorizationCode.AuthorizationCodeId)
-                .Any(Code.IsActive))
-            .AnyAsync(AuthorizationGrant.IsActive, cancellationToken);
-
-        if (!hasActiveGrant)
+        var isActiveCode = await _authorizationCodeRepository.IsActiveAuthorizationCode(authorizationCode.AuthorizationCodeId, cancellationToken);
+        if (!isActiveCode)
         {
             return TokenError.InvalidGrant;
         }
