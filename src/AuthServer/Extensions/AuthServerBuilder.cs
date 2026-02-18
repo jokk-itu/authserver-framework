@@ -99,7 +99,8 @@ public class AuthServerBuilder
             .AddScoped<IClientSectorService, ClientSectorService>()
             .AddScoped<IClientLogoutService, ClientLogoutService>()
             .AddScoped<ISecureRequestService, SecureRequestService>()
-            .AddScoped<IDPoPService, DPoPService>();
+            .AddScoped<IDPoPService, DPoPService>()
+            .AddScoped<IScopeResourceService, ScopeResourceService>();
     }
 
     private void AddRepositories()
