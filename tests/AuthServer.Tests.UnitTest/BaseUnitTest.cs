@@ -71,40 +71,40 @@ public abstract class BaseUnitTest
 
     protected IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        services.AddOptions<DiscoveryDocument>().Configure(discoveryDocument =>
+        services.AddOptions<DiscoveryDocument>().Configure(options =>
         {
-            discoveryDocument.Issuer = "https://localhost:5000";
-            discoveryDocument.ClaimsSupported = ClaimNameConstants.SupportedEndUserClaims;
-            discoveryDocument.AcrValuesSupported =
+            options.Issuer = "https://localhost:5000";
+            options.ClaimsSupported = ClaimNameConstants.SupportedEndUserClaims;
+            options.AcrValuesSupported =
                 [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
 
             var supportedSigningAlgorithms = new[] { JwsAlgConstants.RsaSha256, JwsAlgConstants.EcdsaSha256 };
             var supportedEncryptionAlgorithms = new[] { JweAlgConstants.RsaPKCS1, JweAlgConstants.EcdhEsA128KW };
             var supportedEncryptionEncoding = new[] { JweEncConstants.Aes128CbcHmacSha256 };
 
-            discoveryDocument.IntrospectionEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
-            discoveryDocument.RevocationEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
-            discoveryDocument.DPoPSigningAlgValuesSupported = supportedSigningAlgorithms;
-            
-            discoveryDocument.TokenEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
-            discoveryDocument.TokenEndpointAuthEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
-            discoveryDocument.TokenEndpointAuthEncryptionEncValuesSupported = supportedEncryptionEncoding;
+            options.IntrospectionEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
+            options.RevocationEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
+            options.DPoPSigningAlgValuesSupported = supportedSigningAlgorithms;
 
-            discoveryDocument.RequestObjectSigningAlgValuesSupported = supportedSigningAlgorithms;
-            discoveryDocument.RequestObjectEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
-            discoveryDocument.RequestObjectEncryptionEncValuesSupported = supportedEncryptionEncoding;
+            options.TokenEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
+            options.TokenEndpointAuthEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            options.TokenEndpointAuthEncryptionEncValuesSupported = supportedEncryptionEncoding;
 
-            discoveryDocument.UserinfoSigningAlgValuesSupported = supportedSigningAlgorithms;
-            discoveryDocument.UserinfoEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
-            discoveryDocument.UserinfoEncryptionEncValuesSupported = supportedEncryptionEncoding;
+            options.RequestObjectSigningAlgValuesSupported = supportedSigningAlgorithms;
+            options.RequestObjectEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            options.RequestObjectEncryptionEncValuesSupported = supportedEncryptionEncoding;
 
-            discoveryDocument.IdTokenSigningAlgValuesSupported = supportedSigningAlgorithms;
-            discoveryDocument.IdTokenEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
-            discoveryDocument.IdTokenEncryptionEncValuesSupported = supportedEncryptionEncoding;
+            options.UserinfoSigningAlgValuesSupported = supportedSigningAlgorithms;
+            options.UserinfoEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            options.UserinfoEncryptionEncValuesSupported = supportedEncryptionEncoding;
+
+            options.IdTokenSigningAlgValuesSupported = supportedSigningAlgorithms;
+            options.IdTokenEncryptionAlgValuesSupported = supportedEncryptionAlgorithms;
+            options.IdTokenEncryptionEncValuesSupported = supportedEncryptionEncoding;
         });
-        services.AddOptions<JwksDocument>().Configure(jwksDocument =>
+        services.AddOptions<JwksDocument>().Configure(options =>
         {
-            jwksDocument.SigningKeys =
+            options.SigningKeys =
             [
                 new(RsaSecurityKey, SigningAlg.RsaSha256),
                 new(RsaSecurityKey, SigningAlg.RsaSha384),
@@ -117,7 +117,7 @@ public abstract class BaseUnitTest
                 new(ECDsaSecurityKey, SigningAlg.EcdsaSha512),
             ];
 
-            jwksDocument.EncryptionKeys =
+            options.EncryptionKeys =
             [
                 new(RsaSecurityKey, EncryptionAlg.RsaOAEP),
                 new(RsaSecurityKey, EncryptionAlg.RsaPKCS1),
@@ -126,16 +126,20 @@ public abstract class BaseUnitTest
                 new(ECDsaSecurityKey, EncryptionAlg.EcdhEsA256KW)
             ];
 
-            jwksDocument.GetTokenSigningKey =
-                () => jwksDocument.SigningKeys.Single(x => x.Alg == TokenSigningAlg);
+            options.GetTokenSigningKey =
+                () => options.SigningKeys.Single(x => x.Alg == TokenSigningAlg);
         });
-        services.AddOptions<UserInteraction>().Configure(userInteraction =>
+        services.AddOptions<UserInteraction>().Configure(options =>
         {
-            userInteraction.LoginUri = "https://localhost:5000/login";
-            userInteraction.ConsentUri = "https://localhost:5000/consent";
-            userInteraction.AccountSelectionUri = "https://localhost:5000/select-account";
-            userInteraction.EndSessionUri = "https://localhost:5000/logout";
-            userInteraction.VerificationUri = "https://localhost:5000/device";
+            options.LoginUri = "https://localhost:5000/login";
+            options.ConsentUri = "https://localhost:5000/consent";
+            options.AccountSelectionUri = "https://localhost:5000/select-account";
+            options.EndSessionUri = "https://localhost:5000/logout";
+            options.VerificationUri = "https://localhost:5000/device";
+        });
+        services.AddOptions<TokenValidationOptions>().Configure(options =>
+        {
+            options.ClockSkew = TimeSpan.FromSeconds(10);
         });
 
         services
