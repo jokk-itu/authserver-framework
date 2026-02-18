@@ -6,4 +6,5 @@ public interface IAuthenticatedUserAccessor
 {
     Task<AuthenticatedUser?> GetAuthenticatedUser();
     Task<int> CountAuthenticatedUsers();
+    Task ClearAuthenticatedUser();
 }
