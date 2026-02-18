@@ -97,7 +97,7 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
         return new DeviceCodeValidatedRequest
         {
             ClientId = clientId,
-            AuthorizationGrantId = deviceCodeValidationResult.Value!.DeviceCodeGrant.Id,
+            AuthorizationGrantId = deviceCodeValidationResult.Value!.AuthorizationGrantId,
             DeviceCodeId = deviceCode.DeviceCodeId,
             DPoPJkt = deviceCode.DPoPJkt,
             Resource = request.Resource,
@@ -147,13 +147,8 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             return TokenError.DeviceAuthorizationPending(deviceCode.DeviceCodeId);
         }
 
-        if (!AuthorizationGrant.IsActive.Compile().Invoke(deviceCodeResult.DeviceCodeGrant))
-        {
-            return TokenError.InvalidGrant;
-        }
-
-        return new DeviceCodeResult(deviceCodeResult.DeviceCode, deviceCodeResult.DeviceCodeGrant);
+        return new DeviceCodeResult(deviceCodeResult.DeviceCodeGrant.Id);
     }
 
-    private sealed record DeviceCodeResult(DeviceCode DeviceCode, DeviceCodeGrant DeviceCodeGrant);
+    private sealed record DeviceCodeResult(string AuthorizationGrantId);
 }
