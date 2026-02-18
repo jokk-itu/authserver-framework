@@ -39,22 +39,27 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             }
         }
 
-        var authorizationCodeGrant = (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId, cancellationToken))!;
-        if (authorizationCodeGrant.Client.RequireConsent)
+        var authorizationCodeGrant =
+            (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId,
+                cancellationToken))!;
+
+        if (string.IsNullOrEmpty(request.GrantManagementAction) ||
+            request.GrantManagementAction == GrantManagementActionConstants.Create)
         {
-            if (string.IsNullOrEmpty(request.GrantManagementAction) || request.GrantManagementAction == GrantManagementActionConstants.Create)
-            {
-                await _consentGrantRepository.CreateGrantConsent(request.AuthorizationGrantId, request.Scope, request.Resource, cancellationToken);
-            }
-            else if (request.GrantManagementAction == GrantManagementActionConstants.Merge)
-            {
-                await _consentGrantRepository.MergeGrantConsent(request.AuthorizationGrantId, request.Scope, request.Resource, cancellationToken);
-            }
-            else if (request.GrantManagementAction == GrantManagementActionConstants.Replace)
-            {
-                await _consentGrantRepository.ReplaceGrantConsent(request.AuthorizationGrantId, request.Scope, request.Resource, cancellationToken);
-            }
+            await _consentGrantRepository.CreateGrantConsent(request.AuthorizationGrantId, request.Scope,
+                request.Resource, cancellationToken);
         }
+        else if (request.GrantManagementAction == GrantManagementActionConstants.Merge)
+        {
+            await _consentGrantRepository.MergeGrantConsent(request.AuthorizationGrantId, request.Scope,
+                request.Resource, cancellationToken);
+        }
+        else if (request.GrantManagementAction == GrantManagementActionConstants.Replace)
+        {
+            await _consentGrantRepository.ReplaceGrantConsent(request.AuthorizationGrantId, request.Scope,
+                request.Resource, cancellationToken);
+        }
+
 
         if (request.ResponseType == ResponseTypeConstants.Code)
         {
@@ -67,9 +72,11 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
         return new AuthorizeResponse();
     }
 
-    private string GetAuthorizationCode(AuthorizeValidatedRequest request, AuthorizationCodeGrant authorizationCodeGrant)
+    private string GetAuthorizationCode(AuthorizeValidatedRequest request,
+        AuthorizationCodeGrant authorizationCodeGrant)
     {
-        var authorizationCode = new AuthorizationCode(authorizationCodeGrant, authorizationCodeGrant.Client.AuthorizationCodeExpiration!.Value);
+        var authorizationCode = new AuthorizationCode(authorizationCodeGrant,
+            authorizationCodeGrant.Client.AuthorizationCodeExpiration!.Value);
         var nonce = new AuthorizationGrantNonce(request.Nonce!, request.Nonce!.Sha256(), authorizationCodeGrant);
 
         authorizationCodeGrant.AuthorizationCodes.Add(authorizationCode);
@@ -81,6 +88,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
                 AuthorizationGrantId = authorizationCodeGrant.Id,
                 AuthorizationCodeId = authorizationCode.Id,
                 Scope = request.Scope,
+                Resource = request.Resource,
                 RedirectUri = request.RedirectUri,
                 DPoPJkt = request.DPoPJkt,
                 CodeChallenge = request.CodeChallenge!,

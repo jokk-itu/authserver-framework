@@ -18,7 +18,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Process_ClientWithoutConsentAndWithRequestUri_ExpectAuthorizeResponseWithAuthorizationCode()
+    public async Task Process_ClientWithRequestUri_ExpectAuthorizeResponseWithAuthorizationCode()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -36,6 +36,17 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, levelOfAssurance);
         await AddEntity(authorizationGrant);
         await AddEntity(authorizeMessage);
+
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        await AddEntity(scopeConsent);
+
+        var weatherClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            ClientUri = "https://weather.authserver.dk"
+        };
+        weatherClient.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        await AddEntity(weatherClient);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var request = new AuthorizeValidatedRequest
@@ -125,7 +136,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Process_ClientWithConsent_ExpectAuthorizeResponseWithoutAuthorizationCode()
+    public async Task Process_ClientWithConsentAndResponseTypeNone_ExpectAuthorizeResponseWithoutAuthorizationCode()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
