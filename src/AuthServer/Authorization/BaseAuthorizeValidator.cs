@@ -84,7 +84,7 @@ internal class BaseAuthorizeValidator
         => string.IsNullOrEmpty(nonce) || !await _nonceRepository.IsNonceReplay(nonce, cancellationToken);
 
     protected async Task<bool> HasValidResource(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
-        => resources.Count != 0 && await _clientRepository.DoesResourcesExist(resources, scopes, cancellationToken);
+        => resources.Count != 0 && await _clientRepository.AreResourcesAuthorizedForScope(resources, scopes, cancellationToken);
 
     protected bool HasValidEmptyRequest(string? requestObject, string? requestUri, bool isRequiredByClient)
         => !string.IsNullOrEmpty(requestObject) || !string.IsNullOrEmpty(requestUri) || (!isRequiredByClient && !_discoveryDocumentOptions.Value.RequireSignedRequestObject);

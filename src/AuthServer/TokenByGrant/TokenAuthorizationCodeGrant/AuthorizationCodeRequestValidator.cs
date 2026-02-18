@@ -4,7 +4,6 @@ using AuthServer.Cache.Abstractions;
 using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
-using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Helpers;
@@ -21,12 +20,11 @@ internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestV
     public AuthorizationCodeRequestValidator(
         ICodeEncoder<EncodedAuthorizationCode> authorizationCodeEncoder,
         IClientAuthenticationService clientAuthenticationService,
-        IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentRepository consentRepository,
-        IDPoPService dPoPService)
-        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
         IAuthorizationCodeRepository authorizationCodeRepository,
+        IDPoPService dPoPService,
+        IScopeResourceService scopeResourceService)
+        : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _authorizationCodeEncoder = authorizationCodeEncoder;
         _cachedEntityStore = cachedEntityStore;
@@ -97,19 +95,13 @@ internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestV
             return dPoPResult.Error;
         }
 
-        var scopeValidationResult = await ValidateScope(authorizationCode.Scope, request.Resource, authorizationCode.AuthorizationGrantId, cachedClient, cancellationToken);
-        if (!scopeValidationResult.IsSuccess)
-        {
-            return scopeValidationResult.Error!;
-        }
-
         return new AuthorizationCodeValidatedRequest
         {
             ClientId = clientId,
             AuthorizationGrantId = authorizationCode.AuthorizationGrantId,
             AuthorizationCodeId = authorizationCode.AuthorizationCodeId,
             DPoPJkt = authorizationCode.DPoPJkt,
-            Resource = request.Resource,
+            Resource = authorizationCode.Resource,
             Scope = authorizationCode.Scope
         };
     }

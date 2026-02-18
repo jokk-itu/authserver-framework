@@ -51,6 +51,9 @@ internal static class TokenError
     public static readonly ProcessError ScopeExceedsConsentedScope =
         new(ErrorCode.InvalidScope, "scope exceeds consented scope", ResultCode.BadRequest);
 
+    public static readonly ProcessError ResourceExceedsConsentedResource =
+        new(ErrorCode.InvalidTarget, "resource exceeds consented resource", ResultCode.BadRequest);
+
     public static readonly ProcessError InvalidScope =
         new(ErrorCode.InvalidRequest, "scope is missing", ResultCode.BadRequest);
 

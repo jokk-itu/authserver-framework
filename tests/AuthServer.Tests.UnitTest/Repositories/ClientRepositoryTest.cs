@@ -49,7 +49,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
     }
 
     [Fact]
-    public async Task DoesResourcesExist_ClientForResourceAndScope_True()
+    public async Task AreResourcesAuthorizedForScope_ClientForResourceAndScope_True()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -62,21 +62,21 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         await AddEntity(client);
 
         // Act
-        var doesExist = await clientRepository.DoesResourcesExist([client.ClientUri], [ScopeConstants.OpenId], CancellationToken.None);
+        var doesExist = await clientRepository.AreResourcesAuthorizedForScope([client.ClientUri], [ScopeConstants.OpenId], CancellationToken.None);
 
         // Assert
         Assert.True(doesExist);
     }
 
     [Fact]
-    public async Task DoesResourcesExist_NoClientForResource_False()
+    public async Task AreResourcesAuthorizedForScope_NoClientForResource_False()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
 
         // Act
-        var doesExist = await clientRepository.DoesResourcesExist(["https://localhost:5000"], [ScopeConstants.OpenId], CancellationToken.None);
+        var doesExist = await clientRepository.AreResourcesAuthorizedForScope(["https://localhost:5000"], [ScopeConstants.OpenId], CancellationToken.None);
         
         // Assert
         Assert.False(doesExist);

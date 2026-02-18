@@ -2,7 +2,6 @@
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
-using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.TokenDecoders;
@@ -19,10 +18,9 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
         IServerTokenDecoder serverTokenDecoder,
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
-        IClientRepository clientRepository,
-        IConsentRepository consentRepository,
-        IDPoPService dPoPService)
-        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
+        IDPoPService dPoPService,
+        IScopeResourceService scopeResourceService)
+        : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _serverTokenDecoder = serverTokenDecoder;
         _cachedClientStore = cachedClientStore;
@@ -70,7 +68,12 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
             return dPoPResult.Error;
         }
 
-        var scopeValidationResult = await ValidateScope(request.Scope, request.Resource, refreshTokenValidationResult.AuthorizationGrantId, cachedClient, cancellationToken);
+        var scopeValidationResult = await ValidateGrantScopeResource(
+            request.Scope,
+            request.Resource,
+            refreshTokenValidationResult.AuthorizationGrantId,
+            cancellationToken);
+
         if (!scopeValidationResult.IsSuccess)
         {
             return scopeValidationResult.Error!;

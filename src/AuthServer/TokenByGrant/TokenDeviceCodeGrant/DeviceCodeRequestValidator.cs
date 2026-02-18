@@ -9,7 +9,6 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Helpers;
-using AuthServer.Repositories.Abstractions;
 using AuthServer.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -26,16 +25,16 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
         AuthorizationDbContext authorizationDbContext,
         ICodeEncoder<EncodedDeviceCode> deviceCodeEncoder,
         IClientAuthenticationService clientAuthenticationService,
-        IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentRepository consentRepository,
-        IDPoPService dPoPService)
-        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
         IOptionsMonitor<TokenValidationOptions> tokenValidationOptions,
+        IDPoPService dPoPService,
+        IScopeResourceService scopeResourceService)
+        : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _authorizationDbContext = authorizationDbContext;
         _deviceCodeEncoder = deviceCodeEncoder;
         _cachedEntityStore = cachedEntityStore;
+        _tokenValidationOptions = tokenValidationOptions;
     }
 
     public async Task<ProcessResult<DeviceCodeValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -88,20 +87,14 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             return dPoPResult.Error!;
         }
 
-        var scopeValidationResult = await ValidateScope(deviceCode.Scope, request.Resource, deviceCodeValidationResult.Value!.DeviceCodeGrant!.Id, cachedClient, cancellationToken);
-        if (!scopeValidationResult.IsSuccess)
-        {
-            return scopeValidationResult.Error!;
-        }
-
         return new DeviceCodeValidatedRequest
         {
             ClientId = clientId,
             AuthorizationGrantId = deviceCodeValidationResult.Value!.AuthorizationGrantId,
             DeviceCodeId = deviceCode.DeviceCodeId,
             DPoPJkt = deviceCode.DPoPJkt,
-            Resource = request.Resource,
-            Scope = scopeValidationResult.Value!
+            Resource = deviceCode.Resource,
+            Scope = deviceCode.Scope
         };
     }
 

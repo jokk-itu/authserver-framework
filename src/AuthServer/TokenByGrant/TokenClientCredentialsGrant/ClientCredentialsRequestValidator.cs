@@ -4,7 +4,6 @@ using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.Repositories.Abstractions;
 
 namespace AuthServer.TokenByGrant.TokenClientCredentialsGrant;
 
@@ -15,10 +14,9 @@ internal class ClientCredentialsRequestValidator : BaseTokenValidator, IRequestV
     public ClientCredentialsRequestValidator(
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
-        IClientRepository clientRepository,
         IDPoPService dPoPService,
-        IConsentRepository consentRepository)
-        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
+        IScopeResourceService scopeResourceService)
+        : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _cachedClientStore = cachedClientStore;
     }
@@ -60,7 +58,7 @@ internal class ClientCredentialsRequestValidator : BaseTokenValidator, IRequestV
             return dPoPResult.Error;
         }
 
-        var scopeValidationResult = await ValidateScope(request.Scope, request.Resource, null, cachedClient, cancellationToken);
+        var scopeValidationResult = await ValidateClientScopeResource(request.Scope, request.Resource, clientId, cancellationToken);
         if (!scopeValidationResult.IsSuccess)
         {
             return scopeValidationResult.Error!;

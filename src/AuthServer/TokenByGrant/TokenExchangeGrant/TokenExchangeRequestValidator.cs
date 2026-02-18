@@ -5,7 +5,6 @@ using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Helpers;
-using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenByGrant.TokenExchangeGrant.Abstractions;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
@@ -20,12 +19,11 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
     public TokenExchangeRequestValidator(
         IDPoPService dPoPService,
         IClientAuthenticationService clientAuthenticationService,
-        IConsentRepository consentRepository,
-        IClientRepository clientRepository,
         IServerTokenDecoder serverTokenDecoder,
         ICachedClientStore cachedClientStore,
+        IScopeResourceService scopeResourceService,
         IEnumerable<IExtendedTokenExchangeRequestValidator> extendedTokenExchangeRequestValidators)
-        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
+        : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _serverTokenDecoder = serverTokenDecoder;
         _cachedClientStore = cachedClientStore;
@@ -120,17 +118,27 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
 
         if (request.RequestedTokenType == TokenTypeIdentifier.AccessToken)
         {
-            var actorClientScopeValidationResult = await ValidateScope(request.Scope, request.Resource, null, cachedClient, cancellationToken);
+            var actorClientScopeValidationResult = await ValidateClientScopeResource(request.Scope, request.Resource, clientAuthenticationResult.Value!, cancellationToken);
             if (!actorClientScopeValidationResult.IsSuccess)
             {
                 return actorClientScopeValidationResult.Error!;
             }
 
-            var subjectTokenClient = await _cachedClientStore.Get(subjectTokenResult.ClientId, cancellationToken);
-            var subjectTokenClientScopeValidationResult = await ValidateScope(request.Scope, request.Resource, subjectTokenResult.GrantId, subjectTokenClient, cancellationToken);
-            if (!subjectTokenClientScopeValidationResult.IsSuccess)
+            if (string.IsNullOrEmpty(subjectTokenResult.GrantId))
             {
-                return subjectTokenClientScopeValidationResult.Error!;
+                var subjectTokenClientScopeValidationResult = await ValidateClientScopeResource(request.Scope, request.Resource, subjectTokenResult.ClientId, cancellationToken);
+                if (!subjectTokenClientScopeValidationResult.IsSuccess)
+                {
+                    return subjectTokenClientScopeValidationResult.Error!;
+                }
+            }
+            else
+            {
+                var subjectTokenClientScopeValidationResult = await ValidateGrantScopeResource(request.Scope, request.Resource, subjectTokenResult.GrantId, cancellationToken);
+                if (!subjectTokenClientScopeValidationResult.IsSuccess)
+                {
+                    return subjectTokenClientScopeValidationResult.Error!;
+                }
             }
         }
 
