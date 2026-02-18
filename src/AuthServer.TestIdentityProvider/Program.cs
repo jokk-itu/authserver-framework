@@ -125,6 +125,13 @@ builder.Services
         options.VerificationUri = identity.GetValue<string>("VerificationUri");
     });
 
+builder.Services
+    .AddOptions<TokenValidationOptions>()
+    .Configure(options =>
+    {
+        options.ClockSkew = TimeSpan.FromSeconds(10);
+    });
+
 builder.Services.AddSingleton<IDistributedCache, InMemoryCache>();
 builder.Services.AddScoped<IUserClaimService, UserClaimService>();
 builder.Services.AddScoped<IAuthenticatedUserAccessor, AuthenticatedUserAccessor>();
