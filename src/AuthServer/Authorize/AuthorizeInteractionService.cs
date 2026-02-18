@@ -139,12 +139,6 @@ internal class AuthorizeInteractionService : IAuthorizeInteractionService
             return grantIdPrompt;
         }
 
-        if (!authorizationGrant.Client.RequireConsent)
-        {
-            _logger.LogDebug("Client {ClientId} does not require consent, deducing prompt {Prompt}", authorizeRequest.ClientId, PromptConstants.None);
-            return InteractionResult.Success(authorizeUser.SubjectIdentifier, authorizeUser.AuthorizationGrantId);
-        }
-
         var consentedScope = await _consentGrantRepository.GetClientConsentedScopes(authorizeUser.SubjectIdentifier, authorizeRequest.ClientId!, cancellationToken);
         if (authorizeRequest.Scope.IsNotSubset(consentedScope))
         {

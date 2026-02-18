@@ -262,44 +262,6 @@ public class AuthorizeInteractionServiceIdTokenTest : BaseUnitTest
         Assert.False(interactionResult.IsSuccessful);
     }
 
-    [Fact]
-    public async Task GetInteractionResult_IdTokenHintConsentNotRequired_ExpectNone()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
-        });
-        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
-        {
-            RequireConsent = false
-        };
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
-        await AddEntity(authorizationGrant);
-
-        var idToken = JwtBuilder.GetIdToken(
-            client.Id, authorizationGrant.Id, subjectIdentifier.Id, session.Id,
-            [AuthenticationMethodReferenceConstants.Password], LevelOfAssuranceLow);
-
-        // Act
-        var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest
-            {
-                ClientId = client.Id,
-                IdTokenHint = idToken,
-                GrantId = authorizationGrant.Id
-            }, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(subjectIdentifier.Id, interactionResult.SubjectIdentifier);
-        Assert.True(interactionResult.IsSuccessful);
-    }
-
     [Theory]
     [InlineData(PromptConstants.None)]
     [InlineData(null)]

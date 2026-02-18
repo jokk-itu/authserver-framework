@@ -381,51 +381,6 @@ public class AuthorizeInteractionServiceCookieTest : BaseUnitTest
         authenticateUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_OneAuthenticatedUserConsentNotRequired_ExpectNone()
-    {
-        // Arrange
-        var authenticateUserAccessorMock = new Mock<IAuthenticatedUserAccessor>();
-        var serviceProvider = BuildServiceProvider(services =>
-        {
-            services.AddScopedMock(authenticateUserAccessorMock);
-            services.AddScopedMock(new Mock<IUserAccessor<AuthorizeUser>>());
-        });
-        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
-        {
-            RequireConsent = false
-        };
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
-        await AddEntity(authorizationGrant);
-
-        authenticateUserAccessorMock
-            .Setup(x => x.CountAuthenticatedUsers())
-            .ReturnsAsync(1)
-            .Verifiable();
-
-        authenticateUserAccessorMock
-            .Setup(x => x.GetAuthenticatedUser())
-            .ReturnsAsync(new AuthenticatedUser(subjectIdentifier.Id, authorizationGrant.Id))
-            .Verifiable();
-
-        // Act
-        var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest
-            {
-                ClientId = client.Id
-            }, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(subjectIdentifier.Id, interactionResult.SubjectIdentifier);
-        Assert.True(interactionResult.IsSuccessful);
-        authenticateUserAccessorMock.Verify();
-    }
-
     [Theory]
     [InlineData(PromptConstants.None)]
     [InlineData(null)]

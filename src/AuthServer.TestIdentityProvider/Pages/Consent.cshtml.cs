@@ -45,7 +45,7 @@ public class ConsentModel : PageModel
         public bool IsGranted { get; set; }
     }
 
-    public async Task OnGet(string returnUrl, CancellationToken cancellationToken)
+    public async Task<IActionResult> OnGet(string returnUrl, CancellationToken cancellationToken)
     {
         ReturnUrl = returnUrl ?? Url.Content("~/");
 
@@ -59,15 +59,22 @@ public class ConsentModel : PageModel
         var consentGrantDto = await _consentGrantService.GetConsentGrantDto(subject.Subject, clientId, cancellationToken);
         
         var requestedScope = request.Scope.ToList();
+        var requestedClaims = ClaimsHelper.MapToClaims(requestedScope).ToList();
 
         // Display requested claims, also if they are already consented. This makes sure the end-user can change their full consent.
-        var requestedClaims = ClaimsHelper.MapToClaims(requestedScope)
+        var requestedClaimDtos = requestedClaims
             .Select(x => new ClaimDto
             {
                 Name = x,
                 IsGranted = consentGrantDto.ConsentedClaims.Any(y => y == x)
             })
             .ToList();
+
+        if (!consentGrantDto.ClientRequiresConsent)
+        {
+            await _consentGrantService.HandleConsent(subject.Subject, clientId, requestedScope, requestedClaims, cancellationToken);
+            return Redirect(ReturnUrl);
+        }
 
         Input = new InputModel
         {
@@ -76,8 +83,10 @@ public class ConsentModel : PageModel
             ClientLogoUri = consentGrantDto.ClientLogoUri,
             Username = consentGrantDto.Username,
             RequestedScope = requestedScope,
-            RequestedClaims = requestedClaims
+            RequestedClaims = requestedClaimDtos
         };
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAccept(string returnUrl, CancellationToken cancellationToken)
