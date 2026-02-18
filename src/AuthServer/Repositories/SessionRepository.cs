@@ -28,7 +28,7 @@ internal class SessionRepository : ISessionRepository
             .Where(ag => ag.Session.Id == sessionId)
             .Where(AuthorizationGrant.IsActive)
             .SelectMany(g => g.GrantTokens)
-            .Where(Token.IsActive)
+            .Where(Token.IsActiveExpression)
             .ExecuteUpdateAsync(
                 propertyCall => propertyCall.SetProperty(gt => gt.RevokedAt, DateTime.UtcNow),
                 cancellationToken);

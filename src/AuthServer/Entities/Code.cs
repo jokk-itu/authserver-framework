@@ -1,5 +1,4 @@
 ﻿using AuthServer.Core;
-using System.Linq.Expressions;
 using AuthServer.Enums;
 
 namespace AuthServer.Entities;
@@ -23,9 +22,6 @@ public abstract class Code : Entity<string>
     public DateTime ExpiresAt { get; private init; }
     public DateTime? RedeemedAt { get; private set; }
     public CodeType CodeType { get; private init; }
-
-    public static readonly Expression<Func<Code, bool>> IsActive =
-        x => x.RedeemedAt == null && x.ExpiresAt > DateTime.UtcNow;
 
     public void Redeem()
     {
