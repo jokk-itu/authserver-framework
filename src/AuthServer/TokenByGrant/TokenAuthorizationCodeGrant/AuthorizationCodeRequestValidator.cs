@@ -38,11 +38,6 @@ internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestV
             return TokenError.UnsupportedGrantType;
         }
 
-        if (request.Resource.Count == 0)
-        {
-            return TokenError.InvalidResource;
-        }
-
         var authorizationCode = _authorizationCodeEncoder.Decode(request.Code);
         if (authorizationCode is null)
         {

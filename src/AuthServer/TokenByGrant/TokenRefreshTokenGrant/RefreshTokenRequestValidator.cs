@@ -38,11 +38,6 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
             return TokenError.InvalidRefreshToken;
         }
 
-        if (request.Resource.Count == 0)
-        {
-            return TokenError.InvalidResource;
-        }
-
         var clientAuthenticationResult = await AuthenticateClient(request.ClientAuthentications, cancellationToken);
         if (!clientAuthenticationResult.IsSuccess)
         {

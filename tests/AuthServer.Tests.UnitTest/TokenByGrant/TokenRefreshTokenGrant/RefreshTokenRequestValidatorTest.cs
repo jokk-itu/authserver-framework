@@ -59,27 +59,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_EmptyResource_ExpectInvalidResource()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = "token"
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.InvalidResource, processResult);
-    }
-
-    [Fact]
     public async Task Validate_NoClientAuthentication_ExpectMultipleOrNoneClientMethod()
     {
         // Arrange
@@ -90,8 +69,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = "token",
-            Resource = ["resource"]
+            RefreshToken = "token"
         };
 
         // Act
@@ -113,7 +91,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = "token",
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -149,7 +126,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = jwtRefreshToken,
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -185,7 +161,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = jwtRefreshToken,
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -223,7 +198,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = jwtRefreshToken,
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -254,7 +228,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = "invalid_reference",
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -287,7 +260,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -321,7 +293,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -355,7 +326,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -393,7 +363,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
             ClientAuthentications = [
                 new ClientSecretAuthentication(
                     TokenEndpointAuthMethod.ClientSecretBasic,
@@ -439,7 +408,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
             DPoP = dPoP,
             ClientAuthentications = [
                 new ClientSecretAuthentication(
@@ -484,7 +452,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
             DPoP = dPoP,
             ClientAuthentications = [
                 new ClientSecretAuthentication(
@@ -535,7 +502,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
             DPoP = dPoP,
             ClientAuthentications = [
                 new ClientSecretAuthentication(
@@ -551,214 +517,6 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         // Assert
         Assert.Equal(TokenError.InvalidDPoPJktMatch, processResult);
         dPoPService.Verify();
-    }
-
-    [Fact]
-    public async Task Validate_NoConsent_ExpectConsentRequired()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var refreshToken = await GetRefreshToken(client);
-        refreshToken.AuthorizationGrant.AuthorizationGrantConsents.Clear();
-        await SaveChangesAsync();
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = refreshToken.Reference,
-            Resource = ["resource"],
-            ClientAuthentications = [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.ConsentRequired, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ConsentRequiredWithUnauthorizedScopeForClient_ExpectUnauthorizedForScope()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-        client.Scopes.Clear();
-
-        var refreshToken = await GetRefreshToken(client);
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = refreshToken.Reference,
-            Scope = [ScopeConstants.OpenId],
-            Resource = ["https://weather.authserver.dk"],
-            ClientAuthentications = [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.UnauthorizedForScope, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ConsentRequiredWithRequestScope_ExpectScopeExceedsConsentedScope()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var refreshToken = await GetRefreshToken(client);
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = refreshToken.Reference,
-            Scope = [ScopeConstants.Profile],
-            Resource = ["resource"],
-            ClientAuthentications = [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.ScopeExceedsConsentedScope, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ConsentRequiredWithRequestScopeAndResource_ExpectScopeExceedsConsentedScope()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-
-        var refreshToken = await GetRefreshToken(client);
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = refreshToken.Reference,
-            Scope = [ScopeConstants.OpenId],
-            Resource = ["other_resource"],
-            ClientAuthentications = [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.ScopeExceedsConsentedScope, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ConsentNotRequiredWithRequestScope_ExpectUnauthorizedForScope()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-        client.Scopes.Clear();
-        client.RequireConsent = false;
-
-        var refreshToken = await GetRefreshToken(client);
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = refreshToken.Reference,
-            Scope = [ScopeConstants.Profile],
-            Resource = ["resource"],
-            ClientAuthentications = [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.UnauthorizedForScope, processResult);
-    }
-
-    [Fact]
-    public async Task Validate_ConsentNotRequiredWithInvalidResource_ExpectInvalidResource()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var refreshTokenRequestValidator = serviceProvider
-            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
-
-        var plainSecret = CryptographyHelper.GetRandomString(16);
-        var client = await GetClient(plainSecret);
-        client.RequireConsent = false;
-
-        var refreshToken = await GetRefreshToken(client);
-
-        var request = new TokenRequest
-        {
-            GrantType = GrantTypeConstants.RefreshToken,
-            RefreshToken = refreshToken.Reference,
-            Resource = ["invalid_resource"],
-            ClientAuthentications = [
-                new ClientSecretAuthentication(
-                    TokenEndpointAuthMethod.ClientSecretBasic,
-                    client.Id,
-                    plainSecret)
-            ]
-        };
-
-        // Act
-        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(TokenError.InvalidResource, processResult);
     }
 
     [Fact]
@@ -779,7 +537,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         var refreshToken = await GetRefreshToken(client);
 
         var jwtRefreshToken = JwtBuilder.GetRefreshToken(
-            client.Id, refreshToken.AuthorizationGrant.Id, refreshToken.Id.ToString());
+            client.Id, refreshToken.AuthorizationGrant.Id, refreshToken.Reference);
 
         var weatherClient = await GetWeatherClient();
 

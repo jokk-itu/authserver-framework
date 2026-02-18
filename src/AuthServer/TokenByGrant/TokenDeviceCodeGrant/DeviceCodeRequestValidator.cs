@@ -44,11 +44,6 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             return TokenError.UnsupportedGrantType;
         }
 
-        if (request.Resource.Count == 0)
-        {
-            return TokenError.InvalidResource;
-        }
-
         var deviceCode = _deviceCodeEncoder.Decode(request.DeviceCode);
         if (deviceCode is null)
         {
