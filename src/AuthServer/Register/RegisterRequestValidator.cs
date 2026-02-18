@@ -248,7 +248,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return backchannelLogoutUriError;
         }
 
-        var clientUriError = ValidateClientUri(request, validatedRequest);
+        var clientUriError = await ValidateClientUri(request, validatedRequest);
         if (clientUriError is not null)
         {
             return clientUriError;
@@ -617,7 +617,7 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
-    private static ProcessError? ValidateClientUri(RegisterRequest request, RegisterValidatedRequest validatedRequest)
+    private async Task<ProcessError?> ValidateClientUri(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
         if (string.IsNullOrEmpty(request.ClientUri))
         {
@@ -625,6 +625,17 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
         }
 
         if (!UrlHelper.IsUrlValidForWebClient(request.ClientUri))
+        {
+            return RegisterError.InvalidClientUri;
+        }
+
+        var clientId = await _authorizationDbContext
+            .Set<Client>()
+            .Where(x => x.ClientUri == request.ClientUri)
+            .Select(x => x.Id)
+            .SingleOrDefaultAsync();
+
+        if (!string.IsNullOrEmpty(clientId) && clientId != request.ClientId)
         {
             return RegisterError.InvalidClientUri;
         }

@@ -570,6 +570,35 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_ClientUriExists_ExpectInvalidClientUri()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var client = new Client("other-web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            ClientUri = "https://webapp.authserver.dk"
+        };
+        await AddEntity(client);
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            RedirectUris = ["https://webapp.authserver.dk/callback"],
+            ClientUri = "https://webapp.authserver.dk"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidClientUri, processResult);
+    }
+
+    [Fact]
     public async Task Validate_InvalidPolicyUri_ExpectInvalidPolicyUri()
     {
         // Arrange
