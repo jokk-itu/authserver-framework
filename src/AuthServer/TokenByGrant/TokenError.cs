@@ -117,4 +117,6 @@ internal static class TokenError
     public static readonly ProcessError InvalidResourceForIdToken =
         new(ErrorCode.InvalidTarget, "resource is not supported for id_token", ResultCode.BadRequest);
 
+    public static readonly ProcessError OfflineAccessScopeRequired =
+        new(ErrorCode.InvalidScope, "offline_access scope is required for refresh token", ResultCode.BadRequest);
 }

@@ -73,6 +73,10 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
         {
             return scopeValidationResult.Error!;
         }
+        else if (!scopeValidationResult.Value!.Contains(ScopeConstants.OfflineAccess))
+        {
+            return TokenError.OfflineAccessScopeRequired;
+        }
 
         return new RefreshTokenValidatedRequest
         {

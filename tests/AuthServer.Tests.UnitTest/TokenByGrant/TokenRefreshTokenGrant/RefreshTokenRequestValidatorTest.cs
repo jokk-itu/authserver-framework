@@ -5,6 +5,7 @@ using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
@@ -517,6 +518,62 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         // Assert
         Assert.Equal(TokenError.InvalidDPoPJktMatch, processResult);
         dPoPService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_ScopeDoesNotContainOfflineAccess_ExpectOfflineAccessScopeRequired()
+    {
+        // Arrange
+        var scopeResourceService = new Mock<IScopeResourceService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(scopeResourceService);
+        });
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client);
+
+        var jwtRefreshToken = JwtBuilder.GetRefreshToken(
+            client.Id, refreshToken.AuthorizationGrant.Id, refreshToken.Reference);
+
+        var weatherClient = await GetWeatherClient();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = jwtRefreshToken,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [weatherClient.ClientUri!],
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        scopeResourceService
+            .Setup(x => x.ValidateScopeResourceForGrant(
+                request.Scope,
+                request.Resource,
+                refreshToken.AuthorizationGrant.Id,
+                CancellationToken.None))
+            .ReturnsAsync(new ScopeResourceValidationResult
+            {
+                Scopes = [ScopeConstants.OpenId]
+            })
+            .Verifiable();
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(TokenError.OfflineAccessScopeRequired, processResult.Error);
     }
 
     [Fact]
