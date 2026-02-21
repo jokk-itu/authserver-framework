@@ -1547,6 +1547,38 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(3600, validatedRequest.Value!.AccessTokenExpiration);
         Assert.Equal(300, validatedRequest.Value!.DPoPNonceExpiration);
         Assert.Equal(300, validatedRequest.Value.RequestUriExpiration);
+        Assert.Equal([ScopeConstants.OpenId], validatedRequest.Value.Scope);
+    }
+
+    [Fact]
+    public async Task Validate_MinimumRequestWithDeviceCodeAndRefresh_ExpectRegisterValidatedRequest()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "tv-app",
+            ApplicationType = ApplicationTypeConstants.Native,
+            RedirectUris = ["app.oidc://callback"],
+            GrantTypes = [GrantTypeConstants.DeviceCode, GrantTypeConstants.RefreshToken]
+        };
+
+        // Act
+        var validatedRequest = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.True(validatedRequest.IsSuccess);
+        Assert.Equal(request.Method, validatedRequest.Value!.Method);
+        Assert.Equal(request.ClientName, validatedRequest.Value!.ClientName);
+        Assert.Equal(request.GrantTypes, validatedRequest.Value!.GrantTypes);
+        Assert.Equal(3600, validatedRequest.Value!.AccessTokenExpiration);
+        Assert.Equal(300, validatedRequest.Value!.DPoPNonceExpiration);
+        Assert.Equal(300, validatedRequest.Value.RequestUriExpiration);
+        Assert.Equal([ScopeConstants.OpenId, ScopeConstants.OfflineAccess], validatedRequest.Value.Scope);
     }
 
     [Fact]
@@ -1622,7 +1654,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         {
             Method = HttpMethod.Post,
             ClientName = "web-app",
-            GrantTypes = [GrantTypeConstants.AuthorizationCode],
+            GrantTypes = [GrantTypeConstants.AuthorizationCode, GrantTypeConstants.RefreshToken],
             ApplicationType = ApplicationTypeConstants.Web,
             TokenEndpointAuthMethod = TokenEndpointAuthMethodConstants.PrivateKeyJwt,
             SubjectType = SubjectTypeConstants.Public,
@@ -1631,7 +1663,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             RequestUris = ["https://webapp.authserver.dk/request"],
             ResponseTypes = [ResponseTypeConstants.Code],
             PostLogoutRedirectUris = ["https://webapp.authserver.dk/post-logout-callback"],
-            Scope = [ScopeConstants.OpenId, ScopeConstants.UserInfo],
+            Scope = [ScopeConstants.OpenId, ScopeConstants.UserInfo, ScopeConstants.OfflineAccess],
             ClientUri = "https://webapp.authserver.dk",
             PolicyUri = "https://webapp.authserver.dk/policy",
             LogoUri = "https://webapp.authserver.dk/logo",

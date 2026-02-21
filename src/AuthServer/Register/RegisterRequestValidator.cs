@@ -410,25 +410,37 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
 
     /// <summary>
     /// Scope is OPTIONAL.
-    /// Default is <see cref="ScopeConstants.OpenId"/> if GrantTypes are OpenIdConnect compliant.
+    /// Include <see cref="ScopeConstants.OpenId"/> if GrantTypes are OpenIdConnect compliant.
+    /// Include <see cref="ScopeConstants.OfflineAccess"/> if GrantTypes contains <see cref="GrantTypeConstants.RefreshToken"/>.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="validatedRequest"></param>
     /// <returns></returns>
     private ProcessError? ValidateScope(RegisterRequest request, RegisterValidatedRequest validatedRequest)
     {
+        var scopes = new List<string>();
         if (request.Scope.Count != 0)
         {
             if (request.Scope.IsNotSubset(DiscoveryDocument.ScopesSupported))
             {
                 return RegisterError.InvalidScope;
             }
-            validatedRequest.Scope = request.Scope;
+            scopes.AddRange(request.Scope);
         }
-        else if (GrantTypeConstants.OpenIdConnectInitiatingGrantTypes.IsIntersected(request.GrantTypes))
+        
+        if (GrantTypeConstants.OpenIdConnectInitiatingGrantTypes.IsIntersected(validatedRequest.GrantTypes)
+            && !scopes.Contains(ScopeConstants.OpenId))
         {
-            validatedRequest.Scope = [ScopeConstants.OpenId];
+            scopes.Add(ScopeConstants.OpenId);
         }
+
+        if (validatedRequest.GrantTypes.Contains(GrantTypeConstants.RefreshToken)
+            && !scopes.Contains(ScopeConstants.OfflineAccess))
+        {
+            scopes.Add(ScopeConstants.OfflineAccess);
+        }
+
+        validatedRequest.Scope = scopes.AsReadOnly();
 
         return null;
     }
