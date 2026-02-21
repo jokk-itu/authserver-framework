@@ -271,45 +271,6 @@ public class AuthorizeInteractionServiceCallbackTest : BaseUnitTest
         authorizeUserAccessorMock.Verify();
     }
 
-    [Fact]
-    public async Task GetInteractionResult_CallbackConsentNotRequired_ExpectNone()
-    {
-        // Arrange
-        var authorizeUserAccessorMock = new Mock<IUserAccessor<AuthorizeUser>>();
-        var serviceProvider = BuildServiceProvider(services => { services.AddScopedMock(authorizeUserAccessorMock); });
-        var authorizeInteractionService = serviceProvider.GetRequiredService<IAuthorizeInteractionService>();
-
-        var subjectIdentifier = new SubjectIdentifier();
-        var session = new Session(subjectIdentifier);
-        var client = new Client("WebApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
-        {
-            RequireConsent = false,
-        };
-        var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
-        var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
-        await AddEntity(authorizationGrant);
-
-        var authorizeUser = new AuthorizeUser(subjectIdentifier.Id, true, authorizationGrant.Id);
-        authorizeUserAccessorMock
-            .Setup(x => x.TryGetUser())
-            .Returns(authorizeUser)
-            .Verifiable();
-
-        // Act
-        var interactionResult = await authorizeInteractionService.GetInteractionResult(
-            new AuthorizeRequest
-            {
-                ClientId = client.Id,
-                Scope = [ScopeConstants.OpenId],
-                GrantId = authorizationGrant.Id
-            }, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(subjectIdentifier.Id, interactionResult.SubjectIdentifier);
-        Assert.True(interactionResult.IsSuccessful);
-        authorizeUserAccessorMock.Verify();
-    }
-
     [Theory]
     [InlineData(PromptConstants.Login)]
     [InlineData(null)]

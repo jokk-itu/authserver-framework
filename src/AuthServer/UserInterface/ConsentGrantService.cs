@@ -40,6 +40,7 @@ internal class ConsentGrantService : IConsentGrantService
             ClientName = cachedClient.Name,
             ClientLogoUri = cachedClient.LogoUri,
             ClientUri = cachedClient.ClientUri,
+            ClientRequiresConsent = cachedClient.RequireConsent,
             Username = username,
             ConsentedScope = consents.OfType<ScopeConsent>().Select(x => x.Scope.Name),
             ConsentedClaims = consents.OfType<ClaimConsent>().Select(x => x.Claim.Name)

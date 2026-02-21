@@ -21,13 +21,13 @@ internal interface IClientRepository
     Task<IReadOnlyCollection<string>> GetAuthorizedClaims(string clientId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Returns whether resources map to existing scope.
+    /// Returns whether resources are authorized for scopes.
     /// </summary>
     /// <param name="resources"></param>
     /// <param name="scopes"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> DoesResourcesExist(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken);
+    Task<bool> AreResourcesAuthorizedForScope(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken);
 
     /// <summary>
     /// 

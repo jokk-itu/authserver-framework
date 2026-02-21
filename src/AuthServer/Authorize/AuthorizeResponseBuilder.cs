@@ -151,8 +151,7 @@ internal class AuthorizeResponseBuilder : IAuthorizeResponseBuilder
     {
         return responseType switch
         {
-            ResponseTypeConstants.Code => ResponseModeConstants.Query,
-            ResponseTypeConstants.None => ResponseModeConstants.Query,
+            ResponseTypeConstants.Code or ResponseTypeConstants.None => ResponseModeConstants.Query,
             _ => throw new ArgumentException("Unexpected value", nameof(responseType))
         };
     }

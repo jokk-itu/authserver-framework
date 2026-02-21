@@ -15,17 +15,20 @@ internal class EndSessionEndpointHandler : IEndpointHandler
     private readonly IRequestHandler<EndSessionRequest, Unit> _requestHandler;
     private readonly IOptionsSnapshot<UserInteraction> _userInteractionOptions;
     private readonly IUserAccessor<EndSessionUser> _endSessionUserAccessor;
+    private readonly IAuthenticatedUserAccessor _authenticatedUserAccessor;
 
     public EndSessionEndpointHandler(
         IRequestAccessor<EndSessionRequest> requestAccessor,
         IRequestHandler<EndSessionRequest, Unit> requestHandler,
         IOptionsSnapshot<UserInteraction> userInteractionOptions,
-        IUserAccessor<EndSessionUser> endSessionUserAccessor)
+        IUserAccessor<EndSessionUser> endSessionUserAccessor,
+        IAuthenticatedUserAccessor authenticatedUserAccessor)
     {
         _requestAccessor = requestAccessor;
         _requestHandler = requestHandler;
         _userInteractionOptions = userInteractionOptions;
         _endSessionUserAccessor = endSessionUserAccessor;
+        _authenticatedUserAccessor = authenticatedUserAccessor;
     }
 
     public async Task<IResult> Handle(HttpContext httpContext, CancellationToken cancellationToken)
@@ -35,6 +38,7 @@ internal class EndSessionEndpointHandler : IEndpointHandler
         return response.Match(
             _ =>
             {
+                _authenticatedUserAccessor.ClearAuthenticatedUser();
                 _endSessionUserAccessor.ClearUser();
                 if (string.IsNullOrEmpty(request.PostLogoutRedirectUri))
                 {

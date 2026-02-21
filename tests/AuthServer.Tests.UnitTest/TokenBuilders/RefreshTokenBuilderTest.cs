@@ -94,7 +94,7 @@ public class RefreshTokenBuilderTest(ITestOutputHelper outputHelper) : BaseUnitT
         Assert.True(validatedTokenResult.IsValid);
         Assert.Equal(authorizationGrant.Session.Id, validatedTokenResult.Claims[ClaimNameConstants.Sid].ToString());
         Assert.Equal(authorizationGrant.Subject, validatedTokenResult.Claims[ClaimNameConstants.Sub].ToString());
-        Assert.Equal(token.Id.ToString(), validatedTokenResult.Claims[ClaimNameConstants.Jti].ToString());
+        Assert.Equal(token.Reference, validatedTokenResult.Claims[ClaimNameConstants.Jti].ToString());
         Assert.Equal(authorizationGrant.Id, validatedTokenResult.Claims[ClaimNameConstants.GrantId].ToString());
         Assert.Equal(authorizationGrant.Client.Id, validatedTokenResult.Claims[ClaimNameConstants.ClientId].ToString());
         Assert.Equal(string.Join(' ', scope), validatedTokenResult.Claims[ClaimNameConstants.Scope]);

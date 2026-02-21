@@ -1,30 +1,25 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authentication.Models;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Cache.Entities;
 using AuthServer.Core.Request;
-using AuthServer.Extensions;
-using AuthServer.Repositories.Abstractions;
-using AuthServer.Repositories.Models;
 
 namespace AuthServer.TokenByGrant;
 internal abstract class BaseTokenValidator
 {
     private readonly IDPoPService _dPoPService;
     private readonly IClientAuthenticationService _clientAuthenticationService;
-    private readonly IConsentRepository _consentRepository;
-    private readonly IClientRepository _clientRepository;
+    private readonly IScopeResourceService _scopeResourceService;
 
     protected BaseTokenValidator(
         IDPoPService dPoPService,
         IClientAuthenticationService clientAuthenticationService,
-        IConsentRepository consentRepository,
-        IClientRepository clientRepository)
+        IScopeResourceService scopeResourceService)
     {
         _dPoPService = dPoPService;
         _clientAuthenticationService = clientAuthenticationService;
-        _consentRepository = consentRepository;
-        _clientRepository = clientRepository;
+        _scopeResourceService = scopeResourceService;
     }
 
     protected async Task<ProcessResult<string, ProcessError>> AuthenticateClient(IReadOnlyCollection<ClientAuthentication> clientAuthentications, CancellationToken cancellationToken)
@@ -44,41 +39,41 @@ internal abstract class BaseTokenValidator
         return clientAuthenticationResult.ClientId;
     }
 
-    protected async Task<ProcessResult<IReadOnlyCollection<string>, ProcessError>> ValidateScope(IReadOnlyCollection<string> scope, IReadOnlyCollection<string> resource, string? authorizationGrantId, CachedClient cachedClient, CancellationToken cancellationToken)
+    protected async Task<ProcessResult<IReadOnlyCollection<string>, ProcessError>> ValidateGrantScopeResource(IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, string authorizationGrantId, CancellationToken cancellationToken)
     {
-        IReadOnlyCollection<string> requestedScopes;
-        var isScopeRequested = scope.Count != 0;
-        if (cachedClient.RequireConsent && authorizationGrantId is not null)
+        var scopeResourceValidationResult = await _scopeResourceService.ValidateScopeResourceForGrant(scopes, resources, authorizationGrantId, cancellationToken);
+        if (scopeResourceValidationResult.IsValid)
         {
-            var grantConsentScopes = await _consentRepository.GetGrantConsentedScopes(authorizationGrantId, cancellationToken);
-            if (grantConsentScopes.Count == 0)
-            {
-                return TokenError.ConsentRequired;
-            }
-
-            requestedScopes = isScopeRequested ? scope : grantConsentScopes.Select(x => x.Name).ToList();
-            if (requestedScopes.SelectMany(_ => resource, (x, y) => new ScopeDto(x, y)).IsNotSubset(grantConsentScopes))
-            {
-                return TokenError.ScopeExceedsConsentedScope;
-            }
-        }
-        else
-        {
-            requestedScopes = isScopeRequested ? scope : cachedClient.Scopes;
+            return new ProcessResult<IReadOnlyCollection<string>, ProcessError>(scopeResourceValidationResult.Scopes);
         }
 
-        if (requestedScopes.IsNotSubset(cachedClient.Scopes))
+        return scopeResourceValidationResult.Error switch
         {
-            return TokenError.UnauthorizedForScope;
+            ScopeResourceError.ConsentNotFound => TokenError.ConsentRequired,
+            ScopeResourceError.ScopeExceedsConsent => TokenError.ScopeExceedsConsentedScope,
+            ScopeResourceError.ResourceExceedsConsent => TokenError.ResourceExceedsConsentedResource,
+            ScopeResourceError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
+            ScopeResourceError.UnauthorizedResourceForScope => TokenError.InvalidResource,
+            _ => throw new NotSupportedException($"error {scopeResourceValidationResult.Error} is not supported")
+        };
+    }
+
+    protected async Task<ProcessResult<IReadOnlyCollection<string>, ProcessError>> ValidateClientScopeResource(IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, string clientId, CancellationToken cancellationToken)
+    {
+        var scopeResourceValidationResult = await _scopeResourceService.ValidateScopeResourceForClient(scopes, resources, clientId, cancellationToken);
+        if (scopeResourceValidationResult.IsValid)
+        {
+            return new ProcessResult<IReadOnlyCollection<string>, ProcessError>(scopeResourceValidationResult.Scopes);
         }
 
-        var doesResourceExist = await _clientRepository.DoesResourcesExist(resource, requestedScopes, cancellationToken);
-        if (!doesResourceExist)
+        return scopeResourceValidationResult.Error switch
         {
-            return TokenError.InvalidResource;
-        }
-
-        return new ProcessResult<IReadOnlyCollection<string>, ProcessError>(requestedScopes);
+            ScopeResourceError.ConsentNotFound => TokenError.ConsentRequired,
+            ScopeResourceError.ScopeExceedsConsent => TokenError.ScopeExceedsConsentedScope,
+            ScopeResourceError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
+            ScopeResourceError.UnauthorizedResourceForScope => TokenError.InvalidResource,
+            _ => throw new NotSupportedException($"error {scopeResourceValidationResult.Error} is not supported")
+        };
     }
 
     protected async Task<DPoPResult?> ValidateDPoP(string? dPoP, CachedClient cachedClient, string? jkt, CancellationToken cancellationToken)

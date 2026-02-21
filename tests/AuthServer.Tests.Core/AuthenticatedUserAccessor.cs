@@ -14,4 +14,9 @@ public class AuthenticatedUserAccessor : IAuthenticatedUserAccessor
     {
         return Task.FromResult(0);
     }
+
+    public Task ClearAuthenticatedUser()
+    {
+        return Task.CompletedTask;
+    }
 }

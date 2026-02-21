@@ -97,5 +97,6 @@ public class ConsentGrantServiceTest : BaseUnitTest
         Assert.Contains(ScopeConstants.OpenId, consentGrantDto.ConsentedScope);
         Assert.Single(consentGrantDto.ConsentedClaims);
         Assert.Contains(ClaimNameConstants.Name, consentGrantDto.ConsentedClaims);
+        Assert.True(client.RequireConsent);
     }
 }

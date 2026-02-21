@@ -9,8 +9,9 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Entities;
 using AuthServer.Helpers;
-using AuthServer.Repositories.Abstractions;
+using AuthServer.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AuthServer.TokenByGrant.TokenDeviceCodeGrant;
 internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, DeviceCodeValidatedRequest>
@@ -18,20 +19,22 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
     private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly ICodeEncoder<EncodedDeviceCode> _deviceCodeEncoder;
     private readonly ICachedClientStore _cachedEntityStore;
+    private readonly IOptionsMonitor<TokenValidationOptions> _tokenValidationOptions;
 
     public DeviceCodeRequestValidator(
         AuthorizationDbContext authorizationDbContext,
         ICodeEncoder<EncodedDeviceCode> deviceCodeEncoder,
         IClientAuthenticationService clientAuthenticationService,
-        IClientRepository clientRepository,
         ICachedClientStore cachedEntityStore,
-        IConsentRepository consentRepository,
-        IDPoPService dPoPService)
-        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
+        IOptionsMonitor<TokenValidationOptions> tokenValidationOptions,
+        IDPoPService dPoPService,
+        IScopeResourceService scopeResourceService)
+        : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _authorizationDbContext = authorizationDbContext;
         _deviceCodeEncoder = deviceCodeEncoder;
         _cachedEntityStore = cachedEntityStore;
+        _tokenValidationOptions = tokenValidationOptions;
     }
 
     public async Task<ProcessResult<DeviceCodeValidatedRequest, ProcessError>> Validate(TokenRequest request, CancellationToken cancellationToken)
@@ -39,11 +42,6 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
         if (request.GrantType != GrantTypeConstants.DeviceCode)
         {
             return TokenError.UnsupportedGrantType;
-        }
-
-        if (request.Resource.Count == 0)
-        {
-            return TokenError.InvalidResource;
         }
 
         var deviceCode = _deviceCodeEncoder.Decode(request.DeviceCode);
@@ -84,20 +82,14 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             return dPoPResult.Error!;
         }
 
-        var scopeValidationResult = await ValidateScope(deviceCode.Scope, request.Resource, deviceCodeValidationResult.Value!.DeviceCodeGrant!.Id, cachedClient, cancellationToken);
-        if (!scopeValidationResult.IsSuccess)
-        {
-            return scopeValidationResult.Error!;
-        }
-
         return new DeviceCodeValidatedRequest
         {
             ClientId = clientId,
-            AuthorizationGrantId = deviceCodeValidationResult.Value!.DeviceCodeGrant.Id,
+            AuthorizationGrantId = deviceCodeValidationResult.Value!.AuthorizationGrantId,
             DeviceCodeId = deviceCode.DeviceCodeId,
             DPoPJkt = deviceCode.DPoPJkt,
-            Resource = request.Resource,
-            Scope = scopeValidationResult.Value!
+            Resource = deviceCode.Resource,
+            Scope = deviceCode.Scope
         };
     }
 
@@ -118,7 +110,12 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             return TokenError.InvalidDeviceCode;
         }
 
-        if (!Code.IsActive.Compile().Invoke(deviceCodeResult.DeviceCode))
+        if (deviceCodeResult.DeviceCode.RedeemedAt is not null)
+        {
+            return TokenError.DeviceCodeRedeemed;
+        }
+
+        if (deviceCodeResult.DeviceCode.ExpiresAt.Add(_tokenValidationOptions.CurrentValue.ClockSkew) < DateTime.UtcNow)
         {
             return TokenError.DeviceCodeExpired;
         }
@@ -138,13 +135,8 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             return TokenError.DeviceAuthorizationPending(deviceCode.DeviceCodeId);
         }
 
-        if (!AuthorizationGrant.IsActive.Compile().Invoke(deviceCodeResult.DeviceCodeGrant))
-        {
-            return TokenError.InvalidGrant;
-        }
-
-        return new DeviceCodeResult(deviceCodeResult.DeviceCode, deviceCodeResult.DeviceCodeGrant);
+        return new DeviceCodeResult(deviceCodeResult.DeviceCodeGrant.Id);
     }
 
-    private sealed record DeviceCodeResult(DeviceCode DeviceCode, DeviceCodeGrant DeviceCodeGrant);
+    private sealed record DeviceCodeResult(string AuthorizationGrantId);
 }

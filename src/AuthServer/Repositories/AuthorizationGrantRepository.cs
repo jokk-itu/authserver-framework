@@ -195,7 +195,7 @@ internal class AuthorizationGrantRepository : IAuthorizationGrantRepository
             .Set<AuthorizationGrant>()
             .Where(ag => ag.Id == authorizationGrantId)
             .SelectMany(g => g.GrantTokens)
-            .Where(Token.IsActive)
+            .Where(Token.IsActiveExpression)
             .ExecuteUpdateAsync(
                 propertyCall => propertyCall.SetProperty(gt => gt.RevokedAt, DateTime.UtcNow),
                 cancellationToken);

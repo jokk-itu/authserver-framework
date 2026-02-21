@@ -24,9 +24,8 @@ internal class RegisterEndpointModule : IEndpointModule
 
     public void RegisterEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        var postRegisterBuilder = endpointRouteBuilder.MapMethods(
+        var postRegisterBuilder = endpointRouteBuilder.MapPost(
             "connect/register",
-            ["POST"],
             (HttpContext httpContext, [FromKeyedServices(EndpointNameConstants.Register)] IEndpointHandler endpointHandler,
                 CancellationToken cancellationToken) => endpointHandler.Handle(httpContext, cancellationToken));
 

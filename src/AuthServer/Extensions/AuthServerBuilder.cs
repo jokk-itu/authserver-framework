@@ -99,7 +99,8 @@ public class AuthServerBuilder
             .AddScoped<IClientSectorService, ClientSectorService>()
             .AddScoped<IClientLogoutService, ClientLogoutService>()
             .AddScoped<ISecureRequestService, SecureRequestService>()
-            .AddScoped<IDPoPService, DPoPService>();
+            .AddScoped<IDPoPService, DPoPService>()
+            .AddScoped<IScopeResourceService, ScopeResourceService>();
     }
 
     private void AddRepositories()
@@ -112,13 +113,15 @@ public class AuthServerBuilder
             .AddScoped<INonceRepository, NonceRepository>()
             .AddScoped<ISessionRepository, SessionRepository>()
             .AddScoped<IDeviceCodeRepository, DeviceCodeRepository>()
-            .AddScoped<IUserCodeRepository, UserCodeRepository>();
+            .AddScoped<IUserCodeRepository, UserCodeRepository>()
+            .AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
     }
 
     private void AddOptions()
     {
         _services
             .ConfigureOptions<PostConfigureDiscoveryDocumentOptions>()
+            .ConfigureOptions<PostConfigureTokenValidationOptions>()
             .ConfigureOptions<ValidateDiscoveryDocumentOptions>()
             .ConfigureOptions<ValidateJwksDocument>()
             .ConfigureOptions<ValidateUserInteractionOptions>();

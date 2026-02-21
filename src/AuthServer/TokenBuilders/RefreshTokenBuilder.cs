@@ -95,7 +95,7 @@ internal class RefreshTokenBuilder : ITokenBuilder<RefreshTokenArguments>
             { ClaimNameConstants.Aud, grantQuery.Client.Id },
             { ClaimNameConstants.Sid, grantQuery.SessionId },
             { ClaimNameConstants.Sub, grantQuery.Subject },
-            { ClaimNameConstants.Jti, refreshToken.Id },
+            { ClaimNameConstants.Jti, refreshToken.Reference },
             { ClaimNameConstants.GrantId, arguments.AuthorizationGrantId },
             { ClaimNameConstants.ClientId, grantQuery.Client.Id },
             { ClaimNameConstants.Scope, string.Join(' ', arguments.Scope) }

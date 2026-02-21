@@ -2,34 +2,26 @@
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
-using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
-using AuthServer.Entities;
-using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
-using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.TokenByGrant.TokenRefreshTokenGrant;
 
 internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>
 {
-    private readonly AuthorizationDbContext _identityContext;
     private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly ICachedClientStore _cachedClientStore;
 
     public RefreshTokenRequestValidator(
-        AuthorizationDbContext identityContext,
         IServerTokenDecoder serverTokenDecoder,
         IClientAuthenticationService clientAuthenticationService,
         ICachedClientStore cachedClientStore,
-        IClientRepository clientRepository,
-        IConsentRepository consentRepository,
-        IDPoPService dPoPService)
-        : base(dPoPService, clientAuthenticationService, consentRepository, clientRepository)
+        IDPoPService dPoPService,
+        IScopeResourceService scopeResourceService)
+        : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
-        _identityContext = identityContext;
         _serverTokenDecoder = serverTokenDecoder;
         _cachedClientStore = cachedClientStore;
     }
@@ -44,11 +36,6 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
         {
             return TokenError.InvalidRefreshToken;
-        }
-
-        if (request.Resource.Count == 0)
-        {
-            return TokenError.InvalidResource;
         }
 
         var clientAuthenticationResult = await AuthenticateClient(request.ClientAuthentications, cancellationToken);
@@ -76,7 +63,12 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
             return dPoPResult.Error;
         }
 
-        var scopeValidationResult = await ValidateScope(request.Scope, request.Resource, refreshTokenValidationResult.AuthorizationGrantId, cachedClient, cancellationToken);
+        var scopeValidationResult = await ValidateGrantScopeResource(
+            request.Scope,
+            request.Resource,
+            refreshTokenValidationResult.AuthorizationGrantId,
+            cancellationToken);
+
         if (!scopeValidationResult.IsSuccess)
         {
             return scopeValidationResult.Error!;
@@ -101,19 +93,9 @@ internal class RefreshTokenRequestValidator : BaseTokenValidator, IRequestValida
             TokenTypes = [TokenTypeHeaderConstants.RefreshToken]
         }, cancellationToken);
 
-        if (validatedToken is null)
-        {
-            return null;
-        }
-
-        var jti = Guid.Parse(validatedToken.Jti);
-        var isActive = await _identityContext
-            .Set<RefreshToken>()
-            .Where(x => x.Id == jti)
-            .Where(Token.IsActive)
-            .AnyAsync(cancellationToken: cancellationToken);
-
-        return isActive ? new RefreshTokenValidationResult(validatedToken.GrantId!, validatedToken.Jkt) : null;
+        return validatedToken is not null
+            ? new RefreshTokenValidationResult(validatedToken.GrantId!, validatedToken.Jkt)
+            : null;
     }
 
     private sealed record RefreshTokenValidationResult(string AuthorizationGrantId, string? Jkt);

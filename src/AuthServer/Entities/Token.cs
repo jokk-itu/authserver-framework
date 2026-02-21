@@ -43,11 +43,18 @@ public abstract class Token : Entity<Guid>
         RevokedAt ??= DateTime.UtcNow;
     }
 
-    public static readonly Expression<Func<Token, bool>> IsActive =
-        t => t.RevokedAt == null
-             && t.NotBefore < DateTime.UtcNow
-             && (t.ExpiresAt == null || t.ExpiresAt > DateTime.UtcNow);
+    public bool IsActive(TimeSpan clockSkew)
+    {
+        return RevokedAt is null &&
+               NotBefore.Subtract(clockSkew) < DateTime.UtcNow &&
+               (ExpiresAt is null || ExpiresAt.Value.Add(clockSkew) > DateTime.UtcNow);
+    }
 
-    public static readonly Expression<Func<Token, bool>> IsExpired =
+    public static readonly Expression<Func<Token, bool>> IsActiveExpression =
+        t => t.RevokedAt == null &&
+             t.NotBefore < DateTime.UtcNow &&
+             (t.ExpiresAt == null || t.ExpiresAt > DateTime.UtcNow);
+
+    public static readonly Expression<Func<Token, bool>> IsExpiredExpression =
         t => t.RevokedAt != null || t.ExpiresAt < DateTime.UtcNow;
 }

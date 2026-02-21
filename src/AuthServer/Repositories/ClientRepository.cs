@@ -44,13 +44,12 @@ internal class ClientRepository : IClientRepository
     }
 
     /// <inheritdoc/>
-    public async Task<bool> DoesResourcesExist(IReadOnlyCollection<string> resources,
-        IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
+    public async Task<bool> AreResourcesAuthorizedForScope(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken)
     {
         var resourcesExisting = await _authorizationDbContext
             .Set<Client>()
-            .Where(r => r.ClientUri != null && resources.Contains(r.ClientUri))
-            .Where(r => r.Scopes.AsQueryable().Any(s => scopes.Contains(s.Name)))
+            .Where(r => resources.Contains(r.ClientUri))
+            .Where(r => r.Scopes.Any(s => scopes.Contains(s.Name)))
             .CountAsync(cancellationToken: cancellationToken);
 
         return resourcesExisting == resources.Count;

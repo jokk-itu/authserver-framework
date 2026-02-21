@@ -30,7 +30,7 @@ internal class DeviceCodeRepository : IDeviceCodeRepository
         return await _authorizationDbContext
             .Set<UserCode>()
             .Where(x => x.Value == userCode)
-            .Where(UserCode.IsActive)
+            .Where(x => x.RedeemedAt == null)
             .Select(x => x.DeviceCode)
             .SingleOrDefaultAsync(cancellationToken);
     }

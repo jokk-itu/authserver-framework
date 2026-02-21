@@ -151,7 +151,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
             .Include(x => x.Session)
             .SingleAsync();
 
-        var idToken = this.JwtBuilder.GetIdToken(
+        var idToken = JwtBuilder.GetIdToken(
             registerResponse.ClientId,
             grant.Id,
             UserConstants.SubjectIdentifier,

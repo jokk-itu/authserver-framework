@@ -20,6 +20,7 @@ internal class ServerTokenDecoder : IServerTokenDecoder
 {
     private readonly ILogger<ServerTokenDecoder> _logger;
     private readonly IOptionsSnapshot<JwksDocument> _jwkDocumentOptions;
+    private readonly IOptionsSnapshot<TokenValidationOptions> _tokenValidationOptions;
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IMetricService _metricService;
     private readonly AuthorizationDbContext _authorizationDbContext;
@@ -27,12 +28,14 @@ internal class ServerTokenDecoder : IServerTokenDecoder
     public ServerTokenDecoder(
         ILogger<ServerTokenDecoder> logger,
         IOptionsSnapshot<JwksDocument> jwkDocumentOptions,
+        IOptionsSnapshot<TokenValidationOptions> tokenValidationOptions,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         IMetricService metricService,
         AuthorizationDbContext authorizationDbContext)
     {
         _logger = logger;
         _jwkDocumentOptions = jwkDocumentOptions;
+        _tokenValidationOptions = tokenValidationOptions;
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _metricService = metricService;
         _authorizationDbContext = authorizationDbContext;
@@ -72,29 +75,47 @@ internal class ServerTokenDecoder : IServerTokenDecoder
     /// <inheritdoc/>
     public async Task<TokenResult?> Validate(string token, ServerTokenDecodeArguments arguments, CancellationToken cancellationToken)
     {
-        TokenTypeTag? tokenTypeTag;
         var stopWatch = Stopwatch.StartNew();
         if (TokenHelper.IsJsonWebToken(token))
         {
-            var jsonWebTokenTokenResult = await ValidateJsonWebToken(token, arguments);
-            stopWatch.Stop();
+            var jwtResult = await ValidateJsonWebToken(token, arguments, stopWatch);
+            if (jwtResult?.Typ != TokenTypeHeaderConstants.RefreshToken)
+            {
+                return jwtResult;
+            }
 
-            tokenTypeTag = jsonWebTokenTokenResult is null
-                ? null
-                : TokenHelper.MapTokenTypHeaderToTokenTypeTag(jsonWebTokenTokenResult.Typ);
-
-            _metricService.AddValidateServerToken(
-                stopWatch.ElapsedMilliseconds,
-                tokenTypeTag,
-                TokenStructureTag.Jwt);
-
-            return jsonWebTokenTokenResult;
+            // If the token is a refresh token, we also try to validate its reference
+            token = jwtResult.Jti;
         }
 
+        return await ValidateReferenceToken(token, arguments, stopWatch, cancellationToken);
+    }
+
+    private async Task<TokenResult?> ValidateJsonWebToken(string token, ServerTokenDecodeArguments arguments,
+        Stopwatch stopWatch)
+    {
+        var jsonWebTokenTokenResult = await ValidateJsonWebToken(token, arguments);
+        stopWatch.Stop();
+
+        TokenTypeTag? tokenTypeTag = jsonWebTokenTokenResult is null
+            ? null
+            : TokenHelper.MapTokenTypHeaderToTokenTypeTag(jsonWebTokenTokenResult.Typ);
+
+        _metricService.AddValidateServerToken(
+            stopWatch.ElapsedMilliseconds,
+            tokenTypeTag,
+            TokenStructureTag.Jwt);
+
+        return jsonWebTokenTokenResult;
+    }
+
+    private async Task<TokenResult?> ValidateReferenceToken(string token, ServerTokenDecodeArguments arguments,
+        Stopwatch stopWatch, CancellationToken cancellationToken)
+    {
         var referenceTokenResult = await ValidateReferenceToken(token, arguments, cancellationToken);
         stopWatch.Stop();
 
-        tokenTypeTag = referenceTokenResult is null
+        TokenTypeTag? tokenTypeTag = referenceTokenResult is null
             ? null
             : TokenHelper.MapTokenTypHeaderToTokenTypeTag(referenceTokenResult.Typ);
 
@@ -110,7 +131,7 @@ internal class ServerTokenDecoder : IServerTokenDecoder
     {
         var tokenValidationParameters = new TokenValidationParameters
         {
-            ClockSkew = new TimeSpan(0),
+            ClockSkew = _tokenValidationOptions.Value.ClockSkew,
             ValidTypes = arguments.TokenTypes,
             ValidIssuer = _discoveryDocumentOptions.Value.Issuer,
             ValidAudiences = arguments.Audiences,
@@ -145,7 +166,7 @@ internal class ServerTokenDecoder : IServerTokenDecoder
             return null;
         }
 
-        if (arguments.ValidateLifetime && !Token.IsActive.Compile().Invoke(tokenQuery.Token))
+        if (arguments.ValidateLifetime && !tokenQuery.Token.IsActive(_tokenValidationOptions.Value.ClockSkew))
         {
             _logger.LogInformation("Token {ReferenceToken} is inactive", token);
             return null;

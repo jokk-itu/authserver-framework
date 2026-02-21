@@ -27,7 +27,7 @@ internal class TokenRepository : ITokenRepository
 
         var affectedTokens = await _authorizationDbContext
             .Set<Token>()
-            .Where(Token.IsExpired)
+            .Where(Token.IsExpiredExpression)
             .Take(batchSize)
             .ExecuteDeleteAsync(cancellationToken);
 
