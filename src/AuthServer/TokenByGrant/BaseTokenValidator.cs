@@ -68,8 +68,6 @@ internal abstract class BaseTokenValidator
 
         return scopeResourceValidationResult.Error switch
         {
-            ScopeResourceError.ConsentNotFound => TokenError.ConsentRequired,
-            ScopeResourceError.ScopeExceedsConsent => TokenError.ScopeExceedsConsentedScope,
             ScopeResourceError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
             ScopeResourceError.UnauthorizedResourceForScope => TokenError.InvalidResource,
             _ => throw new NotSupportedException($"error {scopeResourceValidationResult.Error} is not supported")
