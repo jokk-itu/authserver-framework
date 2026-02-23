@@ -111,7 +111,7 @@ public static class Parameter
     public const string SubjectToken = "subject_token";
     public const string ActorTokenType = "actor_token_type";
     public const string ActorToken = "actor_token";
-    public const string IssuedTokenType = "issused_token_type";
+    public const string IssuedTokenType = "issued_token_type";
     public const string Actor = "act";
     public const string MayAct = "may_act";
 
