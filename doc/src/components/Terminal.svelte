@@ -11,7 +11,7 @@
         <div class="mt-4 flex">
             <span class="text-openid">$</span>
             <p class="flex-1 typing items-center pl-2">
-                dotnet add package AuthServer
+                dotnet add package AuthServer -s https://nuget.pkg.github.com/jokk-itu/index.json
                 <br />
             </p>
         </div>
