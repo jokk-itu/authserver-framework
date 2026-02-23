@@ -133,7 +133,7 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
         // Assert
         Assert.NotNull(refreshResponse);
         Assert.NotNull(refreshResponse.Response);
-        Assert.Equal(weatherReadScope, refreshResponse.Response.Scope);
+        Assert.Equal($"{weatherReadScope} {ScopeConstants.OfflineAccess}", refreshResponse.Response.Scope);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, refreshResponse.Response.TokenType);
         Assert.Null(refreshResponse.Response.RefreshToken);
         Assert.NotNull(refreshResponse.Response.IdToken);
