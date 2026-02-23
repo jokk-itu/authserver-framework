@@ -103,7 +103,6 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithCode(authorizeResponse.Code!)
             .WithCodeVerifier(proofKey.CodeVerifier)
-            .WithResource([weatherClient.ClientUri!, identityProviderClient.ClientUri!])
             .WithGrantType(GrantTypeConstants.AuthorizationCode)
             .Post();
 
