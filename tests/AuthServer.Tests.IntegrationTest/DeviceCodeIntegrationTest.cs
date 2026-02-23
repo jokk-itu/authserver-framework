@@ -69,7 +69,6 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
             .WithClientJwks(jwks)
             .WithClientId(registerResponse.ClientId)
             .WithScope(registerResponse.Scope)
-            .WithResource([weatherClient.ClientUri!])
             .Post();
 
         // Assert
@@ -127,7 +126,6 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
             .WithCodeVerifier(proofKey.CodeVerifier)
             .WithClientId(registerResponse.ClientId)
             .WithScope(registerResponse.Scope)
-            .WithResource([weatherClient.ClientUri!])
             .Post();
 
         // Assert
