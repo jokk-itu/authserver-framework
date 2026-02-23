@@ -109,24 +109,6 @@ internal class ServerTokenDecoder : IServerTokenDecoder
         return jsonWebTokenTokenResult;
     }
 
-    private async Task<TokenResult?> ValidateReferenceToken(string token, ServerTokenDecodeArguments arguments,
-        Stopwatch stopWatch, CancellationToken cancellationToken)
-    {
-        var referenceTokenResult = await ValidateReferenceToken(token, arguments, cancellationToken);
-        stopWatch.Stop();
-
-        TokenTypeTag? tokenTypeTag = referenceTokenResult is null
-            ? null
-            : TokenHelper.MapTokenTypHeaderToTokenTypeTag(referenceTokenResult.Typ);
-
-        _metricService.AddValidateServerToken(
-            stopWatch.ElapsedMilliseconds,
-            tokenTypeTag,
-            TokenStructureTag.Reference);
-
-        return referenceTokenResult;
-    }
-
     private async Task<TokenResult?> ValidateJsonWebToken(string token, ServerTokenDecodeArguments arguments)
     {
         var tokenValidationParameters = new TokenValidationParameters
@@ -155,6 +137,24 @@ internal class ServerTokenDecoder : IServerTokenDecoder
 
         var jsonWebToken = (validationResult.SecurityToken as JsonWebToken)!;
         return MapFromJsonWebToken(jsonWebToken);
+    }
+
+    private async Task<TokenResult?> ValidateReferenceToken(string token, ServerTokenDecodeArguments arguments,
+        Stopwatch stopWatch, CancellationToken cancellationToken)
+    {
+        var referenceTokenResult = await ValidateReferenceToken(token, arguments, cancellationToken);
+        stopWatch.Stop();
+
+        TokenTypeTag? tokenTypeTag = referenceTokenResult is null
+            ? null
+            : TokenHelper.MapTokenTypHeaderToTokenTypeTag(referenceTokenResult.Typ);
+
+        _metricService.AddValidateServerToken(
+            stopWatch.ElapsedMilliseconds,
+            tokenTypeTag,
+            TokenStructureTag.Reference);
+
+        return referenceTokenResult;
     }
 
     private async Task<TokenResult?> ValidateReferenceToken(string token, ServerTokenDecodeArguments arguments, CancellationToken cancellationToken)

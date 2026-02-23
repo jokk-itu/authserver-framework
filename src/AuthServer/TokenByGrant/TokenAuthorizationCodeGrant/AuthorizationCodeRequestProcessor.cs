@@ -39,7 +39,8 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
         var cachedClient = await _cachedClientStore.Get(request.ClientId, cancellationToken);
 
         string? refreshToken = null;
-        if (cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.RefreshToken))
+        if (cachedClient.GrantTypes.Any(x => x == GrantTypeConstants.RefreshToken)
+            && request.Scope.Contains(ScopeConstants.OfflineAccess))
         {
             refreshToken = await _refreshTokenBuilder.BuildToken(new RefreshTokenArguments
             {

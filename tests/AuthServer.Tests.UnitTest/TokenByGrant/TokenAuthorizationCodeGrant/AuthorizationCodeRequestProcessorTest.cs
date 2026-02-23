@@ -70,7 +70,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
             ClientId = client.Id,
             AuthorizationGrantId = authorizationGrant.Id,
             AuthorizationCodeId = authorizationCode.Id,
-            Scope = [ScopeConstants.OpenId],
+            Scope = [ScopeConstants.OpenId, ScopeConstants.OfflineAccess],
             Resource = [weatherClient.ClientUri!]
         };
 
@@ -87,7 +87,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         idTokenBuilder.Verify();
 
         Assert.Equal(client.AccessTokenExpiration, tokenResponse.ExpiresIn);
-        Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
+        Assert.Equal($"{ScopeConstants.OpenId} {ScopeConstants.OfflineAccess}", tokenResponse.Scope);
         Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
     }

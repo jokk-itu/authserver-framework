@@ -26,14 +26,14 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode, GrantTypeConstants.RefreshToken])
-            .WithScope([weatherReadScope, ScopeConstants.OpenId])
+            .WithScope([weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var jwks = ClientJwkBuilder.GetClientJwks();
@@ -43,7 +43,7 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
             .WithDPoPJkt()
             .WithClientJwks(jwks)
             .WithCodeChallenge(proofKey.CodeChallenge)
-            .WithScope([weatherReadScope, ScopeConstants.OpenId])
+            .WithScope([weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess])
             .WithResource([weatherClient.ClientUri!])
             .Get();
 
@@ -70,7 +70,7 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
             .WithRefreshToken(tokenResponse.Response!.RefreshToken!)
             .WithGrantType(GrantTypeConstants.RefreshToken)
             .WithResource([weatherClient.ClientUri!])
-            .WithScope([weatherReadScope])
+            .WithScope([weatherReadScope, ScopeConstants.OfflineAccess])
             .Post();
 
         // Assert
@@ -93,21 +93,21 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode, GrantTypeConstants.RefreshToken])
-            .WithScope([weatherReadScope, ScopeConstants.OpenId])
+            .WithScope([weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKey.CodeChallenge)
-            .WithScope([weatherReadScope, ScopeConstants.OpenId])
+            .WithScope([weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess])
             .WithResource([weatherClient.ClientUri!])
             .Get();
 
@@ -127,13 +127,13 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
             .WithRefreshToken(tokenResponse.Response!.RefreshToken!)
             .WithGrantType(GrantTypeConstants.RefreshToken)
             .WithResource([weatherClient.ClientUri!])
-            .WithScope([weatherReadScope])
+            .WithScope([weatherReadScope, ScopeConstants.OfflineAccess])
             .Post();
 
         // Assert
         Assert.NotNull(refreshResponse);
         Assert.NotNull(refreshResponse.Response);
-        Assert.Equal(weatherReadScope, refreshResponse.Response.Scope);
+        Assert.Equal($"{weatherReadScope} {ScopeConstants.OfflineAccess}", refreshResponse.Response.Scope);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, refreshResponse.Response.TokenType);
         Assert.Null(refreshResponse.Response.RefreshToken);
         Assert.NotNull(refreshResponse.Response.IdToken);

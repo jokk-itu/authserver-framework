@@ -11,6 +11,8 @@ using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
+using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
@@ -75,8 +77,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -90,7 +93,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 
         var request = new TokenRequest
         {
-            GrantType = GrantTypeConstants.AuthorizationCode
+            GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code
         };
 
         // Act
@@ -115,8 +119,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -132,6 +137,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             RedirectUri = "invalid_redirect_uri",
             CodeVerifier = proofKey.CodeVerifier
         };
@@ -158,8 +164,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -174,6 +181,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier
         };
 
@@ -199,8 +207,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var validator = serviceProvider
             .GetRequiredService<IRequestValidator<TokenRequest, AuthorizationCodeValidatedRequest>>();
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = string.Empty,
@@ -215,6 +224,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
@@ -250,8 +260,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         authorizationCode.Redeem();
         await SaveChangesAsync();
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCode.Id,
@@ -266,6 +277,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
@@ -307,8 +319,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
 
         await SaveChangesAsync();
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCode.Id,
@@ -323,6 +336,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
@@ -361,8 +375,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
         await SaveChangesAsync();
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -377,6 +392,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
@@ -413,8 +429,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -429,6 +446,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             RedirectUri = "https://client.authserver.dk/invalid-callback",
             ClientAuthentications =
@@ -470,8 +488,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         authorizationGrant.Client.RequireDPoPBoundAccessTokens = requireDPoP;
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -487,6 +506,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             ClientAuthentications =
             [
@@ -525,8 +545,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
+        var code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -550,6 +571,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             DPoP = dPoPProof,
             ClientAuthentications =
@@ -590,8 +612,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -612,6 +635,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             DPoP = dPoPProof,
             ClientAuthentications =
@@ -652,8 +676,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationGrant = await GetAuthorizationGrant(plainSecret);
         var authorizationCodeId = authorizationGrant.AuthorizationCodes.Single().Id;
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -679,6 +704,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             DPoP = dPoPProof,
             ClientAuthentications =
@@ -724,8 +750,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         const string dPoPJkt = "jkt";
         const string dPoP = "dpop";
 
+        const string code = "authorization_code";
         authorizationCodeEncoder
-            .Setup(x => x.Decode(It.IsAny<string>()))
+            .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
             {
                 AuthorizationCodeId = authorizationCodeId,
@@ -751,6 +778,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var request = new TokenRequest
         {
             GrantType = GrantTypeConstants.AuthorizationCode,
+            Code = code,
             CodeVerifier = proofKey.CodeVerifier,
             RedirectUri = redirectUri,
             DPoP = dPoP,

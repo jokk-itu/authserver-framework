@@ -5,6 +5,7 @@ using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Extensions;
 using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
@@ -519,6 +520,125 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         dPoPService.Verify();
     }
 
+    [Theory]
+    [InlineData("ConsentNotFound")]
+    [InlineData("ScopeExceedsConsent")]
+    [InlineData("ResourceExceedsConsent")]
+    [InlineData("UnauthorizedClientForScope")]
+    [InlineData("UnauthorizedResourceForScope")]
+    public async Task Validate_ScopeValidationError_ExpectTokenError(string scopeResourceError)
+    {
+        // Arrange
+        var scopeResourceService = new Mock<IScopeResourceService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(scopeResourceService);
+        });
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client);
+
+        var jwtRefreshToken = JwtBuilder.GetRefreshToken(
+            client.Id, refreshToken.AuthorizationGrant.Id, refreshToken.Reference);
+
+        var weatherClient = await GetWeatherClient();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = jwtRefreshToken,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [weatherClient.ClientUri!],
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        var error = Enum.Parse<ScopeResourceError>(scopeResourceError);
+        scopeResourceService
+            .Setup(x => x.ValidateScopeResourceForGrant(
+                request.Scope,
+                request.Resource,
+                refreshToken.AuthorizationGrant.Id,
+                CancellationToken.None))
+            .ReturnsAsync(new ScopeResourceValidationResult
+            {
+                Error = error
+            })
+            .Verifiable();
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.False(processResult.IsSuccess);
+        Assert.NotNull(processResult.Error);
+        scopeResourceService.Verify();
+    }
+
+    [Fact]
+    public async Task Validate_ScopeDoesNotContainOfflineAccess_ExpectOfflineAccessScopeRequired()
+    {
+        // Arrange
+        var scopeResourceService = new Mock<IScopeResourceService>();
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            services.AddScopedMock(scopeResourceService);
+        });
+        var refreshTokenRequestValidator = serviceProvider
+            .GetRequiredService<IRequestValidator<TokenRequest, RefreshTokenValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+
+        var refreshToken = await GetRefreshToken(client);
+
+        var jwtRefreshToken = JwtBuilder.GetRefreshToken(
+            client.Id, refreshToken.AuthorizationGrant.Id, refreshToken.Reference);
+
+        var weatherClient = await GetWeatherClient();
+
+        var request = new TokenRequest
+        {
+            GrantType = GrantTypeConstants.RefreshToken,
+            RefreshToken = jwtRefreshToken,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [weatherClient.ClientUri!],
+            ClientAuthentications = [
+                new ClientSecretAuthentication(
+                    TokenEndpointAuthMethod.ClientSecretBasic,
+                    client.Id,
+                    plainSecret)
+            ]
+        };
+
+        scopeResourceService
+            .Setup(x => x.ValidateScopeResourceForGrant(
+                request.Scope,
+                request.Resource,
+                refreshToken.AuthorizationGrant.Id,
+                CancellationToken.None))
+            .ReturnsAsync(new ScopeResourceValidationResult
+            {
+                Scopes = [ScopeConstants.OpenId]
+            })
+            .Verifiable();
+
+        // Act
+        var processResult = await refreshTokenRequestValidator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(TokenError.OfflineAccessScopeRequired, processResult.Error);
+    }
+
     [Fact]
     public async Task Validate_JwtRefreshTokenAndConsentRequired_ExpectValidatedRequest()
     {
@@ -556,7 +676,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         {
             GrantType = GrantTypeConstants.RefreshToken,
             RefreshToken = jwtRefreshToken,
-            Scope = [ScopeConstants.OpenId],
+            Scope = [ScopeConstants.OpenId, ScopeConstants.OfflineAccess],
             Resource = [weatherClient.ClientUri!],
             DPoP = dPoP,
             ClientAuthentications = [
@@ -575,7 +695,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         Assert.Equal(refreshToken.AuthorizationGrant.Id, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(client.Id, processResult.Value!.ClientId);
         Assert.Equal([weatherClient.ClientUri!], processResult.Value!.Resource);
-        Assert.Equal([ScopeConstants.OpenId], processResult.Value!.Scope);
+        Assert.Equal([ScopeConstants.OpenId, ScopeConstants.OfflineAccess], processResult.Value!.Scope);
         Assert.Equal(dPoPJkt, processResult.Value!.DPoPJkt);
         dPoPService.Verify();
     }
@@ -624,9 +744,15 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         await AddEntity(refreshToken);
 
         var openIdScope = await GetScope(ScopeConstants.OpenId);
-        var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
-        var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(scopeConsent, authorizationGrant, "https://weather.authserver.dk");
-        await AddEntity(authorizationGrantScopeConsent);
+        
+        var openIdScopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
+        var authorizationGrantOpenIdScopeConsent = new AuthorizationGrantScopeConsent(openIdScopeConsent, authorizationGrant, "https://weather.authserver.dk");
+        await AddEntity(authorizationGrantOpenIdScopeConsent);
+
+        var offlineAccessScope = await GetScope(ScopeConstants.OfflineAccess);
+        var offlineAccessScopeConsent = new ScopeConsent(subjectIdentifier, client, offlineAccessScope);
+        var authorizationGrantOfflineAccessScopeConsent = new AuthorizationGrantScopeConsent(offlineAccessScopeConsent, authorizationGrant, "https://weather.authserver.dk");
+        await AddEntity(authorizationGrantOfflineAccessScopeConsent);
 
         return refreshToken;
     }
