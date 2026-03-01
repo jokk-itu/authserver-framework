@@ -85,7 +85,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
     <p>The following is an example HTTP response using token exchange.</p>
     <CodeBlock>
 {`
-HTTP/1.1 200 BadRequest
+HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
 Cache-Control: no-cache, no-store
 
