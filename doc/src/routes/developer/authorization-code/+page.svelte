@@ -80,7 +80,6 @@ Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 
 grant_type=authorization_code
 &code=SplxlOBeZQQYbYS6WxSbIA
-&resource=https%3A%2F%2Fapi-one.protectedresource.dk
         `}
     </CodeBlock>
     <p>The following HTTP example shows a token response containing tokens exchanged from an authoriazation_code.
@@ -97,7 +96,8 @@ Cache-Control: no-cache, no-store
   "token_type":"Bearer",
   "expires_in":3600,
   "id_token":"eyJhbGciOiJSUzI1NiIsImtpZCI...",
-  "grant_id":"78FF77E8-F146-4F37-9C28-5FD0BC936980"
+  "grant_id":"78FF77E8-F146-4F37-9C28-5FD0BC936980",
+  "scope": "account:update account:delete"
 }
         `}
     </CodeBlock>
