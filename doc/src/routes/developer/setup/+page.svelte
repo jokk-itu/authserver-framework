@@ -1,5 +1,6 @@
 <script>
     import CodeBlock from "../../../components/CodeBlock.svelte";
+    import InformationBanner from "../../../components/InformationBanner.svelte";
     import PageTitle from "../../../components/PageTitle.svelte";
     import Section from "../../../components/Section.svelte";
 </script>
@@ -13,15 +14,19 @@
     <p>
         The following sections describe how to setup AuthServer framework in
         your solution.
-        <br />
-        The example code is written for an AspNetCore WebApp in .NET 8.
+        <br>
+        The example code is written for an AspNetCore WebApp in .NET 10.
+        <br>
+        If you don't want to read the setup documentation, but just want to head directly into the code,
+        then take a look at the MVP setup in <a href="https://github.com/jokk-itu/authserver-framework/tree/main/src/AuthServer.TestIdentityProvider">AuthServer.TestIdentityProvider</a>.
     </p>
 </Section>
 <Section title="Options">
     <p>
         The JwksDocument is responsible for defining keys for signing and
-        encrypting tokens. There must only be registered one key per algorithm.
+        encrypting tokens.
     </p>
+    <InformationBanner>There must only be registered one key per algorithm. The algorithm is set in the constructor of the key.</InformationBanner>
     <CodeBlock>
 {`
 // Inside Program.cs
@@ -34,11 +39,13 @@ var rsaSecurityKey = new RsaSecurityKey(rsa)
 {
   KeyId = Guid.NewGuid().ToString();
 };
-builder.Services.AddOptions<JwksDocument>(options =>
-{
-  options.SigningKeys = [rsaSecurityKey, new SigningKey(SigningAlg.RsaSha256)];
-  options.GetTokenSigningKey = () => options.SigningKeys.Single();
-});
+builder.Services
+    .AddOptions<JwksDocument>()
+    .Configure(options =>
+    {
+        options.SigningKeys = [rsaSecurityKey, new SigningKey(SigningAlg.RsaSha256)];
+        options.GetTokenSigningKey = () => options.SigningKeys.Single();
+    });
 `}
     </CodeBlock>
     <p>
@@ -52,12 +59,14 @@ builder.Services.AddOptions<JwksDocument>(options =>
 using AuthServer.Options;
             
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddOptions<DiscoveryDocument>(options =>
-{
-  options.Issuer = "https://idp.authserver.dk";
-  options.ClaimsSupported = ["name", "address", "roles"];
-  options.Scopes = ["openid", "profile"];
-});
+builder.Services
+    .AddOptions<DiscoveryDocument>()
+    .Configure(options =>
+    {
+        options.Issuer = "https://idp.authserver.dk";
+        options.ClaimsSupported = ["name", "address", "roles"];
+        options.Scopes = ["openid", "profile"];
+    });
 `}
     </CodeBlock>
     <p>
@@ -71,14 +80,56 @@ builder.Services.AddOptions<DiscoveryDocument>(options =>
 using AuthServer.Options;
             
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddOptions<UserInteraction>(options =>
-{
-  options.AccountSelectionUri = "https://idp.authserver.dk/select-account";
-  options.ConsentUri = "https://idp.authserver.dk/consent";
-  options.LoginUri = "https://idp.authserver.dk/login";
-  options.EndSessionUri = "https://idp.authserver.dk/logout";
-  options.VerificationUri = "https://idp.authserver.dk/device";
-});
+builder.Services
+    .AddOptions<UserInteraction>()
+    .Configure(options =>
+    {
+        options.AccountSelectionUri = "https://idp.authserver.dk/select-account";
+        options.ConsentUri = "https://idp.authserver.dk/consent";
+        options.LoginUri = "https://idp.authserver.dk/login";
+        options.EndSessionUri = "https://idp.authserver.dk/logout";
+        options.VerificationUri = "https://idp.authserver.dk/device";
+    });
+`}
+    </CodeBlock>
+    <p>
+        If your deployment is distributed, such that you have multiple deployments of AuthServer, then it is important to handle clock drifting.
+        This is important as creating tokens and verifying tokens can happen on different machines.
+        The token validation can be customized to allow a ClockSkew of a custom TimeSpan.
+    </p>
+    <CodeBlock>
+{`               
+// Inside Program.cs
+using AuthServer.Options;
+            
+var builder = WebApplication.CreateBuilder(args);
+builder.Services
+    .AddOptions<TokenValidationOptions>()
+    .Configure(options =>
+    {
+        options.ClockSkew = TimeSpan.FromSeconds(10);
+    });
+`}
+    </CodeBlock>
+    <p>
+        Endpoints can be customized using the EndpointOptions.
+        For example, to require authentication for POST in the register endpoint.
+    </p>
+    <CodeBlock>
+{`
+// Inside Program.cs
+using AuthServer.Options;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Setup your Authentication scheme
+
+builder.Services
+    .AddOptions<EndpointOptions>()
+    .Configure(options =>
+    {
+        options.ClientRegistrationAuthenticationScheme = "NameOfAuthenticationScheme";
+    });
 `}
     </CodeBlock>
 </Section>
@@ -227,7 +278,39 @@ public class DistributedCache : IDistributedCache
 {`
 // Inside Program.cs
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddAuthServer();
+builder.Services
+    .AddAuthServer()
+    .AddCleanupBackgroundServices()
+    .AddJwksHttpClient()
+    .AddLogoutHttpClient()
+    .AddRequestHttpClient()
+    .AddSectorHttpClient()
+    .AddAuthorizationCode()
+    .AddClientCredentials()
+    .AddRefreshToken()
+    .AddDeviceCode()
+    .AddTokenExchange()
+    .AddRevocation()
+    .AddIntrospection()
+    .AddDiscovery()
+    .AddJwks()
+    .AddGrantManagementQuery()
+    .AddGrantManagementRevoke()
+    .AddEndSession()
+    .AddUserinfo()
+    .AddRegister()
+    .AddPushedAuthorization()
+    .AddAuthorizationDbContext((_, dbContextConfigurator) =>
+    {
+        // Register the connection and migrations placement
+        dbContextConfigurator.UseSqlServer(
+            builder.Configuration.GetConnectionString("Default"),
+            optionsBuilder =>
+            {
+                optionsBuilder.MigrationsAssembly("Custom.AuthServer.Assembly");
+                optionsBuilder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
+    });
             
 var app = builder.Build();
             
@@ -259,6 +342,9 @@ VALUES ('urn:authserver:loa:low')
         AuthServer as a client, and authorizes AuthServer to receive tokens with
         scopes.
     </p>
+    <InformationBanner>
+        <p>Remember to change the ClientUri to your deployment URL.</p>
+    </InformationBanner>
     <CodeBlock>
 {`
 INSERT INTO Client (
@@ -290,4 +376,19 @@ INSERT INTO Scope (Name)
 VALUES ('value:of:custom:scope')
 `}
     </CodeBlock>
+</Section>
+<Section title="Authorization and Consent">
+    <p>
+        There are heplful services in the framework, which can be used to make authorization grants and consent, used during end user authentication.
+        For example, during authorize of the authorization_code grant type or during redeeming the user code of device_code grant type.
+    </p>
+    <p>The following interfaces can be injected and used. They all exist in the namespace AuthServer.UserInterface.Abstractions.</p>
+    <ul>
+        <li>IAuthorizationCodeGrantService</li>
+        <li>IAuthorizeService</li>
+        <li>IConsentGrantService</li>
+        <li>IDeviceAuthorizeService</li>
+        <li>IDeviceCodeGrantService</li>
+        <li>IEndSessionService</li>
+    </ul>
 </Section>
