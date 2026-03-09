@@ -5,6 +5,7 @@
     import { RowCellDefinition } from "../../../table";
     import CodeBlock from "../../../components/CodeBlock.svelte";
     import { base } from "$app/paths";
+    import InformationBanner from "../../../components/InformationBanner.svelte";
 
     let specificationHeaders: string[] = ["Name", "Description"];
     let specificationRows: RowCellDefinition[][] = [
@@ -144,8 +145,9 @@ Cache-Control: no-cache, no-store
 </Section>
 <Section title="Redeeming the user code">
     <p>
-        TODO
+        Once the end user has the user code, they have to navigate to the device endpoint on their secondary device and authenticate.
     </p>
+    <InformationBanner>The device endpoint is custom, and needs to be implemented by you. It must allow the end user to authenticate, like at the authorize endpoint during the authorization code grant type.</InformationBanner>
 </Section>
 <Section title="Device Code Grant">
     <p>
