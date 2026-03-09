@@ -7,24 +7,24 @@
 		<meta name="author" content="Joachim Køcher Kelsen" />
 		
 		<link href="../_app/immutable/assets/0.DJGPKz7c.css" rel="stylesheet">
-		<link rel="modulepreload" href="../_app/immutable/entry/start.7zgYcfxr.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/DsC12SaP.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.CiHgB2Uy.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/BVRNDWns.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DL6eumzt.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/8vVhMRMI.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/BZy_SBFG.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/kpzX8G8q.js">
-		<link rel="modulepreload" href="../_app/immutable/entry/app.Cl0b2Z3X.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.CMVbgGFb.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D-KJZai4.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BHF9wNqu.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D3j-uQNt.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/Dgn7VPmw.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/0.NmgiyXuJ.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.Dz7wZr33.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/CU9afjlv.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BqRdp-zL.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/C8ARo5-T.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/CFFnQ0VA.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/C2YZQ8M-.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DQgLNG-F.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/2.B9yg2pg4.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/19.CUC8DDlC.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/2.C4SSiZ5L.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/19.CZngWtQ5.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DMOXgEdX.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DbZgjyKz.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/CuMYCe1t.js">
@@ -322,7 +322,7 @@ VALUES ('value:of:custom:scope')
 <!--]-->
             </code>
         </pre></div></div><!----><!--]--></div><!----> <div class="mb-8" id="authorization and consent"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#authorization and consent">Authorization and Consent</a></div> <hr class="mb-4"/> <!--[--><p>There are heplful services in the framework, which can be used to make authorization grants and consent, used during end user authentication.
-        For example, during authorize of the authorization_code grant type or during redeeming the user code of device_code grant type.</p> <p>The following interfaces can be injected and used. They all exist in the namespace AuthServer.UserInterface.Abstractions.</p> <b>IAuthorizationCodeGrantService</b> <p>Service used to create/update grants during the grant type authorization_code.</p> <br/> <b>IAuthorizeService</b> <p>Service used for general functionality during the authorize endpoint.</p> <br/> <b>IConsentGrantService</b> <p>Service used for granting and getting consents of end-users.</p> <br/> <b>IDeviceAuthorizeService</b> <p>Service used for general functionality during the device endpoint, used for redeeming the user code.</p> <br/> <b>IDeviceCodeGrantService</b> <p>Service used to create/update grants during the grant type device_code.</p> <br/> <b>IEndSessionService</b> <p>Service used for general functionality during the end session endpoint.</p> <br/><!--]--></div><!----> <div class="mb-8" id="httpclient configurations"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#httpclient configurations">HttpClient configurations</a></div> <hr class="mb-4"/> <!--[--><p>Requesting clients from AuthServer, such as during backchannel logout, uses HttpClients and they can be extended.</p> <p>During the setup at Program.cs, you can pass an Action where you can configure the HttpClient.</p> <p>It is setup per integration, such as backchannel logout.</p> <div class="p-4 my-2 rounded-lg bg-sky-700 font-medium text-cyan-200"><!--[--><!---->It is very important to configure the HttpClients, and the default setup configures a strict Timeout and response Content size. This limits the attack surface of Denial of Service.<!--]--></div><!----> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
+        For example, during authorize of the authorization_code grant type or during redeeming the user code of device_code grant type.</p> <p>The following interfaces can be injected and used. They all exist in the namespace AuthServer.UserInterface.Abstractions.</p> <b>IAuthorizationCodeGrantService</b> <p>Service used to create/update grants during the grant type authorization_code.</p> <br/> <b>IAuthorizeService</b> <p>Service used for general functionality during the authorize endpoint.</p> <br/> <b>IConsentGrantService</b> <p>Service used for granting and getting consents of end-users.</p> <br/> <b>IDeviceAuthorizeService</b> <p>Service used for general functionality during the device endpoint, used for redeeming the user code.</p> <br/> <b>IDeviceCodeGrantService</b> <p>Service used to create/update grants during the grant type device_code.</p> <br/> <b>IEndSessionService</b> <p>Service used for general functionality during the end session endpoint.</p> <br/><!--]--></div><!----> <div class="mb-8" id="httpclient configurations"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#httpclient configurations">HttpClient configurations</a></div> <hr class="mb-4"/> <!--[--><p>Requesting clients from AuthServer, such as during backchannel logout, uses HttpClients and they can be extended.</p> <p>During the setup at Program.cs, you can pass an Action where you can configure the HttpClient.</p> <p>It is setup per integration, such as backchannel logout.</p> <div class="p-4 my-2 rounded-lg bg-orange-700 font-medium text-amber-200"><!--[--><!---->It is very important to configure the HttpClients, and the default setup configures a strict Timeout and response Content size. This limits the attack surface of Denial of Service.<!--]--></div><!----> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
             <code class="text-white pe-16">
                 <!--[--><!---->
 // Inside Program.cs
@@ -340,7 +340,7 @@ builder.Services
 			
 			<script>
 				{
-					__sveltekit_1rjjnng = {
+					__sveltekit_zinp0 = {
 						base: new URL("..", location).pathname.slice(0, -1),
 						assets: "/authserver"
 					};
@@ -348,8 +348,8 @@ builder.Services
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("../_app/immutable/entry/start.7zgYcfxr.js"),
-						import("../_app/immutable/entry/app.Cl0b2Z3X.js")
+						import("../_app/immutable/entry/start.CiHgB2Uy.js"),
+						import("../_app/immutable/entry/app.CMVbgGFb.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2, 19],
