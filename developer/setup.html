@@ -7,24 +7,24 @@
 		<meta name="author" content="Joachim Køcher Kelsen" />
 		
 		<link href="../_app/immutable/assets/0.DJGPKz7c.css" rel="stylesheet">
-		<link rel="modulepreload" href="../_app/immutable/entry/start.tQ5W197F.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/Dh5_esUh.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.7zgYcfxr.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/DsC12SaP.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DL6eumzt.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/BHF9xHy_.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/8vVhMRMI.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/kpzX8G8q.js">
-		<link rel="modulepreload" href="../_app/immutable/entry/app.pSoKmOua.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.Cl0b2Z3X.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D-KJZai4.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BHF9wNqu.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D3j-uQNt.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/Dgn7VPmw.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/0.Byw-DlfN.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.NmgiyXuJ.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/CU9afjlv.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BqRdp-zL.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/C8ARo5-T.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/njk8dZ9y.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CFFnQ0VA.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DQgLNG-F.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/2.jomV-Amz.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/19.DKRkp4GP.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/2.B9yg2pg4.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/19.CUC8DDlC.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DMOXgEdX.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DbZgjyKz.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/CuMYCe1t.js">
@@ -322,11 +322,25 @@ VALUES ('value:of:custom:scope')
 <!--]-->
             </code>
         </pre></div></div><!----><!--]--></div><!----> <div class="mb-8" id="authorization and consent"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#authorization and consent">Authorization and Consent</a></div> <hr class="mb-4"/> <!--[--><p>There are heplful services in the framework, which can be used to make authorization grants and consent, used during end user authentication.
-        For example, during authorize of the authorization_code grant type or during redeeming the user code of device_code grant type.</p> <p>The following interfaces can be injected and used. They all exist in the namespace AuthServer.UserInterface.Abstractions.</p> <ul><li>IAuthorizationCodeGrantService</li> <li>IAuthorizeService</li> <li>IConsentGrantService</li> <li>IDeviceAuthorizeService</li> <li>IDeviceCodeGrantService</li> <li>IEndSessionService</li></ul><!--]--></div><!----><!----><!--]--></div></div><!----><!--]--><!--]--></div></main> <footer><svg viewBox="0 0 1440 320" class="fill-openid" xmlns="http://www.w3.org/2000/svg"><path fill-opacity="1" d="M0,128L34.3,112C68.6,96,137,64,206,74.7C274.3,85,343,139,411,149.3C480,160,549,128,617,106.7C685.7,85,754,75,823,96C891.4,117,960,171,1029,181.3C1097.1,192,1166,160,1234,165.3C1302.9,171,1371,213,1406,234.7L1440,256L1440,320L1405.7,320C1371.4,320,1303,320,1234,320C1165.7,320,1097,320,1029,320C960,320,891,320,823,320C754.3,320,686,320,617,320C548.6,320,480,320,411,320C342.9,320,274,320,206,320C137.1,320,69,320,34,320L0,320Z"></path></svg> <div class="bg-gray-800 text-white py-4"><div class="container mx-auto text-center"><p>2026 AuthServer. All rights reserved.</p></div></div></footer><!----><!----><!--]--> <!--[!--><!--]--><!--]-->
+        For example, during authorize of the authorization_code grant type or during redeeming the user code of device_code grant type.</p> <p>The following interfaces can be injected and used. They all exist in the namespace AuthServer.UserInterface.Abstractions.</p> <b>IAuthorizationCodeGrantService</b> <p>Service used to create/update grants during the grant type authorization_code.</p> <br/> <b>IAuthorizeService</b> <p>Service used for general functionality during the authorize endpoint.</p> <br/> <b>IConsentGrantService</b> <p>Service used for granting and getting consents of end-users.</p> <br/> <b>IDeviceAuthorizeService</b> <p>Service used for general functionality during the device endpoint, used for redeeming the user code.</p> <br/> <b>IDeviceCodeGrantService</b> <p>Service used to create/update grants during the grant type device_code.</p> <br/> <b>IEndSessionService</b> <p>Service used for general functionality during the end session endpoint.</p> <br/><!--]--></div><!----> <div class="mb-8" id="httpclient configurations"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#httpclient configurations">HttpClient configurations</a></div> <hr class="mb-4"/> <!--[--><p>Requesting clients from AuthServer, such as during backchannel logout, uses HttpClients and they can be extended.</p> <p>During the setup at Program.cs, you can pass an Action where you can configure the HttpClient.</p> <p>It is setup per integration, such as backchannel logout.</p> <div class="p-4 my-2 rounded-lg bg-sky-700 font-medium text-cyan-200"><!--[--><!---->It is very important to configure the HttpClients, and the default setup configures a strict Timeout and response Content size. This limits the attack surface of Denial of Service.<!--]--></div><!----> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
+            <code class="text-white pe-16">
+                <!--[--><!---->
+// Inside Program.cs
+var builder = WebApplication.CreateBuilder(args);
+builder.Services
+    .AddAuthServer()
+    .AddLogoutHttpClient(httpClient =>
+    {
+        httpClient.Timeout = TimeSpan.FromSeconds(2);
+        httpClient.MaxResponseContentBufferSize = 1024 * 32;
+    });
+<!--]-->
+            </code>
+        </pre></div></div><!----><!--]--></div><!----><!----><!--]--></div></div><!----><!--]--><!--]--></div></main> <footer><svg viewBox="0 0 1440 320" class="fill-openid" xmlns="http://www.w3.org/2000/svg"><path fill-opacity="1" d="M0,128L34.3,112C68.6,96,137,64,206,74.7C274.3,85,343,139,411,149.3C480,160,549,128,617,106.7C685.7,85,754,75,823,96C891.4,117,960,171,1029,181.3C1097.1,192,1166,160,1234,165.3C1302.9,171,1371,213,1406,234.7L1440,256L1440,320L1405.7,320C1371.4,320,1303,320,1234,320C1165.7,320,1097,320,1029,320C960,320,891,320,823,320C754.3,320,686,320,617,320C548.6,320,480,320,411,320C342.9,320,274,320,206,320C137.1,320,69,320,34,320L0,320Z"></path></svg> <div class="bg-gray-800 text-white py-4"><div class="container mx-auto text-center"><p>2026 AuthServer. All rights reserved.</p></div></div></footer><!----><!----><!--]--> <!--[!--><!--]--><!--]-->
 			
 			<script>
 				{
-					__sveltekit_w8xtzu = {
+					__sveltekit_1rjjnng = {
 						base: new URL("..", location).pathname.slice(0, -1),
 						assets: "/authserver"
 					};
@@ -334,8 +348,8 @@ VALUES ('value:of:custom:scope')
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("../_app/immutable/entry/start.tQ5W197F.js"),
-						import("../_app/immutable/entry/app.pSoKmOua.js")
+						import("../_app/immutable/entry/start.7zgYcfxr.js"),
+						import("../_app/immutable/entry/app.Cl0b2Z3X.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2, 19],
