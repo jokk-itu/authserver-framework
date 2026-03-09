@@ -383,12 +383,43 @@ VALUES ('value:of:custom:scope')
         For example, during authorize of the authorization_code grant type or during redeeming the user code of device_code grant type.
     </p>
     <p>The following interfaces can be injected and used. They all exist in the namespace AuthServer.UserInterface.Abstractions.</p>
-    <ul>
-        <li>IAuthorizationCodeGrantService</li>
-        <li>IAuthorizeService</li>
-        <li>IConsentGrantService</li>
-        <li>IDeviceAuthorizeService</li>
-        <li>IDeviceCodeGrantService</li>
-        <li>IEndSessionService</li>
-    </ul>
+    <b>IAuthorizationCodeGrantService</b>
+    <p>Service used to create/update grants during the grant type authorization_code.</p>
+    <br>
+    <b>IAuthorizeService</b>
+    <p>Service used for general functionality during the authorize endpoint.</p>
+    <br>
+    <b>IConsentGrantService</b>
+    <p>Service used for granting and getting consents of end-users.</p>
+    <br>
+    <b>IDeviceAuthorizeService</b>
+    <p>Service used for general functionality during the device endpoint, used for redeeming the user code.</p>
+    <br>
+    <b>IDeviceCodeGrantService</b>
+    <p>Service used to create/update grants during the grant type device_code.</p>
+    <br>
+    <b>IEndSessionService</b>
+    <p>Service used for general functionality during the end session endpoint.</p>
+    <br>
+</Section>
+<Section title="HttpClient configurations">
+<p>
+    Requesting clients from AuthServer, such as during backchannel logout, uses HttpClients and they can be extended.
+</p>
+<p>During the setup at Program.cs, you can pass an Action where you can configure the HttpClient.</p>
+<p>It is setup per integration, such as backchannel logout.</p>
+<InformationBanner>It is very important to configure the HttpClients, and the default setup configures a strict Timeout and response Content size. This limits the attack surface of Denial of Service.</InformationBanner>
+<CodeBlock>
+{`
+// Inside Program.cs
+var builder = WebApplication.CreateBuilder(args);
+builder.Services
+    .AddAuthServer()
+    .AddLogoutHttpClient(httpClient =>
+    {
+        httpClient.Timeout = TimeSpan.FromSeconds(2);
+        httpClient.MaxResponseContentBufferSize = 1024 * 32;
+    });
+`}
+</CodeBlock>
 </Section>
