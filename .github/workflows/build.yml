@@ -63,5 +63,5 @@ jobs:
       - name: Install and Build
         run: |
           cd doc
-          npm ci
+          npm ci --ignore-scripts
           npm run build
