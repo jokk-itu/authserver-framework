@@ -7,26 +7,27 @@
 		<meta name="author" content="Joachim Køcher Kelsen" />
 		
 		<link href="../_app/immutable/assets/0.DJGPKz7c.css" rel="stylesheet">
-		<link rel="modulepreload" href="../_app/immutable/entry/start.CiHgB2Uy.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/BVRNDWns.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.BLYvG1fL.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/g02sQp1s.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DL6eumzt.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/BZy_SBFG.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/cgtQVqpa.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/kpzX8G8q.js">
-		<link rel="modulepreload" href="../_app/immutable/entry/app.CMVbgGFb.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.K8l54Daa.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D-KJZai4.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BHF9wNqu.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D3j-uQNt.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/Dgn7VPmw.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/0.Dz7wZr33.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.XzX-gqoz.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/CU9afjlv.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BqRdp-zL.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/C8ARo5-T.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/C2YZQ8M-.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/D0Gix_lt.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DQgLNG-F.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/2.C4SSiZ5L.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/17.CkZC3wvj.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/2.CFeviTZR.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/17.CdS1DRbR.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DMOXgEdX.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DbZgjyKz.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CuMYCe1t.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/C3UgRdqy.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/4YLJMDwf.js"><!--1nv3v2h--><!----><title>Refresh Token Grant</title>
 	</head>
@@ -36,10 +37,8 @@
         or if the tokens scope or audience needs to be updated.</p> <p>The use case is covered by the refresh_token grant type,
         which exchanges a fresh access token by a refresh_token.</p> <br/> <p>The refresh token typically has a longer lifetime than the access tokens,
         and can be defined in the client metadata.</p> <br/> <p>If the refresh token request uses DPoP,
-        and the client is public, then the refresh token must also be DPoP bound.
-        It is recommended to sender-constraint the refresh token, instead of rotating refresh tokens.</p><!--]--></div><!----> <div class="mb-8" id="specifications"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#specifications">Specifications</a></div> <hr class="mb-4"/> <!--[--><div class="w-full overflow-x-auto"><table class="border-collapse table-fixed sm:table-auto w-full text-sm"><caption class="caption-bottom">Table 1: Specifications</caption><thead class="bg-openid"><tr><!--[--><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Name</th><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Description</th><!--]--></tr></thead><tbody class="bg-white"><!--[--><tr><!--[--><!--[--><td class="break-words border border-slate-200 p-4 pl-8"><a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/" class="underline decoration-2 hover:decoration-openid">OAuth2.1</a></td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Core specification for OAuth</td><!--]--><!--]--></tr><tr><!--[--><!--[--><td class="break-words border border-slate-200 p-4 pl-8"><a href="https://openid.net/specs/openid-connect-core-1_0.html" class="underline decoration-2 hover:decoration-openid">OpenId Connect</a></td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Core specification for OpenId Connect</td><!--]--><!--]--></tr><!--]--></tbody></table></div><!--]--></div><!----> <div class="mb-8" id="token endpoint"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#token endpoint">Token Endpoint</a></div> <hr class="mb-4"/> <!--[--><p>The request contains a refresh token from the initial token request,
-        which returned the first token from another grant such as authorization_code.</p> <br/> <p>It is possible to change the scope and audience of the access token,
-        through the parameters "scope" and "resource".</p> <br/> <p>The following HTTP example shows a token request using the code from the identity provider.</p> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
+        and the client is public, then the refresh token must also be DPoP bound.</p> <div class="p-4 my-2 rounded-lg bg-sky-700 font-medium text-cyan-200"><!--[--><!---->It is recommended to sender-constraint the refresh token, instead of rotating refresh tokens.<!--]--></div><!----><!--]--></div><!----> <div class="mb-8" id="specifications"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#specifications">Specifications</a></div> <hr class="mb-4"/> <!--[--><div class="w-full overflow-x-auto"><table class="border-collapse table-fixed sm:table-auto w-full text-sm"><caption class="caption-bottom">Table 1: Specifications</caption><thead class="bg-openid"><tr><!--[--><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Name</th><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Description</th><!--]--></tr></thead><tbody class="bg-white"><!--[--><tr><!--[--><!--[--><td class="break-words border border-slate-200 p-4 pl-8"><a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/" class="underline decoration-2 hover:decoration-openid">OAuth2.1</a></td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Core specification for OAuth</td><!--]--><!--]--></tr><tr><!--[--><!--[--><td class="break-words border border-slate-200 p-4 pl-8"><a href="https://openid.net/specs/openid-connect-core-1_0.html" class="underline decoration-2 hover:decoration-openid">OpenId Connect</a></td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Core specification for OpenId Connect</td><!--]--><!--]--></tr><!--]--></tbody></table></div><!--]--></div><!----> <div class="mb-8" id="token endpoint"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#token endpoint">Token Endpoint</a></div> <hr class="mb-4"/> <!--[--><p>The request contains a refresh token from the initial token request,
+        which returned the first token from another grant such as authorization_code.</p> <br/> <p>It is possible refresh a token, and only contain a subset of the grant's scope. Then you would need to pass a scope parameter along the request.</p> <p>You can also keep the original scope, and omit the scope parameter.</p> <br/> <p>The following HTTP example shows a token request using the code from the identity provider.</p> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
             <code class="text-white pe-16">
                 <!--[--><!---->
 POST /connect/token HTTP/1.1
@@ -49,8 +48,6 @@ Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 
 grant_type=refresh_token
 &amp;refresh_token=SplxlOBeZQQYbYS6WxSbIA
-&amp;scope=weather:read
-&amp;resource=https%3A%2F%2Fapi-one.protectedresource.dk
 <!--]-->
             </code>
         </pre></div></div><!----> <p>The following HTTP example shows a token response containing tokens exchanged from the refresh token.</p> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
@@ -74,7 +71,7 @@ Cache-Control: no-cache, no-store
 			
 			<script>
 				{
-					__sveltekit_zinp0 = {
+					__sveltekit_28qs9l = {
 						base: new URL("..", location).pathname.slice(0, -1),
 						assets: "/authserver"
 					};
@@ -82,8 +79,8 @@ Cache-Control: no-cache, no-store
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("../_app/immutable/entry/start.CiHgB2Uy.js"),
-						import("../_app/immutable/entry/app.CMVbgGFb.js")
+						import("../_app/immutable/entry/start.BLYvG1fL.js"),
+						import("../_app/immutable/entry/app.K8l54Daa.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2, 17],
