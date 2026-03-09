@@ -3,6 +3,7 @@
     import InformationBanner from "../../../components/InformationBanner.svelte";
     import PageTitle from "../../../components/PageTitle.svelte";
     import Section from "../../../components/Section.svelte";
+    import WarningBanner from "../../../components/WarningBanner.svelte";
 </script>
 
 <svelte:head>
@@ -408,7 +409,7 @@ VALUES ('value:of:custom:scope')
 </p>
 <p>During the setup at Program.cs, you can pass an Action where you can configure the HttpClient.</p>
 <p>It is setup per integration, such as backchannel logout.</p>
-<InformationBanner>It is very important to configure the HttpClients, and the default setup configures a strict Timeout and response Content size. This limits the attack surface of Denial of Service.</InformationBanner>
+<WarningBanner>It is very important to configure the HttpClients, and the default setup configures a strict Timeout and response Content size. This limits the attack surface of Denial of Service.</WarningBanner>
 <CodeBlock>
 {`
 // Inside Program.cs
