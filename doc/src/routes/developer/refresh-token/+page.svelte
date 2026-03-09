@@ -1,5 +1,6 @@
 <script lang="ts">
     import CodeBlock from "../../../components/CodeBlock.svelte";
+    import InformationBanner from "../../../components/InformationBanner.svelte";
     import PageTitle from "../../../components/PageTitle.svelte";
     import Section from "../../../components/Section.svelte";
     import Table from "../../../components/Table.svelte";
@@ -35,8 +36,8 @@
     <p>
         If the refresh token request uses DPoP,
         and the client is public, then the refresh token must also be DPoP bound.
-        It is recommended to sender-constraint the refresh token, instead of rotating refresh tokens.
-    </p>    
+    </p>
+    <InformationBanner>It is recommended to sender-constraint the refresh token, instead of rotating refresh tokens.</InformationBanner>
 </Section>
 <Section title="Specifications">
     <Table title="Specifications" tableNumber={1} headers={specificationHeaders} rowCellDefinitions={specificationRows} />
@@ -48,8 +49,10 @@
     </p>
     <br>
     <p>
-        It is possible to change the scope and audience of the access token,
-        through the parameters "scope" and "resource".
+        It is possible refresh a token, and only contain a subset of the grant's scope. Then you would need to pass a scope parameter along the request.
+    </p>
+    <p>
+        You can also keep the original scope, and omit the scope parameter.
     </p>
     <br>
     <p>The following HTTP example shows a token request using the code from the identity provider.</p>
@@ -62,8 +65,6 @@ Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 
 grant_type=refresh_token
 &refresh_token=SplxlOBeZQQYbYS6WxSbIA
-&scope=weather:read
-&resource=https%3A%2F%2Fapi-one.protectedresource.dk
 `}
     </CodeBlock>
     <p>The following HTTP example shows a token response containing tokens exchanged from the refresh token.</p>
