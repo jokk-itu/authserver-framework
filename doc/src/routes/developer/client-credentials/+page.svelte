@@ -13,9 +13,9 @@
 
     let requestHeaders: string[] = ["Name", "Description"];
     let requestRows: RowCellDefinition[][] = [
-        [ new RowCellDefinition("grant_type"), new RowCellDefinition("Required. Must be equal to client_credentials.") ],
-        [ new RowCellDefinition("scope"), new RowCellDefinition("Required. Space delimited scopes.") ],
-        [ new RowCellDefinition("resource"), new RowCellDefinition("Required. URL of protected resource that is the audience of the access token.") ]
+        [ new RowCellDefinition("grant_type"), new RowCellDefinition("Must be equal to client_credentials. This is required.") ],
+        [ new RowCellDefinition("scope"), new RowCellDefinition("Space delimited scopes. This is required.") ],
+        [ new RowCellDefinition("resource"), new RowCellDefinition("URL of protected resource that is the audience of the access token. This is required.") ]
     ];
 
     let responseHeaders: string[] = ["Name", "Description"];
@@ -65,13 +65,13 @@ Cache-Control: no-cache, no-store
 {
   "access_token": "eyJhbGciO...ssw56c",
   "token_type": "Bearer",
-  "expires_in": 500,
+  "expires_in": 300,
   "scope": "account:update account:delete"
 }
         `}
     </CodeBlock>
     <p>The following table describes the request parameters. Client authentication parameters are not listed.</p>
-    <Table title="Request parameters" tableNumber={1} headers={requestHeaders} rowCellDefinitions={requestRows} />
+    <Table title="Request parameters" tableNumber={2} headers={requestHeaders} rowCellDefinitions={requestRows} />
     <p>The following table describes the response parameters.</p>
-    <Table title="Response parameters" tableNumber={2} headers={responseHeaders} rowCellDefinitions={responseRows} />
+    <Table title="Response parameters" tableNumber={3} headers={responseHeaders} rowCellDefinitions={responseRows} />
 </Section>
