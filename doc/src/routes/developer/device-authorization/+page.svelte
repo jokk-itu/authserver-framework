@@ -14,24 +14,24 @@
 
     let deviceAuthorizationRequestHeaders: string[] = ["Name", "Description"];
     let deviceAuthorizationRequestFields: RowCellDefinition[][] = [
-        [ new RowCellDefinition("code_challenge"), new RowCellDefinition("Hash of random string used to verify the requester between authorization and token endpoints.") ],
-        [ new RowCellDefinition("code_challenge_method"), new RowCellDefinition("Name of the hashing method used for the code_challenge") ],
-        [ new RowCellDefinition("nonce"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("grant_id"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("grant_management_action"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("scope"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("acr_values"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("resource"), new RowCellDefinition("") ],   
+        [ new RowCellDefinition("code_challenge"), new RowCellDefinition("Hash of random string used to verify the requester between authorization and token endpoints. This is required.") ],
+        [ new RowCellDefinition("code_challenge_method"), new RowCellDefinition("Name of the hashing method used for the code_challenge. This is required.") ],
+        [ new RowCellDefinition("nonce"), new RowCellDefinition("Cryptographically random value. This is required.") ],
+        [ new RowCellDefinition("grant_id"), new RowCellDefinition("The id of a previous grant, used to merge or replace consent. This is optional.") ],
+        [ new RowCellDefinition("grant_management_action"), new RowCellDefinition("The grant action performed when the end-user authenticates. This is optional.") ],
+        [ new RowCellDefinition("scope"), new RowCellDefinition("Space delimited scopes. This is required.") ],
+        [ new RowCellDefinition("acr_values"), new RowCellDefinition("Space delimited authentication context references. This is optional.") ],
+        [ new RowCellDefinition("resource"), new RowCellDefinition("URL of protected resource that is the audience of the access token. This is required.") ],   
     ];
 
     let deviceAuthorizationResponseHeaders: string[] = ["Name", "Description"];
     let deviceAuthorizationResponseFields: RowCellDefinition[][] = [
-        [ new RowCellDefinition("device_code"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("user_code"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("verification_uri"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("verification_uri_complete"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("expires_in"), new RowCellDefinition("") ],
-        [ new RowCellDefinition("interval"), new RowCellDefinition("") ],
+        [ new RowCellDefinition("device_code"), new RowCellDefinition("The code the client uses when polling the token endpoint.") ],
+        [ new RowCellDefinition("user_code"), new RowCellDefinition("The code the end-user redeems when authenticating.") ],
+        [ new RowCellDefinition("verification_uri"), new RowCellDefinition("The URL the end-user navigates to authenticate.") ],
+        [ new RowCellDefinition("verification_uri_complete"), new RowCellDefinition("The URL with user_code the end-user navigates to authenticate.") ],
+        [ new RowCellDefinition("expires_in"), new RowCellDefinition("The amount of seconds until the token expires, from the issued time.") ],
+        [ new RowCellDefinition("interval"), new RowCellDefinition("The interval in seconds the client waits between polling attempts at the token endpoint.") ],
     ];
 </script>
 
