@@ -89,9 +89,7 @@
         [ new RowCellDefinition("scope"), new RowCellDefinition("Space delimitied string of scopes, which the access_token is authorized for") ],
         [ new RowCellDefinition("grant_id"), new RowCellDefinition("The identifier of the grant, from where the access_token comes from.") ],
         [ new RowCellDefinition("token_type"), new RowCellDefinition("The type of usage of the access token received") ],
-        [ new RowCellDefinition("issued_token_type"), new RowCellDefinition("The type of token received in the access token field") ],
-        [ new RowCellDefinition("error"), new RowCellDefinition("The code of the error") ],
-        [ new RowCellDefinition("error_description"), new RowCellDefinition("The description of the error") ]
+        [ new RowCellDefinition("issued_token_type"), new RowCellDefinition("The type of token received in the access token field") ]
     ];
 </script>
 
