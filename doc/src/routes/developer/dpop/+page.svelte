@@ -78,6 +78,7 @@
     <Table title="DPoP token fields" tableNumber={2} headers={dPoPTokenHeaders} rowCellDefinitions={dPoPTokenFields} />
     <br>
     <p>The following JSON example shows a base64 decoded DPoP token sent to the token endpoint.</p>
+    <p>The signature block is omitted.</p>
     <br>
     <CodeBlock>
         {`
