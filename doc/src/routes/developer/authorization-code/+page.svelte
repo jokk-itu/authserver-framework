@@ -9,7 +9,7 @@
     let specificationHeaders: string[] = ["Name", "Description"];
     let specificationRows: RowCellDefinition[][] = [
         [ new RowCellDefinition('OAuth2.1', 'https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/'), new RowCellDefinition('Core specification for OAuth') ],
-        [ new RowCellDefinition('OpenId Connect', 'https://openid.net/specs/openid-connect-core-1_0.html'), new RowCellDefinition('Core specification for OpenId Connect') ]
+        [ new RowCellDefinition('OpenId Connect Core', 'https://openid.net/specs/openid-connect-core-1_0.html'), new RowCellDefinition('Core specification for OpenId Connect') ]
     ];    
 </script>
 
