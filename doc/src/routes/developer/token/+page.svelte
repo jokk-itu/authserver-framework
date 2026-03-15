@@ -49,7 +49,7 @@
     let idTokenRows: RowCellDefinition[][] = [
         [ new RowCellDefinition("jti"), new RowCellDefinition("Unique identifier of the token") ],
         [ new RowCellDefinition("nonce"), new RowCellDefinition("Client provided nonce during authorization") ],
-        [ new RowCellDefinition("aud"), new RowCellDefinition("List of URIs of resources, which are authorized to receive the token") ],
+        [ new RowCellDefinition("aud"), new RowCellDefinition("Identifier of the client, which requested the token") ],
         [ new RowCellDefinition("grant_id"), new RowCellDefinition("Unique identifier of the grant, which the token is authorized through") ],
         [ new RowCellDefinition("sub"), new RowCellDefinition("Identifier of the subject, which the token acts from") ],
         [ new RowCellDefinition("sid"), new RowCellDefinition("Identifier of the session, which the subject owns") ],
