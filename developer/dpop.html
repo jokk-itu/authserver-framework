@@ -7,24 +7,24 @@
 		<meta name="author" content="Joachim Køcher Kelsen" />
 		
 		<link href="../_app/immutable/assets/0.DJGPKz7c.css" rel="stylesheet">
-		<link rel="modulepreload" href="../_app/immutable/entry/start.DBGt9Zk3.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/DSrUg1nl.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.oN8Xc9Ui.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/D8DS8MeM.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DL6eumzt.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/DAnqaPsc.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CTcflICI.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/kpzX8G8q.js">
-		<link rel="modulepreload" href="../_app/immutable/entry/app.BXXHgMfR.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.DYUj1bh0.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D-KJZai4.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BHF9wNqu.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/D3j-uQNt.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/Dgn7VPmw.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/0.Dn0K8uIH.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.Dcer1tkG.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/CU9afjlv.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/BqRdp-zL.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/C8ARo5-T.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/D_EBtMxv.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CmqQC73s.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DQgLNG-F.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/2.DPJspF4h.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/12.Br9ZFjBN.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/2.DDISOpnp.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/12.C2OBwSre.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DMOXgEdX.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/DbZgjyKz.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/CuMYCe1t.js">
@@ -41,7 +41,7 @@
         because confidential clients have their refresh token bound using client authentication.<!--]--></div><!----> <br/> <p>Even though DPoP is optional at AuthServer, then a client can require DPoP usage through its client metadata.
         Then if an endpoint that can accept DPoP usage, does not receive DPoP parameters in requests associated with the client,
         the request will fail.</p><!--]--></div><!----> <div class="mb-8" id="dpop token"><div class="inline-flex"><a class="hover:underline ref-link text-xl" href="#dpop token">DPoP token</a></div> <hr class="mb-4"/> <!--[--><p>The DPoP token is a structured JWT and is signed using one of the algorithms from the discovery endpoint.
-        The token can contain the fields in table 2.</p> <br/> <div class="w-full overflow-x-auto"><table class="border-collapse table-fixed sm:table-auto w-full text-sm"><caption class="caption-bottom">Table 2: DPoP token fields</caption><thead class="bg-openid"><tr><!--[--><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Name</th><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Description</th><!--]--></tr></thead><tbody class="bg-white"><!--[--><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">htm</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">HTTP method used at the request. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">htu</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">HTTP absolute URL used at the request. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">nonce</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Server provided nonce. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">ath</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Hash of the access token that is bound to the DPoP token. This is a required claim when requests use the bound access token.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">jwk</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Public JsonWebKey used to verify the signature of the DPoP token. This is a required header.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">typ</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Type of JsonWebToken. This is a required header and must be dpop+jwt.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">jti</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unique identifier of the DPoP token. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">exp</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unix timestamp when the DPoP token expires. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">iat</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unix timestamp when the DPoP token was issued. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">nbf</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unix timestamp when the DPoP token is active from. This is a required claim.</td><!--]--><!--]--></tr><!--]--></tbody></table></div><!----> <br/> <p>The following JSON example shows a base64 decoded DPoP token sent to the token endpoint.</p> <br/> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
+        The token can contain the fields in table 2.</p> <br/> <div class="w-full overflow-x-auto"><table class="border-collapse table-fixed sm:table-auto w-full text-sm"><caption class="caption-bottom">Table 2: DPoP token fields</caption><thead class="bg-openid"><tr><!--[--><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Name</th><th class="break-words border font-medium text-lg p-4 pl-8 pt-3 pb-3 text-left">Description</th><!--]--></tr></thead><tbody class="bg-white"><!--[--><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">htm</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">HTTP method used at the request. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">htu</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">HTTP absolute URL used at the request. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">nonce</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Server provided nonce. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">ath</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Hash of the access token that is bound to the DPoP token. This is a required claim when requests use the bound access token.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">jwk</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Public JsonWebKey used to verify the signature of the DPoP token. This is a required header.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">typ</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Type of JsonWebToken. This is a required header and must be dpop+jwt.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">jti</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unique identifier of the DPoP token. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">exp</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unix timestamp when the DPoP token expires. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">iat</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unix timestamp when the DPoP token was issued. This is a required claim.</td><!--]--><!--]--></tr><tr><!--[--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">nbf</td><!--]--><!--[!--><td class="break-words border border-slate-200 p-4 pl-8">Unix timestamp when the DPoP token is active from. This is a required claim.</td><!--]--><!--]--></tr><!--]--></tbody></table></div><!----> <br/> <p>The following JSON example shows a base64 decoded DPoP token sent to the token endpoint.</p> <p>The signature block is omitted.</p> <br/> <div class="w-full overflow-x-auto"><div class="outline-solid bg-gray-900 border-slate-600 border-4 rounded-lg my-8"><pre class="whitespace-pre p-4 flex overflow-x-auto leading-6">
             <code class="text-white pe-16">
                 <!--[--><!---->
 {
@@ -113,7 +113,7 @@ DPoP-Nonce: eyJ7S_zG.eyJH0-Z.HX4w-7v
 			
 			<script>
 				{
-					__sveltekit_1v7vw8v = {
+					__sveltekit_19boqgk = {
 						base: new URL("..", location).pathname.slice(0, -1),
 						assets: "/authserver"
 					};
@@ -121,8 +121,8 @@ DPoP-Nonce: eyJ7S_zG.eyJH0-Z.HX4w-7v
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("../_app/immutable/entry/start.DBGt9Zk3.js"),
-						import("../_app/immutable/entry/app.BXXHgMfR.js")
+						import("../_app/immutable/entry/start.oN8Xc9Ui.js"),
+						import("../_app/immutable/entry/app.DYUj1bh0.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2, 12],
