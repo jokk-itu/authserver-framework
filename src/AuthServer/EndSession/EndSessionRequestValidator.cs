@@ -13,20 +13,17 @@ using Microsoft.EntityFrameworkCore;
 namespace AuthServer.EndSession;
 internal class EndSessionRequestValidator : IRequestValidator<EndSessionRequest, EndSessionValidatedRequest>
 {
-    private readonly AuthorizationDbContext _authorizationDbContext;
     private readonly IUserAccessor<EndSessionUser> _endSessionUserAccessor;
     private readonly IServerTokenDecoder _serverTokenDecoder;
     private readonly ICachedClientStore _cachedClientStore;
     private readonly ISessionRepository _sessionRepository;
 
     public EndSessionRequestValidator(
-        AuthorizationDbContext authorizationDbContext,
         IUserAccessor<EndSessionUser> endSessionUserAccessor,
         IServerTokenDecoder serverTokenDecoder,
         ICachedClientStore cachedClientStore,
         ISessionRepository sessionRepository)
     {
-        _authorizationDbContext = authorizationDbContext;
         _endSessionUserAccessor = endSessionUserAccessor;
         _serverTokenDecoder = serverTokenDecoder;
         _cachedClientStore = cachedClientStore;
