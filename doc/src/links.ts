@@ -35,7 +35,8 @@ export const developerLinks = [
     new DeveloperLink('Device Authorization', '/device-authorization'),
     new DeveloperLink('Token Revocation', '/token-revocation'),
     new DeveloperLink('Token Introspection', '/token-introspection'),
-    new DeveloperLink('Grant Management', '/grant-management')
+    new DeveloperLink('Grant Management', '/grant-management'),
+    new DeveloperLink('RP-Initiated Logout', '/rp-initiated-logout')
 ];
 
 export const navLinks = [

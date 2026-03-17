@@ -79,7 +79,7 @@ public class EndSessionIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.SeeOther, endSessionResponse.StatusCode);
-        Assert.Equal(UserInteraction.EndSessionUri, endSessionResponse.LocationUri);
+        Assert.Equal(UserInteraction.LogoutUri, endSessionResponse.LocationUri);
     }
 
     [Fact]
@@ -88,6 +88,7 @@ public class EndSessionIntegrationTest : BaseIntegrationTest
         // Act
         var endSessionResponse = await EndSessionEndpointBuilder
             .WithPostLogoutRedirectUri("https://webapp.authserver.dk/logged-out")
+            .WithEndSessionUser(UserConstants.SubjectIdentifier, false)
             .Post();
 
         // Assert

@@ -121,7 +121,7 @@ builder.Services
         options.AccountSelectionUri = identity.GetValue<string>("AccountSelectionUri")!;
         options.ConsentUri = identity.GetValue<string>("ConsentUri")!;
         options.LoginUri = identity.GetValue<string>("LoginUri")!;
-        options.EndSessionUri = identity.GetValue<string>("EndSessionUri")!;
+        options.LogoutUri = identity.GetValue<string>("LogoutUri")!;
         options.VerificationUri = identity.GetValue<string>("VerificationUri");
     });
 

@@ -7,8 +7,11 @@ internal static class EndSessionError
     public static readonly ProcessError InvalidIdToken =
         new(ErrorCode.InvalidRequest, "invalid id_token_hint", ResultCode.BadRequest);
 
-    public static readonly ProcessError InvalidClientId =
-        new(ErrorCode.InvalidRequest, "invalid client_id", ResultCode.BadRequest);
+    public static readonly ProcessError IdTokenDoesNotMatchSubject =
+        new(ErrorCode.InvalidRequest, "id_token_hint does not belong to session", ResultCode.BadRequest);
+
+    public static readonly ProcessError IdTokenDoesNotMatchClientId =
+        new(ErrorCode.InvalidRequest, "id_token_hint does not belong to client_id", ResultCode.BadRequest);
 
     public static readonly ProcessError StateWithoutPostLogoutRedirectUri =
         new(ErrorCode.InvalidRequest, "state provided without post_logout_redirect_uri", ResultCode.BadRequest);

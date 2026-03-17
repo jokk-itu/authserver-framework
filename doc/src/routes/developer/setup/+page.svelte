@@ -88,7 +88,7 @@ builder.Services
         options.AccountSelectionUri = "https://idp.authserver.dk/select-account";
         options.ConsentUri = "https://idp.authserver.dk/consent";
         options.LoginUri = "https://idp.authserver.dk/login";
-        options.EndSessionUri = "https://idp.authserver.dk/logout";
+        options.LogoutUri = "https://idp.authserver.dk/logout";
         options.VerificationUri = "https://idp.authserver.dk/device";
     });
 `}
