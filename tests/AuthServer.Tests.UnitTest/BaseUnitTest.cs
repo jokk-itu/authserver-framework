@@ -134,7 +134,7 @@ public abstract class BaseUnitTest
             options.LoginUri = "https://localhost:5000/login";
             options.ConsentUri = "https://localhost:5000/consent";
             options.AccountSelectionUri = "https://localhost:5000/select-account";
-            options.EndSessionUri = "https://localhost:5000/logout";
+            options.LogoutUri = "https://localhost:5000/logout";
             options.VerificationUri = "https://localhost:5000/device";
         });
         services.AddOptions<TokenValidationOptions>().Configure(options =>

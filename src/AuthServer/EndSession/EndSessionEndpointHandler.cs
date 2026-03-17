@@ -52,7 +52,7 @@ internal class EndSessionEndpointHandler : IEndpointHandler
             {
                 if (error.Error == ErrorCode.InteractionRequired)
                 {
-                    return Results.Extensions.LocalRedirectWithForwardOriginalRequest(_userInteractionOptions.Value.EndSessionUri!, httpContext);
+                    return Results.Extensions.LocalRedirectWithForwardOriginalRequest(_userInteractionOptions.Value.LogoutUri!, httpContext);
                 }
 
                 _endSessionUserAccessor.ClearUser();

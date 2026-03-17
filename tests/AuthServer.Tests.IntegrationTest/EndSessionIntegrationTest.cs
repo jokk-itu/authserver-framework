@@ -79,7 +79,7 @@ public class EndSessionIntegrationTest : BaseIntegrationTest
 
         // Assert
         Assert.Equal(HttpStatusCode.SeeOther, endSessionResponse.StatusCode);
-        Assert.Equal(UserInteraction.EndSessionUri, endSessionResponse.LocationUri);
+        Assert.Equal(UserInteraction.LogoutUri, endSessionResponse.LocationUri);
     }
 
     [Fact]
