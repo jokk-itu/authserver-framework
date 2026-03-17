@@ -35,11 +35,11 @@ internal class EndSessionRequestProcessor : IRequestProcessor<EndSessionValidate
     {
         if (string.IsNullOrEmpty(request.SessionId))
         {
-            _logger.LogDebug("Session is inactive, nothing to logout from");
+            _logger.LogDebug("Session for {Subject} is inactive, nothing to logout from", request.SubjectIdentifier);
             return Unit.Value;
         }
 
-        var clients = new List<Client>();
+        var clients = new List<ClientQuery>();
 
         if (request.LogoutAtIdentityProvider)
         {
@@ -51,7 +51,7 @@ internal class EndSessionRequestProcessor : IRequestProcessor<EndSessionValidate
                     s.AuthorizationGrants
                         .AsQueryable()
                         .Where(AuthorizationGrant.IsActive)
-                        .Select(ag => ag.Client)
+                        .Select(ag => new ClientQuery(ag.Client.Id, ag.Client.BackchannelLogoutUri))
                         .ToList())
                 )
                 .SingleAsync(cancellationToken);
@@ -66,7 +66,7 @@ internal class EndSessionRequestProcessor : IRequestProcessor<EndSessionValidate
                 .Where(AuthorizationGrant.IsActive)
                 .Where(ag => ag.Client.Id == request.ClientId)
                 .Where(ag => ag.Session.Id == request.SessionId)
-                .Select(ag => new AuthorizationGrantQuery(ag.Id, ag.Client))
+                .Select(ag => new AuthorizationGrantQuery(ag.Id, new ClientQuery(ag.Client.Id, ag.Client.BackchannelLogoutUri)))
                 .SingleOrDefaultAsync(cancellationToken);
 
             if (authorizationGrantQuery is null)
@@ -95,18 +95,20 @@ internal class EndSessionRequestProcessor : IRequestProcessor<EndSessionValidate
         return Unit.Value;
     }
 
-    private async Task BackchannelLogout(IEnumerable<Client> clients, EndSessionValidatedRequest request,
+    private async Task BackchannelLogout(IEnumerable<ClientQuery> clients, EndSessionValidatedRequest request,
         CancellationToken cancellationToken)
     {
         var clientIds = clients
             .Where(x => x.BackchannelLogoutUri is not null)
-            .Select(x => x.Id)
+            .Select(x => x.ClientId)
             .ToList();
 
         await _clientLogoutService.Logout(clientIds, request.SessionId, request.SubjectIdentifier, cancellationToken);
     }
 
-    private sealed record SessionQuery(IEnumerable<Client> Clients);
+    private sealed record SessionQuery(IEnumerable<ClientQuery> Clients);
 
-    private sealed record AuthorizationGrantQuery(string AuthorizationGrantId, Client Client);
+    private sealed record AuthorizationGrantQuery(string AuthorizationGrantId, ClientQuery Client);
+
+    private sealed record ClientQuery(string ClientId, string? BackchannelLogoutUri);
 }
