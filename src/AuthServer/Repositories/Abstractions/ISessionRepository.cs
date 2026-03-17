@@ -16,4 +16,12 @@ internal interface ISessionRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task RevokeExpiredSessions(int batchSize, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get the active session of the subject, if it exists.
+    /// </summary>
+    /// <param name="subjectIdentifier"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The active session of the end user or null</returns>
+    Task<string?> GetActiveSessionId(string subjectIdentifier, CancellationToken cancellationToken);
 }

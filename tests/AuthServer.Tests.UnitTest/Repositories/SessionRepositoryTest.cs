@@ -129,4 +129,58 @@ public class SessionRepositoryTest : BaseUnitTest
         Assert.Null(await IdentityContext.Set<Session>().FirstOrDefaultAsync(x => x.Id == expiredSession.Id));
         Assert.NotNull(await IdentityContext.Set<Session>().FirstOrDefaultAsync(x => x.Id == activeSession.Id));
     }
+
+    [Fact]
+    public async Task GetActiveSessionId_SessionIsActive_ExpectSessionId()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var sessionRepository = serviceProvider.GetRequiredService<ISessionRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var activeSession = new Session(subjectIdentifier);
+        await AddEntity(activeSession);
+
+        // Act
+        var sessionId = await sessionRepository.GetActiveSessionId(subjectIdentifier.Id, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(activeSession.Id, sessionId);
+    }
+
+    [Fact]
+    public async Task GetActiveSessionId_SessionIsRevoked_ExpectNull()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var sessionRepository = serviceProvider.GetRequiredService<ISessionRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        var activeSession = new Session(subjectIdentifier);
+        activeSession.Revoke();
+        await AddEntity(activeSession);
+
+        // Act
+        var sessionId = await sessionRepository.GetActiveSessionId(subjectIdentifier.Id, CancellationToken.None);
+
+        // Assert
+        Assert.Null(sessionId);
+    }
+
+    [Fact]
+    public async Task GetActiveSessionId_SubjectHasNoSession_ExpectNull()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var sessionRepository = serviceProvider.GetRequiredService<ISessionRepository>();
+
+        var subjectIdentifier = new SubjectIdentifier();
+        await AddEntity(subjectIdentifier);
+
+        // Act
+        var sessionId = await sessionRepository.GetActiveSessionId(subjectIdentifier.Id, CancellationToken.None);
+
+        // Assert
+        Assert.Null(sessionId);
+    }
 }

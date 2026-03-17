@@ -21,6 +21,17 @@ internal class SessionRepository : ISessionRepository
     }
 
     /// <inheritdoc/>
+    public async Task<string?> GetActiveSessionId(string subjectIdentifier, CancellationToken cancellationToken)
+    {
+        return await _authorizationDbContext
+            .Set<Session>()
+            .Where(s => s.SubjectIdentifier.Id == subjectIdentifier)
+            .Where(Session.IsActive)
+            .Select(s => s.Id)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task RevokeSession(string sessionId, CancellationToken cancellationToken)
     {
         var affectedTokens = await _authorizationDbContext
