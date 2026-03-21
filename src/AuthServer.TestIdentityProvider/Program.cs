@@ -43,8 +43,7 @@ builder.Services
                 JwsAlgConstants.RsaSsaPssSha256, JwsAlgConstants.RsaSsaPssSha384, JwsAlgConstants.RsaSsaPssSha512];
 
         ICollection<string> encryptionAlgorithms =
-            [JweAlgConstants.EcdhEsA128KW, JweAlgConstants.EcdhEsA192KW, JweAlgConstants.EcdhEsA256KW,
-                JweAlgConstants.RsaOAEP, JweAlgConstants.RsaPKCS1];
+            [JweAlgConstants.EcdhEsA128KW, JweAlgConstants.EcdhEsA192KW, JweAlgConstants.EcdhEsA256KW, JweAlgConstants.RsaOAEP];
 
         ICollection<string> encoderAlgorithms =
             [JweEncConstants.Aes128CbcHmacSha256, JweEncConstants.Aes192CbcHmacSha384, JweEncConstants.Aes256CbcHmacSha512];
