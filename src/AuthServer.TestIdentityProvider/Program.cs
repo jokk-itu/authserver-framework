@@ -36,6 +36,7 @@ builder.Services
         ];
         options.ScopesSupported = identitySection.GetSection("ScopesSupported").Get<ICollection<string>>() ?? [];
         options.ProtectedResources = identitySection.GetSection("ProtectedResources").Get<ICollection<string>>() ?? [];
+        options.AuthorizationDetailsTypeSupported = identitySection.GetSection("AuthorizationDetailsTypeSupported").Get<ICollection<string>>() ?? [];
 
         ICollection<string> signingAlgorithms =
             [JwsAlgConstants.RsaSha256, JwsAlgConstants.RsaSha384, JwsAlgConstants.RsaSha512,
@@ -77,7 +78,6 @@ builder.Services
             new EncryptionKey(SecurityKeyHelper.EcdhEs192, EncryptionAlg.EcdhEsA192KW),
             new EncryptionKey(SecurityKeyHelper.EcdhEs256, EncryptionAlg.EcdhEsA256KW),
             new EncryptionKey(SecurityKeyHelper.RsaOAep, EncryptionAlg.RsaOAEP),
-            new EncryptionKey(SecurityKeyHelper.RsaPkcs1, EncryptionAlg.RsaPKCS1),
         ];
         options.SigningKeys =
         [

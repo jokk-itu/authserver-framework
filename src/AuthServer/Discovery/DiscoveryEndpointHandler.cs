@@ -87,6 +87,7 @@ internal class DiscoveryEndpointHandler : IEndpointHandler
             RequireSignedRequestObject = DiscoveryDocument.RequireSignedRequestObject,
             RequirePushedAuthorizationRequests = DiscoveryDocument.RequirePushedAuthorizationRequests,
             GrantManagementActionRequired = DiscoveryDocument.GrantManagementActionRequired,
+            AuthorizationDetailsTypeSupported = DiscoveryDocument.AuthorizationDetailsTypeSupported,
         };
 
         return Results.Ok(response);
