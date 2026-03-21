@@ -11,6 +11,7 @@ public class DiscoveryDocument
     public ICollection<string> ClaimsSupported { get; set; } = [];
     public ICollection<string> AcrValuesSupported { get; set; } = [];
     public ICollection<string> ScopesSupported { get; set; } = [];
+    public ICollection<string> GrantManagementActionsSupported { get; set; } = [];
 
     public ICollection<string> IdTokenSigningAlgValuesSupported { get; set; } = [];
     public ICollection<string> IdTokenEncryptionAlgValuesSupported { get; set; } = [];

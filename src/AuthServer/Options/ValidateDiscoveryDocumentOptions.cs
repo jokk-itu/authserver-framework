@@ -1,4 +1,5 @@
 ﻿using AuthServer.Constants;
+using AuthServer.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace AuthServer.Options;
@@ -40,6 +41,11 @@ public class ValidateDiscoveryDocumentOptions : IValidateOptions<DiscoveryDocume
         if (options.ScopesSupported.Count == 0)
         {
             return ValidateOptionsResult.Fail($"{nameof(options.ScopesSupported)} is not specified");
+        }
+
+        if (options.GrantManagementActionsSupported.IsNotSubset(GrantManagementActionConstants.GrantManagementActions))
+        {
+            return ValidateOptionsResult.Fail($"{nameof(options.GrantManagementActionsSupported)} contain unknown values");
         }
 
         var tokenEndpointAuthValidation = ValidateTokenEndpointAuth(options);

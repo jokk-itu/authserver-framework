@@ -54,14 +54,14 @@ internal class DiscoveryEndpointHandler : IEndpointHandler
             PromptValuesSupported = PromptConstants.Prompts,
             DisplayValuesSupported = DisplayConstants.DisplayValues,
             SubjectTypesSupported = SubjectTypeConstants.SubjectTypes,
-            GrantTypesSupported = GrantTypeConstants.GrantTypes,
+            GrantTypesSupported = await GetGrantTypesSupported(),
             ChallengeMethodsSupported = CodeChallengeMethodConstants.CodeChallengeMethods,
             ResponseTypesSupported = ResponseTypeConstants.ResponseTypes,
             ResponseModesSupported = ResponseModeConstants.ResponseModes,
             IntrospectionEndpointAuthMethodsSupported = TokenEndpointAuthMethodConstants.SecureAuthMethods,
             RevocationEndpointAuthMethodsSupported = TokenEndpointAuthMethodConstants.SecureAuthMethods,
             TokenEndpointAuthMethodsSupported = TokenEndpointAuthMethodConstants.AuthMethods,
-            GrantManagementActionsSupported = GrantManagementActionConstants.GrantManagementActions,
+            GrantManagementActionsSupported = DiscoveryDocument.GrantManagementActionsSupported,
             IdTokenSigningAlgValuesSupported = DiscoveryDocument.IdTokenSigningAlgValuesSupported,
             IdTokenEncryptionAlgValuesSupported = DiscoveryDocument.IdTokenEncryptionAlgValuesSupported,
             IdTokenEncryptionEncValuesSupported = DiscoveryDocument.IdTokenEncryptionEncValuesSupported,
@@ -86,7 +86,7 @@ internal class DiscoveryEndpointHandler : IEndpointHandler
             RequestUriParameterSupported = true,
             RequireSignedRequestObject = DiscoveryDocument.RequireSignedRequestObject,
             RequirePushedAuthorizationRequests = DiscoveryDocument.RequirePushedAuthorizationRequests,
-            GrantManagementActionRequired = DiscoveryDocument.GrantManagementActionRequired
+            GrantManagementActionRequired = DiscoveryDocument.GrantManagementActionRequired,
         };
 
         return Results.Ok(response);
@@ -103,5 +103,42 @@ internal class DiscoveryEndpointHandler : IEndpointHandler
         }
 
         return default;
+    }
+
+    private async Task<ICollection<string>> GetGrantTypesSupported()
+    {
+        var grantTypes = new List<string>();
+
+        var authorizationCode = await Filter(GrantTypeConstants.AuthorizationCode, FeatureFlags.AuthorizationCode);
+        if (authorizationCode is not null)
+        {
+            grantTypes.Add(authorizationCode);
+        }
+
+        var refreshToken = await Filter(GrantTypeConstants.RefreshToken, FeatureFlags.RefreshToken);
+        if (refreshToken is not null)
+        {
+            grantTypes.Add(refreshToken);
+        }
+
+        var clientCredentials = await Filter(GrantTypeConstants.ClientCredentials, FeatureFlags.ClientCredentials);
+        if (clientCredentials is not null)
+        {
+            grantTypes.Add(clientCredentials);
+        }
+
+        var deviceCode = await Filter(GrantTypeConstants.DeviceCode, FeatureFlags.DeviceCode);
+        if (deviceCode is not null)
+        {
+            grantTypes.Add(deviceCode);
+        }
+
+        var tokenExchange = await Filter(GrantTypeConstants.TokenExchange, FeatureFlags.TokenExchange);
+        if (tokenExchange is not null)
+        {
+            grantTypes.AddRange(tokenExchange);
+        }
+
+        return grantTypes;
     }
 }

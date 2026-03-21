@@ -11,5 +11,10 @@ internal class PostConfigureDiscoveryDocumentOptions : IPostConfigureOptions<Dis
 			.Where(x => !options.ScopesSupported.Contains(x))
 			.ToList()
 			.ForEach(options.ScopesSupported.Add);
+
+        if (!options.GrantManagementActionsSupported.Contains(GrantManagementActionConstants.Create))
+        {
+			options.GrantManagementActionsSupported.Add(GrantManagementActionConstants.Create);
+        }
 	}
 }

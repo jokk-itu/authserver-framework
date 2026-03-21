@@ -27,6 +27,7 @@ builder.Services
         options.OpPolicyUri = identitySection.GetValue<string>("PolicyUri");
         options.OpTosUri = identitySection.GetValue<string>("TosUri");
         options.ClaimsSupported = ClaimNameConstants.SupportedEndUserClaims;
+        options.GrantManagementActionsSupported = GrantManagementActionConstants.GrantManagementActions;
         options.AcrValuesSupported =
         [
             AuthenticationContextReferenceConstants.LevelOfAssuranceLow,
