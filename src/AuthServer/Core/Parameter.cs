@@ -114,6 +114,7 @@ public static class Parameter
     public const string IssuedTokenType = "issued_token_type";
     public const string Actor = "act";
     public const string MayAct = "may_act";
+    public const string AuthorizationDetailsTypes = "authorization_details_types";
 
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";

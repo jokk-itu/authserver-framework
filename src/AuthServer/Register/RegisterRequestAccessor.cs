@@ -89,8 +89,9 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 		var responseTypes = json.GetCollectionValue(Parameter.ResponseTypes);
 		var grantTypes = json.GetCollectionValue(Parameter.GrantTypes);
 		var contacts = json.GetCollectionValue(Parameter.Contacts);
+		var authorizationDetailsTypes = json.GetCollectionValue(Parameter.AuthorizationDetailsTypes);
 
-		return new RegisterRequest
+        return new RegisterRequest
         {
 			Method = method,
 			ClientId = clientId,
@@ -142,7 +143,8 @@ internal class RegisterRequestAccessor : IRequestAccessor<RegisterRequest>
 			RequestUris = requestUris,
 			ResponseTypes = responseTypes,
 			GrantTypes = grantTypes,
-			Contacts = contacts
-		};
+			Contacts = contacts,
+			AuthorizationDetailsTypes = authorizationDetailsTypes
+        };
 	}
 }

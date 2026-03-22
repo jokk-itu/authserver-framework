@@ -53,4 +53,5 @@ internal class RegisterRequest
     public IReadOnlyCollection<string> ResponseTypes { get; init; } = [];
     public IReadOnlyCollection<string> GrantTypes { get; init; } = [];
     public IReadOnlyCollection<string> Contacts { get; init; } = [];
+    public IReadOnlyCollection<string> AuthorizationDetailsTypes { get; init; } = [];
 }

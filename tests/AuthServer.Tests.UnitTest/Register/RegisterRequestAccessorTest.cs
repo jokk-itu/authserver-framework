@@ -359,7 +359,8 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.RequestUris, values },
             { Parameter.ResponseTypes, values },
             { Parameter.GrantTypes, values },
-            { Parameter.Contacts, values }
+            { Parameter.Contacts, values },
+            { Parameter.AuthorizationDetailsTypes, values }
         };
         var requestJson = JsonSerializer.SerializeToUtf8Bytes(requestContent);
         var requestStream = new MemoryStream(requestJson);
@@ -394,6 +395,7 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.ResponseTypes);
         Assert.Equal(expectedValue, request.GrantTypes);
         Assert.Equal(expectedValue, request.Contacts);
+        Assert.Equal(expectedValue, request.AuthorizationDetailsTypes);
     }
 
     [Theory]
@@ -457,7 +459,8 @@ public class RegisterRequestAccessorTest : BaseUnitTest
             { Parameter.RequestUris, value },
             { Parameter.ResponseTypes, value },
             { Parameter.GrantTypes, value },
-            { Parameter.Contacts, value }
+            { Parameter.Contacts, value },
+            { Parameter.AuthorizationDetailsTypes, value }
         };
         var requestJson = JsonSerializer.SerializeToUtf8Bytes(requestContent);
         var requestStream = new MemoryStream(requestJson);
@@ -490,5 +493,6 @@ public class RegisterRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedCount, request.ResponseTypes.Count);
         Assert.Equal(expectedCount, request.GrantTypes.Count);
         Assert.Equal(expectedCount, request.Contacts.Count);
+        Assert.Equal(expectedCount, request.AuthorizationDetailsTypes.Count);
     }
 }
