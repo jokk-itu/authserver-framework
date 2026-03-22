@@ -57,6 +57,7 @@ public abstract class BaseUnitTest
 
     protected Task SaveChangesAsync() => IdentityContext.SaveChangesAsync();
     protected Task<Scope> GetScope(string name) => IdentityContext.Set<Scope>().SingleAsync(x => x.Name == name);
+    protected Task<AuthorizationDetailType> GetAuthorizationDetailType(string name) => IdentityContext.Set<AuthorizationDetailType>().SingleAsync(x => x.Name == name);
     protected Task<GrantType> GetGrantType(string name) => IdentityContext.Set<GrantType>().SingleAsync(x => x.Name == name);
     protected Task<ResponseType> GetResponseType(string name) => IdentityContext.Set<ResponseType>().SingleAsync(x => x.Name == name);
     protected Task<AuthenticationMethodReference> GetAuthenticationMethodReference(string name) => IdentityContext.Set<AuthenticationMethodReference>().SingleAsync(x => x.Name == name);
@@ -196,6 +197,7 @@ public abstract class BaseUnitTest
         IdentityContext.Database.EnsureCreated();
 
         CreateAuthenticationContextReferences().GetAwaiter().GetResult();
+        CreateAuthorizationDetailTypes().GetAwaiter().GetResult();
 
         var discoveryDocument = serviceProvider.GetRequiredService<IOptionsSnapshot<DiscoveryDocument>>();
         DiscoveryDocument = discoveryDocument.Value;
@@ -222,5 +224,11 @@ public abstract class BaseUnitTest
         await AddEntity(authenticationContextReferenceLow);
         await AddEntity(authenticationContextReferenceSubstantial);
         await AddEntity(authenticationContextReferenceStrict);
+    }
+
+    private async Task CreateAuthorizationDetailTypes()
+    {
+        var openidAuthorizationDetailType = new AuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
+        await AddEntity(openidAuthorizationDetailType);
     }
 }

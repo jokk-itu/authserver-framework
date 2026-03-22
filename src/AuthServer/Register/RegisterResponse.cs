@@ -57,4 +57,5 @@ internal class RegisterResponse
 	public required IReadOnlyCollection<string>? ResponseTypes { get; init; }
 	public required IReadOnlyCollection<string> GrantTypes { get; init; }
 	public required IReadOnlyCollection<string>? Contacts { get; init; }
+	public required IReadOnlyCollection<string>? AuthorizationDetailsTypes { get; init; }
 }

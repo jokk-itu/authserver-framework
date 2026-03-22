@@ -44,6 +44,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             ResponseTypes = [ResponseTypeConstants.Code],
             PostLogoutRedirectUris = ["https://webapp.authserver.dk/post-logout-callback"],
             Scope = [ScopeConstants.OpenId],
+            AuthorizationDetailsTypes = ["openid"],
             ClientUri = "https://webapp.authserver.dk",
             PolicyUri = "https://webapp.authserver.dk/policy",
             LogoUri = "https://webapp.authserver.dk/logo",
@@ -100,6 +101,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             .ThenInclude(x => x.AuthenticationContextReference)
             .Include(x => x.Contacts)
             .Include(x => x.Scopes)
+            .Include(c => c.AuthorizationDetailTypes)
             .Include(x => x.GrantTypes)
             .Include(x => x.ClientTokens)
             .SingleOrDefaultAsync(x => x.Id == response.ClientId, CancellationToken.None);
@@ -116,6 +118,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(request.ClientName, response.ClientName);
         Assert.Equal(request.GrantTypes, response.GrantTypes);
         Assert.Equal(request.Scope, response.Scope);
+        Assert.Equal(request.AuthorizationDetailsTypes, response.AuthorizationDetailsTypes);
         Assert.Equal(request.ResponseTypes, response.ResponseTypes);
         Assert.Equal(request.RedirectUris, response.RedirectUris);
         Assert.Equal(request.PostLogoutRedirectUris, response.PostLogoutRedirectUris);
@@ -197,6 +200,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
             .ThenInclude(x => x.AuthenticationContextReference)
             .Include(x => x.Contacts)
             .Include(x => x.Scopes)
+            .Include(c => c.AuthorizationDetailTypes)
             .Include(x => x.GrantTypes)
             .Include(x => x.ClientTokens)
             .SingleAsync(x => x.Id == response.ClientId, CancellationToken.None);
@@ -210,6 +214,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Null(response.RequestUris);
         Assert.Null(response.DefaultAcrValues);
         Assert.Null(response.Contacts);
+        Assert.Null(response.AuthorizationDetailsTypes);
     }
 
     [Fact]
@@ -249,6 +254,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         Assert.Equal(client.Name, response.ClientName);
         Assert.Equal(client.GrantTypes.Select(x => x.Name), response.GrantTypes);
         Assert.Equal(client.Scopes.Select(x => x.Name), response.Scope);
+        Assert.Equal(client.AuthorizationDetailTypes.Select(x => x.Name), response.AuthorizationDetailsTypes);
         Assert.Equal(client.ResponseTypes.Select(x => x.Name), response.ResponseTypes);
         Assert.Equal(client.RedirectUris.Select(x => x.Uri), response.RedirectUris);
         Assert.Equal(client.PostLogoutRedirectUris.Select(x => x.Uri), response.PostLogoutRedirectUris);
@@ -368,6 +374,7 @@ public class RegisterRequestProcessorTest : BaseUnitTest
         client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.RefreshToken));
         client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.DeviceCode));
         client.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        client.AuthorizationDetailTypes.Add(await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId));
         client.ResponseTypes.Add(await GetResponseType(ResponseTypeConstants.Code));
         client.ClientAuthenticationContextReferences.Add(
             new ClientAuthenticationContextReference(

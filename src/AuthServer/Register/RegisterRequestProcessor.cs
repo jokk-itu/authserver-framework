@@ -135,6 +135,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
                 .Select(x => x.Name)
                 .ToList()),
             Contacts = GetNullableList(client.Contacts.Select(c => c.Email).ToList()),
+            AuthorizationDetailsTypes = GetNullableList(client.AuthorizationDetailTypes.Select(adt => adt.Name).ToList()),
             AuthorizationCodeExpiration = client.AuthorizationCodeExpiration,
             DeviceCodeExpiration = client.DeviceCodeExpiration,
             AccessTokenExpiration = client.AccessTokenExpiration,
@@ -181,6 +182,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.RequestUris.Clear();
         client.Contacts.Clear();
         client.Scopes.Clear();
+        client.AuthorizationDetailTypes.Clear();
         client.ClientAuthenticationContextReferences.Clear();
     }
 
@@ -274,6 +276,11 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             .Select(c => new Contact(c, client))
             .ToList();
 
+        var authorizationDetailTypes = await _authorizationDbContext
+            .Set<AuthorizationDetailType>()
+            .Where(adt => request.AuthorizationDetailsTypes.Contains(adt.Name))
+            .ToListAsync(cancellationToken);
+
         var clientAuthenticationContextReferences = request.DefaultAcrValues
             .Select((x, i) => new ClientAuthenticationContextReference(client, authenticationContextReferences.Single(y => y.Name == x), i))
             .ToList();
@@ -285,6 +292,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
         client.PostLogoutRedirectUris = postLogoutRedirectUris;
         client.RequestUris = requestUris;
         client.Contacts = contacts;
+        client.AuthorizationDetailTypes = authorizationDetailTypes;
         client.ClientAuthenticationContextReferences = clientAuthenticationContextReferences;
     }
 
@@ -364,6 +372,7 @@ internal class RegisterRequestProcessor : IRequestProcessor<RegisterValidatedReq
             .Include(c => c.RequestUris)
             .Include(c => c.Contacts)
             .Include(c => c.Scopes)
+            .Include(c => c.AuthorizationDetailTypes)
             .Include(x => x.ClientAuthenticationContextReferences)
             .ThenInclude(x => x.AuthenticationContextReference)
             .SingleAsync(cancellationToken);
