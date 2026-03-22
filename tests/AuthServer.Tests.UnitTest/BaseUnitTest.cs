@@ -76,6 +76,7 @@ public abstract class BaseUnitTest
             options.Issuer = "https://localhost:5000";
             options.ClaimsSupported = ClaimNameConstants.SupportedEndUserClaims;
             options.GrantManagementActionsSupported = GrantManagementActionConstants.GrantManagementActions;
+            options.ScopesSupported = ScopeConstants.Scopes;
             options.AcrValuesSupported =
                 [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
 
