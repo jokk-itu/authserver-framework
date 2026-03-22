@@ -199,4 +199,8 @@ internal class GetRegisterResponse
 	[JsonPropertyName(Parameter.Contacts)]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public IReadOnlyCollection<string>? Contacts { get; init; }
+
+	[JsonPropertyName(Parameter.AuthorizationDetailsTypes)]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public IReadOnlyCollection<string>? AuthorizationDetailsTypes { get; init; }
 }

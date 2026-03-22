@@ -61,6 +61,7 @@ internal class RegisterEndpointHandler : IEndpointHandler
                             DefaultMaxAge = client.DefaultMaxAge,
                             DefaultAcrValues = client.DefaultAcrValues,
                             Contacts = client.Contacts,
+                            AuthorizationDetailsTypes = client.AuthorizationDetailsTypes,
                             AuthorizationCodeExpiration = client.AuthorizationCodeExpiration,
                             DeviceCodeExpiration = client.DeviceCodeExpiration,
                             AccessTokenExpiration = client.AccessTokenExpiration,
