@@ -73,6 +73,14 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
                 l => l.HasOne(typeof(Client)).WithMany().HasForeignKey($"{nameof(Client)}{nameof(Client.Id)}"));
 
         builder
+            .HasMany(client => client.AuthorizationDetailTypes)
+            .WithMany(authorizationDetailType => authorizationDetailType.Clients)
+            .UsingEntity(
+                $"{nameof(Client)}{nameof(AuthorizationDetailType)}",
+                r => r.HasOne(typeof(AuthorizationDetailType)).WithMany().HasForeignKey($"{nameof(AuthorizationDetailType)}{nameof(AuthorizationDetailType.Id)}"),
+                r => r.HasOne(typeof(Client)).WithMany().HasForeignKey($"{nameof(Client)}{nameof(Client.Id)}"));
+
+        builder
             .HasMany(client => client.GrantTypes)
             .WithMany(grant => grant.Clients)
             .UsingEntity(

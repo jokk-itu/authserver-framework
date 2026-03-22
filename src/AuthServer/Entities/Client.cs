@@ -250,6 +250,7 @@ public class Client : Entity<string>
     public ICollection<RequestUri> RequestUris { get; set; } = [];
     public ICollection<GrantType> GrantTypes { get; set; } = [];
     public ICollection<Scope> Scopes { get; set; } = [];
+    public ICollection<AuthorizationDetailType> AuthorizationDetailTypes { get; set; } = [];
     public ICollection<Contact> Contacts { get; set; } = [];
     public ICollection<ResponseType> ResponseTypes { get; set; } = [];
     public ICollection<Consent> Consents { get; set; } = [];
