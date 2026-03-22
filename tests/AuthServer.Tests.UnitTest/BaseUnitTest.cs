@@ -141,6 +141,7 @@ public abstract class BaseUnitTest
         services.AddOptions<TokenValidationOptions>().Configure(options =>
         {
             options.ClockSkew = TimeSpan.FromSeconds(10);
+            options.ClientTokenLifetimeWindow = TimeSpan.FromSeconds(60);
         });
 
         services
