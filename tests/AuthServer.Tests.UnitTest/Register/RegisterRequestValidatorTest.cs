@@ -1686,6 +1686,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
             ResponseTypes = [ResponseTypeConstants.Code],
             PostLogoutRedirectUris = ["https://webapp.authserver.dk/post-logout-callback"],
             Scope = [ScopeConstants.OpenId, ScopeConstants.UserInfo, ScopeConstants.OfflineAccess],
+            AuthorizationDetailsTypes = [AuthorizationDetailTypeConstants.OpenId],
             ClientUri = "https://webapp.authserver.dk",
             PolicyUri = "https://webapp.authserver.dk/policy",
             LogoUri = "https://webapp.authserver.dk/logo",
@@ -1738,6 +1739,7 @@ public class RegisterRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.ResponseTypes, validatedRequest.Value!.ResponseTypes);
         Assert.Equal(request.PostLogoutRedirectUris, validatedRequest.Value!.PostLogoutRedirectUris);
         Assert.Equal(request.Scope, validatedRequest.Value!.Scope);
+        Assert.Equal(request.AuthorizationDetailsTypes, validatedRequest.Value!.AuthorizationDetailsTypes);
         Assert.Equal(request.ClientUri, validatedRequest.Value!.ClientUri);
         Assert.Equal(request.PolicyUri, validatedRequest.Value!.PolicyUri);
         Assert.Equal(request.LogoUri, validatedRequest.Value!.LogoUri);

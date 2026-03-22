@@ -77,6 +77,7 @@ public abstract class BaseUnitTest
             options.ClaimsSupported = ClaimNameConstants.SupportedEndUserClaims;
             options.GrantManagementActionsSupported = GrantManagementActionConstants.GrantManagementActions;
             options.ScopesSupported = ScopeConstants.Scopes;
+            options.AuthorizationDetailsTypeSupported = [AuthorizationDetailTypeConstants.OpenId];
             options.AcrValuesSupported =
                 [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
 
