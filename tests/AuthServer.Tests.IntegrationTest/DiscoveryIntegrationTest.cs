@@ -93,5 +93,6 @@ public class DiscoveryIntegrationTest : BaseIntegrationTest
         Assert.Equal(DiscoveryDocument.RequireSignedRequestObject, getDiscoveryResponse.RequireSignedRequestObject);
         Assert.Equal(DiscoveryDocument.RequirePushedAuthorizationRequests, getDiscoveryResponse.RequirePushedAuthorizationRequests);
         Assert.Equal(DiscoveryDocument.GrantManagementActionRequired, getDiscoveryResponse.GrantManagementActionRequired);
+        Assert.Equal(DiscoveryDocument.AuthorizationDetailsTypeSupported, getDiscoveryResponse.AuthorizationDetailsTypeSupported);
     }
 }
