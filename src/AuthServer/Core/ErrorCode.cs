@@ -145,4 +145,10 @@ public static class ErrorCode
     /// The token has insufficient scope.
     /// </summary>
     public const string InsufficientScope = "insufficient_scope";
+
+    /// <summary>
+    /// The request contains an invalid authorization_details parameter.
+    /// Used in authorize and token endpoints.
+    /// </summary>
+    public const string InvalidAuthorizationDetails = "invalid_authorization_details";
 }

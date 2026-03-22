@@ -93,6 +93,12 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
             return scopeError;
         }
 
+        var authorizationDetailsTypesError = ValidateAuthorizationDetailsTypes(request, validatedRequest);
+        if (authorizationDetailsTypesError is not null)
+        {
+            return authorizationDetailsTypesError;
+        }
+
         var responseTypesError = ValidateResponseTypes(request, validatedRequest);
         if (responseTypesError is not null)
         {
@@ -442,6 +448,26 @@ internal class RegisterRequestValidator : IRequestValidator<RegisterRequest, Reg
 
         validatedRequest.Scope = scopes.AsReadOnly();
 
+        return null;
+    }
+
+    /// <summary>
+    /// AuthorizationDetailsTypes is OPTIONAL.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="validatedRequest"></param>
+    /// <returns></returns>
+    private ProcessError? ValidateAuthorizationDetailsTypes(RegisterRequest request, RegisterValidatedRequest validatedRequest)
+    {
+        if (request.AuthorizationDetailsTypes.Count != 0)
+        {
+            if (request.AuthorizationDetailsTypes.IsNotSubset(DiscoveryDocument.AuthorizationDetailsTypeSupported))
+            {
+                return RegisterError.InvalidAuthorizationDetailsTypes;
+            }
+        }
+
+        validatedRequest.AuthorizationDetailsTypes = request.AuthorizationDetailsTypes;
         return null;
     }
 

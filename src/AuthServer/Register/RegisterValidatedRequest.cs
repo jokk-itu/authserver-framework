@@ -55,4 +55,5 @@ internal class RegisterValidatedRequest
     public IReadOnlyCollection<string> ResponseTypes { get; set; } = [];
     public IReadOnlyCollection<string> GrantTypes { get; set; } = [];
     public IReadOnlyCollection<string> Contacts { get; set; } = [];
+    public IReadOnlyCollection<string> AuthorizationDetailsTypes { get; set; } = [];
 }

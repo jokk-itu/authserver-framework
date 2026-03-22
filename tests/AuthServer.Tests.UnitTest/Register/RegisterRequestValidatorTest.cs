@@ -301,6 +301,28 @@ public class RegisterRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_InvalidAuthorizationDetailsTypes_ExpectInvalidAuthorizationDetailsTypes()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<RegisterRequest, RegisterValidatedRequest>>();
+
+        var request = new RegisterRequest
+        {
+            Method = HttpMethod.Post,
+            ClientName = "web-app",
+            AuthorizationDetailsTypes = ["invalid_authorization_details_type"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RegisterError.InvalidAuthorizationDetailsTypes, processResult);
+    }
+
+    [Fact]
     public async Task Validate_InvalidResponseType_ExpectInvalidResponseTypes()
     {
         // Arrange

@@ -28,6 +28,9 @@ internal static class RegisterError
     public static readonly ProcessError InvalidScope =
         new(ErrorCode.InvalidClientMetadata, "invalid scope", ResultCode.BadRequest);
 
+    public static readonly ProcessError InvalidAuthorizationDetailsTypes =
+        new(ErrorCode.InvalidClientMetadata, "invalid authorization_details_types", ResultCode.BadRequest);
+
     public static readonly ProcessError InvalidResponseTypes =
         new(ErrorCode.InvalidClientMetadata, "invalid response_types", ResultCode.BadRequest);
 
