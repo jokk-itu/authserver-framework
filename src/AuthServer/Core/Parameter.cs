@@ -115,6 +115,7 @@ public static class Parameter
     public const string Actor = "act";
     public const string MayAct = "may_act";
     public const string AuthorizationDetailsTypes = "authorization_details_types";
+    public const string AuthorizationDetails = "authorization_details";
 
     // Custom parameter
     public const string RequireReferenceToken = "require_reference_token";
