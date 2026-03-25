@@ -30,6 +30,7 @@ internal class AuthorizeRequest
         Scope = authorizeRequestDto.Scope;
         AcrValues = authorizeRequestDto.AcrValues;
         Resource = authorizeRequestDto.Resource;
+        AuthorizationDetails = authorizeRequestDto.AuthorizationDetails;
     }
 
     public string? IdTokenHint { get; init; }
@@ -53,4 +54,5 @@ internal class AuthorizeRequest
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
+    public IReadOnlyCollection<string> AuthorizationDetails { get; init; } = [];
 }

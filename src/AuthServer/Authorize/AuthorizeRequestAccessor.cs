@@ -43,6 +43,7 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var acrValues = query.GetSpaceDelimitedValue(Parameter.AcrValues);
 
         var resource = query.GetCollectionValue(Parameter.Resource);
+        var authorizationDetails = query.GetCollectionValue(Parameter.AuthorizationDetails);
 
         return new AuthorizeRequest
         {
@@ -66,7 +67,8 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             DPoPJkt = dPoPJkt,
             Scope = scope,
             AcrValues = acrValues,
-            Resource = resource
+            Resource = resource,
+            AuthorizationDetails = authorizationDetails
         };
     }
 
@@ -97,6 +99,7 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
 
         var resource = body.GetCollectionValue(Parameter.Resource);
+        var authorizationDetails = body.GetCollectionValue(Parameter.AuthorizationDetails);
 
         return new AuthorizeRequest
         {
@@ -120,7 +123,8 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
             DPoPJkt = dPoPJkt,
             Scope = scope,
             AcrValues = acrValues,
-            Resource = resource
+            Resource = resource,
+            AuthorizationDetails = authorizationDetails
         };
     }
 }

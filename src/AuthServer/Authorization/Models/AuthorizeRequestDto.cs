@@ -28,6 +28,7 @@ public class AuthorizeRequestDto
         Scope = authorizeRequest.Scope;
         AcrValues = authorizeRequest.AcrValues;
         Resource = authorizeRequest.Resource;
+        AuthorizationDetails = authorizeRequest.AuthorizationDetails;
     }
 
     public string? IdTokenHint { get; init; }
@@ -49,4 +50,5 @@ public class AuthorizeRequestDto
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
+    public IReadOnlyCollection<string> AuthorizationDetails { get; init; } = [];
 }

@@ -266,7 +266,8 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Method = "GET",
                 Query = new QueryCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.Resource, values }
+                    { Parameter.Resource, values },
+                    { Parameter.AuthorizationDetails, values }
                 })
             }
         };
@@ -276,6 +277,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
 
         // Assert
         Assert.Equal(expectedValue, request.Resource);
+        Assert.Equal(expectedValue, request.AuthorizationDetails);
     }
 
     [Fact]
@@ -295,6 +297,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Resource, values },
+                    { Parameter.AuthorizationDetails, values }
                 })
             }
         };
@@ -304,6 +307,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
 
         // Assert
         Assert.Equal(expectedValue, request.Resource);
+        Assert.Equal(expectedValue, request.AuthorizationDetails);
     }
 
     [Theory]
@@ -323,6 +327,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Query = new QueryCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Resource, value },
+                    { Parameter.AuthorizationDetails, value }
                 })
             }
         };
@@ -332,6 +337,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
 
         // Assert
         Assert.Equal(expectedCount, request.Resource.Count);
+        Assert.Equal(expectedCount, request.AuthorizationDetails.Count);
     }
 
     [Theory]
@@ -351,6 +357,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Resource, value },
+                    { Parameter.AuthorizationDetails, value }
                 })
             }
         };
@@ -360,5 +367,6 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
 
         // Assert
         Assert.Equal(expectedCount, request.Resource.Count);
+        Assert.Equal(expectedCount, request.AuthorizationDetails.Count);
     }
 }
