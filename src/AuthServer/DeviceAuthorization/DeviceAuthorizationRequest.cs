@@ -18,6 +18,7 @@ internal class DeviceAuthorizationRequest
         AcrValues = authorizeRequestDto.AcrValues;
         Resource = authorizeRequestDto.Resource;
         DPoP = dPoP;
+        AuthorizationDetails = authorizeRequestDto.AuthorizationDetails;
         ClientAuthentications = clientAuthentications;
     }
     
@@ -31,5 +32,6 @@ internal class DeviceAuthorizationRequest
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
+    public IReadOnlyCollection<string> AuthorizationDetails { get; init; } = [];
     public IReadOnlyCollection<ClientAuthentication> ClientAuthentications { get; init; } = [];
 }

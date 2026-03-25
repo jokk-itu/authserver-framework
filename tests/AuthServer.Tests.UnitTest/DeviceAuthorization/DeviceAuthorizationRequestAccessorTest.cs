@@ -1,4 +1,3 @@
-using System.Text;
 using AuthServer.Authentication.Models;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
@@ -9,6 +8,7 @@ using AuthServer.TokenDecoders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
+ using System.Text;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.DeviceAuthorization;
@@ -183,8 +183,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Scope, value },
-                    { Parameter.AcrValues, value },
-                    { Parameter.Resource, value },
+                    { Parameter.AcrValues, value }
                 })
             }
         };
@@ -195,7 +194,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         // Assert
         Assert.Equal(expectedValue, request.Scope);
         Assert.Equal(expectedValue, request.AcrValues);
-        Assert.Equal(expectedValue, request.Resource);
     }
 
     [Theory]
@@ -214,8 +212,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
                     { Parameter.Scope, value },
-                    { Parameter.AcrValues, value },
-                    { Parameter.Resource, value },
+                    { Parameter.AcrValues, value }
                 })
             }
         };
@@ -226,6 +223,65 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         // Assert
         Assert.Equal(expectedCount, request.Scope.Count);
         Assert.Equal(expectedCount, request.AcrValues.Count);
+    }
+
+    [Fact]
+    public async Task GetRequest_CollectionParametersBody_ExpectValues()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var requestAccessor = serviceProvider.GetRequiredService<IRequestAccessor<DeviceAuthorizationRequest>>();
+        var values = new StringValues(["three", "random", "values"]);
+        string[] expectedValue = ["three", "random", "values"];
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Method = "POST",
+                Form = new FormCollection(new Dictionary<string, StringValues>
+                {
+                    { Parameter.Resource, values },
+                    { Parameter.AuthorizationDetails, values }
+                })
+            }
+        };
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
+
+        // Assert
+        Assert.Equal(expectedValue, request.Resource);
+        Assert.Equal(expectedValue, request.AuthorizationDetails);
+    }
+
+    [Theory]
+    [InlineData("", 0)]
+    [InlineData(null, 0)]
+    public async Task GetRequest_CollectionParametersBody_ExpectZeroValues(string? value, int expectedCount)
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var requestAccessor = serviceProvider.GetRequiredService<IRequestAccessor<DeviceAuthorizationRequest>>();
+
+        var httpContext = new DefaultHttpContext
+        {
+            Request =
+            {
+                Method = "POST",
+                Form = new FormCollection(new Dictionary<string, StringValues>
+                {
+                    { Parameter.Resource, value },
+                    { Parameter.AuthorizationDetails, value }
+                })
+            }
+        };
+
+        // Act
+        var request = await requestAccessor.GetRequest(httpContext.Request);
+
+        // Assert
         Assert.Equal(expectedCount, request.Resource.Count);
+        Assert.Equal(expectedCount, request.AuthorizationDetails.Count);
     }
 }
