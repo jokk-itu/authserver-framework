@@ -30,6 +30,7 @@ internal class PushedAuthorizationRequest
         Resource = authorizeRequestDto.Resource;
         ClientAuthentications = clientAuthentications;
         DPoP = dPoP;
+        AuthorizationDetails = authorizeRequestDto.AuthorizationDetails;
     }
 
     public string? IdTokenHint { get; init; }
@@ -52,5 +53,6 @@ internal class PushedAuthorizationRequest
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
+    public IReadOnlyCollection<string> AuthorizationDetails { get; init; } = [];
     public IReadOnlyCollection<ClientAuthentication> ClientAuthentications { get; init; } = [];
 }
