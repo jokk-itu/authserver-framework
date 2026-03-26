@@ -21,12 +21,13 @@ The following additional specifications are supported:
 - Token Revocation
 - Resource identifier
 - JWT Assertion for Client Authentication
-- OAuth JAR
-- DPoP
-- Pushed Authorization
-- GrantManagement
+- OAuth JWT-Secured Authorization Request (JAR)
+- OAuth Demonstrating Proof of Possession (DPoP)
+- OAuth Pushed Authorization Requests (PAR)
+- OAuth GrantManagement
 - OAuth Device Authorization Grant
 - OAuth Token Exchange
+- OAuth Rich Authorization Requests (RAR)
 
 ## Pipeline runs
 
