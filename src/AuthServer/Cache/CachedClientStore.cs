@@ -70,6 +70,7 @@ internal class CachedClientStore : ICachedClientStore
             .Include(c => c.PostLogoutRedirectUris)
             .Include(c => c.RedirectUris)
             .Include(c => c.RequestUris)
+            .Include(x => x.AuthorizationDetailTypes)
             .Include(x => x.ClientAuthenticationContextReferences)
             .ThenInclude(x => x.AuthenticationContextReference)
             .SingleOrDefaultAsync(cancellationToken);
@@ -105,7 +106,8 @@ internal class CachedClientStore : ICachedClientStore
             ResponseTypes = client.ResponseTypes.Select(rt => rt.Name).ToList(),
             PostLogoutRedirectUris = client.PostLogoutRedirectUris.Select(r => r.Uri).ToList(),
             RedirectUris = client.RedirectUris.Select(r => r.Uri).ToList(),
-            RequestUris = client.RequestUris.Select(r => r.Uri).ToList()
+            RequestUris = client.RequestUris.Select(r => r.Uri).ToList(),
+            AuthorizationDetailTypes = client.AuthorizationDetailTypes.Select(a => a.Name).ToList(),
         };
 
         _internalCache.Add(entityId, cachedClient);

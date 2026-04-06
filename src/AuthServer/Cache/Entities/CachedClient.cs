@@ -30,4 +30,5 @@ internal class CachedClient
     public required IReadOnlyCollection<string> PostLogoutRedirectUris { get; init; }
     public required IReadOnlyCollection<string> RedirectUris { get; init; }
     public required IReadOnlyCollection<string> RequestUris { get; init; }
+    public required IReadOnlyCollection<string> AuthorizationDetailTypes { get; init; }
 }
