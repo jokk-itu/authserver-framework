@@ -47,7 +47,12 @@ public class PushedAuthorizationRequestProcessorTest : BaseUnitTest
             MaxAge = value,
             Nonce = value,
             State = value,
-            RedirectUri = value
+            RedirectUri = value,
+            AuthorizationDetails = [value],
+            DPoPJkt = value,
+            GrantId = value,
+            GrantManagementAction = value,
+            Resource = [value]
         };
 
         // Act

@@ -28,6 +28,7 @@ internal class PushedAuthorizationRequestProcessor : IRequestProcessor<PushedAut
             Scope = request.Scope,
             AcrValues = request.AcrValues,
             Resource = request.Resource,
+            AuthorizationDetails = request.AuthorizationDetails,
             ClientId = request.ClientId,
             MaxAge = request.MaxAge,
             Nonce = request.Nonce,
