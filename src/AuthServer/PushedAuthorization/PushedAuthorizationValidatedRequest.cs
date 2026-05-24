@@ -20,4 +20,5 @@ internal class PushedAuthorizationValidatedRequest
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
+    public IReadOnlyCollection<string> AuthorizationDetails { get; init; } = [];
 }

@@ -89,4 +89,16 @@ internal static class PushedAuthorizationError
 
     public static readonly ProcessError InvalidResource =
         new(ErrorCode.InvalidTarget, "resource is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError NotSupportedAuthorizationDetails =
+        new(ErrorCode.InvalidAuthorizationDetails, "authorization_details is not supported", ResultCode.BadRequest);
+
+    public static readonly ProcessError InvalidAuthorizationDetails =
+        new(ErrorCode.InvalidAuthorizationDetails, "authorization_details is invalid", ResultCode.BadRequest);
+
+    public static readonly ProcessError UnauthorizedAuthorizationDetailsForClient =
+        new(ErrorCode.InvalidAuthorizationDetails, "client is unauthorized for authorization_details", ResultCode.BadRequest);
+
+    public static readonly ProcessError UnauthorizedAuthorizationDetailsForResource =
+        new(ErrorCode.InvalidAuthorizationDetails, "resource is unauthorized for authorization_details", ResultCode.BadRequest);
 }
