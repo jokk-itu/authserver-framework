@@ -17,7 +17,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -169,6 +169,27 @@ namespace AuthServer.TestIdentityProvider.Migrations
                             Id = 21,
                             Name = "wia"
                         });
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationDetailType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("AuthorizationDetailType");
                 });
 
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrant", b =>
@@ -1093,6 +1114,21 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.ToTable("AuthorizationGrantAuthenticationMethodReference");
                 });
 
+            modelBuilder.Entity("ClientAuthorizationDetailType", b =>
+                {
+                    b.Property<int>("AuthorizationDetailTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClientId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("AuthorizationDetailTypeId", "ClientId");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("ClientAuthorizationDetailType");
+                });
+
             modelBuilder.Entity("ClientGrantType", b =>
                 {
                     b.Property<string>("ClientId")
@@ -1489,6 +1525,21 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.HasOne("AuthServer.Entities.AuthorizationGrant", null)
                         .WithMany()
                         .HasForeignKey("AuthorizationGrantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ClientAuthorizationDetailType", b =>
+                {
+                    b.HasOne("AuthServer.Entities.AuthorizationDetailType", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorizationDetailTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AuthServer.Entities.Client", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

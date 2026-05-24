@@ -40,6 +40,19 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AuthorizationDetailType",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuthorizationDetailType", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Claim",
                 columns: table => new
                 {
@@ -238,6 +251,30 @@ namespace AuthServer.TestIdentityProvider.Migrations
                         column: x => x.ClientId,
                         principalTable: "Client",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ClientAuthorizationDetailType",
+                columns: table => new
+                {
+                    AuthorizationDetailTypeId = table.Column<int>(type: "int", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientAuthorizationDetailType", x => new { x.AuthorizationDetailTypeId, x.ClientId });
+                    table.ForeignKey(
+                        name: "FK_ClientAuthorizationDetailType_AuthorizationDetailType_AuthorizationDetailTypeId",
+                        column: x => x.AuthorizationDetailTypeId,
+                        principalTable: "AuthorizationDetailType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ClientAuthorizationDetailType_Client_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Client",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -737,6 +774,12 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuthorizationDetailType_Name",
+                table: "AuthorizationDetailType",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AuthorizationGrant_AuthenticationContextReferenceId",
                 table: "AuthorizationGrant",
                 column: "AuthenticationContextReferenceId");
@@ -797,6 +840,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 name: "IX_ClientAuthenticationContextReference_AuthenticationContextReferenceId",
                 table: "ClientAuthenticationContextReference",
                 column: "AuthenticationContextReferenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClientAuthorizationDetailType_ClientId",
+                table: "ClientAuthorizationDetailType",
+                column: "ClientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ClientGrantType_GrantTypeId",
@@ -946,6 +994,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 name: "ClientAuthenticationContextReference");
 
             migrationBuilder.DropTable(
+                name: "ClientAuthorizationDetailType");
+
+            migrationBuilder.DropTable(
                 name: "ClientGrantType");
 
             migrationBuilder.DropTable(
@@ -980,6 +1031,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
             migrationBuilder.DropTable(
                 name: "Consent");
+
+            migrationBuilder.DropTable(
+                name: "AuthorizationDetailType");
 
             migrationBuilder.DropTable(
                 name: "GrantType");
