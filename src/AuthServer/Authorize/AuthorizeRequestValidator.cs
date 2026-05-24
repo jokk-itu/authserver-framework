@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Cache.Entities;
@@ -32,8 +33,9 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         INonceRepository nonceRepository,
         IClientRepository clientRepository,
         IAuthorizationGrantRepository authorizationGrantRepository,
-        IMetricService metricService)
-        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
+        IMetricService metricService,
+        IAuthorizationDetailValidator? authorizationDetailValidator = null)
+        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository, authorizationDetailValidator)
     {
         _cachedClientStore = cachedClientStore;
         _authorizeInteractionService = authorizeInteractionService;

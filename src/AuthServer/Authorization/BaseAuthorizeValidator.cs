@@ -1,4 +1,6 @@
-﻿using AuthServer.Cache.Entities;
+﻿using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
+using AuthServer.Cache.Entities;
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Extensions;
@@ -17,19 +19,22 @@ internal class BaseAuthorizeValidator
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IClientRepository _clientRepository;
+    private readonly IAuthorizationDetailValidator? _authorizationDetailValidator;
 
     public BaseAuthorizeValidator(
         INonceRepository nonceRepository,
         IServerTokenDecoder tokenDecoder,
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         IAuthorizationGrantRepository authorizationGrantRepository,
-        IClientRepository clientRepository)
+        IClientRepository clientRepository,
+        IAuthorizationDetailValidator? authorizationDetailValidator = null)
     {
         _nonceRepository = nonceRepository;
         _tokenDecoder = tokenDecoder;
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _authorizationGrantRepository = authorizationGrantRepository;
         _clientRepository = clientRepository;
+        _authorizationDetailValidator = authorizationDetailValidator;
     }
 
     protected static bool HasValidState(string? state) => !string.IsNullOrEmpty(state);
@@ -176,5 +181,53 @@ internal class BaseAuthorizeValidator
         }
 
         return await _authorizationGrantRepository.IsActiveAuthorizationGrant(grantId, clientId, cancellationToken);
+    }
+
+    protected async Task<AuthorizationDetailsError?> ValidateAuthorizationDetails(IReadOnlyCollection<string> authorizationDetails, CachedClient cachedClient, CancellationToken cancellationToken)
+    {
+        if (authorizationDetails.Count == 0)
+        {
+            return null;
+        }
+
+        if (_authorizationDetailValidator is null)
+        {
+            return AuthorizationDetailsError.NotSupported;
+        }
+
+        var validatedAuthorizationDetails = new List<AuthorizationDetailDto>();
+
+        foreach (var authorizationDetail in authorizationDetails)
+        {
+            var validatedAuthorizationDetailDto = await _authorizationDetailValidator.ValidateAuthorizationDetail(authorizationDetail, cancellationToken);
+            if (validatedAuthorizationDetailDto is null)
+            {
+                return AuthorizationDetailsError.Invalid;
+            }
+
+            validatedAuthorizationDetails.Add(validatedAuthorizationDetailDto);
+        }
+
+        var types = validatedAuthorizationDetails
+            .GroupBy(x => x.Type)
+            .ToDictionary(
+                x => x.Key,
+                x => x.SelectMany(y => y.Locations).ToList());
+
+        if (cachedClient.AuthorizationDetailTypes.IsDisjoint(types.Select(x => x.Key)))
+        {
+            return AuthorizationDetailsError.NotAuthorizedForClient;
+        }
+
+        foreach (var type in types)
+        {
+            var areResourcesAuthorizedForType = await _clientRepository.AreResourcesAuthorizedForAuthorizationDetailType(type.Value, type.Key, cancellationToken);
+            if (!areResourcesAuthorizedForType)
+            {
+                return AuthorizationDetailsError.NotAuthorizedForResource;
+            }
+        }
+
+        return null;
     }
 }

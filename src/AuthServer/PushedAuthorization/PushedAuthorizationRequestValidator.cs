@@ -29,8 +29,9 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         ISecureRequestService secureRequestService,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository,
-        IDPoPService dPoPService)
-        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository)
+        IDPoPService dPoPService,
+        IAuthorizationDetailValidator? authorizationDetailValidator = null)
+        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository, authorizationDetailValidator)
     {
         _cachedClientStore = cachedClientStore;
         _clientAuthenticationService = clientAuthenticationService;
