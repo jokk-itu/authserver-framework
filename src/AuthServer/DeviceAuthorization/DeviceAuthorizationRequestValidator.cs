@@ -3,6 +3,7 @@ using AuthServer.Authorization;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
+using AuthServer.Cache.Entities;
 using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Options;
@@ -76,54 +77,33 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return DeviceAuthorizationError.UnauthorizedForGrant;
         }
 
-        if (!HasValidNonce(request.Nonce, null))
+        var nonceValidationResult = await ValidateNonce(request, cancellationToken);
+        if (nonceValidationResult is not null)
         {
-            return DeviceAuthorizationError.InvalidNonce;
-        }
-        
-        if (!await HasUniqueNonce(request.Nonce!, cancellationToken))
-        {
-            return DeviceAuthorizationError.ReplayNonce;
+            return nonceValidationResult;
         }
 
-        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, null))
+        var codeValidationResult = ValidateCode(request);
+        if (codeValidationResult is not null)
         {
-            return DeviceAuthorizationError.InvalidCodeChallengeMethod;
+            return codeValidationResult;
         }
 
-        if (!HasValidCodeChallenge(request.CodeChallenge, null))
+        var authorizationParametersValidationResult = await ValidateAuthorizationParameters(request, cachedClient, cancellationToken);
+        if (authorizationParametersValidationResult is not null)
         {
-            return DeviceAuthorizationError.InvalidCodeChallenge;
+            return authorizationParametersValidationResult;
         }
 
-        if (!HasValidScope(request.Scope))
-        {
-            return DeviceAuthorizationError.InvalidOpenIdScope;
-        }
-
-        if (!HasAuthorizedScope(request.Scope, cachedClient))
-        {
-            return DeviceAuthorizationError.UnauthorizedScope;
-        }
-
-        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
-        {
-            return DeviceAuthorizationError.InvalidResource;
-        }
-        
         if (!HasValidAcrValues(request.AcrValues))
         {
             return DeviceAuthorizationError.InvalidAcrValues;
         }
         
-        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
+        var grantValidationResult = await ValidateGrant(request, cachedClient, cancellationToken);
+        if (grantValidationResult is not null)
         {
-            return DeviceAuthorizationError.InvalidGrantManagement;
-        }
-
-        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
-        {
-            return DeviceAuthorizationError.InvalidGrantId;
+            return grantValidationResult;
         }
 
         if (!HasValidDPoP(null, request.DPoP, cachedClient.RequireDPoPBoundAccessTokens, null))
@@ -158,7 +138,91 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             DPoPJkt = dPoPValidationResult.DPoPJkt,
             Scope = request.Scope,
             Resource = request.Resource,
+            AuthorizationDetails = request.AuthorizationDetails,
             AcrValues = request.AcrValues
         };
+    }
+
+    private static ProcessError? ValidateCode(DeviceAuthorizationRequest request)
+    {
+        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, null))
+        {
+            return DeviceAuthorizationError.InvalidCodeChallengeMethod;
+        }
+
+        if (!HasValidCodeChallenge(request.CodeChallenge, null))
+        {
+            return DeviceAuthorizationError.InvalidCodeChallenge;
+        }
+
+        return null;
+    }
+
+    private async Task<ProcessError?> ValidateGrant(DeviceAuthorizationRequest request, CachedClient cachedClient, CancellationToken cancellationToken)
+    {
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
+        {
+            return DeviceAuthorizationError.InvalidGrantManagement;
+        }
+
+        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
+        {
+            return DeviceAuthorizationError.InvalidGrantId;
+        }
+
+        return null;
+    }
+
+    private async Task<ProcessError?> ValidateNonce(DeviceAuthorizationRequest request, CancellationToken cancellationToken)
+    {
+        if (!HasValidNonce(request.Nonce, null))
+        {
+            return DeviceAuthorizationError.InvalidNonce;
+        }
+
+        if (!await HasUniqueNonce(request.Nonce!, cancellationToken))
+        {
+            return DeviceAuthorizationError.ReplayNonce;
+        }
+
+        return null;
+    }
+
+    private async Task<ProcessError?> ValidateAuthorizationParameters(DeviceAuthorizationRequest request, CachedClient cachedClient, CancellationToken cancellationToken)
+    {
+        if (!HasValidScope(request.Scope))
+        {
+            return DeviceAuthorizationError.InvalidOpenIdScope;
+        }
+
+        if (!HasAuthorizedScope(request.Scope, cachedClient))
+        {
+            return DeviceAuthorizationError.UnauthorizedScope;
+        }
+
+        if (request.Resource.Count == 0 && request.AuthorizationDetails.Count == 0)
+        {
+            return DeviceAuthorizationError.InvalidResource;
+        }
+
+        if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
+        {
+            return DeviceAuthorizationError.InvalidResource;
+        }
+
+        var authorizationDetailsValidationResult = await ValidateAuthorizationDetails(request.AuthorizationDetails, cachedClient, cancellationToken);
+        if (authorizationDetailsValidationResult is not null)
+        {
+            return authorizationDetailsValidationResult switch
+            {
+                AuthorizationDetailsError.NotSupported => DeviceAuthorizationError.NotSupportedAuthorizationDetails,
+                AuthorizationDetailsError.Invalid => DeviceAuthorizationError.InvalidAuthorizationDetails,
+                AuthorizationDetailsError.NotAuthorizedForClient => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
+                AuthorizationDetailsError.NotAuthorizedForResource => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
+                _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
+            };
+        }
+        
+        return null;
     }
 }

@@ -1,4 +1,5 @@
-﻿using AuthServer.Authentication.Models;
+﻿using System.Text.Json;
+using AuthServer.Authentication.Models;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Constants;
@@ -413,6 +414,156 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
+    public async Task Validate_NullAuthorizationDetailValidator_ExpectNotSupportedAuthorizationDetails()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            var service = services.Single(x => x.ServiceType == typeof(IAuthorizationDetailValidator));
+            services.Remove(service);
+        });
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+
+        var request = new DeviceAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = ["{}"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(DeviceAuthorizationError.NotSupportedAuthorizationDetails, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidAuthorizationDetail_ExpectInvalidAuthorizationDetails()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+
+        var request = new DeviceAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = ["{}"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(DeviceAuthorizationError.InvalidAuthorizationDetails, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_ClientNotRegisteredForAuthorizationDetailTypes_ExpectUnauthorizedAuthorizationDetailsForClient()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId
+        };
+
+        var request = new DeviceAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForClient, processResult.Error);
+    }
+
+    [Fact]
+    public async Task Validate_ResourceNotRegisteredForAuthorizationDetailTypes_ExpectUnauthorizedAuthorizationDetailsForResource()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider
+            .GetRequiredService<IRequestValidator<DeviceAuthorizationRequest, DeviceAuthorizationValidatedRequest>>();
+
+        var plainSecret = CryptographyHelper.GetRandomString(16);
+        var client = await GetClient(plainSecret);
+        client.AuthorizationDetailTypes.Add(await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId));
+        await SaveChangesAsync();
+
+        var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId,
+            Locations = ["https://localhost:5001"]
+        };
+
+        var request = new DeviceAuthorizationRequest
+        {
+            ClientAuthentications =
+            [
+                new ClientSecretAuthentication(TokenEndpointAuthMethod.ClientSecretBasic, client.Id, plainSecret)
+            ],
+            Nonce = Guid.NewGuid().ToString(),
+            CodeChallengeMethod = proofKey.CodeChallengeMethod,
+            CodeChallenge = proofKey.CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Arrange
+        Assert.False(processResult.IsSuccess);
+        Assert.Equal(DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForResource, processResult.Error);
+    }
+
+    [Fact]
     public async Task Validate_InvalidAcrValues_ExpectInvalidAcrValues()
     {
         // Arrange
@@ -740,6 +891,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Empty(processResult.Value!.AuthorizationDetails);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
     }
 
@@ -766,6 +918,12 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             .ReturnsAsync(new DPoPValidationResult { IsValid = true, DPoPJkt = dPoPJkt })
             .Verifiable();
 
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.Profile,
+            Locations = [resource.ClientUri!]
+        };
+
         var request = new DeviceAuthorizationRequest
         {
             ClientAuthentications =
@@ -778,6 +936,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             Scope = [ScopeConstants.OpenId],
             AcrValues = [LevelOfAssuranceSubstantial],
             Resource = [resource.ClientUri!],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
             DPoP = dPoP,
             GrantManagementAction = GrantManagementActionConstants.Create
         };
@@ -794,6 +953,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.AcrValues, processResult.Value!.AcrValues);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Equal(request.AuthorizationDetails, processResult.Value!.AuthorizationDetails);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(dPoPJkt,  processResult.Value!.DPoPJkt);
         Assert.Null(processResult.Value!.AuthorizationGrantId);
@@ -833,6 +993,12 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
 
         const string givenRequestObject = "request_object";
 
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.Profile,
+            Locations = [resource.ClientUri!]
+        };
+
         var authorizeRequestDto = new AuthorizeRequestDto
         {
             CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
@@ -841,6 +1007,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             AcrValues = [LevelOfAssuranceLow],
             Nonce = CryptographyHelper.GetRandomString(16),
             Resource = [resource.ClientUri!],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
             GrantId = grant.Id,
             GrantManagementAction = GrantManagementActionConstants.Merge
         };
@@ -882,6 +1049,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(dPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.Nonce, processResult.Value!.Nonce);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
+        Assert.Equal(authorizeRequestDto.AuthorizationDetails, processResult.Value!.AuthorizationDetails);
         Assert.Equal(authorizeRequestDto.GrantId, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(authorizeRequestDto.GrantManagementAction, processResult.Value!.GrantManagementAction);
     }
@@ -891,6 +1059,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         var client = new Client("tv-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         client.GrantTypes.Add(await GetGrantType(GrantTypeConstants.DeviceCode));
         client.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        client.AuthorizationDetailTypes.Add(await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.Profile));
         var hashedSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashedSecret);
         await AddEntity(client);
@@ -904,6 +1073,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             ClientUri = "https://weather.authserver.dk"
         };
         resource.Scopes.Add(await GetScope(ScopeConstants.OpenId));
+        resource.AuthorizationDetailTypes.Add(await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.Profile));
         await AddEntity(resource);
 
         return resource;
