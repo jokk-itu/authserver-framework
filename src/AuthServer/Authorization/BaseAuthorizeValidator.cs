@@ -137,7 +137,7 @@ internal class BaseAuthorizeValidator
                 GrantManagementActionConstants.Merge,
                 GrantManagementActionConstants.Replace
             }
-            .Intersect(GrantManagementActionConstants.GrantManagementActions)
+            .Intersect(_discoveryDocumentOptions.Value.GrantManagementActionsSupported)
             .ToList();
         
         if (!string.IsNullOrEmpty(grantManagementAction)
