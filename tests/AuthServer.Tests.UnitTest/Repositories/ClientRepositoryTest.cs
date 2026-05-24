@@ -5,7 +5,7 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
-using Microsoft.EntityFrameworkCore;
+using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
@@ -49,7 +49,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
     }
 
     [Fact]
-    public async Task AreResourcesAuthorizedForScope_ClientForResourceAndScope_True()
+    public async Task AreResourcesAuthorizedForScope_ClientForResourceAndScope_ExpectTrue()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -58,7 +58,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         {
             ClientUri = "https://localhost:5000"
         };
-        client.Scopes.Add(await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId));
+        client.Scopes.Add(await GetScope(ScopeConstants.OpenId));
         await AddEntity(client);
 
         // Act
@@ -69,7 +69,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
     }
 
     [Fact]
-    public async Task AreResourcesAuthorizedForScope_NoClientForResource_False()
+    public async Task AreResourcesAuthorizedForScope_NoClientForResource_ExpectFalse()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -78,6 +78,41 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
         // Act
         var doesExist = await clientRepository.AreResourcesAuthorizedForScope(["https://localhost:5000"], [ScopeConstants.OpenId], CancellationToken.None);
         
+        // Assert
+        Assert.False(doesExist);
+    }
+
+    [Fact]
+    public async Task AreResourcesAuthorizedForAuthorizationDetailType_ClientForResourceAndAuthorizationDetailType_ExpectTrue()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
+
+        var client = new Client("PinguApp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        {
+            ClientUri = "https://localhost:5000"
+        };
+        client.AuthorizationDetailTypes.Add(await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId));
+        await AddEntity(client);
+
+        // Act
+        var doesExist = await clientRepository.AreResourcesAuthorizedForAuthorizationDetailType([client.ClientUri], AuthorizationDetailTypeConstants.OpenId, CancellationToken.None);
+
+        // Assert
+        Assert.True(doesExist);
+    }
+
+    [Fact]
+    public async Task AreResourcesAuthorizedForAuthorizationDetailType_NoClientForResource_ExpectFalse()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var clientRepository = serviceProvider.GetRequiredService<IClientRepository>();
+
+        // Act
+        var doesExist = await clientRepository.AreResourcesAuthorizedForAuthorizationDetailType(["https://localhost:5000"], AuthorizationDetailTypeConstants.OpenId, CancellationToken.None);
+
         // Assert
         Assert.False(doesExist);
     }
@@ -224,7 +259,7 @@ public class ClientRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTest
     }
 
     [Fact]
-    public async Task RedeemAuthorizeMessage()
+    public async Task RedeemAuthorizeMessage_ExpectRedeemed()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();

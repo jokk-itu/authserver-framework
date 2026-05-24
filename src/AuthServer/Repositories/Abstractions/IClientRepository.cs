@@ -30,6 +30,15 @@ internal interface IClientRepository
     Task<bool> AreResourcesAuthorizedForScope(IReadOnlyCollection<string> resources, IReadOnlyCollection<string> scopes, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Returns whether resources are authorized for authorization detail type.
+    /// </summary>
+    /// <param name="resources"></param>
+    /// <param name="type"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> AreResourcesAuthorizedForAuthorizationDetailType(IReadOnlyCollection<string> resources, string type, CancellationToken cancellationToken);
+
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="reference"></param>

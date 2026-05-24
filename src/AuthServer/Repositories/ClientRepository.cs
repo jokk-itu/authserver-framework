@@ -50,7 +50,19 @@ internal class ClientRepository : IClientRepository
             .Set<Client>()
             .Where(r => resources.Contains(r.ClientUri))
             .Where(r => r.Scopes.Any(s => scopes.Contains(s.Name)))
-            .CountAsync(cancellationToken: cancellationToken);
+            .CountAsync(cancellationToken);
+
+        return resourcesExisting == resources.Count;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> AreResourcesAuthorizedForAuthorizationDetailType(IReadOnlyCollection<string> resources, string type, CancellationToken cancellationToken)
+    {
+        var resourcesExisting = await _authorizationDbContext
+            .Set<Client>()
+            .Where(r => resources.Contains(r.ClientUri))
+            .Where(r => r.AuthorizationDetailTypes.Any(adt => adt.Name == type))
+            .CountAsync(cancellationToken);
 
         return resourcesExisting == resources.Count;
     }
