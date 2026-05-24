@@ -148,6 +148,21 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         return null;
     }
 
+    private static ProcessError? ValidateCode(AuthorizeRequest request)
+    {
+        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, request.ResponseType))
+        {
+            return AuthorizeError.InvalidCodeChallengeMethod;
+        }
+
+        if (!HasValidCodeChallenge(request.CodeChallenge, request.ResponseType))
+        {
+            return AuthorizeError.InvalidCodeChallenge;
+        }
+
+        return null;
+    }
+
     private async Task<ProcessResult<AuthorizeRequest, ProcessError>> SubstituteRequestObject(AuthorizeRequest request, CancellationToken cancellationToken)
     {
         var newRequest = await _secureRequestService.GetRequestByObject(request.RequestObject!, request.ClientId!, ClientTokenAudience.AuthorizationEndpoint, cancellationToken);
@@ -200,11 +215,61 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return responseParametersValidationResult;
         }
 
-        if (!HasValidDisplay(request.Display))
+        var nonceValidationResult = await ValidateNonce(request, cancellationToken);
+        if (nonceValidationResult is not null)
         {
-            return AuthorizeError.InvalidDisplay;
+            return nonceValidationResult;
         }
 
+        var codeValidationResult = ValidateCode(request);
+        if (codeValidationResult is not null)
+        {
+            return codeValidationResult;
+        }
+
+        var authorizationParametersValidationResult = await ValidateAuthorizationParameters(request, cachedClient, cancellationToken);
+        if (authorizationParametersValidationResult is not null)
+        {
+            return authorizationParametersValidationResult;
+        }
+
+        var openIdConnectCoreParametersValidationResult = await ValidateOpenIdConnectCoreParameters(request, cancellationToken);
+        if (openIdConnectCoreParametersValidationResult is not null)
+        {
+            return openIdConnectCoreParametersValidationResult;
+        }
+
+        var grantValidationResult = await ValidateGrant(request, cachedClient, cancellationToken);
+        if (grantValidationResult is not null)
+        {
+            return grantValidationResult;
+        }
+
+        if (!HasValidDPoP(request.DPoPJkt, null, cachedClient.RequireDPoPBoundAccessTokens, request.ResponseType))
+        {
+            return AuthorizeError.InvalidDPoPJkt;
+        }
+
+        return null;
+    }
+
+    private async Task<ProcessError?> ValidateGrant(AuthorizeRequest request, CachedClient cachedClient, CancellationToken cancellationToken)
+    {
+        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
+        {
+            return AuthorizeError.InvalidGrantManagement;
+        }
+
+        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
+        {
+            return AuthorizeError.InvalidGrantId;
+        }
+
+        return null;
+    }
+
+    private async Task<ProcessError?> ValidateNonce(AuthorizeRequest request, CancellationToken cancellationToken)
+    {
         if (!HasValidNonce(request.Nonce, request.ResponseType))
         {
             return AuthorizeError.InvalidNonce;
@@ -215,16 +280,11 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.ReplayNonce;
         }
 
-        if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, request.ResponseType))
-        {
-            return AuthorizeError.InvalidCodeChallengeMethod;
-        }
+        return null;
+    }
 
-        if (!HasValidCodeChallenge(request.CodeChallenge, request.ResponseType))
-        {
-            return AuthorizeError.InvalidCodeChallenge;
-        }
-
+    private async Task<ProcessError?> ValidateAuthorizationParameters(AuthorizeRequest request, CachedClient cachedClient, CancellationToken cancellationToken)
+    {
         if (!HasValidScope(request.Scope))
         {
             return AuthorizeError.InvalidOpenIdScope;
@@ -235,9 +295,37 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.UnauthorizedScope;
         }
 
+        if (request.Resource.Count == 0 && request.AuthorizationDetails.Count == 0)
+        {
+            return AuthorizeError.InvalidResource;
+        }
+
         if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
         {
             return AuthorizeError.InvalidResource;
+        }
+
+        var authorizationDetailsValidationResult = await ValidateAuthorizationDetails(request.AuthorizationDetails, cachedClient, cancellationToken);
+        if (authorizationDetailsValidationResult is not null)
+        {
+            return authorizationDetailsValidationResult switch
+            {
+                AuthorizationDetailsError.NotSupported => AuthorizeError.NotSupportedAuthorizationDetails,
+                AuthorizationDetailsError.Invalid => AuthorizeError.InvalidAuthorizationDetails,
+                AuthorizationDetailsError.NotAuthorizedForClient => AuthorizeError.UnauthorizedAuthorizationDetailsForClient,
+                AuthorizationDetailsError.NotAuthorizedForResource => AuthorizeError.UnauthorizedAuthorizationDetailsForResource,
+                _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
+            };
+        }
+
+        return null;
+    }
+
+    private async Task<ProcessError?> ValidateOpenIdConnectCoreParameters(AuthorizeRequest request, CancellationToken cancellationToken)
+    {
+        if (!HasValidDisplay(request.Display))
+        {
+            return AuthorizeError.InvalidDisplay;
         }
 
         if (!HasValidMaxAge(request.MaxAge))
@@ -258,21 +346,6 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         if (!HasValidAcrValues(request.AcrValues))
         {
             return AuthorizeError.InvalidAcrValues;
-        }
-
-        if (!HasValidGrantManagementAction(request.GrantId, request.GrantManagementAction, cachedClient))
-        {
-            return AuthorizeError.InvalidGrantManagement;
-        }
-
-        if (!await HasValidGrantId(request.GrantId, cachedClient.Id, cancellationToken))
-        {
-            return AuthorizeError.InvalidGrantId;
-        }
-
-        if (!HasValidDPoP(request.DPoPJkt, null, cachedClient.RequireDPoPBoundAccessTokens, request.ResponseType))
-        {
-            return AuthorizeError.InvalidDPoPJkt;
         }
 
         return null;
@@ -330,6 +403,7 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             Scope = request.Scope,
             AcrValues = request.AcrValues,
             Resource = request.Resource,
+            AuthorizationDetails = request.AuthorizationDetails,
             ClientId = request.ClientId!,
             Nonce = request.Nonce,
             RedirectUri = request.RedirectUri,

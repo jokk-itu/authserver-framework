@@ -1,4 +1,5 @@
-﻿using AuthServer.Authorization.Abstractions;
+﻿using System.Text.Json;
+using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Authorize;
 using AuthServer.Authorize.Abstractions;
@@ -31,8 +32,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService <
-                        IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var request = new AuthorizeRequest
         {
@@ -51,7 +52,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService <
+        var validator = serviceProvider.GetRequiredService<
             IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
 
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
@@ -569,31 +570,6 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_InvalidDisplay_ExpectInvalidDisplay()
-    {
-        // Arrange
-        var serviceProvider = BuildServiceProvider();
-        var validator = serviceProvider.GetRequiredService<
-            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
-
-        var client = await GetClient();
-
-        var request = new AuthorizeRequest
-        {
-            ClientId = client.Id,
-            State = CryptographyHelper.GetRandomString(16),
-            ResponseType = ResponseTypeConstants.Code,
-            Display = "invalid_display"
-        };
-
-        // Act
-        var processResult = await validator.Validate(request, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(AuthorizeError.InvalidDisplay, processResult);
-    }
-
-    [Fact]
     public async Task Validate_EmptyNonce_ExpectInvalidNonce()
     {
         // Arrange
@@ -762,7 +738,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
     }
 
     [Fact]
-    public async Task Validate_EmptyResource_ExpectInvalidResource()
+    public async Task Validate_EmptyResourceAndAuthorizationDetails_ExpectInvalidResource()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -816,6 +792,170 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(AuthorizeError.InvalidResource, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_NullAuthorizationDetailValidator_ExpectNotSupportedAuthorizationDetails()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider(services =>
+        {
+            var service = services.Single(x => x.ServiceType == typeof(IAuthorizationDetailValidator));
+            services.Remove(service);
+        });
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = ["{}"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.NotSupportedAuthorizationDetails, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidAuthorizationDetail_ExpectInvalidAuthorizationDetails()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = ["{}"]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.InvalidAuthorizationDetails, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_ClientNotRegisteredForAuthorizationDetailTypes_ExpectUnauthorizedAuthorizationDetailsForClient()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId
+        };
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.UnauthorizedAuthorizationDetailsForClient, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_ResourceNotRegisteredForAuthorizationDetailTypes_ExpectUnauthorizedAuthorizationDetailsForResource()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+        client.AuthorizationDetailTypes.Add(await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId));
+        await SaveChangesAsync();
+
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId,
+            Locations = [ "https://localhost:5001" ]
+        };
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.UnauthorizedAuthorizationDetailsForResource, processResult);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidDisplay_ExpectInvalidDisplay()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var validator = serviceProvider.GetRequiredService<
+            IRequestValidator<AuthorizeRequest, AuthorizeValidatedRequest>>();
+
+        var client = await GetClient();
+        var resource = await GetResource();
+
+        var request = new AuthorizeRequest
+        {
+            ClientId = client.Id,
+            State = CryptographyHelper.GetRandomString(16),
+            ResponseType = ResponseTypeConstants.Code,
+            Nonce = CryptographyHelper.GetRandomString(16),
+            CodeChallengeMethod = CodeChallengeMethodConstants.S256,
+            CodeChallenge = ProofKeyGenerator.GetProofKeyForCodeExchange().CodeChallenge,
+            Scope = [ScopeConstants.OpenId],
+            Resource = [resource.ClientUri!],
+            Display = "invalid_display"
+        };
+
+        // Act
+        var processResult = await validator.Validate(request, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(AuthorizeError.InvalidDisplay, processResult);
     }
 
     [Fact]
@@ -1218,6 +1358,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Empty(processResult.Value!.AuthorizationDetails);
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
@@ -1268,6 +1409,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Empty(processResult.Value!.AuthorizationDetails);
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
@@ -1290,6 +1432,12 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         var client = await GetClient();
         var resource = await GetResource();
 
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.Profile,
+            Locations = [resource.ClientUri!]
+        };
+
         var request = new AuthorizeRequest
         {
             ClientId = client.Id,
@@ -1306,7 +1454,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             RedirectUri = client.RedirectUris.Single().Uri,
             ResponseMode = ResponseModeConstants.FormPost,
             DPoPJkt = CryptographyHelper.GetRandomString(16),
-            Resource = [resource.ClientUri!]
+            Resource = [resource.ClientUri!],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
         };
 
         const string subjectIdentifier = "subjectIdentifier";
@@ -1329,6 +1478,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.AcrValues, processResult.Value!.AcrValues);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Equal(request.AuthorizationDetails, processResult.Value!.AuthorizationDetails);
         Assert.Equal(request.ClientId, processResult.Value!.ClientId);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
         Assert.Equal(request.RedirectUri, processResult.Value!.RedirectUri);
@@ -1361,6 +1511,12 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         const string subjectIdentifier = "subjectIdentifier";
         const string authorizationGrantId = "authorizationGrantId";
 
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.Profile,
+            Locations = [resource.ClientUri!]
+        };
+
         var authorizeRequestDto = new AuthorizeRequestDto
         {
             ResponseMode = ResponseModeConstants.FormPost,
@@ -1374,7 +1530,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             RedirectUri = client.RedirectUris.Single().Uri,
             DPoPJkt = CryptographyHelper.GetRandomString(16),
-            Resource = [resource.ClientUri!]
+            Resource = [resource.ClientUri!],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
         };
 
         secureRequestService
@@ -1403,6 +1560,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.ResponseType == authorizeRequestDto.ResponseType &&
                     y.DPoPJkt == authorizeRequestDto.DPoPJkt &&
                     y.Resource == authorizeRequestDto.Resource &&
+                    y.AuthorizationDetails == authorizeRequestDto.AuthorizationDetails &&
                     y.RequestUri == null), CancellationToken.None))
             .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
@@ -1432,6 +1590,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ResponseType, processResult.Value!.ResponseType);
         Assert.Equal(authorizeRequestDto.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
+        Assert.Equal(authorizeRequestDto.AuthorizationDetails, processResult.Value!.AuthorizationDetails);
         Assert.Null(processResult.Value!.RequestUri);
     }
 
@@ -1456,6 +1615,12 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         const string subjectIdentifier = "subjectIdentifier";
         const string authorizationGrantId = "authorizationGrantId";
 
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.Profile,
+            Locations = [resource.ClientUri!]
+        };
+
         var authorizeRequestDto = new AuthorizeRequestDto
         {
             ResponseMode = ResponseModeConstants.FormPost,
@@ -1469,7 +1634,8 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
             State = CryptographyHelper.GetRandomString(16),
             RedirectUri = client.RedirectUris.Single().Uri,
             DPoPJkt = CryptographyHelper.GetRandomString(16),
-            Resource = [resource.ClientUri!]
+            Resource = [resource.ClientUri!],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
         };
 
         secureRequestService
@@ -1498,6 +1664,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
                     y.ResponseType == authorizeRequestDto.ResponseType &&
                     y.DPoPJkt == authorizeRequestDto.DPoPJkt &&
                     y.Resource == authorizeRequestDto.Resource &&
+                    y.AuthorizationDetails == authorizeRequestDto.AuthorizationDetails &&
                     y.RequestUri == null), CancellationToken.None))
             .ReturnsAsync(InteractionResult.Success(subjectIdentifier, authorizationGrantId))
             .Verifiable();
@@ -1527,6 +1694,7 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.ResponseType, processResult.Value!.ResponseType);
         Assert.Equal(authorizeRequestDto.DPoPJkt, processResult.Value!.DPoPJkt);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
+        Assert.Equal(authorizeRequestDto.AuthorizationDetails, processResult.Value.AuthorizationDetails);
         Assert.Null(processResult.Value!.RequestUri);
     }
 
@@ -1540,6 +1708,9 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         client.Scopes.Add(openIdScope);
+
+        var profileAuthorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.Profile);
+        client.AuthorizationDetailTypes.Add(profileAuthorizationDetailType);
         
         var grantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);
         client.GrantTypes.Add(grantType);
@@ -1561,8 +1732,13 @@ public class AuthorizeRequestValidatorTest : BaseUnitTest
         {
             ClientUri = "https://weather.authserver.dk"
         };
+
         var openIdScope = await GetScope(ScopeConstants.OpenId);
         resource.Scopes.Add(openIdScope);
+
+        var profileAuthorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.Profile);
+        resource.AuthorizationDetailTypes.Add(profileAuthorizationDetailType);
+
         await AddEntity(resource);
 
         return resource;
