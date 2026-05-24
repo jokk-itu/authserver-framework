@@ -11,8 +11,6 @@ using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
-using AuthServer.TokenByGrant.TokenRefreshTokenGrant;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit.Abstractions;
@@ -87,7 +85,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = string.Empty,
                 CodeChallengeMethod = string.Empty,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -130,7 +129,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
                 Resource = [],
-                RedirectUri = "valid_redirect_uri"
+                RedirectUri = "valid_redirect_uri",
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -174,7 +174,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -217,7 +218,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -270,7 +272,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -329,7 +332,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -385,7 +389,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -439,7 +444,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -499,7 +505,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = dPoPJkt,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -555,7 +562,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -622,7 +630,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -687,7 +696,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = "jkt",
                 Scope = [],
-                Resource = []
+                Resource = [],
+                AuthorizationDetails = []
             })
             .Verifiable();
 
@@ -762,7 +772,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 DPoPJkt = "jkt",
                 RedirectUri = redirectUri,
                 Scope = [ScopeConstants.OpenId],
-                Resource = [weatherClient.ClientUri!]
+                Resource = [weatherClient.ClientUri!],
+                AuthorizationDetails = []
             })
             .Verifiable();
 

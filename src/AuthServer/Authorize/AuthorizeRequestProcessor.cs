@@ -89,6 +89,7 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
                 AuthorizationCodeId = authorizationCode.Id,
                 Scope = request.Scope,
                 Resource = request.Resource,
+                AuthorizationDetails = request.AuthorizationDetails,
                 RedirectUri = request.RedirectUri,
                 DPoPJkt = request.DPoPJkt,
                 CodeChallenge = request.CodeChallenge!,

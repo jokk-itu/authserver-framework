@@ -1,4 +1,5 @@
-﻿using AuthServer.Authorize;
+﻿using System.Text.Json;
+using AuthServer.Authorize;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
@@ -49,6 +50,13 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         await AddEntity(weatherClient);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId,
+            Locations = ["https://api.authserver.dk"]
+        };
+
         var request = new AuthorizeValidatedRequest
         {
             RequestUri = $"{RequestUriConstants.RequestUriPrefix}{authorizeMessage.Reference}",
@@ -58,7 +66,8 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             AuthorizationGrantId = authorizationGrant.Id,
-            Scope = [ScopeConstants.OpenId]
+            Scope = [ScopeConstants.OpenId],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
         };
 
         // Act
