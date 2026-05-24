@@ -82,8 +82,8 @@ public abstract class BaseUnitTest
             options.AcrValuesSupported =
                 [LevelOfAssuranceLow, LevelOfAssuranceSubstantial, LevelOfAssuranceStrict];
 
-            var supportedSigningAlgorithms = new[] { JwsAlgConstants.RsaSsaPssSha256, JwsAlgConstants.EcdsaSha256 };
-            var supportedEncryptionAlgorithms = new[] { JweAlgConstants.RsaOAEP, JweAlgConstants.EcdhEsA128KW };
+            var supportedSigningAlgorithms = new[] { JwsAlgConstants.RsaSha256, JwsAlgConstants.RsaSsaPssSha256, JwsAlgConstants.EcdsaSha256 };
+            var supportedEncryptionAlgorithms = new[] { JweAlgConstants.RsaPKCS1, JweAlgConstants.RsaOAEP, JweAlgConstants.EcdhEsA128KW };
             var supportedEncryptionEncoding = new[] { JweEncConstants.Aes128CbcHmacSha256 };
 
             options.IntrospectionEndpointAuthSigningAlgValuesSupported = supportedSigningAlgorithms;
