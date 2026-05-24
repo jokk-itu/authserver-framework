@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
@@ -182,6 +183,7 @@ public abstract class BaseUnitTest
         services.AddScoped<IUserClaimService, UserClaimService>();
         services.AddScoped<IAuthenticatedUserAccessor, AuthenticatedUserAccessor>();
         services.AddScoped<IAuthenticationContextReferenceResolver, AuthenticationContextReferenceResolver>();
+        services.AddScoped<IAuthorizationDetailValidator, DefaultAuthorizationDetailValidator>();
 
         return services;
     }
