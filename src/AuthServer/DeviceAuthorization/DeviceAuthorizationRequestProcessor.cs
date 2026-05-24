@@ -49,6 +49,7 @@ internal class DeviceAuthorizationRequestProcessor : IRequestProcessor<DeviceAut
             CodeChallenge = request.CodeChallenge,
             Scope = request.Scope,
             Resource = request.Resource,
+            AuthorizationDetails = request.AuthorizationDetails,
             AcrValues = request.AcrValues,
             DPoPJkt = request.DPoPJkt,
             DeviceCodeId = deviceCode.Id,

@@ -1,4 +1,5 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.DeviceAuthorization;
@@ -37,6 +38,12 @@ public class DeviceAuthorizationRequestProcessorTest : BaseUnitTest
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId,
+            Locations = ["https://api.authserver.dk"]
+        };
+
         var validatedRequest = new DeviceAuthorizationValidatedRequest
         {
             ClientId = client.Id,
@@ -46,6 +53,7 @@ public class DeviceAuthorizationRequestProcessorTest : BaseUnitTest
             AcrValues = [ LevelOfAssuranceLow ],
             GrantManagementAction = GrantManagementActionConstants.Create,
             Resource = [ "https://api.authserver.dk" ],
+            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
             Scope = [ ScopeConstants.OpenId, ScopeConstants.UserInfo ]
         };
 
@@ -65,11 +73,8 @@ public class DeviceAuthorizationRequestProcessorTest : BaseUnitTest
             x => x.Value == response.UserCode);
 
         Assert.Equal(deviceCode, userCode.DeviceCode);
-
         Assert.Equal(deviceCode.ExpiresAt.ToUnixTimeSeconds() - deviceCode.IssuedAt.ToUnixTimeSeconds(), response.ExpiresIn);
-
         Assert.Equal(deviceCode.CurrentInterval, response.Interval);
-
         Assert.Equal(UserInteraction.VerificationUri, response.VerificationUri);
         Assert.Equal($"{UserInteraction.VerificationUri}?{Parameter.UserCode}={response.UserCode}", response.VerificationUriComplete);
     }
