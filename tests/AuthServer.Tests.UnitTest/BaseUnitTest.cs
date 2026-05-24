@@ -230,5 +230,8 @@ public abstract class BaseUnitTest
     {
         var openidAuthorizationDetailType = new AuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
         await AddEntity(openidAuthorizationDetailType);
+
+        var profileAuthorizationDetailType = new AuthorizationDetailType(AuthorizationDetailTypeConstants.Profile);
+        await AddEntity(profileAuthorizationDetailType);
     }
 }
