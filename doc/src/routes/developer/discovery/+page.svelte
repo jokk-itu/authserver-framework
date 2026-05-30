@@ -40,6 +40,7 @@
         [ new RowCellDefinition('challenge_methods_supported'), new RowCellDefinition('Challenge methods that are supported by authserver') ],
         [ new RowCellDefinition('responses_types_supported'), new RowCellDefinition('Response types that are supported by authserver') ],
         [ new RowCellDefinition('response_modes_supported'), new RowCellDefinition('Response modes that are supported by authserver') ],
+        [ new RowCellDefinition('authorization_details_types_supported'), new RowCellDefinition('Authorization details types that are supported by authserver') ],
 
         [ new RowCellDefinition('introspection_endpoint_auth_methods_supported'), new RowCellDefinition('Introspection endpoint auth modes that are supported by authserver') ],
         [ new RowCellDefinition('revocation_endpoint_auth_methods_supported'), new RowCellDefinition('Revocation endpoint auth modes that are supported by authserver') ],
