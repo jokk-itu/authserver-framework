@@ -246,11 +246,6 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return PushedAuthorizationError.UnauthorizedScope;
         }
 
-        if (request.Resource.Count == 0 && request.AuthorizationDetails.Count == 0)
-        {
-            return PushedAuthorizationError.InvalidResource;
-        }
-
         if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
         {
             return PushedAuthorizationError.InvalidResource;

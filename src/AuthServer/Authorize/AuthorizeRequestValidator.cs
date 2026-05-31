@@ -295,11 +295,6 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
             return AuthorizeError.UnauthorizedScope;
         }
 
-        if (request.Resource.Count == 0 && request.AuthorizationDetails.Count == 0)
-        {
-            return AuthorizeError.InvalidResource;
-        }
-
         if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
         {
             return AuthorizeError.InvalidResource;

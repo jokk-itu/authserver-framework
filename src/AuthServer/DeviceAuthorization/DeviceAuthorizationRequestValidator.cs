@@ -200,11 +200,6 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return DeviceAuthorizationError.UnauthorizedScope;
         }
 
-        if (request.Resource.Count == 0 && request.AuthorizationDetails.Count == 0)
-        {
-            return DeviceAuthorizationError.InvalidResource;
-        }
-
         if (!await HasValidResource(request.Resource, request.Scope, cancellationToken))
         {
             return DeviceAuthorizationError.InvalidResource;
@@ -222,7 +217,7 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
                 _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
             };
         }
-        
+
         return null;
     }
 }
