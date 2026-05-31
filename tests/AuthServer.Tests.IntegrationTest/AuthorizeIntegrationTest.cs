@@ -27,12 +27,14 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         // Arrange
         var identityProvider = await AddIdentityProviderClient();
 
+        var authorizationDetailType = await AddWeatherReadAuthorizationDetailType();
         var jwks = ClientJwkBuilder.GetClientJwks();
         var registerResponse = await RegisterEndpointBuilder
             .WithRedirectUris(["https://webapp.authserver.dk/"])
             .WithClientName("webapp")
             .WithJwks(jwks.PublicJwks)
             .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
+            .WithAuthorizationDetailsTypes([authorizationDetailType])
             .WithRequestObjectSigningAlg(SigningAlg.RsaSha256)
             .Post();
 
@@ -48,6 +50,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
             .WithRequest(jwks.PrivateJwks)
             .WithAuthorizeUser(grantId)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
+            .WithAuthorizationDetails([new DefaultAuthorizationDetailDto{ Type = authorizationDetailType }])
             .WithResource([identityProvider.ClientUri!])
             .WithResponseMode(responseMode)
             .Get();

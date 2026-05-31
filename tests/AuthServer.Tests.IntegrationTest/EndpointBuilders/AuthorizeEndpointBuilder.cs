@@ -83,6 +83,12 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
         return this;
     }
 
+    public AuthorizeEndpointBuilder WithAuthorizationDetails(IEnumerable<DefaultAuthorizationDetailDto> authorizationDetails)
+    {
+        _parameters.Add(new(Parameter.AuthorizationDetails, JsonSerializer.Serialize(authorizationDetails)));
+        return this;
+    }
+
     public AuthorizeEndpointBuilder WithAuthorizeUser(string authorizationGrantId)
     {
         var dataProtector = _dataProtectionProvider.CreateProtector(AuthorizeUserAccessor.DataProtectorName);

@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Web;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.PushedAuthorization;
+using AuthServer.Tests.Core;
 using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
@@ -66,6 +67,12 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder<PushedAuthoriz
     public PushedAuthorizationEndpointBuilder WithMaxAge(int maxAge)
     {
         _parameters.Add(new(Parameter.MaxAge, maxAge.ToString()));
+        return this;
+    }
+
+    public PushedAuthorizationEndpointBuilder WithAuthorizationDetails(IEnumerable<DefaultAuthorizationDetailDto> authorizationDetails)
+    {
+        _parameters.Add(new(Parameter.AuthorizationDetails, JsonSerializer.Serialize(authorizationDetails)));
         return this;
     }
 

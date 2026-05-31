@@ -26,6 +26,12 @@ public class RegisterEndpointBuilder : EndpointBuilder<RegisterEndpointBuilder>
     {
     }
 
+    public RegisterEndpointBuilder WithAuthorizationDetailsTypes(IReadOnlyCollection<string> authorizationDetailsTypes)
+    {
+        _registerParameters.Add(Parameter.AuthorizationDetailsTypes, authorizationDetailsTypes);
+        return this;
+    }
+
     public RegisterEndpointBuilder WithAccessTokenExpiration(int accessTokenExpiration)
     {
         _registerParameters.Add(Parameter.AccessTokenExpiration, accessTokenExpiration);

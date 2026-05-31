@@ -80,6 +80,12 @@ public class DeviceAuthorizationEndpointBuilder : EndpointBuilder<DeviceAuthoriz
         return this;
     }
 
+    public DeviceAuthorizationEndpointBuilder WithAuthorizationDetails(IEnumerable<DefaultAuthorizationDetailDto> authorizationDetails)
+    {
+        _parameters.Add(new(Parameter.AuthorizationDetails, JsonSerializer.Serialize(authorizationDetails)));
+        return this;
+    }
+
     public DeviceAuthorizationEndpointBuilder WithRequest()
     {
         _isProtectedWithRequestParameter = true;

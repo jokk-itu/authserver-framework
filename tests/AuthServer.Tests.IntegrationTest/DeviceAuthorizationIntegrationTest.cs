@@ -60,6 +60,7 @@ public class DeviceAuthorizationIntegrationTest : BaseIntegrationTest
         var weatherReadScope = await AddWeatherReadScope();
         var weatherClientSecret = CryptographyHelper.GetRandomString(16);
         var weatherClient = await AddWeatherClient(weatherClientSecret);
+        var authorizationDetailType = await AddWeatherReadAuthorizationDetailType();
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("tv-app")
@@ -67,6 +68,7 @@ public class DeviceAuthorizationIntegrationTest : BaseIntegrationTest
             .WithApplicationType(ApplicationTypeConstants.Native)
             .WithGrantTypes([GrantTypeConstants.DeviceCode])
             .WithScope([weatherReadScope, ScopeConstants.OpenId])
+            .WithAuthorizationDetailsTypes([authorizationDetailType])
             .WithDeviceCodeExpiration(120)
             .Post();
 
@@ -75,6 +77,7 @@ public class DeviceAuthorizationIntegrationTest : BaseIntegrationTest
         var deviceAuthorizationResponse = await DeviceAuthorizationEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithScope(registerResponse.Scope)
+            .WithAuthorizationDetails([new DefaultAuthorizationDetailDto { Type = authorizationDetailType}])
             .WithCodeChallenge(proofKey.CodeChallenge)
             .WithCodeChallengeMethod(proofKey.CodeChallengeMethod)
             .WithResource([weatherClient.ClientUri!])
