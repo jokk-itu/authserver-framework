@@ -210,10 +210,10 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         {
             return authorizationDetailsValidationResult.Error switch
             {
-                AuthorizationDetailsError.NotSupported => PushedAuthorizationError.NotSupportedAuthorizationDetails,
-                AuthorizationDetailsError.Invalid => PushedAuthorizationError.InvalidAuthorizationDetails,
-                AuthorizationDetailsError.NotAuthorizedForClient => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
-                AuthorizationDetailsError.NotAuthorizedForResource => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
+                AuthorizationDetailsError.NotSupported => DeviceAuthorizationError.NotSupportedAuthorizationDetails,
+                AuthorizationDetailsError.Invalid => DeviceAuthorizationError.InvalidAuthorizationDetails,
+                AuthorizationDetailsError.NotAuthorizedForClient => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
+                AuthorizationDetailsError.NotAuthorizedForResource => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
                 _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
             };
         }

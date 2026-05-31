@@ -10,6 +10,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Core.Request;
 using AuthServer.Metrics.Abstractions;
 using AuthServer.Options;
+using AuthServer.PushedAuthorization;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.TokenDecoders;
 using AuthServer.TokenDecoders.Abstractions;
@@ -305,10 +306,10 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         {
             return authorizationDetailsValidationResult.Error switch
             {
-                AuthorizationDetailsError.NotSupported => PushedAuthorizationError.NotSupportedAuthorizationDetails,
-                AuthorizationDetailsError.Invalid => PushedAuthorizationError.InvalidAuthorizationDetails,
-                AuthorizationDetailsError.NotAuthorizedForClient => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
-                AuthorizationDetailsError.NotAuthorizedForResource => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
+                AuthorizationDetailsError.NotSupported => AuthorizeError.NotSupportedAuthorizationDetails,
+                AuthorizationDetailsError.Invalid => AuthorizeError.InvalidAuthorizationDetails,
+                AuthorizationDetailsError.NotAuthorizedForClient => AuthorizeError.UnauthorizedAuthorizationDetailsForClient,
+                AuthorizationDetailsError.NotAuthorizedForResource => AuthorizeError.UnauthorizedAuthorizationDetailsForResource,
                 _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
             };
         }
