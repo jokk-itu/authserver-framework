@@ -1,4 +1,5 @@
-﻿using AuthServer.Authorization.Abstractions;
+﻿using System.Text.Json;
+using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Cache.Entities;
 using AuthServer.Constants;
@@ -183,26 +184,50 @@ internal class BaseAuthorizeValidator
         return await _authorizationGrantRepository.IsActiveAuthorizationGrant(grantId, clientId, cancellationToken);
     }
 
-    protected async Task<AuthorizationDetailsError?> ValidateAuthorizationDetails(IReadOnlyCollection<string> authorizationDetails, CachedClient cachedClient, CancellationToken cancellationToken)
+    protected async Task<AuthorizationDetailsValidationResult> ValidateAuthorizationDetails(string? authorizationDetails, CachedClient cachedClient, CancellationToken cancellationToken)
     {
-        if (authorizationDetails.Count == 0)
+        if (string.IsNullOrEmpty(authorizationDetails))
         {
-            return null;
+            return new AuthorizationDetailsValidationResult();
+        }
+
+        IReadOnlyCollection<string> parsedAuthorizationDetails;
+
+        try
+        {
+            using var document = JsonDocument.Parse(authorizationDetails);
+            parsedAuthorizationDetails = document.RootElement
+                .EnumerateArray()
+                .Select(x => x.GetRawText())
+                .ToList();
+        }
+        catch
+        {
+            return new AuthorizationDetailsValidationResult
+            {
+                Error = AuthorizationDetailsError.Invalid
+            };
         }
 
         if (_authorizationDetailValidator is null)
         {
-            return AuthorizationDetailsError.NotSupported;
+            return new AuthorizationDetailsValidationResult
+            {
+                Error = AuthorizationDetailsError.NotSupported
+            };
         }
 
         var validatedAuthorizationDetails = new List<AuthorizationDetailDto>();
 
-        foreach (var authorizationDetail in authorizationDetails)
+        foreach (var authorizationDetail in parsedAuthorizationDetails)
         {
             var validatedAuthorizationDetailDto = await _authorizationDetailValidator.ValidateAuthorizationDetail(authorizationDetail, cancellationToken);
             if (validatedAuthorizationDetailDto is null)
             {
-                return AuthorizationDetailsError.Invalid;
+                return new AuthorizationDetailsValidationResult
+                {
+                    Error = AuthorizationDetailsError.Invalid
+                };
             }
 
             validatedAuthorizationDetails.Add(validatedAuthorizationDetailDto);
@@ -216,7 +241,10 @@ internal class BaseAuthorizeValidator
 
         if (cachedClient.AuthorizationDetailTypes.IsDisjoint(types.Select(x => x.Key)))
         {
-            return AuthorizationDetailsError.NotAuthorizedForClient;
+            return new AuthorizationDetailsValidationResult
+            {
+                Error = AuthorizationDetailsError.NotAuthorizedForClient
+            };
         }
 
         foreach (var type in types)
@@ -224,10 +252,16 @@ internal class BaseAuthorizeValidator
             var areResourcesAuthorizedForType = await _clientRepository.AreResourcesAuthorizedForAuthorizationDetailType(type.Value, type.Key, cancellationToken);
             if (!areResourcesAuthorizedForType)
             {
-                return AuthorizationDetailsError.NotAuthorizedForResource;
+                return new AuthorizationDetailsValidationResult
+                {
+                    Error = AuthorizationDetailsError.NotAuthorizedForResource
+                };
             }
         }
 
-        return null;
+        return new AuthorizationDetailsValidationResult
+        {
+            AuthorizationDetails = parsedAuthorizationDetails
+        };
     }
 }

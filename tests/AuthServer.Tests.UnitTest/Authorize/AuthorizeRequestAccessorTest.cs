@@ -43,6 +43,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                     { Parameter.Request, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
+                    { Parameter.AuthorizationDetails, value },
                     { Parameter.DPoPJkt, value }
                 })
             }
@@ -69,6 +70,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(expectedValue, request.RequestUri);
         Assert.Equal(expectedValue, request.GrantId);
         Assert.Equal(expectedValue, request.GrantManagementAction);
+        Assert.Equal(expectedValue, request.AuthorizationDetails);
         Assert.Equal(expectedValue, request.DPoPJkt);
     }
 
@@ -105,6 +107,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                     { Parameter.Request, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
+                    { Parameter.AuthorizationDetails, value },
                     { Parameter.DPoPJkt, value }
                 })
             }
@@ -131,6 +134,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         Assert.Equal(expectedValue, request.RequestUri);
         Assert.Equal(expectedValue, request.GrantId);
         Assert.Equal(expectedValue, request.GrantManagementAction);
+        Assert.Equal(expectedValue, request.AuthorizationDetails);
         Assert.Equal(expectedValue, request.DPoPJkt);
     }
 
@@ -193,9 +197,9 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
     }
 
     [Theory]
-    [InlineData("", 0)]
-    [InlineData(null, 0)]
-    public async Task GetRequest_SpaceDelimitedParametersQuery_ExpectZeroValues(string? value, int expectedCount)
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task GetRequest_SpaceDelimitedParametersQuery_ExpectZeroValues(string? value)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -217,14 +221,14 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(expectedCount, request.Scope.Count);
-        Assert.Equal(expectedCount, request.AcrValues.Count);
+        Assert.Empty(request.Scope);
+        Assert.Empty(request.AcrValues);
     }
 
     [Theory]
-    [InlineData("", 0)]
-    [InlineData(null, 0)]
-    public async Task GetRequest_SpaceDelimitedParametersBody_ExpectZeroValues(string? value, int expectedCount)
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task GetRequest_SpaceDelimitedParametersBody_ExpectZeroValues(string? value)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -246,8 +250,8 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(expectedCount, request.Scope.Count);
-        Assert.Equal(expectedCount, request.AcrValues.Count);
+        Assert.Empty(request.Scope);
+        Assert.Empty(request.AcrValues);
     }
 
     [Fact]
@@ -266,8 +270,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Method = "GET",
                 Query = new QueryCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.Resource, values },
-                    { Parameter.AuthorizationDetails, values }
+                    { Parameter.Resource, values }
                 })
             }
         };
@@ -277,7 +280,6 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
 
         // Assert
         Assert.Equal(expectedValue, request.Resource);
-        Assert.Equal(expectedValue, request.AuthorizationDetails);
     }
 
     [Fact]
@@ -296,8 +298,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Method = "POST",
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.Resource, values },
-                    { Parameter.AuthorizationDetails, values }
+                    { Parameter.Resource, values }
                 })
             }
         };
@@ -307,13 +308,12 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
 
         // Assert
         Assert.Equal(expectedValue, request.Resource);
-        Assert.Equal(expectedValue, request.AuthorizationDetails);
     }
 
     [Theory]
-    [InlineData("", 0)]
-    [InlineData(null, 0)]
-    public async Task GetRequest_CollectionParametersQuery_ExpectZeroValues(string? value, int expectedCount)
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task GetRequest_CollectionParametersQuery_ExpectZeroValues(string? value)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -326,8 +326,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Method = "GET",
                 Query = new QueryCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.Resource, value },
-                    { Parameter.AuthorizationDetails, value }
+                    { Parameter.Resource, value }
                 })
             }
         };
@@ -336,14 +335,13 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(expectedCount, request.Resource.Count);
-        Assert.Equal(expectedCount, request.AuthorizationDetails.Count);
+        Assert.Empty(request.Resource);
     }
 
     [Theory]
-    [InlineData("", 0)]
-    [InlineData(null, 0)]
-    public async Task GetRequest_CollectionParametersBody_ExpectZeroValues(string? value, int expectedCount)
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task GetRequest_CollectionParametersBody_ExpectZeroValues(string? value)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -356,8 +354,7 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
                 Method = "POST",
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.Resource, value },
-                    { Parameter.AuthorizationDetails, value }
+                    { Parameter.Resource, value }
                 })
             }
         };
@@ -366,7 +363,6 @@ public class AuthorizeRequestAccessorTest(ITestOutputHelper outputHelper) : Base
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(expectedCount, request.Resource.Count);
-        Assert.Equal(expectedCount, request.AuthorizationDetails.Count);
+        Assert.Empty(request.Resource);
     }
 }

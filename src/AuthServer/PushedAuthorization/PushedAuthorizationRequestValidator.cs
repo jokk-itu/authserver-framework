@@ -257,9 +257,9 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         }
 
         var authorizationDetailsValidationResult = await ValidateAuthorizationDetails(request.AuthorizationDetails, cachedClient, cancellationToken);
-        if (authorizationDetailsValidationResult is not null)
+        if (!authorizationDetailsValidationResult.IsValid)
         {
-            return authorizationDetailsValidationResult switch
+            return authorizationDetailsValidationResult.Error switch
             {
                 AuthorizationDetailsError.NotSupported => PushedAuthorizationError.NotSupportedAuthorizationDetails,
                 AuthorizationDetailsError.Invalid => PushedAuthorizationError.InvalidAuthorizationDetails,

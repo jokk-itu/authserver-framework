@@ -614,7 +614,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = ["{}"]
+            AuthorizationDetails = "[{}]"
         };
 
         // Act
@@ -652,7 +652,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = ["{}"]
+            AuthorizationDetails = "[{}]"
         };
 
         // Act
@@ -695,7 +695,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto })
         };
 
         // Act
@@ -742,7 +742,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto })
         };
 
         // Act
@@ -1316,7 +1316,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.State, processResult.Value!.State);
         Assert.Null(request.RedirectUri);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
-        Assert.Empty(processResult.Value!.AuthorizationDetails);
+        Assert.Null(processResult.Value!.AuthorizationDetails);
     }
 
     [Fact]
@@ -1368,7 +1368,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.State, processResult.Value!.State);
         Assert.Null(request.RedirectUri);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
-        Assert.Empty(processResult.Value!.AuthorizationDetails);
+        Assert.Null(processResult.Value!.AuthorizationDetails);
     }
 
     [Fact]
@@ -1422,7 +1422,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto }),
             Display = DisplayConstants.Page,
             AcrValues = [LevelOfAssuranceLow],
             MaxAge = "86400",
@@ -1539,7 +1539,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizeRequestDto.State, processResult.Value!.State);
         Assert.Null(authorizeRequestDto.RedirectUri);
         Assert.Equal(authorizeRequestDto.Resource, processResult.Value!.Resource);
-        Assert.Empty(processResult.Value!.AuthorizationDetails);
+        Assert.Null(processResult.Value!.AuthorizationDetails);
     }
 
     [Fact]
@@ -1593,7 +1593,7 @@ public class PushedAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto }),
             Display = DisplayConstants.Page,
             AcrValues = [LevelOfAssuranceLow],
             MaxAge = "86400",

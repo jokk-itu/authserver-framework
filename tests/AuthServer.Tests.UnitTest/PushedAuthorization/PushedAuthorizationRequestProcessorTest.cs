@@ -48,7 +48,7 @@ public class PushedAuthorizationRequestProcessorTest : BaseUnitTest
             Nonce = value,
             State = value,
             RedirectUri = value,
-            AuthorizationDetails = [value],
+            AuthorizationDetails = value,
             DPoPJkt = value,
             GrantId = value,
             GrantManagementAction = value,

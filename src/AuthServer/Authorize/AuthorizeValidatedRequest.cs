@@ -13,8 +13,8 @@ internal class AuthorizeValidatedRequest
     public string? ResponseMode { get; init; }
     public string? RequestUri { get; init; }
     public string? DPoPJkt { get; init; }
+    public string? AuthorizationDetails { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
-    public IReadOnlyCollection<string> AuthorizationDetails { get; init; } = [];
 }

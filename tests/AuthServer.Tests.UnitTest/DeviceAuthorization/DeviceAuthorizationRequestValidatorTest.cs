@@ -429,6 +429,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var request = new DeviceAuthorizationRequest
         {
             ClientAuthentications =
@@ -439,7 +441,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = proofKey.CodeChallengeMethod,
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
-            AuthorizationDetails = ["{}"]
+            Resource = [resource.ClientUri!],
+            AuthorizationDetails = "[{}]"
         };
 
         // Act
@@ -462,6 +465,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var request = new DeviceAuthorizationRequest
         {
             ClientAuthentications =
@@ -472,7 +477,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = proofKey.CodeChallengeMethod,
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
-            AuthorizationDetails = ["{}"]
+            Resource = [resource.ClientUri!],
+            AuthorizationDetails = "[{}]"
         };
 
         // Act
@@ -495,6 +501,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         var client = await GetClient(plainSecret);
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var authorizationDetailDto = new DefaultAuthorizationDetailDto
         {
             Type = AuthorizationDetailTypeConstants.OpenId
@@ -510,7 +518,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = proofKey.CodeChallengeMethod,
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+            Resource = [resource.ClientUri!],
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto })
         };
 
         // Act
@@ -536,6 +545,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
+        var resource = await GetResource();
+
         var authorizationDetailDto = new DefaultAuthorizationDetailDto
         {
             Type = AuthorizationDetailTypeConstants.OpenId,
@@ -552,7 +563,8 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             CodeChallengeMethod = proofKey.CodeChallengeMethod,
             CodeChallenge = proofKey.CodeChallenge,
             Scope = [ScopeConstants.OpenId],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+            Resource = [resource.ClientUri!],
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto })
         };
 
         // Act
@@ -891,7 +903,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
         Assert.Equal(request.CodeChallengeMethod, processResult.Value!.CodeChallengeMethod);
         Assert.Equal(request.Scope, processResult.Value!.Scope);
         Assert.Equal(request.Resource, processResult.Value!.Resource);
-        Assert.Empty(processResult.Value!.AuthorizationDetails);
+        Assert.Null(processResult.Value!.AuthorizationDetails);
         Assert.Equal(request.Nonce, processResult.Value!.Nonce);
     }
 
@@ -936,7 +948,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             Scope = [ScopeConstants.OpenId],
             AcrValues = [LevelOfAssuranceSubstantial],
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto }),
             DPoP = dPoP,
             GrantManagementAction = GrantManagementActionConstants.Create
         };
@@ -1007,7 +1019,7 @@ public class DeviceAuthorizationRequestValidatorTest : BaseUnitTest
             AcrValues = [LevelOfAssuranceLow],
             Nonce = CryptographyHelper.GetRandomString(16),
             Resource = [resource.ClientUri!],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto }),
             GrantId = grant.Id,
             GrantManagementAction = GrantManagementActionConstants.Merge
         };

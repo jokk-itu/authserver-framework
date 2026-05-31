@@ -80,8 +80,7 @@ public class DeviceAuthorizationServiceTest : BaseUnitTest
             CodeChallengeMethod = "code_challenge_method",
             DeviceCodeId = deviceCode.Id,
             UserCodeId = userCode.Id,
-            Resource = ["resource"],
-            AuthorizationDetails = [],
+            Resource = ["resource"]
         };
         var encodedDeviceCodeRawValue = deviceCodeEncoder.Encode(encodedDeviceCode);
         deviceCode.SetRawValue(encodedDeviceCodeRawValue);

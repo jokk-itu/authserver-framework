@@ -306,14 +306,14 @@ internal class AuthorizeRequestValidator : BaseAuthorizeValidator, IRequestValid
         }
 
         var authorizationDetailsValidationResult = await ValidateAuthorizationDetails(request.AuthorizationDetails, cachedClient, cancellationToken);
-        if (authorizationDetailsValidationResult is not null)
+        if (!authorizationDetailsValidationResult.IsValid)
         {
-            return authorizationDetailsValidationResult switch
+            return authorizationDetailsValidationResult.Error switch
             {
-                AuthorizationDetailsError.NotSupported => AuthorizeError.NotSupportedAuthorizationDetails,
-                AuthorizationDetailsError.Invalid => AuthorizeError.InvalidAuthorizationDetails,
-                AuthorizationDetailsError.NotAuthorizedForClient => AuthorizeError.UnauthorizedAuthorizationDetailsForClient,
-                AuthorizationDetailsError.NotAuthorizedForResource => AuthorizeError.UnauthorizedAuthorizationDetailsForResource,
+                AuthorizationDetailsError.NotSupported => PushedAuthorizationError.NotSupportedAuthorizationDetails,
+                AuthorizationDetailsError.Invalid => PushedAuthorizationError.InvalidAuthorizationDetails,
+                AuthorizationDetailsError.NotAuthorizedForClient => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
+                AuthorizationDetailsError.NotAuthorizedForResource => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
                 _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
             };
         }

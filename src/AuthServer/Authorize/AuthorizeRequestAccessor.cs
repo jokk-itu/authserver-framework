@@ -38,12 +38,12 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var grantId = query.GetValue(Parameter.GrantId);
         var grantManagementAction = query.GetValue(Parameter.GrantId);
         var dPoPJkt = query.GetValue(Parameter.DPoPJkt);
+        var authorizationDetails = query.GetValue(Parameter.AuthorizationDetails);
 
         var scope = query.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = query.GetSpaceDelimitedValue(Parameter.AcrValues);
 
         var resource = query.GetCollectionValue(Parameter.Resource);
-        var authorizationDetails = query.GetCollectionValue(Parameter.AuthorizationDetails);
 
         return new AuthorizeRequest
         {
@@ -94,12 +94,12 @@ internal class AuthorizeRequestAccessor : IRequestAccessor<AuthorizeRequest>
         var grantId = body.GetValue(Parameter.GrantId);
         var grantManagementAction = body.GetValue(Parameter.GrantId);
         var dPoPJkt = body.GetValue(Parameter.DPoPJkt);
+        var authorizationDetails = body.GetValue(Parameter.AuthorizationDetails);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
 
         var resource = body.GetCollectionValue(Parameter.Resource);
-        var authorizationDetails = body.GetCollectionValue(Parameter.AuthorizationDetails);
 
         return new AuthorizeRequest
         {

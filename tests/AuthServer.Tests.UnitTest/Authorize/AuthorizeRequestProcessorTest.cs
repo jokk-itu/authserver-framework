@@ -67,7 +67,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             AuthorizationGrantId = authorizationGrant.Id,
             Scope = [ScopeConstants.OpenId],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)]
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto })
         };
 
         // Act

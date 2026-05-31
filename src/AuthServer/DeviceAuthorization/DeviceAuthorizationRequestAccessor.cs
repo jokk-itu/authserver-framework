@@ -20,13 +20,13 @@ internal class DeviceAuthorizationRequestAccessor : IRequestAccessor<DeviceAutho
         var nonce = body.GetValue(Parameter.Nonce);
         var grantId = body.GetValue(Parameter.GrantId);
         var grantManagementAction = body.GetValue(Parameter.GrantManagementAction);
+        var authorizationDetails = body.GetValue(Parameter.AuthorizationDetails);
         var requestObject = body.GetValue(Parameter.Request);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
 
         var resource = body.GetCollectionValue(Parameter.Resource);
-        var authorizationDetails = body.GetCollectionValue(Parameter.AuthorizationDetails);
 
         var clientSecretBasic = httpRequest.GetClientSecretBasic();
         var clientSecretPost = body.GetClientSecretPost();

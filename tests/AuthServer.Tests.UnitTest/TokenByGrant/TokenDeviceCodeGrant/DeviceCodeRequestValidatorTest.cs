@@ -84,8 +84,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = string.Empty,
                 CodeChallengeMethod = string.Empty,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -127,8 +126,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -171,8 +169,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -223,8 +220,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -283,8 +279,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -340,8 +335,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -397,8 +391,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -462,8 +455,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -519,8 +511,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -579,8 +570,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = dPoPJkt,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -636,8 +626,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -704,8 +693,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallenge = proofKey.CodeChallenge,
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -770,8 +758,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = "jkt",
                 Scope = [],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 
@@ -844,8 +831,7 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = "jkt",
                 Scope = [ScopeConstants.OpenId],
-                Resource = [],
-                AuthorizationDetails = []
+                Resource = []
             })
             .Verifiable();
 

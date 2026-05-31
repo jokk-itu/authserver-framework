@@ -39,6 +39,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.Nonce, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
+                    { Parameter.AuthorizationDetails, value },
                     { Parameter.Request, value },
                     { Parameter.ClientId, value },
                     { Parameter.ClientSecret, value },
@@ -63,6 +64,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(expectedValue, request.Nonce);
         Assert.Equal(expectedValue, request.GrantId);
         Assert.Equal(expectedValue, request.GrantManagementAction);
+        Assert.Equal(expectedValue, request.AuthorizationDetails);
         Assert.Equal(expectedValue, request.DPoP);
         Assert.Equal(expectedValue, request.RequestObject);
         Assert.Empty(request.ClientAuthentications);
@@ -87,6 +89,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                     { Parameter.Nonce, value },
                     { Parameter.GrantId, value },
                     { Parameter.GrantManagementAction, value },
+                    { Parameter.AuthorizationDetails, value },
                     { Parameter.Request, value }
                 })
             }
@@ -103,6 +106,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         Assert.Equal(value, request.Nonce);
         Assert.Equal(value, request.GrantId);
         Assert.Equal(value, request.GrantManagementAction);
+        Assert.Equal(value, request.AuthorizationDetails);
         Assert.Equal(value, request.DPoP);
         Assert.Equal(value, request.RequestObject);
         Assert.Empty(request.ClientAuthentications);
@@ -197,9 +201,9 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
     }
 
     [Theory]
-    [InlineData("", 0)]
-    [InlineData(null, 0)]
-    public async Task GetRequest_SpaceDelimitedParametersBody_ExpectZeroValues(string? value, int expectedCount)
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task GetRequest_SpaceDelimitedParametersBody_ExpectZeroValues(string? value)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -221,8 +225,8 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(expectedCount, request.Scope.Count);
-        Assert.Equal(expectedCount, request.AcrValues.Count);
+        Assert.Empty(request.Scope);
+        Assert.Empty(request.AcrValues);
     }
 
     [Fact]
@@ -241,8 +245,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                 Method = "POST",
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.Resource, values },
-                    { Parameter.AuthorizationDetails, values }
+                    { Parameter.Resource, values }
                 })
             }
         };
@@ -252,13 +255,12 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
 
         // Assert
         Assert.Equal(expectedValue, request.Resource);
-        Assert.Equal(expectedValue, request.AuthorizationDetails);
     }
 
     [Theory]
-    [InlineData("", 0)]
-    [InlineData(null, 0)]
-    public async Task GetRequest_CollectionParametersBody_ExpectZeroValues(string? value, int expectedCount)
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task GetRequest_CollectionParametersBody_ExpectZeroValues(string? value)
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
@@ -271,8 +273,7 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
                 Method = "POST",
                 Form = new FormCollection(new Dictionary<string, StringValues>
                 {
-                    { Parameter.Resource, value },
-                    { Parameter.AuthorizationDetails, value }
+                    { Parameter.Resource, value }
                 })
             }
         };
@@ -281,7 +282,6 @@ public class DeviceAuthorizationRequestAccessorTest : BaseUnitTest
         var request = await requestAccessor.GetRequest(httpContext.Request);
 
         // Assert
-        Assert.Equal(expectedCount, request.Resource.Count);
-        Assert.Equal(expectedCount, request.AuthorizationDetails.Count);
+        Assert.Empty(request.Resource);
     }
 }

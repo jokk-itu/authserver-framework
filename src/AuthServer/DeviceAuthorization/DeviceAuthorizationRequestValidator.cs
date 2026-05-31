@@ -211,14 +211,14 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         }
 
         var authorizationDetailsValidationResult = await ValidateAuthorizationDetails(request.AuthorizationDetails, cachedClient, cancellationToken);
-        if (authorizationDetailsValidationResult is not null)
+        if (!authorizationDetailsValidationResult.IsValid)
         {
-            return authorizationDetailsValidationResult switch
+            return authorizationDetailsValidationResult.Error switch
             {
-                AuthorizationDetailsError.NotSupported => DeviceAuthorizationError.NotSupportedAuthorizationDetails,
-                AuthorizationDetailsError.Invalid => DeviceAuthorizationError.InvalidAuthorizationDetails,
-                AuthorizationDetailsError.NotAuthorizedForClient => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
-                AuthorizationDetailsError.NotAuthorizedForResource => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
+                AuthorizationDetailsError.NotSupported => PushedAuthorizationError.NotSupportedAuthorizationDetails,
+                AuthorizationDetailsError.Invalid => PushedAuthorizationError.InvalidAuthorizationDetails,
+                AuthorizationDetailsError.NotAuthorizedForClient => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
+                AuthorizationDetailsError.NotAuthorizedForResource => PushedAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
                 _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
             };
         }

@@ -53,7 +53,7 @@ public class DeviceAuthorizationRequestProcessorTest : BaseUnitTest
             AcrValues = [ LevelOfAssuranceLow ],
             GrantManagementAction = GrantManagementActionConstants.Create,
             Resource = [ "https://api.authserver.dk" ],
-            AuthorizationDetails = [JsonSerializer.Serialize(authorizationDetailDto)],
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto }),
             Scope = [ ScopeConstants.OpenId, ScopeConstants.UserInfo ]
         };
 

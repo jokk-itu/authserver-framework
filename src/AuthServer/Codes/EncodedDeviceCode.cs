@@ -9,9 +9,9 @@ internal class EncodedDeviceCode
     public required string UserCodeId { get; init; }
     public required IReadOnlyCollection<string> Scope { get; init; }
     public required IReadOnlyCollection<string> Resource { get; init; }
-    public required IReadOnlyCollection<string> AuthorizationDetails { get; init; }
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public required string CodeChallenge { get; init; }
     public required string CodeChallengeMethod { get; init; }
     public string? DPoPJkt { get; init; }
+    public string? AuthorizationDetails { get; init; }
 }

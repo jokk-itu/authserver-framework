@@ -6,7 +6,7 @@ using AuthServer.TokenDecoders;
 using Microsoft.AspNetCore.Http;
 
 namespace AuthServer.PushedAuthorization;
-internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAuthorizationRequest >
+internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAuthorizationRequest>
 {
     public async Task<PushedAuthorizationRequest> GetRequest(HttpRequest httpRequest)
     {
@@ -30,12 +30,12 @@ internal class PushedAuthorizationRequestAccessor : IRequestAccessor<PushedAutho
         var grantManagementAction = body.GetValue(Parameter.GrantManagementAction);
         var dPoPJkt = body.GetValue(Parameter.DPoPJkt);
         var requestObject = body.GetValue(Parameter.Request);
+        var authorizationDetails = body.GetValue(Parameter.AuthorizationDetails);
 
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var acrValues = body.GetSpaceDelimitedValue(Parameter.AcrValues);
 
         var resource = body.GetCollectionValue(Parameter.Resource);
-        var authorizationDetails = body.GetCollectionValue(Parameter.AuthorizationDetails);
 
         var clientSecretBasic = httpRequest.GetClientSecretBasic();
         var clientSecretPost = body.GetClientSecretPost();

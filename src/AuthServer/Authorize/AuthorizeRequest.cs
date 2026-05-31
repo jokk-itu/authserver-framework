@@ -51,8 +51,8 @@ internal class AuthorizeRequest
     public string? GrantId { get; init; }
     public string? GrantManagementAction { get; init; }
     public string? DPoPJkt { get; init; }
+    public string? AuthorizationDetails { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> AcrValues { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
-    public IReadOnlyCollection<string> AuthorizationDetails { get; init; } = [];
 }
