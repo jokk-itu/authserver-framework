@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Moq;
 using System.Net;
+using System.Text.Json;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Repositories.Abstractions;
@@ -135,8 +136,25 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
         Assert.Equal(value, requestObject.AcrValues.Single());
-        Assert.Single(requestObject.Resource);
-        Assert.Equal(value, requestObject.Resource.Single());
+        Assert.Collection(
+            requestObject.Resource,
+            x => { Assert.Equal(value, x); },
+            x => { Assert.Equal(value, x); });
+
+        Assert.NotNull(requestObject.AuthorizationDetails);
+        Assert.Equivalent(new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = value,
+                Locations = [ value ]
+            },
+            new()
+            {
+                Type = value,
+                Locations = [ value ]
+            }
+        }, JsonSerializer.Deserialize<IReadOnlyCollection<DefaultAuthorizationDetailDto>>(requestObject.AuthorizationDetails));
 
         tokenDecoderMock.Verify();
     }
@@ -201,6 +219,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
         Assert.Empty(requestObject.Resource);
+        Assert.Null(requestObject.AuthorizationDetails);
 
         tokenDecoderMock.Verify();
     }
@@ -306,8 +325,25 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Equal(value, requestObject.Scope.Single());
         Assert.Single(requestObject.AcrValues);
         Assert.Equal(value, requestObject.AcrValues.Single());
-        Assert.Single(requestObject.Resource);
-        Assert.Equal(value, requestObject.Resource.Single());
+        Assert.Collection(
+            requestObject.Resource,
+            x => { Assert.Equal(value, x); },
+            x => { Assert.Equal(value, x); });
+
+        Assert.NotNull(requestObject.AuthorizationDetails);
+        Assert.Equivalent(new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = value,
+                Locations = [ value ]
+            },
+            new()
+            {
+                Type = value,
+                Locations = [ value ]
+            }
+        }, JsonSerializer.Deserialize<IReadOnlyCollection<DefaultAuthorizationDetailDto>>(requestObject.AuthorizationDetails));
 
         tokenDecoderMock.Verify();
     }
@@ -379,6 +415,7 @@ public class SecureRequestServiceTest : BaseUnitTest
         Assert.Empty(requestObject.Scope);
         Assert.Empty(requestObject.AcrValues);
         Assert.Empty(requestObject.Resource);
+        Assert.Null(requestObject.AuthorizationDetails);
 
         tokenDecoderMock.Verify();
     }
@@ -457,7 +494,22 @@ public class SecureRequestServiceTest : BaseUnitTest
             { Parameter.DPoPJkt, value },
             { Parameter.Scope, value },
             { Parameter.AcrValues, value },
-            { Parameter.Resource, new List<string> { value } }
+            { Parameter.Resource, new List<string> { value, value } },
+            {
+                Parameter.AuthorizationDetails, JsonSerializer.Serialize(new List<object>
+                {
+                    new DefaultAuthorizationDetailDto
+                    {
+                        Type = value,
+                        Locations = [value]
+                    },
+                    new DefaultAuthorizationDetailDto
+                    {
+                        Type = value,
+                        Locations = [value]
+                    }
+                })
+            }
         };
         var requestToken = JwtBuilder.GetRequestObjectJwt(claims, value, jwks.PrivateJwks, ClientTokenAudience.AuthorizationEndpoint);
 

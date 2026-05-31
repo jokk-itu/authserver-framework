@@ -98,6 +98,7 @@ internal class SecureRequestService : ISecureRequestService
         var scopeClaim = claims.SingleOrDefault(x => x.Type == Parameter.Scope);
         var acrValuesClaim = claims.SingleOrDefault(x => x.Type == Parameter.AcrValues);
         var resourceClaims = claims.Where(x => x.Type == Parameter.Resource).ToList();
+        var authorizationDetailsClaims = claims.SingleOrDefault(x => x.Type == Parameter.AuthorizationDetails);
 
         _cachedAuthorizeRequestObjectDto = new AuthorizeRequestDto
         {
@@ -119,7 +120,8 @@ internal class SecureRequestService : ISecureRequestService
             DPoPJkt = dPoPJkt?.Value,
             Scope = scopeClaim?.Value.Split(' ') ?? [],
             AcrValues = acrValuesClaim?.Value.Split(' ') ?? [],
-            Resource = resourceClaims.Select(x => x.Value).ToList()
+            Resource = resourceClaims.Select(x => x.Value).ToList(),
+            AuthorizationDetails = authorizationDetailsClaims?.Value
         };
 
         return _cachedAuthorizeRequestObjectDto;
