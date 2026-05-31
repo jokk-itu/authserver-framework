@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Logging;
 using AuthServer.Options;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorization.Abstractions;
 using AuthServer.TestIdentityProvider;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +37,7 @@ builder.Services
         ];
         options.ScopesSupported = identitySection.GetSection("ScopesSupported").Get<ICollection<string>>() ?? [];
         options.ProtectedResources = identitySection.GetSection("ProtectedResources").Get<ICollection<string>>() ?? [];
-        options.AuthorizationDetailsTypeSupported = identitySection.GetSection("AuthorizationDetailsTypeSupported").Get<ICollection<string>>() ?? [];
+        options.AuthorizationDetailsTypeSupported = identitySection.GetSection("AuthorizationDetailsTypesSupported").Get<ICollection<string>>() ?? [];
 
         ICollection<string> signingAlgorithms =
             [JwsAlgConstants.RsaSha256, JwsAlgConstants.RsaSha384, JwsAlgConstants.RsaSha512,
@@ -136,6 +137,7 @@ builder.Services.AddSingleton<IDistributedCache, InMemoryCache>();
 builder.Services.AddScoped<IUserClaimService, UserClaimService>();
 builder.Services.AddScoped<IAuthenticatedUserAccessor, AuthenticatedUserAccessor>();
 builder.Services.AddScoped<IAuthenticationContextReferenceResolver, AuthenticationContextReferenceResolver>();
+builder.Services.AddScoped<IAuthorizationDetailValidator, DefaultAuthorizationDetailValidator>();
 
 builder.Services
     .AddAuthServer()

@@ -236,6 +236,19 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
             .ExecuteDeleteAsync();
     }
 
+    protected async Task<string> AddWeatherReadAuthorizationDetailType()
+    {
+        var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+
+        const string authorizationDetailTypeName = "weather:read";
+        var authorizationDetailType = new AuthorizationDetailType(authorizationDetailTypeName);
+
+        await dbContext.AddAsync(authorizationDetailType);
+        await dbContext.SaveChangesAsync();
+
+        return authorizationDetailTypeName;
+    }
+
     protected async Task<string> AddWeatherReadScope()
     {
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
