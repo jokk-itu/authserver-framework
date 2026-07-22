@@ -1188,6 +1188,18 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.HasDiscriminator().HasValue("DeviceCodeGrant");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantAuthorizationDetailTypeConsent", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.AuthorizationGrantConsent");
+
+                    b.Property<string>("RawValue")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.HasDiscriminator().HasValue(2);
+                });
+
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrantClaimConsent", b =>
                 {
                     b.HasBaseType("AuthServer.Entities.AuthorizationGrantConsent");
@@ -1239,6 +1251,18 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.HasIndex("DeviceCodeGrantId");
 
                     b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationDetailTypeConsent", b =>
+                {
+                    b.HasBaseType("AuthServer.Entities.Consent");
+
+                    b.Property<int>("AuthorizationDetailTypeId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("AuthorizationDetailTypeId");
+
+                    b.HasDiscriminator().HasValue(2);
                 });
 
             modelBuilder.Entity("AuthServer.Entities.ClaimConsent", b =>
@@ -1610,6 +1634,17 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("DeviceCodeGrant");
                 });
 
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationDetailTypeConsent", b =>
+                {
+                    b.HasOne("AuthServer.Entities.AuthorizationDetailType", "AuthorizationDetailType")
+                        .WithMany("AuthorizationDetailTypeConsents")
+                        .HasForeignKey("AuthorizationDetailTypeId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorizationDetailType");
+                });
+
             modelBuilder.Entity("AuthServer.Entities.ClaimConsent", b =>
                 {
                     b.HasOne("AuthServer.Entities.Claim", "Claim")
@@ -1681,6 +1716,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     b.Navigation("AuthorizationGrants");
 
                     b.Navigation("ClientAuthenticationContextReferences");
+                });
+
+            modelBuilder.Entity("AuthServer.Entities.AuthorizationDetailType", b =>
+                {
+                    b.Navigation("AuthorizationDetailTypeConsents");
                 });
 
             modelBuilder.Entity("AuthServer.Entities.AuthorizationGrant", b =>

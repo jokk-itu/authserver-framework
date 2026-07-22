@@ -12,7 +12,8 @@ internal sealed class ConsentConfiguration : IEntityTypeConfiguration<Consent>
         builder
             .HasDiscriminator(x => x.ConsentType)
             .HasValue<ScopeConsent>(ConsentType.Scope)
-            .HasValue<ClaimConsent>(ConsentType.Claim);
+            .HasValue<ClaimConsent>(ConsentType.Claim)
+            .HasValue<AuthorizationDetailTypeConsent>(ConsentType.AuthorizationDetailType);
         
         builder
             .HasOne(x => x.Client)

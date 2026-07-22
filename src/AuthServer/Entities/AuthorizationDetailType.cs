@@ -16,4 +16,5 @@ public class AuthorizationDetailType : Entity<int>
 
     public string Name { get; private init; }
     public ICollection<Client> Clients { get; private init; } = [];
+    public ICollection<AuthorizationDetailTypeConsent> AuthorizationDetailTypeConsents { get; private init; } = [];
 }

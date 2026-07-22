@@ -12,7 +12,8 @@ internal sealed class AuthorizationGrantConsentConfiguration : IEntityTypeConfig
         builder
             .HasDiscriminator(x => x.ConsentType)
             .HasValue<AuthorizationGrantScopeConsent>(ConsentType.Scope)
-            .HasValue<AuthorizationGrantClaimConsent>(ConsentType.Claim);
+            .HasValue<AuthorizationGrantClaimConsent>(ConsentType.Claim)
+            .HasValue<AuthorizationGrantAuthorizationDetailTypeConsent>(ConsentType.AuthorizationDetailType);
 
         builder
             .HasOne(x => x.Consent)

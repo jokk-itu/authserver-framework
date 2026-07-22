@@ -358,12 +358,18 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     ConsentType = table.Column<int>(type: "int", nullable: false),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SubjectIdentifierId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AuthorizationDetailTypeId = table.Column<int>(type: "int", nullable: true),
                     ClaimId = table.Column<int>(type: "int", nullable: true),
                     ScopeId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Consent", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Consent_AuthorizationDetailType_AuthorizationDetailTypeId",
+                        column: x => x.AuthorizationDetailTypeId,
+                        principalTable: "AuthorizationDetailType",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Consent_Claim_ClaimId",
                         column: x => x.ClaimId,
@@ -533,6 +539,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     ConsentId = table.Column<int>(type: "int", nullable: false),
                     AuthorizationGrantId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ConsentType = table.Column<int>(type: "int", nullable: false),
+                    RawValue = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
                     Resource = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
@@ -872,6 +879,11 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 column: "DeviceCodeGrantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Consent_AuthorizationDetailTypeId",
+                table: "Consent",
+                column: "AuthorizationDetailTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Consent_ClaimId",
                 table: "Consent",
                 column: "ClaimId");
@@ -1033,9 +1045,6 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 name: "Consent");
 
             migrationBuilder.DropTable(
-                name: "AuthorizationDetailType");
-
-            migrationBuilder.DropTable(
                 name: "GrantType");
 
             migrationBuilder.DropTable(
@@ -1043,6 +1052,9 @@ namespace AuthServer.TestIdentityProvider.Migrations
 
             migrationBuilder.DropTable(
                 name: "Code");
+
+            migrationBuilder.DropTable(
+                name: "AuthorizationDetailType");
 
             migrationBuilder.DropTable(
                 name: "Claim");
