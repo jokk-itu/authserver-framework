@@ -1,4 +1,6 @@
-﻿namespace AuthServer.UserInterface.Abstractions;
+﻿using AuthServer.UserInterface.Models;
+
+namespace AuthServer.UserInterface.Abstractions;
 
 internal interface IDeviceAuthorizeService
 {

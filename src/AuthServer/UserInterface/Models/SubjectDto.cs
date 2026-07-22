@@ -1,4 +1,4 @@
-﻿namespace AuthServer.UserInterface;
+﻿namespace AuthServer.UserInterface.Models;
 
 public class SubjectDto
 {

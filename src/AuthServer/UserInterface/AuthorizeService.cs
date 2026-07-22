@@ -7,6 +7,7 @@ using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.TokenDecoders.Abstractions;
 using AuthServer.UserInterface.Abstractions;
+using AuthServer.UserInterface.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

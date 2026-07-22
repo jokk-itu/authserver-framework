@@ -3,6 +3,7 @@ using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.UserInterface.Abstractions;
+using AuthServer.UserInterface.Models;
 
 namespace AuthServer.UserInterface;
 
