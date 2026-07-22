@@ -82,6 +82,7 @@ internal class ConsentRepository : IConsentRepository
             .Where(x => x.SubjectIdentifier.Id == subjectIdentifier)
             .Include(x => ((ScopeConsent)x).Scope)
             .Include(x => ((ClaimConsent)x).Claim)
+            .Include(x => ((AuthorizationDetailTypeConsent)x).AuthorizationDetailType)
             .ToListAsync(cancellationToken);
     }
     

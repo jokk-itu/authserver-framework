@@ -109,8 +109,8 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var serviceProvider = BuildServiceProvider();
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
-        var (subjectIdentifier, clientId) = await GetClientConsent(ScopeConstants.OpenId, ClaimNameConstants.Name);
-        await GetClientConsent(ScopeConstants.Profile, ClaimNameConstants.Address);
+        var (subjectIdentifier, clientId) = await GetClientConsent(ScopeConstants.OpenId, ClaimNameConstants.Name, AuthorizationDetailTypeConstants.OpenId);
+        await GetClientConsent(ScopeConstants.Profile, ClaimNameConstants.Address, AuthorizationDetailTypeConstants.Profile);
 
         // Act
         var clientConsents = await consentRepository.GetClientConsentedScopes(subjectIdentifier, clientId, CancellationToken.None);
@@ -128,8 +128,8 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var serviceProvider = BuildServiceProvider();
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
-        var (subjectIdentifier, clientId) = await GetClientConsent(ScopeConstants.OpenId, ClaimNameConstants.Name);
-        await GetClientConsent(ScopeConstants.Profile, ClaimNameConstants.Address);
+        var (subjectIdentifier, clientId) = await GetClientConsent(ScopeConstants.OpenId, ClaimNameConstants.Name, AuthorizationDetailTypeConstants.OpenId);
+        await GetClientConsent(ScopeConstants.Profile, ClaimNameConstants.Address, AuthorizationDetailTypeConstants.Profile);
 
         // Act
         var clientConsents = await consentRepository.GetClientConsentedClaims(subjectIdentifier, clientId, CancellationToken.None);
@@ -141,20 +141,20 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
     }
 
     [Fact]
-    public async Task GetClientConsents_TwoClientConsents_ExpectTwoClientConsents()
+    public async Task GetClientConsents_ThreeClientConsents_ExpectThreeClientConsents()
     {
         // Arrange
         var serviceProvider = BuildServiceProvider();
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
-        var (subjectIdentifier, clientId) = await GetClientConsent(ScopeConstants.OpenId, ClaimNameConstants.Name);
-        await GetClientConsent(ScopeConstants.Profile, ClaimNameConstants.Address);
+        var (subjectIdentifier, clientId) = await GetClientConsent(ScopeConstants.OpenId, ClaimNameConstants.Name, AuthorizationDetailTypeConstants.OpenId);
+        await GetClientConsent(ScopeConstants.Profile, ClaimNameConstants.Address, AuthorizationDetailTypeConstants.Profile);
 
         // Act
         var clientConsents = await consentRepository.GetClientConsents(subjectIdentifier, clientId, CancellationToken.None);
 
         // Assert
-        Assert.Equal(2, clientConsents.Count);
+        Assert.Equal(3, clientConsents.Count);
 
         var scopeConsents = clientConsents.OfType<ScopeConsent>().ToList();
         Assert.Single(scopeConsents);
@@ -165,6 +165,11 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         Assert.Single(claimQuery);
         var claimConsent = claimQuery.Single();
         Assert.Equal(ClaimNameConstants.Name, claimConsent.Claim.Name);
+
+        var authorizationDetailTypeQuery = clientConsents.OfType<AuthorizationDetailTypeConsent>().ToList();
+        Assert.Single(authorizationDetailTypeQuery);
+        var authorizationDetailTypeConsent = authorizationDetailTypeQuery.Single();
+        Assert.Equal(AuthorizationDetailTypeConstants.OpenId, authorizationDetailTypeConsent.AuthorizationDetailType.Name);
     }
 
     [Fact]
@@ -414,15 +419,17 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         Assert.Single(claims, ClaimNameConstants.FamilyName);
     }
 
-    private async Task<(string SubjectIdentifier, string ClientId)> GetClientConsent(string scope, string claim)
+    private async Task<(string SubjectIdentifier, string ClientId)> GetClientConsent(string scope, string claim, string authorizationDetailType)
     {
         var subjectIdentifier = new SubjectIdentifier();
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, await GetScope(scope));
         var claimConsent = new ClaimConsent(subjectIdentifier, client, await GetClaim(claim));
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(subjectIdentifier, client, await GetAuthorizationDetailType(authorizationDetailType));
 
         await AddEntity(scopeConsent);
         await AddEntity(claimConsent);
+        await AddEntity(authorizationDetailTypeConsent);
 
         return (subjectIdentifier.Id, client.Id);
     }
