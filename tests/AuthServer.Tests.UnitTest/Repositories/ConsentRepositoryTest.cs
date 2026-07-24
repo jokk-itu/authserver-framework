@@ -94,7 +94,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var grantConsents = await consentRepository.GetGrantConsents(authorizationGrant.Id, CancellationToken.None);
 
         // Assert
-        Assert.Equal(2, grantConsents.Count);
+        Assert.Equal(3, grantConsents.Count);
 
         var claimQuery = grantConsents.OfType<AuthorizationGrantClaimConsent>().ToList();
         Assert.Single(claimQuery);
