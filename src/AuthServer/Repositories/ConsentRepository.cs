@@ -175,7 +175,7 @@ internal class ConsentRepository : IConsentRepository
         var subject = (await _identityContext.FindAsync<SubjectIdentifier>([consentDto.SubjectIdentifier], cancellationToken))!;
         var client = (await _identityContext.FindAsync<Client>([consentDto.ClientId], cancellationToken))!;
 
-        var authorizationDetailTypes = consentDto.ConsentedAuthorizationDetails;
+        var authorizationDetailTypes = consentDto.ConsentedAuthorizationDetailTypes;
         var authorizationDetailTypesToAdd = authorizationDetailTypes
             .Where(x => clientConsents.OfType<AuthorizationDetailTypeConsent>().All(y => y.AuthorizationDetailType.Name != x))
             .ToList();

@@ -5,6 +5,7 @@ using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Helpers;
 using AuthServer.UserInterface.Abstractions;
+using AuthServer.UserInterface.Models;
 
 namespace AuthServer.TestIdentityProvider.Pages;
 
@@ -72,7 +73,15 @@ public class ConsentModel : PageModel
 
         if (!consentGrantDto.ClientRequiresConsent)
         {
-            await _consentGrantService.HandleConsent(subject.Subject, clientId, requestedScope, requestedClaims, cancellationToken);
+            var consentDto = new ConsentDto
+            {
+                SubjectIdentifier = subject.Subject,
+                ClientId = clientId,
+                ConsentedScopes = requestedScope,
+                ConsentedClaims = requestedClaims,
+                ConsentedAuthorizationDetailTypes = []
+            };
+            await _consentGrantService.HandleConsent(consentDto, cancellationToken);
             return Redirect(ReturnUrl);
         }
 
@@ -98,7 +107,15 @@ public class ConsentModel : PageModel
         var requestUri = query.Get(Parameter.RequestUri)!;
         var request = (await _authorizeService.GetValidatedRequest(requestUri, clientId, cancellationToken))!;
         var subject = await _authorizeService.GetSubject(request, cancellationToken);
-        await _consentGrantService.HandleConsent(subject.Subject, clientId, Input.ConsentedScope, Input.ConsentedClaims, cancellationToken);
+        var consentDto = new ConsentDto
+        {
+            SubjectIdentifier = subject.Subject,
+            ClientId = clientId,
+            ConsentedScopes = Input.ConsentedScope,
+            ConsentedClaims = Input.ConsentedClaims,
+            ConsentedAuthorizationDetailTypes = []
+        };
+        await _consentGrantService.HandleConsent(consentDto, cancellationToken);
 
         return Redirect(ReturnUrl);
     }

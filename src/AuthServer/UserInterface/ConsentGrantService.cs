@@ -32,7 +32,7 @@ internal class ConsentGrantService : IConsentGrantService
             ClientId = consentDto.ClientId,
             ConsentedScopes = consentDto.ConsentedScopes,
             ConsentedClaims = consentDto.ConsentedClaims,
-            ConsentedAuthorizationDetails = consentDto.ConsentedAuthorizationDetails
+            ConsentedAuthorizationDetailTypes = consentDto.ConsentedAuthorizationDetailTypes
         }, cancellationToken);
     }
 
