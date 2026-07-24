@@ -7,43 +7,34 @@ internal interface IConsentRepository
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="subjectIdentifier"></param>
-    /// <param name="clientId"></param>
-    /// <param name="scopes"></param>
-    /// <param name="claims"></param>
+    /// <param name="consentDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateOrUpdateClientConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims, CancellationToken cancellationToken);
+    Task CreateOrUpdateClientConsent(ConsentDto consentDto, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="authorizationGrantId"></param>
-    /// <param name="scopes"></param>
-    /// <param name="resources"></param>
+    /// <param name="grantConsentDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken);
+    Task CreateGrantConsent(AuthorizationGrantConsentDto grantConsentDto, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="authorizationGrantId"></param>
-    /// <param name="scopes"></param>
-    /// <param name="resources"></param>
+    /// <param name="grantConsentDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task ReplaceGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken);
+    Task ReplaceGrantConsent(AuthorizationGrantConsentDto grantConsentDto, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="authorizationGrantId"></param>
-    /// <param name="scopes"></param>
-    /// <param name="resources"></param>
+    /// <param name="grantConsentDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task MergeGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken);
+    Task MergeGrantConsent(AuthorizationGrantConsentDto grantConsentDto, CancellationToken cancellationToken);
 
     /// <summary>
     /// 

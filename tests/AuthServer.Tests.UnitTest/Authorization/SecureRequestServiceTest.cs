@@ -15,6 +15,7 @@ using Xunit.Abstractions;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Extensions;
+using AuthServer.Repositories.Models;
 
 namespace AuthServer.Tests.UnitTest.Authorization;
 

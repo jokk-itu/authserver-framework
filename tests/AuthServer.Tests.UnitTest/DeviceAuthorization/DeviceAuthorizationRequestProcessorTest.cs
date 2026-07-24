@@ -7,6 +7,7 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Helpers;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

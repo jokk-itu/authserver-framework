@@ -1,4 +1,6 @@
-﻿using AuthServer.Core;
+﻿using System.Text.Json;
+using AuthServer.Authorization.Models;
+using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
@@ -16,28 +18,28 @@ internal class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
-    public async Task CreateGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
+    public async Task CreateGrantConsent(AuthorizationGrantConsentDto grantConsentDto, CancellationToken cancellationToken)
     {
-        var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-        await UpdateGrantConsent(authorizationGrant, scopes, resources, cancellationToken);
+        var authorizationGrant = await GetAuthorizationGrant(grantConsentDto.AuthorizationGrantId, cancellationToken);
+        await UpdateGrantConsent(authorizationGrant, grantConsentDto, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task MergeGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
+    public async Task MergeGrantConsent(AuthorizationGrantConsentDto grantConsentDto, CancellationToken cancellationToken)
     {
-        var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
-        await UpdateGrantConsent(authorizationGrant, scopes, resources, cancellationToken);
+        var authorizationGrant = await GetAuthorizationGrant(grantConsentDto.AuthorizationGrantId, cancellationToken);
+        await UpdateGrantConsent(authorizationGrant, grantConsentDto, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task ReplaceGrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
+    public async Task ReplaceGrantConsent(AuthorizationGrantConsentDto grantConsentDto, CancellationToken cancellationToken)
     {
-        var authorizationGrant = await GetAuthorizationGrant(authorizationGrantId, cancellationToken);
+        var authorizationGrant = await GetAuthorizationGrant(grantConsentDto.AuthorizationGrantId, cancellationToken);
 
         authorizationGrant.AuthorizationGrantConsents.Clear();
         await _identityContext.SaveChangesAsync(cancellationToken);
 
-        await UpdateGrantConsent(authorizationGrant, scopes, resources, cancellationToken);
+        await UpdateGrantConsent(authorizationGrant, grantConsentDto, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -109,20 +111,21 @@ internal class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
-    public async Task CreateOrUpdateClientConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims, CancellationToken cancellationToken)
+    public async Task CreateOrUpdateClientConsent(ConsentDto consentDto, CancellationToken cancellationToken)
     {
-        var clientConsents = await _identityContext
-            .Set<Consent>()
-            .Where(x => x.SubjectIdentifier.Id == subjectIdentifier)
-            .Where(x => x.Client.Id == clientId)
-            .Include(x => ((ScopeConsent)x).Scope)
-            .Include(x => ((ClaimConsent)x).Claim)
-            .ToListAsync(cancellationToken);
+        var clientConsents = await GetClientConsents(consentDto.SubjectIdentifier, consentDto.ClientId, cancellationToken);
+        await UpdateScopeConsents(consentDto, clientConsents, cancellationToken);
+        await UpdateClaimConsents(consentDto, clientConsents, cancellationToken);
+        await UpdateAuthorizationDetailTypeConsents(consentDto, clientConsents, cancellationToken);
+        await _identityContext.SaveChangesAsync(cancellationToken);
+    }
 
-        var subject = (await _identityContext.FindAsync<SubjectIdentifier>([subjectIdentifier], cancellationToken))!;
-        var client = (await _identityContext.FindAsync<Client>([clientId], cancellationToken))!;
+    private async Task UpdateScopeConsents(ConsentDto consentDto, IReadOnlyCollection<Consent> clientConsents, CancellationToken cancellationToken)
+    {
+        var subject = (await _identityContext.FindAsync<SubjectIdentifier>([consentDto.SubjectIdentifier], cancellationToken))!;
+        var client = (await _identityContext.FindAsync<Client>([consentDto.ClientId], cancellationToken))!;
 
-        var scopeToAdd = scopes
+        var scopeToAdd = consentDto.ConsentedScopes
             .Where(x => clientConsents.OfType<ScopeConsent>().All(y => y.Scope.Name != x))
             .ToList();
 
@@ -136,8 +139,14 @@ internal class ConsentRepository : IConsentRepository
             var scopeConsent = new ScopeConsent(subject, client, scopeEntities.Single(x => x.Name == scope));
             await _identityContext.AddAsync(scopeConsent, cancellationToken);
         }
+    }
 
-        claims = claims.ToList();
+    private async Task UpdateClaimConsents(ConsentDto consentDto, IReadOnlyCollection<Consent> clientConsents, CancellationToken cancellationToken)
+    {
+        var subject = (await _identityContext.FindAsync<SubjectIdentifier>([consentDto.SubjectIdentifier], cancellationToken))!;
+        var client = (await _identityContext.FindAsync<Client>([consentDto.ClientId], cancellationToken))!;
+
+        var claims = consentDto.ConsentedClaims;
         var claimsToAdd = claims
             .Where(x => clientConsents.OfType<ClaimConsent>().All(y => y.Claim.Name != x))
             .ToList();
@@ -159,25 +168,39 @@ internal class ConsentRepository : IConsentRepository
             .ToList();
 
         _identityContext.RemoveRange(claimsToRemove);
-
-        await _identityContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task UpdateGrantConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, CancellationToken cancellationToken)
+    private async Task UpdateAuthorizationDetailTypeConsents(ConsentDto consentDto, IReadOnlyCollection<Consent> clientConsents, CancellationToken cancellationToken)
     {
-        var clientConsents = await _identityContext
-            .Set<Consent>()
-            .Where(x => x.SubjectIdentifier.Id == authorizationGrant.Session.SubjectIdentifier.Id)
-            .Where(x => x.Client.Id == authorizationGrant.Client.Id)
-            .Include(x => ((ScopeConsent)x).Scope)
-            .Include(x => ((ClaimConsent)x).Claim)
+        var subject = (await _identityContext.FindAsync<SubjectIdentifier>([consentDto.SubjectIdentifier], cancellationToken))!;
+        var client = (await _identityContext.FindAsync<Client>([consentDto.ClientId], cancellationToken))!;
+
+        var authorizationDetailTypes = consentDto.ConsentedAuthorizationDetails;
+        var authorizationDetailTypesToAdd = authorizationDetailTypes
+            .Where(x => clientConsents.OfType<AuthorizationDetailTypeConsent>().All(y => y.AuthorizationDetailType.Name != x))
+            .ToList();
+
+        var authorizationDetailTypeEntities = await _identityContext
+            .Set<AuthorizationDetailType>()
+            .Where(x => authorizationDetailTypesToAdd.Contains(x.Name))
             .ToListAsync(cancellationToken);
 
-        AddGrantScopeClaims(authorizationGrant, clientConsents, scopes, resources);
-        AddGrantConsentClaims(authorizationGrant, clientConsents);
+        foreach (var authorizationDetailType in authorizationDetailTypesToAdd)
+        {
+            var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(subject, client, authorizationDetailTypeEntities.Single(x => x.Name == authorizationDetailType));
+            await _identityContext.AddAsync(authorizationDetailTypeConsent, cancellationToken);
+        }
     }
 
-    private static void AddGrantScopeClaims(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources)
+    private async Task UpdateGrantConsent(AuthorizationGrant authorizationGrant, AuthorizationGrantConsentDto grantConsentDto, CancellationToken cancellationToken)
+    {
+        var clientConsents = await GetClientConsents(authorizationGrant.Session.SubjectIdentifier.Id, authorizationGrant.Client.Id, cancellationToken);
+        AddGrantScopeConsent(authorizationGrant, clientConsents, grantConsentDto.Scope, grantConsentDto.Resource);
+        AddGrantClaimConsent(authorizationGrant, clientConsents);
+        AddGrantAuthorizationDetailTypeConsent(authorizationGrant, clientConsents, grantConsentDto.AuthorizationDetails);
+    }
+
+    private static void AddGrantScopeConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources)
     {
         foreach (var scope in scopes)
         {
@@ -201,7 +224,7 @@ internal class ConsentRepository : IConsentRepository
         }
     }
 
-    private static void AddGrantConsentClaims(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents)
+    private static void AddGrantClaimConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents)
     {
         var fullConsentedScopes = authorizationGrant.AuthorizationGrantConsents
             .OfType<AuthorizationGrantScopeConsent>()
@@ -232,6 +255,21 @@ internal class ConsentRepository : IConsentRepository
                 authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
                 authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
             }
+        }
+    }
+
+    private static void AddGrantAuthorizationDetailTypeConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents, IReadOnlyCollection<AuthorizationDetailDto> authorizationDetails)
+    {
+        foreach (var authorizationDetail in authorizationDetails)
+        {
+            var authorizationDetailTypeConsent = clientConsents
+                .OfType<AuthorizationDetailTypeConsent>()
+                .Single(x => x.AuthorizationDetailType.Name == authorizationDetail.Type);
+
+            // TODO fix and use the Raw property of the AuthorizationDetailDto
+            var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
+            var authorizationGrantAuthorizationDetailTypeConsent = new AuthorizationGrantAuthorizationDetailTypeConsent(authorizationDetailTypeConsent, authorizationGrant, rawAuthorizationDetail);
+            authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantAuthorizationDetailTypeConsent);
         }
     }
 

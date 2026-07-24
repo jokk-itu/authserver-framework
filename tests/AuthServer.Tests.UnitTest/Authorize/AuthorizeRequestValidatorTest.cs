@@ -9,6 +9,7 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using AuthServer.TokenDecoders;
 using Microsoft.Extensions.DependencyInjection;

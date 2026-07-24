@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
+using AuthServer.Repositories.Models;
 
 namespace AuthServer.Tests.Core;
 

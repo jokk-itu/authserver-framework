@@ -1,10 +1,13 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.Repositories.Models;
+using AuthServer.Tests.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SQLitePCL;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.Repositories;
@@ -21,12 +24,14 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var authorizationGrant = await GetAuthorizationGrant(
             ScopeConstants.OpenId,
             "https://weather.authserver.dk",
-            ClaimNameConstants.Name);
+            ClaimNameConstants.Name,
+            AuthorizationDetailTypeConstants.OpenId);
 
         await GetAuthorizationGrant(
             ScopeConstants.Profile,
             "https://idp.authserver.dk",
-            ClaimNameConstants.Address);
+            ClaimNameConstants.Address,
+            AuthorizationDetailTypeConstants.OpenId);
 
         // Act
         var grantConsentedScopes = await consentRepository.GetGrantConsentedScopes(authorizationGrant.Id, CancellationToken.None);
@@ -49,12 +54,14 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var authorizationGrant = await GetAuthorizationGrant(
             ScopeConstants.OpenId,
             "https://weather.authserver.dk",
-            ClaimNameConstants.Name);
+            ClaimNameConstants.Name,
+            AuthorizationDetailTypeConstants.OpenId);
 
         await GetAuthorizationGrant(
             ScopeConstants.Profile,
             "https://idp.authserver.dk",
-            ClaimNameConstants.Address);
+            ClaimNameConstants.Address,
+            AuthorizationDetailTypeConstants.OpenId);
 
         // Act
         var grantConsentedClaims = await consentRepository.GetGrantConsentedClaims(authorizationGrant.Id, CancellationToken.None);
@@ -74,12 +81,14 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var authorizationGrant = await GetAuthorizationGrant(
             ScopeConstants.OpenId,
             "https://weather.authserver.dk",
-            ClaimNameConstants.Name);
+            ClaimNameConstants.Name,
+            AuthorizationDetailTypeConstants.OpenId);
 
         await GetAuthorizationGrant(
             ScopeConstants.Profile,
             "https://idp.authserver.dk",
-            ClaimNameConstants.Address);
+            ClaimNameConstants.Address,
+            AuthorizationDetailTypeConstants.OpenId);
 
         // Act
         var grantConsents = await consentRepository.GetGrantConsents(authorizationGrant.Id, CancellationToken.None);
@@ -186,10 +195,14 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         // Act
         await consentRepository.CreateOrUpdateClientConsent(
-            subjectIdentifier.Id,
-            client.Id,
-            [ScopeConstants.OpenId],
-            [ClaimNameConstants.Name],
+            new ConsentDto
+            {
+                SubjectIdentifier = subjectIdentifier.Id,
+                ClientId = client.Id,
+                ConsentedScopes = [ScopeConstants.OpenId],
+                ConsentedClaims = [ClaimNameConstants.Name],
+                ConsentedAuthorizationDetails = [AuthorizationDetailTypeConstants.OpenId]
+            }, 
             CancellationToken.None);
 
         // Assert
@@ -199,7 +212,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             .Where(x => x.Client.Id == client.Id)
             .ToListAsync();
 
-        Assert.Equal(2, consents.Count);
+        Assert.Equal(3, consents.Count);
 
         var scopeConsents = consents.OfType<ScopeConsent>().ToList();
         Assert.Single(scopeConsents);
@@ -210,6 +223,11 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         Assert.Single(claimConsents);
         var claimConsent = claimConsents.Single();
         Assert.Equal(ClaimNameConstants.Name, claimConsent.Claim.Name);
+
+        var authorizationDetailTypeConsents = consents.OfType<AuthorizationDetailTypeConsent>().ToList();
+        Assert.Single(authorizationDetailTypeConsents);
+        var authorizationDetailTypeConsent = authorizationDetailTypeConsents.Single();
+        Assert.Equal(AuthorizationDetailTypeConstants.OpenId, authorizationDetailTypeConsent.AuthorizationDetailType.Name);
     }
 
     [Fact]
@@ -223,13 +241,18 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var client = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
         await AddEntity(new ScopeConsent(subjectIdentifier, client, await GetScope(ScopeConstants.Profile)));
         await AddEntity(new ClaimConsent(subjectIdentifier, client, await GetClaim(ClaimNameConstants.Birthdate)));
+        await AddEntity(new AuthorizationDetailTypeConsent(subjectIdentifier, client, await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.Profile)));
 
         // Act
         await consentRepository.CreateOrUpdateClientConsent(
-            subjectIdentifier.Id,
-            client.Id,
-            [ScopeConstants.OpenId],
-            [ClaimNameConstants.Name],
+            new ConsentDto
+            {
+                SubjectIdentifier = subjectIdentifier.Id,
+                ClientId = client.Id,
+                ConsentedScopes = [ScopeConstants.OpenId],
+                ConsentedClaims = [ClaimNameConstants.Name],
+                ConsentedAuthorizationDetails = [AuthorizationDetailTypeConstants.OpenId]
+            },
             CancellationToken.None);
 
         // Assert
@@ -239,7 +262,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             .Where(x => x.Client.Id == client.Id)
             .ToListAsync();
 
-        Assert.Equal(3, consents.Count);
+        Assert.Equal(5, consents.Count);
 
         Assert.Collection(
             consents.OfType<ScopeConsent>(),
@@ -250,6 +273,12 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var claimConsents = consents.OfType<ClaimConsent>().ToList();
         Assert.Single(claimConsents);
         Assert.Equal(ClaimNameConstants.Name, claimConsents.Single().Claim.Name);
+
+        Assert.Collection(
+            consents.OfType<AuthorizationDetailTypeConsent>(),
+            adtc => Assert.Equal(AuthorizationDetailTypeConstants.Profile, adtc.AuthorizationDetailType.Name),
+            adtc => Assert.Equal(AuthorizationDetailTypeConstants.OpenId, adtc.AuthorizationDetailType.Name)
+        );
     }
 
     [Fact]
@@ -260,22 +289,27 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
         var authorizationGrant = await GetAuthorizationGrant(
-            ScopeConstants.Profile, "https://idp.authserver.dk", ClaimNameConstants.Name);
+            ScopeConstants.Profile, "https://idp.authserver.dk", ClaimNameConstants.Name, AuthorizationDetailTypeConstants.OpenId);
 
         authorizationGrant.AuthorizationGrantConsents.Clear();
+        await SaveChangesAsync();
 
-        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        var authorizationDetail = new DefaultAuthorizationDetailDto
         {
-            ClientUri = "https://idp.authserver.dk"
+            Type = AuthorizationDetailTypeConstants.OpenId
         };
-        idpClient.Scopes.Add(await GetScope(ScopeConstants.Profile));
-        await AddEntity(idpClient);
+        var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
+        authorizationDetail.Raw = rawAuthorizationDetail;
 
         // Act
         await consentRepository.CreateGrantConsent(
-            authorizationGrant.Id,
-            [ScopeConstants.Profile],
-            ["https://idp.authserver.dk"],
+            new AuthorizationGrantConsentDto
+            {
+                AuthorizationGrantId = authorizationGrant.Id,
+                Scope = [ScopeConstants.Profile],
+                Resource = ["https://idp.authserver.dk"],
+                AuthorizationDetails = [authorizationDetail]
+            },
             CancellationToken.None);
 
         // Assert
@@ -296,6 +330,18 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         Assert.Single(claims);
         Assert.Single(claims, ClaimNameConstants.Name);
+
+        var authorizationDetailTypeDtos = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantAuthorizationDetailTypeConsent>()
+            .Select(x => new DefaultAuthorizationDetailDto
+            {
+                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name,
+                Raw = x.RawValue
+            })
+            .ToList();
+
+        Assert.Single(authorizationDetailTypeDtos);
+        Assert.Single(authorizationDetailTypeDtos, x => x is { Type: AuthorizationDetailTypeConstants.OpenId });
     }
 
     [Fact]
@@ -306,7 +352,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
         var authorizationGrant = await GetAuthorizationGrant(
-            ScopeConstants.UserInfo, "https://idp.authserver.dk", ClaimNameConstants.Name);
+            ScopeConstants.UserInfo, "https://idp.authserver.dk", ClaimNameConstants.Name, AuthorizationDetailTypeConstants.OpenId);
 
         var scopeConsent = new ScopeConsent(
             authorizationGrant.Session.SubjectIdentifier,
@@ -322,26 +368,29 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         await AddEntity(claimConsent);
 
-        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
-        {
-            ClientUri = "https://idp.authserver.dk"
-        };
-        idpClient.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
-        idpClient.Scopes.Add(await GetScope(ScopeConstants.Profile));
-        await AddEntity(idpClient);
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(
+            authorizationGrant.Session.SubjectIdentifier,
+            authorizationGrant.Client,
+            await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.Profile));
 
-        var weatherClient = new Client("weather", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        await AddEntity(authorizationDetailTypeConsent);
+
+        var authorizationDetail = new DefaultAuthorizationDetailDto
         {
-            ClientUri = "https://weather.authserver.dk"
+            Type = AuthorizationDetailTypeConstants.Profile
         };
-        weatherClient.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
-        await AddEntity(weatherClient);
+        var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
+        authorizationDetail.Raw = rawAuthorizationDetail;
 
         // Act
         await consentRepository.MergeGrantConsent(
-            authorizationGrant.Id,
-            [ScopeConstants.UserInfo, ScopeConstants.Profile],
-            ["https://idp.authserver.dk", "https://weather.authserver.dk"],
+            new AuthorizationGrantConsentDto
+            {
+                AuthorizationGrantId = authorizationGrant.Id,
+                Scope = [ScopeConstants.Profile],
+                Resource = ["https://weather.authserver.dk"],
+                AuthorizationDetails = [authorizationDetail]
+            },
             CancellationToken.None);
 
         // Assert
@@ -351,8 +400,6 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             .ToList();
 
         Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.UserInfo, Resource: "https://idp.authserver.dk" });
-        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.UserInfo, Resource: "https://weather.authserver.dk" });
-        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://idp.authserver.dk" });
         Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://weather.authserver.dk" });
 
         var claims = authorizationGrant.AuthorizationGrantConsents
@@ -365,6 +412,19 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         Assert.Equal(2, claims.Count);
         Assert.Single(claims, ClaimNameConstants.Name);
         Assert.Single(claims, ClaimNameConstants.FamilyName);
+
+        var authorizationDetailTypeDtos = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantAuthorizationDetailTypeConsent>()
+            .Select(x => new DefaultAuthorizationDetailDto
+            {
+                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name,
+                Raw = x.RawValue
+            })
+            .ToList();
+
+        Assert.Equal(2, authorizationDetailTypeDtos.Count);
+        Assert.Single(authorizationDetailTypeDtos, x => x is { Type: AuthorizationDetailTypeConstants.OpenId });
+        Assert.Single(authorizationDetailTypeDtos, x => x is { Type: AuthorizationDetailTypeConstants.Profile });
     }
 
     [Fact]
@@ -375,7 +435,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
 
         var authorizationGrant = await GetAuthorizationGrant(
-            ScopeConstants.UserInfo, "https://idp.authserver.dk", ClaimNameConstants.FamilyName);
+            ScopeConstants.UserInfo, "https://idp.authserver.dk", ClaimNameConstants.FamilyName, AuthorizationDetailTypeConstants.OpenId);
 
         var scopeConsent = new ScopeConsent(
             authorizationGrant.Session.SubjectIdentifier,
@@ -384,19 +444,29 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         await AddEntity(scopeConsent);
 
-        var idpClient = new Client("idp", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(
+            authorizationGrant.Session.SubjectIdentifier,
+            authorizationGrant.Client,
+            await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.Profile));
+
+        await AddEntity(authorizationDetailTypeConsent);
+
+        var authorizationDetail = new DefaultAuthorizationDetailDto
         {
-            ClientUri = "https://idp.authserver.dk"
+            Type = AuthorizationDetailTypeConstants.Profile
         };
-        idpClient.Scopes.Add(await GetScope(ScopeConstants.Profile));
-        idpClient.Scopes.Add(await GetScope(ScopeConstants.UserInfo));
-        await AddEntity(idpClient);
+        var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
+        authorizationDetail.Raw = rawAuthorizationDetail;
 
         // Act
         await consentRepository.ReplaceGrantConsent(
-            authorizationGrant.Id,
-            [ScopeConstants.Profile],
-            ["https://idp.authserver.dk"],
+            new AuthorizationGrantConsentDto
+            {
+                AuthorizationGrantId = authorizationGrant.Id,
+                Scope = [ScopeConstants.Profile],
+                Resource = ["https://weather.authserver.dk"],
+                AuthorizationDetails = [authorizationDetail]
+            },
             CancellationToken.None);
 
         // Assert
@@ -406,7 +476,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             .ToList();
 
         Assert.Single(scopeDtos);
-        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://idp.authserver.dk" });
+        Assert.Single(scopeDtos, x => x is { Name: ScopeConstants.Profile, Resource: "https://weather.authserver.dk" });
 
         var claims = authorizationGrant.AuthorizationGrantConsents
             .OfType<AuthorizationGrantClaimConsent>()
@@ -417,6 +487,18 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         Assert.Single(claims);
         Assert.Single(claims, ClaimNameConstants.FamilyName);
+
+        var authorizationDetailTypeDtos = authorizationGrant.AuthorizationGrantConsents
+            .OfType<AuthorizationGrantAuthorizationDetailTypeConsent>()
+            .Select(x => new DefaultAuthorizationDetailDto
+            {
+                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name,
+                Raw = x.RawValue
+            })
+            .ToList();
+
+        Assert.Single(authorizationDetailTypeDtos);
+        Assert.Single(authorizationDetailTypeDtos, x => x is { Type: AuthorizationDetailTypeConstants.Profile });
     }
 
     private async Task<(string SubjectIdentifier, string ClientId)> GetClientConsent(string scope, string claim, string authorizationDetailType)
@@ -434,7 +516,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         return (subjectIdentifier.Id, client.Id);
     }
 
-    private async Task<AuthorizationGrant> GetAuthorizationGrant(string scope, string resource, string claim)
+    private async Task<AuthorizationGrant> GetAuthorizationGrant(string scope, string resource, string claim, string authorizationDetailType)
     {
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
@@ -449,6 +531,17 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
         var claimConsent = new ClaimConsent(subjectIdentifier, client, await GetClaim(claim));
         var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
         authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
+
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(subjectIdentifier, client, await GetAuthorizationDetailType(authorizationDetailType));
+        var rawAuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = authorizationDetailType
+            }
+        });
+        var authorizationGrantAuthorizationDetailTypeConsent = new AuthorizationGrantAuthorizationDetailTypeConsent(authorizationDetailTypeConsent, authorizationGrant, rawAuthorizationDetails);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantAuthorizationDetailTypeConsent);
 
         await AddEntity(authorizationGrant);
         return authorizationGrant;

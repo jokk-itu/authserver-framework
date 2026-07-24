@@ -1,10 +1,12 @@
 ﻿using System.Text.Json;
+using AuthServer.Authorization.Models;
 using AuthServer.Authorize;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -51,12 +53,6 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
 
-        var authorizationDetailDto = new DefaultAuthorizationDetailDto
-        {
-            Type = AuthorizationDetailTypeConstants.OpenId,
-            Locations = ["https://api.authserver.dk"]
-        };
-
         var request = new AuthorizeValidatedRequest
         {
             RequestUri = $"{RequestUriConstants.RequestUriPrefix}{authorizeMessage.Reference}",
@@ -66,8 +62,7 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             Nonce = CryptographyHelper.GetRandomString(16),
             ResponseType = ResponseTypeConstants.Code,
             AuthorizationGrantId = authorizationGrant.Id,
-            Scope = [ScopeConstants.OpenId],
-            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto })
+            Scope = [ScopeConstants.OpenId]
         };
 
         // Act
@@ -109,12 +104,22 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         var scopeConsent = new ScopeConsent(subjectIdentifier, client, openIdScope);
         await AddEntity(scopeConsent);
 
+        var openIdAuthorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(subjectIdentifier, client, openIdAuthorizationDetailType);
+        await AddEntity(authorizationDetailTypeConsent);
+
         var weatherClient = new Client("web-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };
         weatherClient.Scopes.Add(await GetScope(ScopeConstants.OpenId));
         await AddEntity(weatherClient);
+
+        var authorizationDetailDto = new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId,
+            Locations = ["https://api.authserver.dk"]
+        };
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var request = new AuthorizeValidatedRequest
@@ -128,7 +133,8 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
             ResponseType = ResponseTypeConstants.Code,
             Resource = ["https://weather.authserver.dk"],
             GrantManagementAction = grantManagementAction,
-            DPoPJkt = CryptographyHelper.GetRandomString(16)
+            DPoPJkt = CryptographyHelper.GetRandomString(16),
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto> { authorizationDetailDto })
         };
 
         // Act
@@ -141,7 +147,8 @@ public class AuthorizeRequestProcessorTest : BaseUnitTest
         Assert.Single(authorizationGrant.Nonces);
         Assert.Single(authorizationGrant.AuthorizationCodes);
         Assert.Equal(authorizeResponse.AuthorizationCode, authorizationGrant.AuthorizationCodes.Single().RawValue);
-        Assert.Single(authorizationGrant.AuthorizationGrantConsents);
+        Assert.Single(authorizationGrant.AuthorizationGrantConsents, x => x.ConsentType == ConsentType.Scope);
+        Assert.Single(authorizationGrant.AuthorizationGrantConsents, x => x.ConsentType == ConsentType.AuthorizationDetailType);
     }
 
     [Fact]

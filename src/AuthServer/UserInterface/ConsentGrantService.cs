@@ -3,6 +3,7 @@ using AuthServer.Cache.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Repositories.Abstractions;
 using AuthServer.UserInterface.Abstractions;
+using AuthServer.UserInterface.Models;
 
 namespace AuthServer.UserInterface;
 
@@ -23,9 +24,16 @@ internal class ConsentGrantService : IConsentGrantService
     }
 
     /// <inheritdoc/>
-    public async Task HandleConsent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> consentedScopes, IReadOnlyCollection<string> consentedClaims, CancellationToken cancellationToken)
+    public async Task HandleConsent(ConsentDto consentDto, CancellationToken cancellationToken)
     {
-        await _consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, consentedScopes, consentedClaims, cancellationToken);
+        await _consentRepository.CreateOrUpdateClientConsent(new Repositories.Models.ConsentDto
+        {
+            SubjectIdentifier = consentDto.SubjectIdentifier,
+            ClientId = consentDto.ClientId,
+            ConsentedScopes = consentDto.ConsentedScopes,
+            ConsentedClaims = consentDto.ConsentedClaims,
+            ConsentedAuthorizationDetails = consentDto.ConsentedAuthorizationDetails
+        }, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -43,7 +51,8 @@ internal class ConsentGrantService : IConsentGrantService
             ClientRequiresConsent = cachedClient.RequireConsent,
             Username = username,
             ConsentedScope = consents.OfType<ScopeConsent>().Select(x => x.Scope.Name),
-            ConsentedClaims = consents.OfType<ClaimConsent>().Select(x => x.Claim.Name)
+            ConsentedClaims = consents.OfType<ClaimConsent>().Select(x => x.Claim.Name),
+            ConsentedAuthorizationDetails = consents.OfType<AuthorizationDetailTypeConsent>().Select(x => x.AuthorizationDetailType.Name)
         };
     }
 }

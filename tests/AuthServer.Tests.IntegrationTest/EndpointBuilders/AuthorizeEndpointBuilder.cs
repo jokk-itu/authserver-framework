@@ -16,6 +16,7 @@ using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
 using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 using AuthServer.Endpoints.Responses;
+using AuthServer.Repositories.Models;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder>

@@ -15,6 +15,7 @@ using AuthServer.Endpoints.Abstractions;
 using AuthServer.PushedAuthorization;
 using AuthServer.Tests.Core;
 using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
+using AuthServer.Repositories.Models;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 

@@ -1,9 +1,9 @@
 ﻿using AuthServer.Authentication.Abstractions;
-using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using AuthServer.UserInterface.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,19 +34,29 @@ public class ConsentGrantServiceTest : BaseUnitTest
         const string clientId = "client_id";
         IReadOnlyCollection<string> scopes = ["scope"];
         IReadOnlyCollection<string> claims = ["claims"];
+        IReadOnlyCollection<string> authorizationDetailTypes = ["authorization_detail_types"];
 
         consentRepositoryMock
             .Setup(x => x.CreateOrUpdateClientConsent(
-                subjectIdentifier,
-                clientId,
-                scopes,
-                claims,
+                It.Is<ConsentDto>(y =>
+                    y.SubjectIdentifier == subjectIdentifier &&
+                    y.ClientId == clientId &&
+                    y.ConsentedScopes.SequenceEqual(scopes) &&
+                    y.ConsentedClaims.SequenceEqual(claims) &&
+                    y.ConsentedAuthorizationDetails.SequenceEqual(authorizationDetailTypes)),
                 CancellationToken.None))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
         // Act
-        await consentGrantService.HandleConsent(subjectIdentifier, clientId, scopes, claims, CancellationToken.None);
+        await consentGrantService.HandleConsent(new AuthServer.UserInterface.Models.ConsentDto
+        {
+            SubjectIdentifier = subjectIdentifier,
+            ClientId = clientId,
+            ConsentedScopes = scopes,
+            ConsentedClaims = claims,
+            ConsentedAuthorizationDetails = authorizationDetailTypes
+        }, CancellationToken.None);
 
         // Assert
         consentRepositoryMock.Verify();
@@ -73,10 +83,12 @@ public class ConsentGrantServiceTest : BaseUnitTest
         var consents = new List<Consent>
         {
             new ClaimConsent(subjectIdentifier, client, await GetClaim(ClaimNameConstants.Name)),
-            new ScopeConsent(subjectIdentifier, client, await GetScope(ScopeConstants.OpenId))
+            new ScopeConsent(subjectIdentifier, client, await GetScope(ScopeConstants.OpenId)),
+            new AuthorizationDetailTypeConsent(subjectIdentifier, client, await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId))
         };
         await AddEntity(consents[0]);
         await AddEntity(consents[1]);
+        await AddEntity(consents[2]);
 
         const string username = "username";
         userClaimServiceMock
@@ -97,6 +109,8 @@ public class ConsentGrantServiceTest : BaseUnitTest
         Assert.Contains(ScopeConstants.OpenId, consentGrantDto.ConsentedScope);
         Assert.Single(consentGrantDto.ConsentedClaims);
         Assert.Contains(ClaimNameConstants.Name, consentGrantDto.ConsentedClaims);
+        Assert.Single(consentGrantDto.ConsentedAuthorizationDetails);
+        Assert.Contains(AuthorizationDetailTypeConstants.OpenId, consentGrantDto.ConsentedAuthorizationDetails);
         Assert.True(client.RequireConsent);
     }
 }

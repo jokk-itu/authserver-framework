@@ -1,10 +1,14 @@
-﻿using AuthServer.Codes;
+﻿using System.Text.Json;
+using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
+using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 
 namespace AuthServer.Authorize;
 
@@ -43,23 +47,33 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId,
                 cancellationToken))!;
 
+        IReadOnlyCollection<AuthorizationDetailDto> authorizationDetails = [];
+        if (!string.IsNullOrEmpty(request.AuthorizationDetails))
+        {
+            authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<DefaultAuthorizationDetailDto>>(request.AuthorizationDetails)!;
+        }
+
+        var grantConsentDto = new AuthorizationGrantConsentDto
+        {
+            AuthorizationGrantId = request.AuthorizationGrantId,
+            Scope = request.Scope,
+            Resource = request.Resource,
+            AuthorizationDetails = authorizationDetails
+        };
+
         if (string.IsNullOrEmpty(request.GrantManagementAction) ||
             request.GrantManagementAction == GrantManagementActionConstants.Create)
         {
-            await _consentGrantRepository.CreateGrantConsent(request.AuthorizationGrantId, request.Scope,
-                request.Resource, cancellationToken);
+            await _consentGrantRepository.CreateGrantConsent(grantConsentDto, cancellationToken);
         }
         else if (request.GrantManagementAction == GrantManagementActionConstants.Merge)
         {
-            await _consentGrantRepository.MergeGrantConsent(request.AuthorizationGrantId, request.Scope,
-                request.Resource, cancellationToken);
+            await _consentGrantRepository.MergeGrantConsent(grantConsentDto, cancellationToken);
         }
         else if (request.GrantManagementAction == GrantManagementActionConstants.Replace)
         {
-            await _consentGrantRepository.ReplaceGrantConsent(request.AuthorizationGrantId, request.Scope,
-                request.Resource, cancellationToken);
+            await _consentGrantRepository.ReplaceGrantConsent(grantConsentDto, cancellationToken);
         }
-
 
         if (request.ResponseType == ResponseTypeConstants.Code)
         {

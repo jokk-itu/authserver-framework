@@ -9,4 +9,5 @@ public class ConsentGrantDto
     public string? ClientLogoUri { get; init; }
     public required IEnumerable<string> ConsentedScope { get; init; } = [];
     public required IEnumerable<string> ConsentedClaims { get; init; } = [];
+    public required IEnumerable<string> ConsentedAuthorizationDetails { get; init; } = [];
 }
