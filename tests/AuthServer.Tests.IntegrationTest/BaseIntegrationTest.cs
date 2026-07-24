@@ -1,4 +1,5 @@
 ﻿using AuthServer.Authentication.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
@@ -8,6 +9,7 @@ using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Options;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using AuthServer.Tests.IntegrationTest.EndpointBuilders;
 using Microsoft.AspNetCore.DataProtection;
@@ -207,16 +209,31 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
         await authorizationDbContext.SaveChangesAsync();
     }
 
-    protected async Task Consent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims)
+    protected async Task Consent(string subjectIdentifier, string clientId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> claims, IReadOnlyCollection<string> authorizationDetailTypes)
     {
         var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
-        await consentRepository.CreateOrUpdateClientConsent(subjectIdentifier, clientId, scopes, claims, CancellationToken.None);
+        var consentDto = new ConsentDto
+        {
+            SubjectIdentifier = subjectIdentifier,
+            ClientId = clientId,
+            ConsentedScopes = scopes,
+            ConsentedClaims = claims,
+            ConsentedAuthorizationDetailTypes = authorizationDetailTypes
+        };
+        await consentRepository.CreateOrUpdateClientConsent(consentDto, CancellationToken.None);
     }
 
-    protected async Task GrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources)
+    protected async Task GrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, IReadOnlyCollection<AuthorizationDetailDto> authorizationDetails)
     {
         var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
-        await consentRepository.CreateGrantConsent(authorizationGrantId, scopes, resources, CancellationToken.None);
+        var authorizationGrantConsentDto = new AuthorizationGrantConsentDto
+        {
+            AuthorizationGrantId = authorizationGrantId,
+            Scope = scopes,
+            Resource = resources,
+            AuthorizationDetails = authorizationDetails
+        };
+        await consentRepository.CreateGrantConsent(authorizationGrantConsentDto, CancellationToken.None);
     }
 
     protected async Task<string> GetDPoPNonce(string clientId)

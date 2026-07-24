@@ -5,6 +5,7 @@ using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;

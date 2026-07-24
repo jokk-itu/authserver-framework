@@ -51,8 +51,8 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
         var grantId = await CreateDeviceCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password], deviceAuthorizationResponse.Response!.UserCode, nonce);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, registerResponse.Scope, []);
-        await GrantConsent(grantId, registerResponse.Scope, [weatherClient.ClientUri!]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, registerResponse.Scope, [], []);
+        await GrantConsent(grantId, registerResponse.Scope, [weatherClient.ClientUri!], []);
         await RedeemUserCode(deviceAuthorizationResponse.Response!.UserCode);
 
         await ExpireDPoPNonce(dPoPNonce);
@@ -112,8 +112,8 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
         await AddUser();
         await AddAuthenticationContextReferences();
         var grantId = await CreateDeviceCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password], deviceAuthorizationResponse.Response!.UserCode, nonce);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, registerResponse.Scope, []);
-        await GrantConsent(grantId, registerResponse.Scope, [weatherClient.ClientUri!]);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, registerResponse.Scope, [], []);
+        await GrantConsent(grantId, registerResponse.Scope, [weatherClient.ClientUri!], []);
         await RedeemUserCode(deviceAuthorizationResponse.Response!.UserCode);
 
         await Task.Delay(TimeSpan.FromSeconds(deviceAuthorizationResponse.Response!.Interval));

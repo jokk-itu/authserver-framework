@@ -5,6 +5,7 @@ using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using AuthServer.Repositories.Models;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;

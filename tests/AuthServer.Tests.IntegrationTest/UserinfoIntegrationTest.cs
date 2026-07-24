@@ -48,7 +48,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -96,7 +96,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -149,7 +149,7 @@ public class UserinfoIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder

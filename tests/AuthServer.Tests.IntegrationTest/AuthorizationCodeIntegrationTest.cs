@@ -32,7 +32,7 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var jwks = ClientJwkBuilder.GetClientJwks();
@@ -85,7 +85,7 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId, weatherReadScope], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId, weatherReadScope], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder

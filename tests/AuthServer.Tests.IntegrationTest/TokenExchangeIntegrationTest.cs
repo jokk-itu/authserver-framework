@@ -92,7 +92,7 @@ public class TokenExchangeIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(originalClientRegisterResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, originalClientRegisterResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, originalClientRegisterResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -165,7 +165,7 @@ public class TokenExchangeIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(originalClientRegisterResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, originalClientRegisterResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, originalClientRegisterResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder

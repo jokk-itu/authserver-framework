@@ -201,7 +201,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
                 ClientId = client.Id,
                 ConsentedScopes = [ScopeConstants.OpenId],
                 ConsentedClaims = [ClaimNameConstants.Name],
-                ConsentedAuthorizationDetails = [AuthorizationDetailTypeConstants.OpenId]
+                ConsentedAuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
             }, 
             CancellationToken.None);
 
@@ -251,7 +251,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
                 ClientId = client.Id,
                 ConsentedScopes = [ScopeConstants.OpenId],
                 ConsentedClaims = [ClaimNameConstants.Name],
-                ConsentedAuthorizationDetails = [AuthorizationDetailTypeConstants.OpenId]
+                ConsentedAuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
             },
             CancellationToken.None);
 

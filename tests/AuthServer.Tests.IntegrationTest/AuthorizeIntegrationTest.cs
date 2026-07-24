@@ -1,9 +1,11 @@
 ﻿using System.Net;
+using System.Text.Json;
 using System.Web;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +44,8 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
+        var defaultAuthorizationDetailDto = new DefaultAuthorizationDetailDto { Type = authorizationDetailType };
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], [], [authorizationDetailType]);
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -50,7 +53,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
             .WithRequest(jwks.PrivateJwks)
             .WithAuthorizeUser(grantId)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
-            .WithAuthorizationDetails([new DefaultAuthorizationDetailDto{ Type = authorizationDetailType }])
+            .WithAuthorizationDetails([defaultAuthorizationDetailDto])
             .WithResource([identityProvider.ClientUri!])
             .WithResponseMode(responseMode)
             .Get();
@@ -78,7 +81,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, ScopeConstants.UserInfo], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, ScopeConstants.UserInfo], [], []);
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -111,7 +114,7 @@ public class AuthorizeIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, ScopeConstants.UserInfo], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, ScopeConstants.UserInfo], [], []);
 
         // Act
         var authorizeResponse = await AuthorizeEndpointBuilder

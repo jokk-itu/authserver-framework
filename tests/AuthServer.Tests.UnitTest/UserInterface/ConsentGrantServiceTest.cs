@@ -43,7 +43,7 @@ public class ConsentGrantServiceTest : BaseUnitTest
                     y.ClientId == clientId &&
                     y.ConsentedScopes.SequenceEqual(scopes) &&
                     y.ConsentedClaims.SequenceEqual(claims) &&
-                    y.ConsentedAuthorizationDetails.SequenceEqual(authorizationDetailTypes)),
+                    y.ConsentedAuthorizationDetailTypes.SequenceEqual(authorizationDetailTypes)),
                 CancellationToken.None))
             .Returns(Task.CompletedTask)
             .Verifiable();
@@ -55,7 +55,7 @@ public class ConsentGrantServiceTest : BaseUnitTest
             ClientId = clientId,
             ConsentedScopes = scopes,
             ConsentedClaims = claims,
-            ConsentedAuthorizationDetails = authorizationDetailTypes
+            ConsentedAuthorizationDetailTypes = authorizationDetailTypes
         }, CancellationToken.None);
 
         // Assert

@@ -33,7 +33,7 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var jwks = ClientJwkBuilder.GetClientJwks();
@@ -100,7 +100,7 @@ public class RefreshTokenIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [weatherReadScope, ScopeConstants.OpenId, ScopeConstants.OfflineAccess], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder

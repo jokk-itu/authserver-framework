@@ -49,7 +49,7 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -96,7 +96,7 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -148,7 +148,7 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
 
         var otherGrantId = await CreateAuthorizationCodeGrant(otherRegisterResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId], [], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
@@ -197,7 +197,7 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId,
-            [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile], [ClaimNameConstants.Name]);
+            [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile], [ClaimNameConstants.Name], []);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var authorizeResponse = await AuthorizeEndpointBuilder
