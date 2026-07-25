@@ -52,6 +52,8 @@ internal class ConsentRepository : IConsentRepository
             .ThenInclude(x => ((ScopeConsent)x).Scope)
             .Include(x => x.Consent)
             .ThenInclude(x => ((ClaimConsent)x).Claim)
+            .Include(x => x.Consent)
+            .ThenInclude(x => ((AuthorizationDetailTypeConsent)x).AuthorizationDetailType)
             .ToListAsync(cancellationToken);
     }
 

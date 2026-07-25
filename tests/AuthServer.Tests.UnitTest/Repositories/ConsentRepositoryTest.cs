@@ -109,6 +109,11 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
 
         var scopeConsent = (authorizationGrantScopeConsent.Consent as ScopeConsent)!;
         Assert.Equal(ScopeConstants.OpenId, scopeConsent.Scope.Name);
+
+        var authorizationGrantAuthorizationDetailTypeConsents = grantConsents.OfType<AuthorizationGrantAuthorizationDetailTypeConsent>().ToList();
+        Assert.Single(authorizationGrantAuthorizationDetailTypeConsents);
+        var authorizationGrantAuthorizationDetailTypeConsent = authorizationGrantAuthorizationDetailTypeConsents.Single();
+        Assert.Equal(AuthorizationDetailTypeConstants.OpenId, ((AuthorizationDetailTypeConsent)authorizationGrantAuthorizationDetailTypeConsent.Consent).AuthorizationDetailType.Name);
     }
 
     [Fact]
