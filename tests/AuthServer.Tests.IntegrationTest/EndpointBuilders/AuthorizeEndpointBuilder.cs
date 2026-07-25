@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Xunit.Abstractions;
 using AuthServer.Constants;
 using System.Web;
+using AuthServer.Authorization.Models;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
 using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
@@ -84,7 +85,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
         return this;
     }
 
-    public AuthorizeEndpointBuilder WithAuthorizationDetails(IEnumerable<DefaultAuthorizationDetailDto> authorizationDetails)
+    public AuthorizeEndpointBuilder WithAuthorizationDetails(IEnumerable<AuthorizationDetailDto> authorizationDetails)
     {
         _parameters.Add(new(Parameter.AuthorizationDetails, JsonSerializer.Serialize(authorizationDetails)));
         return this;

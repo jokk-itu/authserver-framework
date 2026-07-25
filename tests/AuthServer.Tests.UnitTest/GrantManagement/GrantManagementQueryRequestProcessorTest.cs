@@ -1,10 +1,13 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.GrantManagement;
 using AuthServer.GrantManagement.Query;
+using AuthServer.Repositories.Models;
+using AuthServer.Tests.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
@@ -41,8 +44,18 @@ public class GrantManagementQueryRequestProcessorTest : BaseUnitTest
         var authorizationGrantClaimConsent = new AuthorizationGrantClaimConsent(claimConsent, authorizationGrant);
         authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantClaimConsent);
 
-        await AddEntity(authorizationGrant);
+        var authorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(subjectIdentifier, client, authorizationDetailType);
+        var authorizationDetails = JsonSerializer.Serialize(
+            new DefaultAuthorizationDetailDto()
+            {
+                Type = AuthorizationDetailTypeConstants.OpenId,
+                Locations = []
+            });
+        var authorizationGrantAuthorizationDetailTypeConsent = new AuthorizationGrantAuthorizationDetailTypeConsent(authorizationDetailTypeConsent, authorizationGrant, authorizationDetails);
+        authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantAuthorizationDetailTypeConsent);
 
+        await AddEntity(authorizationGrant);
 
         var request = new GrantManagementValidatedRequest
         {
@@ -67,5 +80,9 @@ public class GrantManagementQueryRequestProcessorTest : BaseUnitTest
 
         Assert.Single(scopeDto.Resources);
         Assert.Equal(authorizationGrantScopeConsent.Resource, scopeDto.Resources.Single());
+
+        Assert.Single(grantResponse.AuthorizationDetails);
+        Assert.Equal(AuthorizationDetailTypeConstants.OpenId, grantResponse.AuthorizationDetails.Single().GetProperty("type").GetString());
+        Assert.Empty(grantResponse.AuthorizationDetails.Single().GetProperty("locations").EnumerateArray());
     }
 }

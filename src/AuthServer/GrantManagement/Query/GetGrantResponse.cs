@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using AuthServer.Core;
 
 namespace AuthServer.GrantManagement.Query;
@@ -9,6 +10,9 @@ internal class GetGrantResponse
 
     [JsonPropertyName(Parameter.Claims)]
     public IEnumerable<string> Claims { get; set; } = [];
+
+    [JsonPropertyName(Parameter.AuthorizationDetails)]
+    public IEnumerable<JsonElement> AuthorizationDetails { get; set; } = [];
 
     [JsonPropertyName(Parameter.CreatedAt)]
     public long CreatedAt { get; set; }

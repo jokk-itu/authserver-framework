@@ -1,4 +1,5 @@
-﻿using AuthServer.Core;
+﻿using System.Text.Json;
+using AuthServer.Core;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Extensions;
@@ -43,10 +44,16 @@ internal class GrantManagementQueryRequestProcessor : IRequestProcessor<GrantMan
             })
             .ToList();
 
+        var authorizationDetails = consents
+            .OfType<AuthorizationGrantAuthorizationDetailTypeConsent>()
+            .Select(x => JsonSerializer.Deserialize<JsonElement>(x.RawValue)!)
+            .ToList();
+
         return new GrantResponse
         {
             Scopes = scopeDtos,
             Claims = claims,
+            AuthorizationDetails = authorizationDetails,
             CreatedAt = grant.CreatedAuthTime.ToUnixTimeSeconds(),
             UpdatedAt = grant.UpdatedAuthTime.ToUnixTimeSeconds()
         };

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Text.Json;
+using AuthServer.Repositories.Models;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
@@ -185,11 +186,13 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var identityProviderClient = await AddIdentityProviderClient();
+        var weatherReadAuthorizationDetailType = await AddWeatherReadAuthorizationDetailType();
 
         var registerResponse = await RegisterEndpointBuilder
             .WithClientName("web-app")
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile])
+            .WithAuthorizationDetailsTypes([weatherReadAuthorizationDetailType])
             .Post();
 
         await AddUser();
@@ -197,15 +200,25 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
         await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId,
-            [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile], [ClaimNameConstants.Name], []);
+            [ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile],
+            [ClaimNameConstants.Name], [weatherReadAuthorizationDetailType]);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+        var authorizationDetails = new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = weatherReadAuthorizationDetailType,
+                Locations = []
+            }
+        };
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([ScopeConstants.GrantManagementQuery, ScopeConstants.OpenId, ScopeConstants.Profile])
             .WithResource([identityProviderClient.ClientUri!])
+            .WithAuthorizationDetails(authorizationDetails)
             .Get();
 
         var tokenResponse = await TokenEndpointBuilder
@@ -244,5 +257,7 @@ public class GrantManagementQueryIntegrationTest : BaseIntegrationTest
 
         var expectedScopes = new List<string> { ScopeConstants.GrantManagementQuery, ScopeConstants.Profile, ScopeConstants.OpenId };
         Assert.Equivalent(expectedScopes, scopeDto.Scopes, strict: true);
+
+        Assert.Equivalent(JsonSerializer.Serialize(authorizationDetails), JsonSerializer.Serialize(getGrantResponse.AuthorizationDetails));
     }
 }

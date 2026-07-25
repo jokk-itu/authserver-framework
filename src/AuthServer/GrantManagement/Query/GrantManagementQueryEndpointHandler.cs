@@ -35,6 +35,7 @@ internal class GrantManagementQueryEndpointHandler : IEndpointHandler
                     Resources = x.Resources
                 }),
                 Claims = response.Claims,
+                AuthorizationDetails = response.AuthorizationDetails,
                 CreatedAt = response.CreatedAt,
                 UpdatedAt = response.UpdatedAt
             }),
