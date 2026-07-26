@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.TestIdentityProvider.Migrations
 {
     [DbContext(typeof(AuthorizationDbContext))]
-    [Migration("20260531155110_InitialCreate")]
+    [Migration("20260726113922_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -1347,6 +1347,12 @@ namespace AuthServer.TestIdentityProvider.Migrations
                 {
                     b.HasBaseType("AuthServer.Entities.ClientToken");
 
+                    b.Property<string>("AuthorizationDetails")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)")
+                        .HasColumnName("AuthorizationDetails");
+
                     b.HasDiscriminator().HasValue(1);
                 });
 
@@ -1360,6 +1366,12 @@ namespace AuthServer.TestIdentityProvider.Migrations
             modelBuilder.Entity("AuthServer.Entities.GrantAccessToken", b =>
                 {
                     b.HasBaseType("AuthServer.Entities.GrantToken");
+
+                    b.Property<string>("AuthorizationDetails")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)")
+                        .HasColumnName("AuthorizationDetails");
 
                     b.HasDiscriminator().HasValue(2);
                 });

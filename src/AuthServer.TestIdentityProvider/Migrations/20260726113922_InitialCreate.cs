@@ -638,6 +638,7 @@ namespace AuthServer.TestIdentityProvider.Migrations
                     SubjectActor = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     SubjectMayAct = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    AuthorizationDetails = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: true),
                     AuthorizationGrantId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>

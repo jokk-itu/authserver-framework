@@ -11,4 +11,6 @@ public class GrantAccessToken : GrantToken
     // Used to hydrate EF Core model
     private GrantAccessToken() { }
 #pragma warning restore
+
+    public string? AuthorizationDetails { get; init; }
 }

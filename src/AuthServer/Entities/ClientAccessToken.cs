@@ -11,4 +11,6 @@ public class ClientAccessToken : ClientToken
     // Used to hydrate EF Core model
     private ClientAccessToken() { }
 #pragma warning restore
+
+    public string? AuthorizationDetails { get; init; }
 }

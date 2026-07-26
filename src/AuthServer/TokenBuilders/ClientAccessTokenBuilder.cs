@@ -111,7 +111,10 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             client.AccessTokenExpiration)
         {
             Jkt = arguments.Jkt,
-            SubjectActor = arguments.SubjectActor
+            SubjectActor = arguments.SubjectActor,
+            AuthorizationDetails = arguments.AuthorizationDetails.Count != 0
+                ? JsonSerializer.Serialize(arguments.AuthorizationDetails)
+                : null
         };
 
         await _identityContext.Set<ClientAccessToken>().AddAsync(accessToken);

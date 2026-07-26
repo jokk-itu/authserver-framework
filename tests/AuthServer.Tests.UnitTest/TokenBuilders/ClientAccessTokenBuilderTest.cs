@@ -21,13 +21,19 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         var serviceProvider = BuildServiceProvider();
         var accessTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<ClientAccessTokenArguments>>();
         var client = await GetClient(true);
-        
+
+        var scope = new[] { ScopeConstants.OpenId };
+        var resource = new[] { "https://localhost:5000" };
+        const string rawAuthorizationDetails = "[{\"type\":\"openid\",\"locations\":[\"idp.authserver.dk\"]},{\"type\":\"profile\"}]";
+        var authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>(rawAuthorizationDetails)!;
+
         // Act
         var accessToken = await accessTokenBuilder.BuildToken(new ClientAccessTokenArguments
         {
             ClientId = client.Id,
-            Scope = [ScopeConstants.OpenId],
-            Resource = ["https://localhost:5000"]
+            Scope = scope,
+            Resource = resource,
+            AuthorizationDetails = authorizationDetails
         }, CancellationToken.None);
         await IdentityContext.SaveChangesAsync();
 
@@ -40,6 +46,7 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         Assert.NotNull(token.ExpiresAt);
         Assert.Equal("https://localhost:5000", token.Audience);
         Assert.Null(token.SubjectActor);
+        Assert.Equivalent(rawAuthorizationDetails, token.AuthorizationDetails);
     }
 
     [Theory]
