@@ -62,6 +62,11 @@ internal class ClientAccessTokenBuilder : ITokenBuilder<ClientAccessTokenArgumen
             { ClaimNameConstants.Sub, arguments.ClientId }
         };
 
+        if (arguments.AuthorizationDetails.Count != 0)
+        {
+            claims.Add(ClaimNameConstants.AuthorizationDetails, JsonSerializer.SerializeToElement(arguments.AuthorizationDetails));
+        }
+
         if (!string.IsNullOrEmpty(arguments.SubjectActor))
         {
             claims.Add(ClaimNameConstants.Act, new Dictionary<string, object>

@@ -60,18 +60,21 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         var accessTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<ClientAccessTokenArguments>>();
         var client = await GetClient(false);
 
-        // Act
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
         var resource = new[] { "https://localhost:5000", "https://localhost:5001" };
         const string jkt = "jkt";
         const string subjectActor = "subjectActor";
+        var authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>("[{\"type\":\"openid\",\"locations\":[\"idp.authserver.dk\"]},{\"type\":\"profile\"}]")!;
+
+        // Act
         var accessToken = await accessTokenBuilder.BuildToken(new ClientAccessTokenArguments
         {
             ClientId = client.Id,
             Scope = scope,
             Resource = resource,
             Jkt = jkt,
-            SubjectActor = subjectActor
+            SubjectActor = subjectActor,
+            AuthorizationDetails = authorizationDetails
         }, CancellationToken.None);
         await IdentityContext.SaveChangesAsync();
 
@@ -102,6 +105,11 @@ public class ClientAccessTokenBuilderTest(ITestOutputHelper outputHelper) : Base
         var act = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Act].ToString()!);
         Assert.NotNull(act);
         Assert.Equal(subjectActor, act[ClaimNameConstants.Sub].ToString());
+
+        var claimAuthorizationDetails = validatedTokenResult.Claims[ClaimNameConstants.AuthorizationDetails];
+        Assert.NotNull(claimAuthorizationDetails);
+        Assert.IsType<IEnumerable<object>>(claimAuthorizationDetails, exactMatch: false);
+        Assert.Equivalent(authorizationDetails, claimAuthorizationDetails);
     }
 
     private async Task<Client> GetClient(bool requireReferenceToken)
