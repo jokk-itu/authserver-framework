@@ -110,6 +110,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var identityClient = await AddIdentityProviderClient();
+        var weatherReadAuthorizationDetailType = await AddWeatherReadAuthorizationDetailType();
 
         var jwks = ClientJwkBuilder.GetClientJwks();
         var registerResponse = await RegisterEndpointBuilder
@@ -117,6 +118,7 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode])
             .WithScope([ScopeConstants.UserInfo, ScopeConstants.OpenId])
+            .WithAuthorizationDetailsTypes([weatherReadAuthorizationDetailType])
             .WithRequestUriExpiration(300)
             .WithJwks(jwks.PublicJwks)
             .Post();
@@ -135,6 +137,10 @@ public class PushedAuthorizationIntegrationTest : BaseIntegrationTest
             .WithClientSecret(registerResponse.ClientSecret!)
             .WithScope([ScopeConstants.OpenId, ScopeConstants.UserInfo])
             .WithResource([identityClient.ClientUri!])
+            .WithAuthorizationDetails([new DefaultAuthorizationDetailDto
+            {
+                Type = weatherReadAuthorizationDetailType
+            }])
             .Post();
 
         // Assert
