@@ -246,6 +246,11 @@ public static class ClaimNameConstants
     /// </summary>
     public const string AccessControl = "access_control";
 
+    /// <summary>
+    /// Authorization details for fine-grained authorization.
+    /// </summary>
+    public const string AuthorizationDetails = "authorization_details";
+
     public static readonly string[] SupportedEndUserClaims =
     [
         Name, GivenName, FamilyName, MiddleName,

@@ -81,8 +81,7 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             { ClaimNameConstants.Sid, grantQuery.SessionId },
             { ClaimNameConstants.ClientId, grantQuery.Client.Id },
             { ClaimNameConstants.AuthTime, grantQuery.AuthorizationGrant.UpdatedAuthTime.ToUnixTimeSeconds() },
-            { ClaimNameConstants.Acr, grantQuery.Acr },
-            { ClaimNameConstants.AccessControl, accessControl }
+            { ClaimNameConstants.Acr, grantQuery.Acr }
         };
 
         var accessControl = (await _userClaimService.GetAccessClaims(grantQuery.SubjectIdentifier, cancellationToken))
@@ -91,6 +90,11 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
         if (accessControl.Count != 0)
         {
             claims.Add(ClaimNameConstants.AccessControl, accessControl);
+        }
+
+        if (arguments.AuthorizationDetails.Count != 0)
+        {
+            claims.Add(ClaimNameConstants.AuthorizationDetails, JsonSerializer.SerializeToElement(arguments.AuthorizationDetails));
         }
 
         if (!string.IsNullOrEmpty(arguments.SubjectActor))

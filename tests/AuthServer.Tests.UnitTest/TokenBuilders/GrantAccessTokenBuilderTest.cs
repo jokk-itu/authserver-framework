@@ -67,13 +67,15 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         var resource = new[] { "https://localhost:5000", "https://localhost:5001" };
         const string jkt = "jkt";
         const string subjectActor = "subjectActor";
+        var authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>("[{\"type\":\"openid\",\"locations\":[\"idp.authserver.dk\"]},{\"type\":\"profile\"}]")!;
         var accessToken = await grantAccessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = authorizationGrant.Id,
             Jkt = jkt,
             SubjectActor = subjectActor,
             Scope = scope,
-            Resource = resource
+            Resource = resource,
+            AuthorizationDetails = authorizationDetails
         }, CancellationToken.None);
         await IdentityContext.SaveChangesAsync();
 
@@ -113,6 +115,11 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         var act = JsonSerializer.Deserialize<Dictionary<string, object>>(validatedTokenResult.Claims[ClaimNameConstants.Act].ToString()!);
         Assert.NotNull(act);
         Assert.Equal(subjectActor, act[ClaimNameConstants.Sub].ToString());
+
+        var claimAuthorizationDetails = validatedTokenResult.Claims[ClaimNameConstants.AuthorizationDetails];
+        Assert.NotNull(claimAuthorizationDetails);
+        Assert.IsType<IEnumerable<object>>(claimAuthorizationDetails, exactMatch: false);
+        Assert.Equivalent(authorizationDetails, claimAuthorizationDetails);
     }
 
     private async Task<AuthorizationGrant> GetAuthorizationGrant(bool requireReferenceToken)
