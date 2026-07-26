@@ -2,6 +2,7 @@
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
@@ -9,6 +10,7 @@ using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenDeviceCodeGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenDeviceCodeGrant;
@@ -65,13 +67,22 @@ public class DeviceCodeRequestProcessorTest : BaseUnitTest
             .ReturnsAsync(expectedIdToken)
             .Verifiable();
 
+        var authorizationDetails = new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = AuthorizationDetailTypeConstants.OpenId
+            }
+        };
+
         var tokenRequest = new DeviceCodeValidatedRequest
         {
             ClientId = client.Id,
             AuthorizationGrantId = authorizationGrant.Id,
             DeviceCodeId = deviceCode.Id,
             Scope = [ScopeConstants.OpenId, ScopeConstants.OfflineAccess],
-            Resource = [weatherClient.ClientUri!]
+            Resource = [weatherClient.ClientUri!],
+            AuthorizationDetails = JsonSerializer.Serialize(authorizationDetails)
         };
 
         // Act
@@ -90,6 +101,7 @@ public class DeviceCodeRequestProcessorTest : BaseUnitTest
         Assert.Equal($"{ScopeConstants.OpenId} {ScopeConstants.OfflineAccess}", tokenResponse.Scope);
         Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
+        Assert.Equivalent(JsonSerializer.Deserialize<IEnumerable<JsonElement>>(tokenRequest.AuthorizationDetails), tokenResponse.AuthorizationDetails);
     }
 
     [Fact]
@@ -152,6 +164,7 @@ public class DeviceCodeRequestProcessorTest : BaseUnitTest
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
         Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
+        Assert.Null(tokenResponse.AuthorizationDetails);
     }
 
     private async Task<Client> GetWeatherClient()

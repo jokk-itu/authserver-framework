@@ -8,11 +8,13 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenDeviceCodeGrant;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.TokenByGrant.TokenDeviceCodeGrant;
@@ -819,6 +821,14 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
         const string dPoPJkt = "jkt";
         const string dPoP = "dpop";
 
+        var authorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = AuthorizationDetailTypeConstants.OpenId
+            }
+        });
+
         deviceCodeEncoder
             .Setup(x => x.Decode(It.IsAny<string>()))
             .Returns(new EncodedDeviceCode
@@ -831,7 +841,8 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
                 CodeChallengeMethod = proofKey.CodeChallengeMethod,
                 DPoPJkt = "jkt",
                 Scope = [ScopeConstants.OpenId],
-                Resource = []
+                Resource = [weatherClient.ClientUri!],
+                AuthorizationDetails = authorizationDetails
             })
             .Verifiable();
 
@@ -866,9 +877,10 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
         Assert.Equal(authorizationGrant.Client.Id, processResult.Value!.ClientId);
         Assert.Equal(authorizationGrant.Id, processResult.Value!.AuthorizationGrantId);
         Assert.Equal(deviceCodeId, processResult.Value!.DeviceCodeId);
-        Assert.Equal(request.Resource, processResult.Value!.Resource);
+        Assert.Equal([weatherClient.ClientUri!], processResult.Value!.Resource);
         Assert.Equal([ScopeConstants.OpenId], processResult.Value!.Scope);
         Assert.Equal(dPoPJkt, processResult.Value!.DPoPJkt);
+        Assert.Equal(authorizationDetails, processResult.Value!.AuthorizationDetails);
         deviceCodeEncoder.Verify();
         dPoPService.Verify();
     }
@@ -890,6 +902,9 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
         client.Scopes.Add(openIdScope);
         client.Scopes.Add(profileScope);
 
+        var openIdAuthorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
+        client.AuthorizationDetailTypes.Add(openIdAuthorizationDetailType);
+
         var deviceCodeGrantType = await GetGrantType(GrantTypeConstants.DeviceCode);
         client.GrantTypes.Add(deviceCodeGrantType);
 
@@ -904,7 +919,15 @@ public class DeviceCodeRequestValidatorTest : BaseUnitTest
         var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(
             scopeConsent, authorizationGrant, "https://weather.authserver.dk");
 
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(subjectIdentifier, client, openIdAuthorizationDetailType);
+        var authorizationDetails = JsonSerializer.Serialize(new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId
+        });
+        var authorizationGrantAuthorizationDetailTypeConsent = new AuthorizationGrantAuthorizationDetailTypeConsent(authorizationDetailTypeConsent, authorizationGrant, authorizationDetails);
+
         await AddEntity(authorizationGrantScopeConsent);
+        await AddEntity(authorizationGrantAuthorizationDetailTypeConsent);
 
         return authorizationGrant;
     }

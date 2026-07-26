@@ -6,6 +6,7 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
+using System.Text.Json;
 
 namespace AuthServer.TokenByGrant.TokenDeviceCodeGrant;
 internal class DeviceCodeRequestProcessor : IRequestProcessor<DeviceCodeValidatedRequest, TokenResponse>
@@ -50,6 +51,12 @@ internal class DeviceCodeRequestProcessor : IRequestProcessor<DeviceCodeValidate
             }, cancellationToken);
         }
 
+        IReadOnlyCollection<JsonElement> authorizationDetails = [];
+        if (!string.IsNullOrEmpty(request.AuthorizationDetails))
+        {
+            authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>(request.AuthorizationDetails)!;
+        }
+
         var accessToken = await _accessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = request.AuthorizationGrantId,
@@ -76,7 +83,8 @@ internal class DeviceCodeRequestProcessor : IRequestProcessor<DeviceCodeValidate
             ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
             GrantId = request.AuthorizationGrantId,
-            TokenType = tokenType
+            TokenType = tokenType,
+            AuthorizationDetails = authorizationDetails.Count != 0 ? authorizationDetails : null
         };
     }
 }

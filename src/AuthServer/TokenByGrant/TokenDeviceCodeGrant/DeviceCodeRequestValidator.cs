@@ -89,7 +89,8 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
             DeviceCodeId = deviceCode.DeviceCodeId,
             DPoPJkt = deviceCode.DPoPJkt,
             Resource = deviceCode.Resource,
-            Scope = deviceCode.Scope
+            Scope = deviceCode.Scope,
+            AuthorizationDetails = deviceCode.AuthorizationDetails
         };
     }
 

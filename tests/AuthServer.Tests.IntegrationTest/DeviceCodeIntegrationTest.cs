@@ -2,9 +2,11 @@
 using AuthServer.Core;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
@@ -84,6 +86,7 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
+        var weatherReadAuthorizationDetailType = await AddWeatherReadAuthorizationDetailType();
         var weatherClientSecret = CryptographyHelper.GetRandomString(16);
         var weatherClient = await AddWeatherClient(weatherClientSecret);
 
@@ -95,10 +98,15 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
             .WithIdTokenSigningAlg(SigningAlg.RsaSha256)
             .WithSubjectType(SubjectType.Public)
             .WithScope([weatherReadScope, ScopeConstants.OpenId])
+            .WithAuthorizationDetailsTypes([weatherReadAuthorizationDetailType])
             .Post();
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var nonce = CryptographyHelper.GetRandomString(16);
+        var authorizationDetail = new DefaultAuthorizationDetailDto
+        {
+            Type = weatherReadAuthorizationDetailType
+        };
         var deviceAuthorizationResponse = await DeviceAuthorizationEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithScope(registerResponse.Scope)
@@ -107,13 +115,14 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
             .WithResource([weatherClient.ClientUri!])
             .WithNonce(nonce)
             .WithTokenEndpointAuthMethod(TokenEndpointAuthMethod.None)
+            .WithAuthorizationDetails([authorizationDetail])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
         var grantId = await CreateDeviceCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password], deviceAuthorizationResponse.Response!.UserCode, nonce);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, registerResponse.Scope, [], []);
-        await GrantConsent(grantId, registerResponse.Scope, [weatherClient.ClientUri!], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, registerResponse.Scope, [], [weatherReadAuthorizationDetailType]);
+        await GrantConsent(grantId, registerResponse.Scope, [weatherClient.ClientUri!], [authorizationDetail]);
         await RedeemUserCode(deviceAuthorizationResponse.Response!.UserCode);
 
         await Task.Delay(TimeSpan.FromSeconds(deviceAuthorizationResponse.Response!.Interval));
@@ -136,5 +145,10 @@ public class DeviceCodeIntegrationTest : BaseIntegrationTest
         Assert.NotNull(tokenResponse.Response!.IdToken);
         Assert.NotNull(tokenResponse.Response!.AccessToken);
         Assert.Equal(registerResponse.AccessTokenExpiration, tokenResponse.Response!.ExpiresIn);
+
+        Assert.NotNull(tokenResponse.Response!.AuthorizationDetails);
+        Assert.Single(tokenResponse.Response!.AuthorizationDetails);
+        var deserializedAuthorizationDetail = tokenResponse.Response!.AuthorizationDetails.Single().Deserialize<DefaultAuthorizationDetailDto>();
+        Assert.Equivalent(authorizationDetail, deserializedAuthorizationDetail);
     }
 }

@@ -7,4 +7,5 @@ internal class DeviceCodeValidatedRequest
     public string? DPoPJkt { get; init; }
     public required IReadOnlyCollection<string> Scope { get; init; }
     public required IReadOnlyCollection<string> Resource { get; init; }
+    public string? AuthorizationDetails { get; init; }
 }
