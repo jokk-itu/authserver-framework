@@ -1,4 +1,5 @@
-﻿using AuthServer.Authentication.Models;
+﻿using System.Text.Json;
+using AuthServer.Authentication.Models;
 using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Codes;
@@ -8,6 +9,7 @@ using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using AuthServer.TokenByGrant;
 using AuthServer.TokenByGrant.TokenAuthorizationCodeGrant;
@@ -750,6 +752,13 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         const string dPoP = "dpop";
 
         const string code = "authorization_code";
+        var authorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = AuthorizationDetailTypeConstants.OpenId
+            }
+        });
         authorizationCodeEncoder
             .Setup(x => x.Decode(code))
             .Returns(new EncodedAuthorizationCode
@@ -761,7 +770,8 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
                 DPoPJkt = "jkt",
                 RedirectUri = redirectUri,
                 Scope = [ScopeConstants.OpenId],
-                Resource = [weatherClient.ClientUri!]
+                Resource = [weatherClient.ClientUri!],
+                AuthorizationDetails = authorizationDetails
             })
             .Verifiable();
 
@@ -801,6 +811,7 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         Assert.Equal([weatherClient.ClientUri!], processResult.Value!.Resource);
         Assert.Equal([ScopeConstants.OpenId], processResult.Value!.Scope);
         Assert.Equal(dPoPJkt, processResult.Value!.DPoPJkt);
+        Assert.Equal(authorizationDetails, processResult.Value!.AuthorizationDetails);
         authorizationCodeEncoder.Verify();
         dPoPService.Verify();
     }
@@ -821,6 +832,9 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         client.Scopes.Add(openIdScope);
         client.Scopes.Add(profileScope);
 
+        var openIdAuthorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
+        client.AuthorizationDetailTypes.Add(openIdAuthorizationDetailType);
+
         var authorizationCodeGrantType = await GetGrantType(GrantTypeConstants.AuthorizationCode);
         client.GrantTypes.Add(authorizationCodeGrantType);
 
@@ -833,9 +847,17 @@ public class AuthorizationCodeRequestValidatorTest : BaseUnitTest
         var authorizationGrantScopeConsent = new AuthorizationGrantScopeConsent(
             scopeConsent, authorizationGrant, "https://weather.authserver.dk");
 
+        var authorizationDetailTypeConsent = new AuthorizationDetailTypeConsent(subjectIdentifier, client, openIdAuthorizationDetailType);
+        var authorizationDetails = JsonSerializer.Serialize(new DefaultAuthorizationDetailDto
+        {
+            Type = AuthorizationDetailTypeConstants.OpenId
+        });
+        var authorizationGrantAuthorizationDetailTypeConsent = new AuthorizationGrantAuthorizationDetailTypeConsent(authorizationDetailTypeConsent, authorizationGrant, authorizationDetails);
+
         await AddEntity(redirectUri);
         await AddEntity(authorizationCode);
         await AddEntity(authorizationGrantScopeConsent);
+        await AddEntity(authorizationGrantAuthorizationDetailTypeConsent);
 
         return authorizationGrant;
     }

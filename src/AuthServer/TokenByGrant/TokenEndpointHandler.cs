@@ -61,7 +61,8 @@ internal class TokenEndpointHandler : IEndpointHandler
                 RefreshToken = response.RefreshToken,
                 GrantId = response.GrantId,
                 TokenType = response.TokenType,
-                IssuedTokenType = response.IssuedTokenType
+                IssuedTokenType = response.IssuedTokenType,
+                AuthorizationDetails = response.AuthorizationDetails
             }),
             error =>
             {

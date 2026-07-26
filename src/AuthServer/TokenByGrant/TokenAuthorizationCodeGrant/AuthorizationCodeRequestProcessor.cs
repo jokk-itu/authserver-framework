@@ -1,4 +1,5 @@
-﻿using AuthServer.Cache.Abstractions;
+﻿using System.Text.Json;
+using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core;
 using AuthServer.Core.Abstractions;
@@ -51,12 +52,19 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             }, cancellationToken);
         }
 
+        IReadOnlyCollection<JsonElement> authorizationDetails = [];
+        if (!string.IsNullOrEmpty(request.AuthorizationDetails))
+        {
+            authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>(request.AuthorizationDetails)!;
+        }
+
         var accessToken = await _accessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = request.AuthorizationGrantId,
             Jkt = request.DPoPJkt,
             Scope = request.Scope,
-            Resource = request.Resource
+            Resource = request.Resource,
+            AuthorizationDetails = authorizationDetails
         }, cancellationToken);
 
         var idToken = await _idTokenBuilder.BuildToken(new IdTokenArguments
@@ -77,7 +85,8 @@ internal class AuthorizationCodeRequestProcessor : IRequestProcessor<Authorizati
             ExpiresIn = cachedClient.AccessTokenExpiration,
             Scope = string.Join(' ', request.Scope),
             GrantId = request.AuthorizationGrantId,
-            TokenType = tokenType
+            TokenType = tokenType,
+            AuthorizationDetails = authorizationDetails.Count != 0 ? authorizationDetails : null
         };
     }
 }

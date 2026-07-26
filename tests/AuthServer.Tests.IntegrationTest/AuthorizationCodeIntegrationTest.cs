@@ -4,6 +4,8 @@ using AuthServer.Helpers;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Text.Json;
+using AuthServer.Repositories.Models;
 using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
@@ -70,6 +72,7 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
+        var weatherReadAuthorizationDetailType = await AddWeatherReadAuthorizationDetailType();
         var weatherClientSecret = CryptographyHelper.GetRandomString(16);
         var weatherClient = await AddWeatherClient(weatherClientSecret);
         var identityProviderClient = await AddIdentityProviderClient();
@@ -79,21 +82,30 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
             .WithRedirectUris(["https://webapp.authserver.dk/callback"])
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode])
             .WithScope([ScopeConstants.UserInfo, weatherReadScope, ScopeConstants.OpenId])
+            .WithAuthorizationDetailsTypes([weatherReadAuthorizationDetailType])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.UserInfo, ScopeConstants.OpenId, weatherReadScope], [], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId,
+            [ScopeConstants.UserInfo, ScopeConstants.OpenId, weatherReadScope], [],
+            [weatherReadAuthorizationDetailType]);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
+        var authorizationDetail = new DefaultAuthorizationDetailDto
+        {
+            Type = weatherReadAuthorizationDetailType
+        };
+
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([weatherReadScope, ScopeConstants.UserInfo, ScopeConstants.OpenId])
             .WithResource([identityProviderClient.ClientUri!, weatherClient.ClientUri!])
+            .WithAuthorizationDetails([authorizationDetail])
             .Get();
 
         // Act
@@ -113,5 +125,10 @@ public class AuthorizationCodeIntegrationTest : BaseIntegrationTest
         Assert.NotNull(tokenResponse.Response!.IdToken);
         Assert.NotNull(tokenResponse.Response!.AccessToken);
         Assert.Equal(registerResponse.AccessTokenExpiration, tokenResponse.Response!.ExpiresIn);
+
+        Assert.NotNull(tokenResponse.Response!.AuthorizationDetails);
+        Assert.Single(tokenResponse.Response!.AuthorizationDetails);
+        var deserializedAuthorizationDetail = tokenResponse.Response!.AuthorizationDetails.Single().Deserialize<DefaultAuthorizationDetailDto>();
+        Assert.Equivalent(authorizationDetail, deserializedAuthorizationDetail);
     }
 }

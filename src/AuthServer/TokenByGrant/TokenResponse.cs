@@ -1,4 +1,6 @@
-﻿namespace AuthServer.TokenByGrant;
+﻿using System.Text.Json;
+
+namespace AuthServer.TokenByGrant;
 
 internal class TokenResponse
 {
@@ -10,4 +12,5 @@ internal class TokenResponse
     public string? GrantId { get; init; }
     public required string TokenType { get; init; }
     public string? IssuedTokenType { get; init; }
+    public IEnumerable<JsonElement>? AuthorizationDetails { get; init; }
 }

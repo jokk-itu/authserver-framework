@@ -1,7 +1,9 @@
-﻿using AuthServer.Constants;
+﻿using System.Text.Json;
+using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
 using AuthServer.Entities;
 using AuthServer.Enums;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using AuthServer.TokenBuilders;
 using AuthServer.TokenBuilders.Abstractions;
@@ -65,13 +67,22 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
             .ReturnsAsync(expectedIdToken)
             .Verifiable();
 
+        var authorizationDetails = new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = AuthorizationDetailTypeConstants.OpenId
+            }
+        };
+
         var tokenRequest = new AuthorizationCodeValidatedRequest
         {
             ClientId = client.Id,
             AuthorizationGrantId = authorizationGrant.Id,
             AuthorizationCodeId = authorizationCode.Id,
             Scope = [ScopeConstants.OpenId, ScopeConstants.OfflineAccess],
-            Resource = [weatherClient.ClientUri!]
+            Resource = [weatherClient.ClientUri!],
+            AuthorizationDetails = JsonSerializer.Serialize(authorizationDetails)
         };
 
         // Act
@@ -90,6 +101,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         Assert.Equal($"{ScopeConstants.OpenId} {ScopeConstants.OfflineAccess}", tokenResponse.Scope);
         Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
+        Assert.Equivalent(JsonSerializer.Deserialize<IEnumerable<JsonElement>>(tokenRequest.AuthorizationDetails), tokenResponse.AuthorizationDetails);
     }
 
     [Fact]
@@ -152,6 +164,7 @@ public class AuthorizationCodeRequestProcessorTest : BaseUnitTest
         Assert.Equal(ScopeConstants.OpenId, tokenResponse.Scope);
         Assert.Equal(authorizationGrant.Id, tokenResponse.GrantId);
         Assert.Equal(TokenTypeSchemaConstants.Bearer, tokenResponse.TokenType);
+        Assert.Null(tokenResponse.AuthorizationDetails);
     }
 
     private async Task<Client> GetWeatherClient()

@@ -97,7 +97,8 @@ internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestV
             AuthorizationCodeId = authorizationCode.AuthorizationCodeId,
             DPoPJkt = authorizationCode.DPoPJkt,
             Resource = authorizationCode.Resource,
-            Scope = authorizationCode.Scope
+            Scope = authorizationCode.Scope,
+            AuthorizationDetails = authorizationCode.AuthorizationDetails
         };
     }
 }

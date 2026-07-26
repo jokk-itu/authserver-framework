@@ -1,5 +1,6 @@
-﻿using System.Text.Json.Serialization;
-using AuthServer.Core;
+﻿using AuthServer.Core;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AuthServer.TokenByGrant;
 
@@ -33,4 +34,8 @@ internal class PostTokenResponse
     [JsonPropertyName(Parameter.IssuedTokenType)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? IssuedTokenType { get; init; }
+
+    [JsonPropertyName(Parameter.AuthorizationDetails)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IEnumerable<JsonElement>? AuthorizationDetails { get; init; }
 }
