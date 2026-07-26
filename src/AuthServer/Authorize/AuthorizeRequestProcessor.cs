@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Codes;
 using AuthServer.Codes.Abstractions;
