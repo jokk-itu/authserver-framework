@@ -71,9 +71,6 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
 
     private async Task<string> BuildStructuredToken(GrantAccessTokenArguments arguments, GrantQuery grantQuery, CancellationToken cancellationToken)
     {
-        var accessControl = (await _userClaimService.GetAccessClaims(grantQuery.SubjectIdentifier, cancellationToken))
-            .ToDictionary(x => x.Type, x => JsonSerializer.SerializeToElement(x.Value));
-
         var claims = new Dictionary<string, object>
         {
             { ClaimNameConstants.Jti, Guid.NewGuid() },
@@ -87,6 +84,14 @@ internal class GrantAccessTokenBuilder : ITokenBuilder<GrantAccessTokenArguments
             { ClaimNameConstants.Acr, grantQuery.Acr },
             { ClaimNameConstants.AccessControl, accessControl }
         };
+
+        var accessControl = (await _userClaimService.GetAccessClaims(grantQuery.SubjectIdentifier, cancellationToken))
+            .ToDictionary(x => x.Type, x => JsonSerializer.SerializeToElement(x.Value));
+
+        if (accessControl.Count != 0)
+        {
+            claims.Add(ClaimNameConstants.AccessControl, accessControl);
+        }
 
         if (!string.IsNullOrEmpty(arguments.SubjectActor))
         {
