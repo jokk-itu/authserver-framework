@@ -62,12 +62,13 @@ public class GrantAccessTokenBuilderTest(ITestOutputHelper outputHelper) : BaseU
         var grantAccessTokenBuilder = serviceProvider.GetRequiredService<ITokenBuilder<GrantAccessTokenArguments>>();
         var authorizationGrant = await GetAuthorizationGrant(false);
 
-        // Act
         var scope = new[] { ScopeConstants.OpenId, ScopeConstants.UserInfo };
         var resource = new[] { "https://localhost:5000", "https://localhost:5001" };
         const string jkt = "jkt";
         const string subjectActor = "subjectActor";
         var authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>("[{\"type\":\"openid\",\"locations\":[\"idp.authserver.dk\"]},{\"type\":\"profile\"}]")!;
+
+        // Act
         var accessToken = await grantAccessTokenBuilder.BuildToken(new GrantAccessTokenArguments
         {
             AuthorizationGrantId = authorizationGrant.Id,
