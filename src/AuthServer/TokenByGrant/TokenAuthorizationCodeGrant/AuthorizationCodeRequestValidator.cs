@@ -23,7 +23,7 @@ internal class AuthorizationCodeRequestValidator : BaseTokenValidator, IRequestV
         ICachedClientStore cachedEntityStore,
         IAuthorizationCodeRepository authorizationCodeRepository,
         IDPoPService dPoPService,
-        IScopeResourceService scopeResourceService)
+        ITokenAuthorizationValidatorService scopeResourceService)
         : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _authorizationCodeEncoder = authorizationCodeEncoder;

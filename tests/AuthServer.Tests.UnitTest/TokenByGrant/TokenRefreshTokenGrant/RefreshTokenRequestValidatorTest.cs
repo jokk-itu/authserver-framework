@@ -529,7 +529,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     public async Task Validate_ScopeValidationError_ExpectTokenError(string scopeResourceError)
     {
         // Arrange
-        var scopeResourceService = new Mock<IScopeResourceService>();
+        var scopeResourceService = new Mock<ITokenAuthorizationValidatorService>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(scopeResourceService);
@@ -561,14 +561,14 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
             ]
         };
 
-        var error = Enum.Parse<ScopeResourceError>(scopeResourceError);
+        var error = Enum.Parse<TokenAuthorizationValidationError>(scopeResourceError);
         scopeResourceService
-            .Setup(x => x.ValidateScopeResourceForGrant(
-                request.Scope,
-                request.Resource,
-                refreshToken.AuthorizationGrant.Id,
+            .Setup(x => x.ValidateTokenAuthorizationGrant(It.Is<TokenAuthorizationGrantValidationDto>(dto => 
+                dto.Scopes.SequenceEqual(request.Scope) &&
+                dto.Resources.SequenceEqual(request.Resource) &&
+                dto.AuthorizationGrantId == refreshToken.AuthorizationGrant.Id),
                 CancellationToken.None))
-            .ReturnsAsync(new ScopeResourceValidationResult
+            .ReturnsAsync(new TokenAuthorizationValidationResult
             {
                 Error = error
             })
@@ -587,7 +587,7 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     public async Task Validate_ScopeDoesNotContainOfflineAccess_ExpectOfflineAccessScopeRequired()
     {
         // Arrange
-        var scopeResourceService = new Mock<IScopeResourceService>();
+        var scopeResourceService = new Mock<ITokenAuthorizationValidatorService>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(scopeResourceService);
@@ -620,12 +620,12 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
         };
 
         scopeResourceService
-            .Setup(x => x.ValidateScopeResourceForGrant(
-                request.Scope,
-                request.Resource,
-                refreshToken.AuthorizationGrant.Id,
+            .Setup(x => x.ValidateTokenAuthorizationGrant(It.Is<TokenAuthorizationGrantValidationDto>(dto => 
+                dto.Scopes.SequenceEqual(request.Scope) &&
+                dto.Resources.SequenceEqual(request.Resource) &&
+                dto.AuthorizationGrantId == refreshToken.AuthorizationGrant.Id),
                 CancellationToken.None))
-            .ReturnsAsync(new ScopeResourceValidationResult
+            .ReturnsAsync(new TokenAuthorizationValidationResult
             {
                 Scopes = [ScopeConstants.OpenId]
             })

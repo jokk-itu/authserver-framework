@@ -1,5 +1,6 @@
 ﻿using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization.Abstractions;
+using AuthServer.Authorization.Models;
 using AuthServer.Cache.Abstractions;
 using AuthServer.Constants;
 using AuthServer.Core.Abstractions;
@@ -21,7 +22,7 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
         IClientAuthenticationService clientAuthenticationService,
         IServerTokenDecoder serverTokenDecoder,
         ICachedClientStore cachedClientStore,
-        IScopeResourceService scopeResourceService,
+        ITokenAuthorizationValidatorService scopeResourceService,
         IEnumerable<IExtendedTokenExchangeRequestValidator> extendedTokenExchangeRequestValidators)
         : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
@@ -118,7 +119,13 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
 
         if (request.RequestedTokenType == TokenTypeIdentifier.AccessToken)
         {
-            var actorClientScopeValidationResult = await ValidateClientScopeResource(request.Scope, request.Resource, clientAuthenticationResult.Value!, cancellationToken);
+            var actorClientScopeValidationResult = await ValidateTokenAuthorizationClient(new TokenAuthorizationClientValidationDto
+            {
+                Scopes = request.Scope,
+                Resources = request.Resource,
+                AuthorizationDetails = [],
+                ClientId = clientId
+            }, cancellationToken);
             if (!actorClientScopeValidationResult.IsSuccess)
             {
                 return actorClientScopeValidationResult.Error!;
@@ -126,7 +133,13 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
 
             if (string.IsNullOrEmpty(subjectTokenResult.GrantId))
             {
-                var subjectTokenClientScopeValidationResult = await ValidateClientScopeResource(request.Scope, request.Resource, subjectTokenResult.ClientId, cancellationToken);
+                var subjectTokenClientScopeValidationResult = await ValidateTokenAuthorizationClient(new TokenAuthorizationClientValidationDto
+                {
+                    Scopes = request.Scope,
+                    Resources = request.Resource,
+                    AuthorizationDetails = [],
+                    ClientId = subjectTokenResult.ClientId
+                }, cancellationToken);
                 if (!subjectTokenClientScopeValidationResult.IsSuccess)
                 {
                     return subjectTokenClientScopeValidationResult.Error!;
@@ -134,7 +147,13 @@ internal class TokenExchangeRequestValidator : BaseTokenValidator, IRequestValid
             }
             else
             {
-                var subjectTokenClientScopeValidationResult = await ValidateGrantScopeResource(request.Scope, request.Resource, subjectTokenResult.GrantId, cancellationToken);
+                var subjectTokenClientScopeValidationResult = await ValidateTokenAuthorizationGrant(new TokenAuthorizationGrantValidationDto
+                {
+                    Scopes = request.Scope,
+                    Resources = request.Resource,
+                    AuthorizationDetails = [],
+                    AuthorizationGrantId = subjectTokenResult.GrantId
+                }, cancellationToken);
                 if (!subjectTokenClientScopeValidationResult.IsSuccess)
                 {
                     return subjectTokenClientScopeValidationResult.Error!;

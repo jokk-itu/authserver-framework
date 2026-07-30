@@ -100,7 +100,7 @@ public class AuthServerBuilder
             .AddScoped<IClientLogoutService, ClientLogoutService>()
             .AddScoped<ISecureRequestService, SecureRequestService>()
             .AddScoped<IDPoPService, DPoPService>()
-            .AddScoped<IScopeResourceService, ScopeResourceService>();
+            .AddScoped<ITokenAuthorizationValidatorService, TokenAuthorizationValidator>();
     }
 
     private void AddRepositories()

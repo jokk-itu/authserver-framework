@@ -28,7 +28,7 @@ internal class DeviceCodeRequestValidator : BaseTokenValidator, IRequestValidato
         ICachedClientStore cachedEntityStore,
         IOptionsMonitor<TokenValidationOptions> tokenValidationOptions,
         IDPoPService dPoPService,
-        IScopeResourceService scopeResourceService)
+        ITokenAuthorizationValidatorService scopeResourceService)
         : base(dPoPService, clientAuthenticationService, scopeResourceService)
     {
         _authorizationDbContext = authorizationDbContext;

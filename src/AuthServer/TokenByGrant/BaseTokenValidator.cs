@@ -10,12 +10,12 @@ internal abstract class BaseTokenValidator
 {
     private readonly IDPoPService _dPoPService;
     private readonly IClientAuthenticationService _clientAuthenticationService;
-    private readonly IScopeResourceService _scopeResourceService;
+    private readonly ITokenAuthorizationValidatorService _scopeResourceService;
 
     protected BaseTokenValidator(
         IDPoPService dPoPService,
         IClientAuthenticationService clientAuthenticationService,
-        IScopeResourceService scopeResourceService)
+        ITokenAuthorizationValidatorService scopeResourceService)
     {
         _dPoPService = dPoPService;
         _clientAuthenticationService = clientAuthenticationService;
@@ -39,9 +39,9 @@ internal abstract class BaseTokenValidator
         return clientAuthenticationResult.ClientId;
     }
 
-    protected async Task<ProcessResult<IReadOnlyCollection<string>, ProcessError>> ValidateGrantScopeResource(IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, string authorizationGrantId, CancellationToken cancellationToken)
+    protected async Task<ProcessResult<IReadOnlyCollection<string>, ProcessError>> ValidateTokenAuthorizationGrant(TokenAuthorizationGrantValidationDto validationDto, CancellationToken cancellationToken)
     {
-        var scopeResourceValidationResult = await _scopeResourceService.ValidateScopeResourceForGrant(scopes, resources, authorizationGrantId, cancellationToken);
+        var scopeResourceValidationResult = await _scopeResourceService.ValidateTokenAuthorizationGrant(validationDto, cancellationToken);
         if (scopeResourceValidationResult.IsValid)
         {
             return new ProcessResult<IReadOnlyCollection<string>, ProcessError>(scopeResourceValidationResult.Scopes);
@@ -49,18 +49,18 @@ internal abstract class BaseTokenValidator
 
         return scopeResourceValidationResult.Error switch
         {
-            ScopeResourceError.ConsentNotFound => TokenError.ConsentRequired,
-            ScopeResourceError.ScopeExceedsConsent => TokenError.ScopeExceedsConsentedScope,
-            ScopeResourceError.ResourceExceedsConsent => TokenError.ResourceExceedsConsentedResource,
-            ScopeResourceError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
-            ScopeResourceError.UnauthorizedResourceForScope => TokenError.InvalidResource,
+            TokenAuthorizationValidationError.ConsentNotFound => TokenError.ConsentRequired,
+            TokenAuthorizationValidationError.ScopeExceedsConsent => TokenError.ScopeExceedsConsentedScope,
+            TokenAuthorizationValidationError.ResourceExceedsConsent => TokenError.ResourceExceedsConsentedResource,
+            TokenAuthorizationValidationError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
+            TokenAuthorizationValidationError.UnauthorizedResourceForScope => TokenError.InvalidResource,
             _ => throw new NotSupportedException($"error {scopeResourceValidationResult.Error} is not supported")
         };
     }
 
-    protected async Task<ProcessResult<IReadOnlyCollection<string>, ProcessError>> ValidateClientScopeResource(IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, string clientId, CancellationToken cancellationToken)
+    protected async Task<ProcessResult<IReadOnlyCollection<string>, ProcessError>> ValidateTokenAuthorizationClient(TokenAuthorizationClientValidationDto validationDto, CancellationToken cancellationToken)
     {
-        var scopeResourceValidationResult = await _scopeResourceService.ValidateScopeResourceForClient(scopes, resources, clientId, cancellationToken);
+        var scopeResourceValidationResult = await _scopeResourceService.ValidateTokenAuthorizationClient(validationDto, cancellationToken);
         if (scopeResourceValidationResult.IsValid)
         {
             return new ProcessResult<IReadOnlyCollection<string>, ProcessError>(scopeResourceValidationResult.Scopes);
@@ -68,8 +68,8 @@ internal abstract class BaseTokenValidator
 
         return scopeResourceValidationResult.Error switch
         {
-            ScopeResourceError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
-            ScopeResourceError.UnauthorizedResourceForScope => TokenError.InvalidResource,
+            TokenAuthorizationValidationError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
+            TokenAuthorizationValidationError.UnauthorizedResourceForScope => TokenError.InvalidResource,
             _ => throw new NotSupportedException($"error {scopeResourceValidationResult.Error} is not supported")
         };
     }

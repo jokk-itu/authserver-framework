@@ -1,6 +1,6 @@
 ﻿namespace AuthServer.Authorization.Models;
 
-internal enum ScopeResourceError
+internal enum TokenAuthorizationValidationError
 {
     ConsentNotFound,
     ScopeExceedsConsent,
