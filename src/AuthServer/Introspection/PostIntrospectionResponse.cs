@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using AuthServer.Core;
 
 namespace AuthServer.Introspection;
@@ -74,4 +75,8 @@ internal class PostIntrospectionResponse
     [JsonPropertyName(Parameter.AccessControl)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, object>? AccessControl { get; init; }
+
+    [JsonPropertyName(Parameter.AuthorizationDetails)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IEnumerable<JsonElement>? AuthorizationDetails { get; init; }
 }

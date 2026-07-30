@@ -1,9 +1,11 @@
 ﻿using System.Net;
 using System.Text.Json;
+using AuthServer.Authorization.Models;
 using AuthServer.Constants;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Repositories.Abstractions;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +53,7 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
     {
         // Arrange
         var weatherReadScope = await AddWeatherReadScope();
+        var weatherReadAuthorizationDetailType = await AddWeatherReadAuthorizationDetailType();
         var weatherClientSecret = CryptographyHelper.GetRandomString(16);
         var weatherClient = await AddWeatherClient(weatherClientSecret);
 
@@ -60,22 +63,33 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
             .WithGrantTypes([GrantTypeConstants.AuthorizationCode])
             .WithScope([weatherReadScope, ScopeConstants.OpenId])
             .WithRequireReferenceToken()
+            .WithAuthorizationDetailsTypes([weatherReadAuthorizationDetailType])
             .Post();
 
         await AddUser();
         await AddAuthenticationContextReferences();
 
         var grantId = await CreateAuthorizationCodeGrant(registerResponse.ClientId, [AuthenticationMethodReferenceConstants.Password]);
-        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId, [ScopeConstants.OpenId, weatherReadScope], [], []);
+        await Consent(UserConstants.SubjectIdentifier, registerResponse.ClientId,
+            [ScopeConstants.OpenId, weatherReadScope], [], [weatherReadAuthorizationDetailType]);
 
         var proofKey = ProofKeyGenerator.GetProofKeyForCodeExchange();
         var jwks = ClientJwkBuilder.GetClientJwks();
+        var authorizationDetails = new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = weatherReadAuthorizationDetailType,
+                Locations = [weatherClient.ClientUri!]
+            }
+        };
         var authorizeResponse = await AuthorizeEndpointBuilder
             .WithClientId(registerResponse.ClientId)
             .WithAuthorizeUser(grantId)
             .WithCodeChallenge(proofKey.CodeChallenge)
             .WithScope([weatherReadScope, ScopeConstants.OpenId])
             .WithResource([weatherClient.ClientUri!])
+            .WithAuthorizationDetails(authorizationDetails)
             .WithDPoPJkt()
             .WithClientJwks(jwks)
             .Get();
@@ -128,6 +142,13 @@ public class IntrospectionIntegrationTest : BaseIntegrationTest
 
         Assert.NotNull(response.AccessControl);
         Assert.Equal(UserConstants.Roles, JsonSerializer.Deserialize<IEnumerable<string>>(response.AccessControl[ClaimNameConstants.Roles].ToString()!));
+
+        Assert.NotNull(response.AuthorizationDetails);
+        Assert.Single(response.AuthorizationDetails);
+        var authorizationDetail = response.AuthorizationDetails.Single().Deserialize<DefaultAuthorizationDetailDto>();
+        Assert.NotNull(authorizationDetail);
+        Assert.Equal(weatherReadAuthorizationDetailType, authorizationDetail.Type);
+        Assert.Equivalent(new List<string> { weatherClient.ClientUri! }, authorizationDetail.Locations);
     }
 
     [Fact]

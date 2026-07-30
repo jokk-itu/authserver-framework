@@ -38,6 +38,7 @@ internal class IntrospectionEndpointHandler : IEndpointHandler
                 AuthTime = response.AuthTime,
                 Acr = response.Acr,
                 AccessControl = response.AccessControl,
+                AuthorizationDetails = response.AuthorizationDetails,
                 Cnf = response.Jkt is null
                     ? null
                     : new ConfirmationDto
