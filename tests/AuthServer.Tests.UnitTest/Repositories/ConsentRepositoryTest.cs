@@ -72,6 +72,39 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
     }
 
     [Fact]
+    public async Task GetGrantConsentedAuthorizationDetails_TwoGrantWithGrantConsentedAuthorizationDetails_ExpectOneGrantConsentedAuthorizationDetail()
+    {
+        // Arrange
+        var serviceProvider = BuildServiceProvider();
+        var consentRepository = serviceProvider.GetRequiredService<IConsentRepository>();
+
+        var authorizationGrant = await GetAuthorizationGrant(
+            ScopeConstants.OpenId,
+            "https://weather.authserver.dk",
+            ClaimNameConstants.Name,
+            AuthorizationDetailTypeConstants.OpenId);
+
+        await GetAuthorizationGrant(
+            ScopeConstants.Profile,
+            "https://idp.authserver.dk",
+            ClaimNameConstants.Address,
+            AuthorizationDetailTypeConstants.Profile);
+
+        // Act
+        var grantConsentedAuthorizationDetails = await consentRepository.GetGrantConsentedAuthorizationDetails(authorizationGrant.Id, CancellationToken.None);
+
+        // Assert
+        Assert.Single(grantConsentedAuthorizationDetails);
+        Assert.Equal(JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto>
+        {
+            new()
+            {
+                Type = AuthorizationDetailTypeConstants.OpenId
+            }
+        }), grantConsentedAuthorizationDetails.Single());
+    }
+
+    [Fact]
     public async Task GetGrantConsents_TwoGrantsWithGrantConsents_ExpectConsentsFromOneGrant()
     {
         // Arrange

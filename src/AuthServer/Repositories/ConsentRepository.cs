@@ -78,6 +78,16 @@ internal class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetGrantConsentedAuthorizationDetails(string authorizationGrantId, CancellationToken cancellationToken)
+    {
+        return await _identityContext
+            .Set<AuthorizationGrantAuthorizationDetailTypeConsent>()
+            .Where(x => x.AuthorizationGrant.Id == authorizationGrantId)
+            .Select(x => x.RawValue)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<Consent>> GetClientConsents(string subjectIdentifier, string clientId, CancellationToken cancellationToken)
     {
         return await _identityContext
