@@ -7,6 +7,7 @@ using AuthServer.Entities;
 using AuthServer.Extensions;
 using AuthServer.Metrics;
 using AuthServer.Metrics.Abstractions;
+using AuthServer.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthServer.Introspection;
@@ -40,7 +41,9 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
                 SubjectFromClientToken = (x as ClientAccessToken)!.Client.Id,
                 SubjectIdentifier = (x as GrantToken)!.AuthorizationGrant.Session.SubjectIdentifier.Id,
                 AuthTime = (x as GrantToken)!.AuthorizationGrant.UpdatedAuthTime,
-                Acr = (x as GrantAccessToken)!.AuthorizationGrant.AuthenticationContextReference.Name
+                Acr = (x as GrantAccessToken)!.AuthorizationGrant.AuthenticationContextReference.Name,
+                AuthorizationDetailsFromGrantToken = (x as GrantAccessToken)!.AuthorizationDetails,
+                AuthorizationDetailsFromClientToken = (x as ClientAccessToken)!.AuthorizationDetails
             })
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
@@ -50,6 +53,7 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
 
         var scope = query?.Token.Scope?.Split(' ') ?? [];
         var authorizedScope = request.Scope.Intersect(scope).ToList();
+        var isUnauthorizedForScope = authorizedScope.Count == 0;
 
         var audience = query?.Token.Audience.Split(" ") ?? [];
         var isAudience = audience.Contains(request.ClientUri) ||
@@ -60,7 +64,7 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
          * If active is false, then the requesting client does not need to know more.
          * Therefore, the other optional properties are not set.
          */
-        if (isInvalidToken || hasExceededExpiration || isRevoked || authorizedScope.Count == 0 || !isAudience)
+        if (isInvalidToken || hasExceededExpiration || isRevoked || isUnauthorizedForScope || !isAudience)
         {
             return new IntrospectionResponse
             {
@@ -84,13 +88,24 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
                 .ToDictionary(x => x.Type, x => JsonSerializer.SerializeToElement(x.Value) as object);
         }
 
-        _metricService.AddIntrospectedToken(query.Token is RefreshToken
-            ? TokenTypeTag.RefreshToken
-            : TokenTypeTag.AccessToken);
-
         var tokenType = string.IsNullOrEmpty(query.Token.Jkt)
             ? TokenTypeSchemaConstants.Bearer
             : TokenTypeSchemaConstants.DPoP;
+
+        var rawAuthorizationDetails = query.AuthorizationDetailsFromClientToken ?? query.AuthorizationDetailsFromGrantToken;
+        IReadOnlyCollection<JsonElement>? authorizationDetails = null;
+        if (rawAuthorizationDetails is not null)
+        {
+            authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>(rawAuthorizationDetails);
+        }
+
+        var authorizedAuthorizationDetails = authorizationDetails?
+            .Where(IsAuthorized(request.ClientUri, request.AuthorizationDetailTypes))
+            .ToList();
+
+        _metricService.AddIntrospectedToken(query.Token is RefreshToken
+            ? TokenTypeTag.RefreshToken
+            : TokenTypeTag.AccessToken);
 
         return new IntrospectionResponse
         {
@@ -111,9 +126,19 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
             Jkt = query.Token.Jkt,
             SubjectActor = query.Token.SubjectActor,
             SubjectMayAct = query.Token.SubjectMayAct,
-            AccessControl = accessControl
+            AccessControl = accessControl,
+            AuthorizationDetails = authorizedAuthorizationDetails
         };
     }
+
+    private static Func<JsonElement, bool> IsAuthorized(string? clientUri, IReadOnlyCollection<string> authorizationDetailTypes)
+        => x =>
+        {
+            var authorizationDetailDto = x.Deserialize<DefaultAuthorizationDetailDto>()!;
+            var isClientAuthorizedForAuthorizationDetailType = authorizationDetailTypes.Contains(authorizationDetailDto.Type);
+            var isClientAuthorizationForAuthorizationDetailLocation = authorizationDetailDto.Locations.Count == 0 || authorizationDetailDto.Locations.Contains(clientUri);
+            return isClientAuthorizedForAuthorizationDetailType && isClientAuthorizationForAuthorizationDetailLocation;
+        };
 
     private sealed class TokenQuery
     {
@@ -125,5 +150,7 @@ internal class IntrospectionRequestProcessor : IRequestProcessor<IntrospectionVa
         public string? SubjectIdentifier { get; init; }
         public DateTime? AuthTime { get; init; }
         public string? Acr { get; init; }
+        public string? AuthorizationDetailsFromGrantToken { get; init; }
+        public string? AuthorizationDetailsFromClientToken { get; init; }
     }
 }

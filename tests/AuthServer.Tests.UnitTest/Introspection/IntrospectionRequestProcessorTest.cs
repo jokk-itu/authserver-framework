@@ -5,6 +5,7 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Extensions;
 using AuthServer.Introspection;
+using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             Token = "invalid_token",
             Scope = [ScopeConstants.OpenId],
-            ClientId = client.Id
+            ClientId = client.Id,
+            AuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
         };
 
         // Act
@@ -66,7 +68,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             Token = token.Reference,
             Scope = [ScopeConstants.OpenId],
-            ClientId = client.Id
+            ClientId = client.Id,
+            AuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
         };
 
         // Act
@@ -97,7 +100,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             Token = token.Reference,
             Scope = [ScopeConstants.OpenId],
-            ClientId = client.Id
+            ClientId = client.Id,
+            AuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
         };
 
         // Act
@@ -125,7 +129,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             Token = token.Reference,
             Scope = [],
-            ClientId = client.Id
+            ClientId = client.Id,
+            AuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
         };
 
         // Act
@@ -157,7 +162,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
             Token = token.Reference,
             Scope = [ScopeConstants.OpenId],
             ClientUri = weatherClient.ClientUri,
-            ClientId = weatherClient.Id
+            ClientId = weatherClient.Id,
+            AuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
         };
 
         // Act
@@ -177,26 +183,36 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         var subjectIdentifier = new SubjectIdentifier();
         var session = new Session(subjectIdentifier);
 
-        var openidScope = await IdentityContext.Set<Scope>().SingleAsync(x => x.Name == ScopeConstants.OpenId);
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var openIdAuthorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
 
         var weatherClient = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
             ClientUri = "https://weather.authserver.dk"
         };
-        weatherClient.Scopes.Add(openidScope);
+        weatherClient.Scopes.Add(openIdScope);
+        weatherClient.AuthorizationDetailTypes.Add(openIdAuthorizationDetailType);
         await AddEntity(weatherClient);
 
         var client = new Client("worker-app", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60);
-        client.Scopes.Add(openidScope);
+        client.Scopes.Add(openIdScope);
+        client.AuthorizationDetailTypes.Add(openIdAuthorizationDetailType);
 
         var lowAcr = await GetAuthenticationContextReference(LevelOfAssuranceLow);
         var authorizationGrant = new AuthorizationCodeGrant(session, client, subjectIdentifier.Id, lowAcr);
 
-        var tokenScope = string.Join(' ', [ScopeConstants.OpenId, ScopeConstants.Address]);
+        var tokenScope = string.Join(' ', ScopeConstants.OpenId, ScopeConstants.Address);
         var token = new GrantAccessToken(authorizationGrant, weatherClient.ClientUri!, DiscoveryDocument.Issuer, tokenScope, 3600)
         {
             SubjectActor = Guid.NewGuid().ToString(),
-            SubjectMayAct = Guid.NewGuid().ToString()
+            SubjectMayAct = Guid.NewGuid().ToString(),
+            AuthorizationDetails = JsonSerializer.Serialize(new List<DefaultAuthorizationDetailDto>
+            {
+                new()
+                {
+                    Type = AuthorizationDetailTypeConstants.OpenId
+                }
+            })
         };
         await AddEntity(token);
 
@@ -204,7 +220,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         {
             Token = token.Reference,
             Scope = [ScopeConstants.OpenId],
-            ClientId = client.Id
+            ClientId = client.Id,
+            AuthorizationDetailTypes = [AuthorizationDetailTypeConstants.OpenId]
         };
 
         // Act
@@ -234,6 +251,12 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
 
         Assert.Equal(token.SubjectActor, introspectionResponse.SubjectActor);
         Assert.Equal(token.SubjectMayAct, introspectionResponse.SubjectMayAct);
+
+        Assert.NotNull(introspectionResponse.AuthorizationDetails);
+        Assert.Single(introspectionResponse.AuthorizationDetails);
+        var authorizationDetail = introspectionResponse.AuthorizationDetails.Single().Deserialize<DefaultAuthorizationDetailDto>();
+        Assert.NotNull(authorizationDetail);
+        Assert.Equal(AuthorizationDetailTypeConstants.OpenId, authorizationDetail.Type);
     }
 
     [Fact]
@@ -265,7 +288,8 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
             Token = token.Reference,
             Scope = [weatherReadScope.Name],
             ClientUri = weatherClient.ClientUri!,
-            ClientId = client.Id
+            ClientId = client.Id,
+            AuthorizationDetailTypes = []
         };
 
         // Act
@@ -291,5 +315,6 @@ public class IntrospectionRequestProcessorTest : BaseUnitTest
         Assert.Equal(token.Jkt, introspectionResponse.Jkt);
         Assert.Null(introspectionResponse.SubjectActor);
         Assert.Null(introspectionResponse.SubjectMayAct);
+        Assert.Null(introspectionResponse.AuthorizationDetails);
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace AuthServer.Introspection;
+﻿using System.Text.Json;
+
+namespace AuthServer.Introspection;
 internal class IntrospectionResponse
 {
     public required bool Active { get; init; }
@@ -19,4 +21,5 @@ internal class IntrospectionResponse
     public string? SubjectActor { get; init; }
     public string? SubjectMayAct { get; init; }
     public IDictionary<string, object>? AccessControl { get; init; }
+    public IEnumerable<JsonElement>? AuthorizationDetails { get; init; }
 }
