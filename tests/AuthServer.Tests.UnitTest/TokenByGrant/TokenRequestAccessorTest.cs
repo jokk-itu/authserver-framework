@@ -36,6 +36,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 			{ Parameter.SubjectTokenType, value },
 			{ Parameter.ActorToken, value },
 			{ Parameter.ActorTokenType, value },
+            { Parameter.AuthorizationDetails, value },
 			{ Parameter.ClientId, value },
 			{ Parameter.ClientSecret, value },
 			{ Parameter.ClientAssertion, value },
@@ -68,6 +69,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		Assert.Equal(expectedValue, request.ActorToken);
 		Assert.Equal(expectedValue, request.ActorTokenType);
 		Assert.Equal(expectedValue, request.DPoP);
+		Assert.Equal(expectedValue, request.AuthorizationDetails);
 		Assert.Empty(request.ClientAuthentications);
 	}
 
@@ -91,6 +93,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 			{ Parameter.SubjectTokenType, value },
 			{ Parameter.ActorToken, value },
 			{ Parameter.ActorTokenType, value },
+			{ Parameter.AuthorizationDetails, value },
 			{ Parameter.ClientId, value },
             { Parameter.DPoP, value }
 		};
@@ -120,6 +123,7 @@ public class TokenRequestAccessorTest(ITestOutputHelper outputHelper) : BaseUnit
 		Assert.Equal(value, request.SubjectTokenType);
 		Assert.Equal(value, request.ActorToken);
 		Assert.Equal(value, request.ActorTokenType);
+        Assert.Equal(value, request.AuthorizationDetails);
         Assert.Equal(value, request.DPoP);
 
         Assert.Single(request.ClientAuthentications);

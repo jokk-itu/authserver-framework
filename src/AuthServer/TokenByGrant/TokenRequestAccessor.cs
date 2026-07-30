@@ -26,6 +26,7 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
         var subjectTokenType = body.GetValue(Parameter.SubjectTokenType);
         var actorToken = body.GetValue(Parameter.ActorToken);
         var actorTokenType = body.GetValue(Parameter.ActorTokenType);
+        var authorizationDetails = body.GetValue(Parameter.AuthorizationDetails);
         
         var scope = body.GetSpaceDelimitedValue(Parameter.Scope);
         var resource = body.GetCollectionValue(Parameter.Resource);
@@ -54,6 +55,7 @@ internal class TokenRequestAccessor : IRequestAccessor<TokenRequest>
             SubjectTokenType = subjectTokenType,
             ActorToken = actorToken,
             ActorTokenType = actorTokenType,
+            AuthorizationDetails = authorizationDetails,
             DPoP = dPoP,
             Scope = scope,
             Resource = resource,

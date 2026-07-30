@@ -16,6 +16,7 @@ internal class TokenRequest
     public string? SubjectTokenType { get; init; }
     public string? ActorToken { get; init; }
     public string? ActorTokenType { get; init; }
+    public string? AuthorizationDetails { get; init; }
     public IReadOnlyCollection<string> Scope { get; init; } = [];
     public IReadOnlyCollection<string> Resource { get; init; } = [];
     public IReadOnlyCollection<ClientAuthentication> ClientAuthentications { get; init; } = [];
