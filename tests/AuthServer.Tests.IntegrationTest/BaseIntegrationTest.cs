@@ -283,12 +283,22 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
     {
         var dbContext = ServiceProvider.GetRequiredService<AuthorizationDbContext>();
 
-        var weatherScope = await dbContext.Set<Scope>().SingleAsync(x => x.Name == "weather:read");
         var client = new Client("weather-api", ApplicationType.Web, TokenEndpointAuthMethod.ClientSecretBasic, 300, 60)
         {
-            Scopes = [weatherScope],
             ClientUri = "https://weather.authserver.dk"
         };
+
+        var weatherScope = await dbContext.Set<Scope>().SingleOrDefaultAsync(x => x.Name == "weather:read");
+        if (weatherScope is not null)
+        {
+            client.Scopes.Add(weatherScope);
+        }
+
+        var weatherAuthorizationDetailType = await dbContext.Set<AuthorizationDetailType>().SingleOrDefaultAsync(x => x.Name == "weather:read");
+        if (weatherAuthorizationDetailType is not null)
+        {
+            client.AuthorizationDetailTypes.Add(weatherAuthorizationDetailType);
+        }
 
         client.SetSecret(CryptographyHelper.HashPassword(plainSecret));
 
