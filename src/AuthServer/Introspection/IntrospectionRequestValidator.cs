@@ -63,6 +63,7 @@ internal class IntrospectionRequestValidator : IRequestValidator<IntrospectionRe
         {
             Token = request.Token!,
             Scope = cachedClient.Scopes,
+            AuthorizationDetailTypes = cachedClient.AuthorizationDetailTypes,
             ClientUri = cachedClient.ClientUri,
             ClientId = cachedClient.Id
         };

@@ -5,6 +5,7 @@ using AuthServer.Entities;
 using AuthServer.Enums;
 using AuthServer.Helpers;
 using AuthServer.Introspection;
+using AuthServer.Tests.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -138,19 +139,20 @@ public class IntrospectionRequestValidatorTest : BaseUnitTest
         {
             ClientUri = "https://webapp.authserver.dk"
         };
+
         var plainSecret = CryptographyHelper.GetRandomString(32);
         var hashSecret = CryptographyHelper.HashPassword(plainSecret);
         client.SetSecret(hashSecret);
-        var openIdScope = await IdentityContext
-            .Set<Scope>()
-            .SingleAsync(x => x.Name == ScopeConstants.OpenId);
-        var profileScope = await IdentityContext
-            .Set<Scope>()
-            .SingleAsync(x => x.Name == ScopeConstants.Profile);
+
+        var openIdScope = await GetScope(ScopeConstants.OpenId);
+        var profileScope = await GetScope(ScopeConstants.Profile);
         client.Scopes.Add(openIdScope);
         client.Scopes.Add(profileScope);
 
-        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, $"{ScopeConstants.OpenId} {ScopeConstants.Address}", 1);
+        var openIdAuthorizationDetailType = await GetAuthorizationDetailType(AuthorizationDetailTypeConstants.OpenId);
+        client.AuthorizationDetailTypes.Add(openIdAuthorizationDetailType);
+
+        var token = new ClientAccessToken(client, client.ClientUri, DiscoveryDocument.Issuer, $"{ScopeConstants.OpenId} {ScopeConstants.Profile}", 1);
 
         await AddEntity(token);
 
@@ -170,5 +172,9 @@ public class IntrospectionRequestValidatorTest : BaseUnitTest
         // Assert
         Assert.IsType<IntrospectionValidatedRequest>(processResult.Value);
         Assert.Equal(token.Reference, processResult.Value.Token);
+        Assert.Equal(client.Id, processResult.Value.ClientId);
+        Assert.Equal(client.ClientUri, processResult.Value.ClientUri);
+        Assert.Equivalent(new List<string> { ScopeConstants.OpenId, ScopeConstants.Profile }, processResult.Value.Scope);
+        Assert.Equivalent(new List<string> { AuthorizationDetailTypeConstants.OpenId }, processResult.Value.AuthorizationDetailTypes);
     }
 }
