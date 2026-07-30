@@ -228,5 +228,6 @@ internal class GetDiscoveryResponse
     public ICollection<string>? GrantManagementActionsSupported { get; init; }
 
     [JsonPropertyName("authorization_details_types_supported")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<string>? AuthorizationDetailsTypeSupported { get; init; }
 }
