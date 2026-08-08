@@ -524,12 +524,11 @@ public class RefreshTokenRequestValidatorTest : BaseUnitTest
     [InlineData("ConsentNotFound")]
     [InlineData("ScopeExceedsConsent")]
     [InlineData("ResourceExceedsConsent")]
-    [InlineData("UnauthorizedClientForScope")]
     [InlineData("UnauthorizedResourceForScope")]
     public async Task Validate_ScopeValidationError_ExpectTokenError(string scopeResourceError)
     {
         // Arrange
-        var scopeResourceService = new Mock<ITokenAuthorizationValidatorService>();
+        var scopeResourceService = new Mock<ITokenAuthorizationValidator>();
         var serviceProvider = BuildServiceProvider(services =>
         {
             services.AddScopedMock(scopeResourceService);

@@ -52,7 +52,6 @@ internal abstract class BaseTokenValidator
             TokenAuthorizationValidationError.ConsentNotFound => TokenError.ConsentRequired,
             TokenAuthorizationValidationError.ScopeExceedsConsent => TokenError.ScopeExceedsConsentedScope,
             TokenAuthorizationValidationError.ResourceExceedsConsent => TokenError.ResourceExceedsConsentedResource,
-            TokenAuthorizationValidationError.UnauthorizedClientForScope => TokenError.UnauthorizedForScope,
             TokenAuthorizationValidationError.UnauthorizedResourceForScope => TokenError.InvalidResource,
             _ => throw new NotSupportedException($"error {scopeResourceValidationResult.Error} is not supported")
         };
