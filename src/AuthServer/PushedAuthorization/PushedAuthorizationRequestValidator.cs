@@ -159,7 +159,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         return null;
     }
 
-    private static ProcessError? ValidateCode(PushedAuthorizationRequest request, CancellationToken cancellationToken)
+    private static ProcessError? ValidateCode(PushedAuthorizationRequest request)
     {
         if (!HasValidCodeChallengeMethod(request.CodeChallengeMethod, request.ResponseType))
         {
@@ -281,7 +281,7 @@ internal class PushedAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return nonceValidationResult;
         }
 
-        var codeValidationResult = ValidateCode(request, cancellationToken);
+        var codeValidationResult = ValidateCode(request);
         if (codeValidationResult is not null)
         {
             return codeValidationResult;
