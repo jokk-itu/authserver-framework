@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace AuthServer.Repositories.Models;
 
-public class DefaultAuthorizationDetailDto : AuthorizationDetailDto
+internal class DefaultAuthorizationDetailDto : AuthorizationDetailDto
 {
     /// <summary>
     /// The raw JSON string of the authorization detail. It is required.
