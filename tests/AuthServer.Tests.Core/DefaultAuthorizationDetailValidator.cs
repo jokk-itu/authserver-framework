@@ -18,4 +18,17 @@ public class DefaultAuthorizationDetailValidator : IAuthorizationDetailValidator
             return Task.FromResult<AuthorizationDetailDto?>(null);
         }
     }
+
+    public Task<bool> ValidateAuthorizationDetail(string authorizationDetail, IReadOnlyCollection<string> grantAuthorizationDetails,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Task.FromResult(true);
+        }
+        catch (Exception)
+        {
+            return Task.FromResult(false);
+        }
+    }
 }
