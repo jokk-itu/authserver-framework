@@ -31,8 +31,8 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository,
         IDPoPService dPoPService,
-        IAuthorizationDetailValidator? authorizationDetailValidator = null)
-        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository, authorizationDetailValidator)
+        IAuthorizationDetailsValidator authorizationDetailsValidator)
+        : base(nonceRepository, serverTokenDecoder, discoveryDocumentOptions, authorizationGrantRepository, clientRepository, authorizationDetailsValidator)
     {
         _cachedClientStore = cachedClientStore;
         _clientAuthenticationService = clientAuthenticationService;
@@ -205,7 +205,7 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
             return DeviceAuthorizationError.InvalidResource;
         }
 
-        var authorizationDetailsValidationResult = await ValidateAuthorizationDetails(request.AuthorizationDetails, cachedClient, cancellationToken);
+        var authorizationDetailsValidationResult = await ValidateAuthorizationDetails(request.AuthorizationDetails, cachedClient.Id, cancellationToken);
         if (!authorizationDetailsValidationResult.IsValid)
         {
             return authorizationDetailsValidationResult.Error switch
@@ -214,7 +214,7 @@ internal class DeviceAuthorizationRequestValidator : BaseAuthorizeValidator, IRe
                 AuthorizationDetailsError.Invalid => DeviceAuthorizationError.InvalidAuthorizationDetails,
                 AuthorizationDetailsError.NotAuthorizedForClient => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForClient,
                 AuthorizationDetailsError.NotAuthorizedForResource => DeviceAuthorizationError.UnauthorizedAuthorizationDetailsForResource,
-                _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult}")
+                _ => throw new ArgumentOutOfRangeException($"error is not supported {authorizationDetailsValidationResult.Error}")
             };
         }
 

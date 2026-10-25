@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using AuthServer.Authorization.Abstractions;
+﻿using AuthServer.Authorization.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Cache.Entities;
 using AuthServer.Constants;
@@ -20,7 +19,7 @@ internal class BaseAuthorizeValidator
     private readonly IOptionsSnapshot<DiscoveryDocument> _discoveryDocumentOptions;
     private readonly IAuthorizationGrantRepository _authorizationGrantRepository;
     private readonly IClientRepository _clientRepository;
-    private readonly IAuthorizationDetailValidator? _authorizationDetailValidator;
+    private readonly IAuthorizationDetailsValidator _authorizationDetailsValidator;
 
     public BaseAuthorizeValidator(
         INonceRepository nonceRepository,
@@ -28,14 +27,14 @@ internal class BaseAuthorizeValidator
         IOptionsSnapshot<DiscoveryDocument> discoveryDocumentOptions,
         IAuthorizationGrantRepository authorizationGrantRepository,
         IClientRepository clientRepository,
-        IAuthorizationDetailValidator? authorizationDetailValidator = null)
+        IAuthorizationDetailsValidator authorizationDetailsValidator)
     {
         _nonceRepository = nonceRepository;
         _tokenDecoder = tokenDecoder;
         _discoveryDocumentOptions = discoveryDocumentOptions;
         _authorizationGrantRepository = authorizationGrantRepository;
         _clientRepository = clientRepository;
-        _authorizationDetailValidator = authorizationDetailValidator;
+        _authorizationDetailsValidator = authorizationDetailsValidator;
     }
 
     protected static bool HasValidState(string? state) => !string.IsNullOrEmpty(state);
@@ -184,84 +183,8 @@ internal class BaseAuthorizeValidator
         return await _authorizationGrantRepository.IsActiveAuthorizationGrant(grantId, clientId, cancellationToken);
     }
 
-    protected async Task<AuthorizationDetailsValidationResult> ValidateAuthorizationDetails(string? authorizationDetails, CachedClient cachedClient, CancellationToken cancellationToken)
+    protected async Task<AuthorizationDetailsValidationResult> ValidateAuthorizationDetails(string? authorizationDetails, string clientId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(authorizationDetails))
-        {
-            return new AuthorizationDetailsValidationResult();
-        }
-
-        IReadOnlyCollection<string> parsedAuthorizationDetails;
-
-        try
-        {
-            using var document = JsonDocument.Parse(authorizationDetails);
-            parsedAuthorizationDetails = document.RootElement
-                .EnumerateArray()
-                .Select(x => x.GetRawText())
-                .ToList();
-        }
-        catch
-        {
-            return new AuthorizationDetailsValidationResult
-            {
-                Error = AuthorizationDetailsError.Invalid
-            };
-        }
-
-        if (_authorizationDetailValidator is null)
-        {
-            return new AuthorizationDetailsValidationResult
-            {
-                Error = AuthorizationDetailsError.NotSupported
-            };
-        }
-
-        var validatedAuthorizationDetails = new List<AuthorizationDetailDto>();
-
-        foreach (var authorizationDetail in parsedAuthorizationDetails)
-        {
-            var validatedAuthorizationDetailDto = await _authorizationDetailValidator.ValidateAuthorizationDetail(authorizationDetail, cancellationToken);
-            if (validatedAuthorizationDetailDto is null)
-            {
-                return new AuthorizationDetailsValidationResult
-                {
-                    Error = AuthorizationDetailsError.Invalid
-                };
-            }
-
-            validatedAuthorizationDetails.Add(validatedAuthorizationDetailDto);
-        }
-
-        var types = validatedAuthorizationDetails
-            .GroupBy(x => x.Type)
-            .ToDictionary(
-                x => x.Key,
-                x => x.SelectMany(y => y.Locations).ToList());
-
-        if (cachedClient.AuthorizationDetailTypes.IsDisjoint(types.Select(x => x.Key)))
-        {
-            return new AuthorizationDetailsValidationResult
-            {
-                Error = AuthorizationDetailsError.NotAuthorizedForClient
-            };
-        }
-
-        foreach (var type in types)
-        {
-            var areResourcesAuthorizedForType = await _clientRepository.AreResourcesAuthorizedForAuthorizationDetailType(type.Value, type.Key, cancellationToken);
-            if (!areResourcesAuthorizedForType)
-            {
-                return new AuthorizationDetailsValidationResult
-                {
-                    Error = AuthorizationDetailsError.NotAuthorizedForResource
-                };
-            }
-        }
-
-        return new AuthorizationDetailsValidationResult
-        {
-            AuthorizationDetails = parsedAuthorizationDetails
-        };
+        return await _authorizationDetailsValidator.AuthorizeAuthorizationDetails(authorizationDetails, clientId, cancellationToken);
     }
 }
