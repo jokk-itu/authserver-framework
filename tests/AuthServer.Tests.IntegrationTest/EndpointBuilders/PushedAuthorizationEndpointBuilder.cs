@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Web;
+using AuthServer.Authorization.Models;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.PushedAuthorization;
 using AuthServer.Tests.Core;
@@ -71,7 +72,7 @@ public class PushedAuthorizationEndpointBuilder : EndpointBuilder<PushedAuthoriz
         return this;
     }
 
-    public PushedAuthorizationEndpointBuilder WithAuthorizationDetails(IEnumerable<DefaultAuthorizationDetailDto> authorizationDetails)
+    public PushedAuthorizationEndpointBuilder WithAuthorizationDetails(IEnumerable<AuthorizationDetailDto> authorizationDetails)
     {
         _parameters.Add(new(Parameter.AuthorizationDetails, JsonSerializer.Serialize(authorizationDetails)));
         return this;

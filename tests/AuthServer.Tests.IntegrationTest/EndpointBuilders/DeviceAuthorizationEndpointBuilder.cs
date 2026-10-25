@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Web;
+using AuthServer.Authorization.Models;
 using AuthServer.Core;
 using AuthServer.DeviceAuthorization;
 using Xunit.Abstractions;
@@ -81,7 +82,7 @@ public class DeviceAuthorizationEndpointBuilder : EndpointBuilder<DeviceAuthoriz
         return this;
     }
 
-    public DeviceAuthorizationEndpointBuilder WithAuthorizationDetails(IEnumerable<DefaultAuthorizationDetailDto> authorizationDetails)
+    public DeviceAuthorizationEndpointBuilder WithAuthorizationDetails(IEnumerable<AuthorizationDetailDto> authorizationDetails)
     {
         _parameters.Add(new(Parameter.AuthorizationDetails, JsonSerializer.Serialize(authorizationDetails)));
         return this;
