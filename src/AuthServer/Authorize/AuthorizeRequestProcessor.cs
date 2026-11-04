@@ -42,9 +42,6 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             }
         }
 
-        var authorizationCodeGrant =
-            (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId,
-                cancellationToken))!;
 
         IReadOnlyCollection<AuthorizationDetailDto> authorizationDetails = [];
         if (!string.IsNullOrEmpty(request.AuthorizationDetails))
@@ -76,6 +73,10 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
 
         if (request.ResponseType == ResponseTypeConstants.Code)
         {
+            var authorizationCodeGrant =
+                (await _authorizationGrantRepository.GetActiveAuthorizationCodeGrant(request.AuthorizationGrantId,
+                    cancellationToken))!;
+            
             return new AuthorizeResponse
             {
                 AuthorizationCode = GetAuthorizationCode(request, authorizationCodeGrant)
