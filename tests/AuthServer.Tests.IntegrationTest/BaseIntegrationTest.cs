@@ -1,4 +1,5 @@
-﻿using AuthServer.Authentication.Abstractions;
+﻿using System.Text.Json;
+using AuthServer.Authentication.Abstractions;
 using AuthServer.Authorization.Models;
 using AuthServer.Authorize.Abstractions;
 using AuthServer.Constants;
@@ -19,7 +20,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest;
 
@@ -225,14 +225,23 @@ public abstract class BaseIntegrationTest : IClassFixture<WebApplicationFactory<
 
     protected async Task GrantConsent(string authorizationGrantId, IReadOnlyCollection<string> scopes, IReadOnlyCollection<string> resources, IReadOnlyCollection<AuthorizationDetailDto> authorizationDetails)
     {
-        var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
+        var authorizationDetailRaw = authorizationDetails
+            .Select(x => new AuthorizationDetailRawDto
+            {
+                Raw = JsonSerializer.Serialize(x),
+                AuthorizationDetail = x
+            })
+            .ToList();
+        
         var authorizationGrantConsentDto = new AuthorizationGrantConsentDto
         {
             AuthorizationGrantId = authorizationGrantId,
             Scope = scopes,
             Resource = resources,
-            AuthorizationDetails = authorizationDetails
+            AuthorizationDetails = authorizationDetailRaw
         };
+
+        var consentRepository = ServiceProvider.GetRequiredService<IConsentRepository>();
         await consentRepository.CreateGrantConsent(authorizationGrantConsentDto, CancellationToken.None);
     }
 
