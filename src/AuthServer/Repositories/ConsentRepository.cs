@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using AuthServer.Authorization.Models;
+﻿using AuthServer.Authorization.Models;
 using AuthServer.Core;
 using AuthServer.Entities;
 using AuthServer.Helpers;
@@ -270,17 +269,15 @@ internal class ConsentRepository : IConsentRepository
         }
     }
 
-    private static void AddGrantAuthorizationDetailTypeConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents, IReadOnlyCollection<AuthorizationDetailDto> authorizationDetails)
+    private static void AddGrantAuthorizationDetailTypeConsent(AuthorizationGrant authorizationGrant, IReadOnlyCollection<Consent> clientConsents, IReadOnlyCollection<AuthorizationDetailRawDto> authorizationDetails)
     {
         foreach (var authorizationDetail in authorizationDetails)
         {
             var authorizationDetailTypeConsent = clientConsents
                 .OfType<AuthorizationDetailTypeConsent>()
-                .Single(x => x.AuthorizationDetailType.Name == authorizationDetail.Type);
+                .Single(x => x.AuthorizationDetailType.Name == authorizationDetail.AuthorizationDetail.Type);
 
-            // TODO fix and use the Raw property of the AuthorizationDetailDto
-            var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
-            var authorizationGrantAuthorizationDetailTypeConsent = new AuthorizationGrantAuthorizationDetailTypeConsent(authorizationDetailTypeConsent, authorizationGrant, rawAuthorizationDetail);
+            var authorizationGrantAuthorizationDetailTypeConsent = new AuthorizationGrantAuthorizationDetailTypeConsent(authorizationDetailTypeConsent, authorizationGrant, authorizationDetail.Raw);
             authorizationGrant.AuthorizationGrantConsents.Add(authorizationGrantAuthorizationDetailTypeConsent);
         }
     }

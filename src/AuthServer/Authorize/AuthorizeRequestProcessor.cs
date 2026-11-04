@@ -42,11 +42,17 @@ internal class AuthorizeRequestProcessor : IRequestProcessor<AuthorizeValidatedR
             }
         }
 
-
-        IReadOnlyCollection<AuthorizationDetailDto> authorizationDetails = [];
+        var authorizationDetails = new List<AuthorizationDetailRawDto>();
         if (!string.IsNullOrEmpty(request.AuthorizationDetails))
         {
-            authorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<DefaultAuthorizationDetailDto>>(request.AuthorizationDetails)!;
+            var rawAuthorizationDetails = JsonSerializer.Deserialize<IReadOnlyCollection<JsonElement>>(request.AuthorizationDetails)!;
+            authorizationDetails = rawAuthorizationDetails
+                .Select(x => new AuthorizationDetailRawDto
+                {
+                    Raw = x.GetRawText(),
+                    AuthorizationDetail = x.Deserialize<DefaultAuthorizationDetailDto>()!
+                })
+                .ToList();
         }
 
         var grantConsentDto = new AuthorizationGrantConsentDto

@@ -1,13 +1,8 @@
 ﻿using AuthServer.Authorization.Models;
-using System.Text.Json.Serialization;
 
 namespace AuthServer.Repositories.Models;
 
 internal class DefaultAuthorizationDetailDto : AuthorizationDetailDto
 {
-    /// <summary>
-    /// The raw JSON string of the authorization detail. It is required.
-    /// </summary>
-    [JsonIgnore]
-    public string Raw { get; set; } = null!;
+    // The class is empty on purpose
 }

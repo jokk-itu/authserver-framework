@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using AuthServer.Authorization.Models;
 using AuthServer.Constants;
 using AuthServer.Entities;
 using AuthServer.Enums;
@@ -7,8 +8,6 @@ using AuthServer.Repositories.Models;
 using AuthServer.Tests.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SQLitePCL;
-using Xunit.Abstractions;
 
 namespace AuthServer.Tests.UnitTest.Repositories;
 
@@ -337,7 +336,6 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             Type = AuthorizationDetailTypeConstants.OpenId
         };
         var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
-        authorizationDetail.Raw = rawAuthorizationDetail;
 
         // Act
         await consentRepository.CreateGrantConsent(
@@ -346,7 +344,11 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
                 AuthorizationGrantId = authorizationGrant.Id,
                 Scope = [ScopeConstants.Profile],
                 Resource = ["https://idp.authserver.dk"],
-                AuthorizationDetails = [authorizationDetail]
+                AuthorizationDetails = [new AuthorizationDetailRawDto
+                {
+                    Raw = rawAuthorizationDetail,
+                    AuthorizationDetail = authorizationDetail
+                }]
             },
             CancellationToken.None);
 
@@ -373,8 +375,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             .OfType<AuthorizationGrantAuthorizationDetailTypeConsent>()
             .Select(x => new DefaultAuthorizationDetailDto
             {
-                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name,
-                Raw = x.RawValue
+                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name
             })
             .ToList();
 
@@ -418,7 +419,6 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             Type = AuthorizationDetailTypeConstants.Profile
         };
         var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
-        authorizationDetail.Raw = rawAuthorizationDetail;
 
         // Act
         await consentRepository.MergeGrantConsent(
@@ -427,7 +427,11 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
                 AuthorizationGrantId = authorizationGrant.Id,
                 Scope = [ScopeConstants.Profile],
                 Resource = ["https://weather.authserver.dk"],
-                AuthorizationDetails = [authorizationDetail]
+                AuthorizationDetails = [new AuthorizationDetailRawDto
+                {
+                    Raw = rawAuthorizationDetail,
+                    AuthorizationDetail = authorizationDetail
+                }]
             },
             CancellationToken.None);
 
@@ -455,8 +459,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             .OfType<AuthorizationGrantAuthorizationDetailTypeConsent>()
             .Select(x => new DefaultAuthorizationDetailDto
             {
-                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name,
-                Raw = x.RawValue
+                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name
             })
             .ToList();
 
@@ -494,7 +497,6 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             Type = AuthorizationDetailTypeConstants.Profile
         };
         var rawAuthorizationDetail = JsonSerializer.Serialize(authorizationDetail);
-        authorizationDetail.Raw = rawAuthorizationDetail;
 
         // Act
         await consentRepository.ReplaceGrantConsent(
@@ -503,7 +505,11 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
                 AuthorizationGrantId = authorizationGrant.Id,
                 Scope = [ScopeConstants.Profile],
                 Resource = ["https://weather.authserver.dk"],
-                AuthorizationDetails = [authorizationDetail]
+                AuthorizationDetails = [new AuthorizationDetailRawDto
+                {
+                    Raw = rawAuthorizationDetail,
+                    AuthorizationDetail = authorizationDetail
+                }]
             },
             CancellationToken.None);
 
@@ -530,8 +536,7 @@ public class ConsentRepositoryTest(ITestOutputHelper outputHelper) : BaseUnitTes
             .OfType<AuthorizationGrantAuthorizationDetailTypeConsent>()
             .Select(x => new DefaultAuthorizationDetailDto
             {
-                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name,
-                Raw = x.RawValue
+                Type = ((AuthorizationDetailTypeConsent)x.Consent).AuthorizationDetailType.Name
             })
             .ToList();
 
