@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Json;
 using AuthServer.Helpers;
 using Microsoft.AspNetCore.Http.Extensions;
-using Xunit.Abstractions;
 using AuthServer.Constants;
 using System.Web;
 using AuthServer.Authorization.Models;
@@ -17,7 +16,6 @@ using AuthServer.Endpoints.Abstractions;
 using AuthServer.TokenDecoders;
 using ProofKeyGenerator = AuthServer.Tests.Core.ProofKeyGenerator;
 using AuthServer.Endpoints.Responses;
-using AuthServer.Repositories.Models;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder>
@@ -146,7 +144,7 @@ public class AuthorizeEndpointBuilder : EndpointBuilder<AuthorizeEndpointBuilder
 
         TestOutputHelper.WriteLine("Received Authorize response {0}, Location: {1}, Content: {2}",
             response.StatusCode,
-            response.Headers.Location,
+            response.Headers.Location?.ToString() ?? string.Empty,
             await response.Content.ReadAsStringAsync());
 
 

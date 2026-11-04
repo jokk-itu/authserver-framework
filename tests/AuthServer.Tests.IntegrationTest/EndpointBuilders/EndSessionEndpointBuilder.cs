@@ -9,7 +9,6 @@ using AuthServer.Options;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
-using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
@@ -75,7 +74,7 @@ public class EndSessionEndpointBuilder : EndpointBuilder<EndSessionEndpointBuild
 
         TestOutputHelper.WriteLine("Received EndSession response {0}, Location: {1}, Content: {2}",
             response.StatusCode,
-            response.Headers.Location,
+            response.Headers.Location?.ToString() ?? string.Empty,
             content);
 
         if (response.StatusCode == HttpStatusCode.SeeOther)

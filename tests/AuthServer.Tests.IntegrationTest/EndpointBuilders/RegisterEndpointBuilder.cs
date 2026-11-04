@@ -7,7 +7,6 @@ using System.Text.Json;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Enums;
 using AuthServer.Extensions;
-using Xunit.Abstractions;
 using AuthServer.Register;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;

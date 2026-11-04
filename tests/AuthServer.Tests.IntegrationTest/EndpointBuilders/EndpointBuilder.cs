@@ -4,7 +4,6 @@ using AuthServer.Options;
 using AuthServer.Tests.Core;
 using Microsoft.IdentityModel.Tokens;
 using AuthServer.Core;
-using Xunit.Abstractions;
 using static AuthServer.Tests.Core.ClientJwkBuilder;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;

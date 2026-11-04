@@ -10,7 +10,6 @@ using AuthServer.Endpoints.Responses;
 using AuthServer.Enums;
 using AuthServer.Options;
 using AuthServer.TokenByGrant;
-using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 

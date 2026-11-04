@@ -9,7 +9,6 @@ using AuthServer.Core;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Introspection;
-using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 

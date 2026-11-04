@@ -14,8 +14,6 @@ using System.Web;
 using AuthServer.Authorization.Models;
 using AuthServer.Core;
 using AuthServer.DeviceAuthorization;
-using Xunit.Abstractions;
-using AuthServer.Repositories.Models;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 public class DeviceAuthorizationEndpointBuilder : EndpointBuilder<DeviceAuthorizationEndpointBuilder>

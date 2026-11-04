@@ -4,6 +4,8 @@ using AuthServer.Options;
 using AuthServer.Core;
 using AuthServer.Endpoints.Responses;
 using AuthServer.Helpers;
+using AuthServer.Options;
+using AuthServer.PushedAuthorization;
 using AuthServer.TokenDecoders;
 using Xunit.Abstractions;
 using AuthServer.Enums;

@@ -6,7 +6,6 @@ using System.Text;
 using System.Web;
 using AuthServer.Core;
 using AuthServer.Endpoints.Abstractions;
-using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 

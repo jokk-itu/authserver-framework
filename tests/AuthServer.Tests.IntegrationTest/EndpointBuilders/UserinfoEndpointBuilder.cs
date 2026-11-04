@@ -2,7 +2,6 @@
 using System.Net.Http.Headers;
 using AuthServer.Endpoints.Abstractions;
 using AuthServer.Options;
-using Xunit.Abstractions;
 
 namespace AuthServer.Tests.IntegrationTest.EndpointBuilders;
 
